@@ -14,8 +14,8 @@ public sealed class CartesianMarkerBoundsTests {
     [InlineData(ChartScaleKind.Logarithmic, false)]
     public void AuthoredBubbleRadiusRangeUsesTheSameScaleForMarksAndAutomaticPaintBounds(ChartScaleKind scale, bool secondary) {
         var chart = Create(ChartSeriesKind.Bubble, secondary, 360, 260);
-        chart.ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 40); bubble.MinimumRadius = 1; bubble.MaximumRadius = 28; });
-        chart.Series[0].ConfigureMarkers(marker => { marker.StrokeWidth = 4; marker.Shape = ChartMarkerShape.Circle; });
+        chart.Bubble(bubble => { bubble.SizeDomain(0, 40); bubble.MinimumRadius = 1; bubble.MaximumRadius = 28; });
+        chart.Series[0].Markers(marker => { marker.StrokeWidth = 4; marker.Shape = ChartMarkerShape.Circle; });
         chart.Options.XAxis.Scale = scale;
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Scale = scale;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -74,8 +74,8 @@ public sealed class CartesianMarkerBoundsTests {
     [InlineData(ChartSeriesKind.Scatter, true)]
     [InlineData(ChartSeriesKind.Line, false)]
     public void ExplicitBoundsKeepExtremaAtTheAuthoredPlotEdges(ChartSeriesKind kind, bool secondary) {
-        var chart = Create(kind, secondary, 320, 220).WithXAxisBounds(1, 5);
-        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithBounds(20, 45);
+        var chart = Create(kind, secondary, 320, 220).XAxis(x => x.Bounds(1, 5));
+        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Bounds(20, 45);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plot = Plot(prepared.Scene);
         var markers = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role is "marker" or "bubble").ToArray();
@@ -93,8 +93,8 @@ public sealed class CartesianMarkerBoundsTests {
     public void OneExplicitEndpointKeepsOnlyThatEndpointFixed(bool explicitMaximum) {
         var chart = Create(ChartSeriesKind.Scatter, false, 320, 220);
         var axis = chart.Options.XAxis;
-        if (explicitMaximum) axis.Maximum = 5;
-        else axis.Minimum = 1;
+        if (explicitMaximum) axis.Max = 5;
+        else axis.Min = 1;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plot = Plot(prepared.Scene);
         var markers = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
@@ -108,17 +108,17 @@ public sealed class CartesianMarkerBoundsTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, bool secondary, int width, int height, bool negativeMinimum = false) {
-        var chart = Chart.Create().WithSize(width, height).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithLineMarkers(ChartLineMarkerMode.All);
+        var chart = Chart.Create().Size(width, height).ShowHeader(false).Legend(false).DataLabels(false)
+            .Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
         var points = new[] { new ChartPoint(1, negativeMinimum ? -20 : 20), new ChartPoint(3, 35), new ChartPoint(5, 45) };
         if (kind == ChartSeriesKind.Bubble)
             chart.AddBubble("Samples", new[] { new ChartBubble(1, 20, 2), new ChartBubble(3, 35, 10), new ChartBubble(5, 45, 40) });
         else {
             if (kind == ChartSeriesKind.Scatter) chart.AddScatter("Samples", points);
             else chart.AddLine("Samples", points);
-            chart.Series[0].ConfigureMarkers(markers => markers.Radius = 12);
+            chart.Series[0].Markers(markers => markers.Radius = 12);
         }
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
+        if (secondary) chart.Series[0].SecondaryAxis();
         return chart;
     }
 

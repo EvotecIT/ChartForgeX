@@ -5,35 +5,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
-    /// <summary>
-    /// Sets the color scale used by region and tile maps.
-    /// </summary>
-    /// <param name="scale">The map color scale, or null to use the default map coloring.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithMapColorScale(ChartColorScale? scale) {
-        Options.MapColorScale = scale;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets a two-color sequential scale used by region and tile maps.
-    /// </summary>
-    /// <param name="lowColor">The low-value color.</param>
-    /// <param name="highColor">The high-value color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithMapColorScale(ChartColor lowColor, ChartColor highColor) =>
-        WithMapColorScale(ChartColorScale.Sequential(lowColor, highColor));
-
-    /// <summary>
-    /// Sets a three-color diverging scale used by region and tile maps.
-    /// </summary>
-    /// <param name="lowColor">The low-value color.</param>
-    /// <param name="midpointColor">The midpoint color.</param>
-    /// <param name="highColor">The high-value color.</param>
-    /// <param name="midpointValue">An optional midpoint value. When omitted, the midpoint is halfway between the effective minimum and maximum.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithMapColorScale(ChartColor lowColor, ChartColor midpointColor, ChartColor highColor, double? midpointValue = null) =>
-        WithMapColorScale(ChartColorScale.Diverging(lowColor, midpointColor, highColor, midpointValue));
 
     /// <summary>Adds a region map whose series owns the immutable map geometry and canonical values.</summary>
     /// <param name="name">The series name.</param>
@@ -50,7 +21,7 @@ public sealed partial class Chart {
     /// <summary>Adds a region map with an optional chart-owned numeric color scale.</summary>
     public Chart AddRegionHeatmap(string name, ChartMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColorScale? scale = null, ChartSeriesId? id = null) {
         AddRegionMap(name, definition, regions, id: id);
-        if (scale != null) Options.MapColorScale = scale;
+        if (scale != null) Options.Map.ColorScale = scale;
         return this;
     }
 }

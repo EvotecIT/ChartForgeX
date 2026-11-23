@@ -17,7 +17,7 @@ public sealed class VennSetContainmentTests {
     [InlineData(640, 240)]
     [InlineData(320, 180)]
     public void ThreeSetsKeepTheirPaintInsideThePaddedSurface(int width, int height) {
-        var block = VennDiagramBlock.Create().WithSize(width, height).WithTitle("Overlap").WithCard(false)
+        var block = VennDiagramBlock.Create().Size(width, height).Title("Overlap").ShowCard(false)
             .AddSet("API", "API", 60).AddSet("UI", "UI", 55).AddSet("Ops", "Operations", 45);
         block.Options.Theme = block.Options.Theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 21, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var svg = XDocument.Parse(block.ToSvg());
@@ -34,7 +34,7 @@ public sealed class VennSetContainmentTests {
 
     [Fact]
     public void SetCaptionsKeepClearOfOutlinesOfSetsTheyDoNotBelongTo() {
-        var block = VennDiagramBlock.Create().WithSize(780, 460).WithTitle("Overlap")
+        var block = VennDiagramBlock.Create().Size(780, 460).Title("Overlap")
             .AddSet("A", "First", 100).AddSet("B", "Second", 60).AddIntersection(new[] { "A", "B" }, "Shared", 25);
         var svg = XDocument.Parse(block.ToSvg());
         var circles = svg.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "venn-set")
@@ -69,7 +69,7 @@ public sealed class VennSetContainmentTests {
         Assert.False(direct.HasErrors);
         Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(direct.Diagnostics).Code);
         var artifact = direct.Artifact!;
-        Assert.IsType<VennDiagramBlock>(artifact.Model).WithCard(false);
+        Assert.IsType<VennDiagramBlock>(artifact.Model).ShowCard(false);
         var svg = artifact.ToSvg();
         var document = XDocument.Parse(svg);
         var labels = document.Descendants().Where(element => element.Name.LocalName == "text").ToArray();
@@ -123,7 +123,7 @@ public sealed class VennSetContainmentTests {
         Assert.False(fence.HasErrors);
         Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(fence.Diagnostics).Code);
         var fenced = Assert.Single(fence.Artifacts);
-        Assert.IsType<VennDiagramBlock>(fenced.Model).WithCard(false);
+        Assert.IsType<VennDiagramBlock>(fenced.Model).ShowCard(false);
         Assert.Equal(svg, fenced.ToSvg());
         Assert.Equal(png, fenced.ToPng());
     }

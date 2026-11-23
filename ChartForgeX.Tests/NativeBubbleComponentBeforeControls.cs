@@ -35,19 +35,19 @@ public sealed class NativeBubbleComponentBeforeControls {
         Assert.Equal(2, chart.Series[0].Bubbles.Count); Assert.Equal("current", chart.Series[1].ObservationIds[0].Value);
     }
     internal static Chart Model(double y, double size, bool area = false, bool reversed = false, int width = 760, bool dark = false, bool labels = false) {
-        var chart = Chart.Create().WithTitle("Authored Bubble components").WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithLegend(true).WithDataLabels(labels);
+        var chart = Chart.Create().Title("Authored Bubble components").Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Legend(true).DataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var series = ChartSeries.CreateBubble(new ChartSeriesId(key), key, new[] {
                 new ChartBubble(1, key == "delivery" ? y : 65, key == "delivery" ? size : 35).WithColorValue(7),
                 new ChartBubble(3, 45, 25).WithColorValue(11) })
-                .WithObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later") });
-            series.ConfigureMarkers(markers => { markers.Shape = area ? ChartMarkerShape.Diamond : ChartMarkerShape.Circle; }); chart.AddSeries(series);
+                .ObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later") });
+            series.Markers(markers => { markers.Shape = area ? ChartMarkerShape.Diamond : ChartMarkerShape.Circle; }); chart.AddSeries(series);
         }
-        chart.ConfigureXAxis(axis => { axis.Minimum = 0; axis.Maximum = 4; });
-        chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 100; });
-        chart.ConfigureBubble(options => { options.WithSizeDomain(0, 100); options.MinimumRadius = 6; options.MaximumRadius = 18;
+        chart.XAxis(axis => { axis.Min = 0; axis.Max = 4; });
+        chart.YAxis(axis => { axis.Min = 0; axis.Max = 100; });
+        chart.Bubble(options => { options.SizeDomain(0, 100); options.MinimumRadius = 6; options.MaximumRadius = 18;
             options.SizeEncoding = area ? ChartBubbleSizeEncoding.Area : ChartBubbleSizeEncoding.SquareRootRadius; options.Reversed = reversed;
             options.SizeDimension.Name = "Effort"; options.SizeDimension.ShowLegend = false; });
         return chart;

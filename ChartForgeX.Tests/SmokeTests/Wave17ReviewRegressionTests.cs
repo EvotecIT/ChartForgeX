@@ -33,13 +33,13 @@ internal static partial class SmokeTests {
 
     private static void TopologyCurvedEndpointLabelsFollowRenderedRouteTangents() {
         var chart = TopologyChart.Create()
-            .WithId("curved-endpoint-tangents")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("curved-endpoint-tangents")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 40, 90, width: 60, height: 40)
             .AddNode("target", "Target", 320, 90, width: 60, height: 40)
             .AddEdge("curve", "source", "target", routing: TopologyEdgeRouting.Curved)
-            .WithEdgeEndpointLabels("curve", "out", "in");
+            .UpdateEdge("curve", e => e.SourceLabel("out").TargetLabel("in"));
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false };
         var prepared = chart.Prepare(options);
         var envelope = prepared.ToInterchangeEnvelope();

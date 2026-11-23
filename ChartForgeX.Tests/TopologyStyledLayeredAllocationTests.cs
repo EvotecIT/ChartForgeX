@@ -53,8 +53,8 @@ public sealed class TopologyStyledLayeredAllocationTests {
     private static TopologyChart Source(string pose) {
         var direction = pose == "mirrored" ? TopologyLayoutDirection.BottomToTop
             : pose is "horizontal" or "long-lane" ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom;
-        var chart = TopologyChart.Create().WithId("styled-layered-" + pose).WithViewport(1600, 1400, 24).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithLayout(TopologyLayoutMode.Layered, direction)
+        var chart = TopologyChart.Create().Id("styled-layered-" + pose).Viewport(new TopologyViewport(1600, 1400, 24)).Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoNode("first", "First", width: 100, height: 80).AddAutoNode("second", "Second", width: 100, height: 80)
             .AddEdge("advance", "first", "second");
         chart.Nodes[0].Metadata["layer"] = "0"; chart.Nodes[1].Metadata["layer"] = "1";

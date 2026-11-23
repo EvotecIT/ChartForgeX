@@ -10,7 +10,7 @@ public sealed class TopologyGroupCaptionDefaultControls {
     [InlineData(TopologyLayoutMode.DenseGrouped)]
     [InlineData(TopologyLayoutMode.Layered)]
     public void ExistingDefaultCaptionSceneProvidesBeforeAfterSvgPngAndJsonBytes(TopologyLayoutMode mode) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(600, 400, 24).WithLayout(mode, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(600, 400, 24)).LayoutMode(mode).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("scope", "Scope", subtitle: "Default detail", iconId: "common:server")
             .AddAutoNode("node", "Node", groupId: "scope", width: 144, height: 64);
         chart.Groups[0].LayoutDirection = TopologyLayoutDirection.LeftToRight;

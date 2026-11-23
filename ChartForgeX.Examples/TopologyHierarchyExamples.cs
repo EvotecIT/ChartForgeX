@@ -20,8 +20,8 @@ public static class TopologyHierarchyExamples {
     public static TopologyChart CreateTopology(int width, bool dark) {
         TopologyRegionTypography.Register();
         var chart = Frame("service-regions", "Service topology", "Two regions · five services · six links", width, dark)
-            .WithTheme(RegionTheme(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithViewport(width - 48, 500, 20).WithLayout(TopologyLayoutMode.Regions)
+            .Theme(RegionTheme(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Viewport(new TopologyViewport(width - 48, 500, 20)).LayoutMode(TopologyLayoutMode.Regions)
             .AddAutoGroup("north", "North region", TopologyHealthStatus.Healthy, "Primary processing · zone A")
             .AddAutoGroup("south", "South region", TopologyHealthStatus.Warning, "Recovery processing · zone B")
             .AddAutoNode("gateway", "GATE", status: TopologyHealthStatus.Healthy, groupId: "north", subtitle: "Primary gateway")
@@ -35,8 +35,8 @@ public static class TopologyHierarchyExamples {
             .AddEdge("checkpoint", "replica", "archive", "Failing 6 h", status: TopologyHealthStatus.Critical)
             .AddEdge("cache-feed", "replica", "cache", status: TopologyHealthStatus.Healthy)
             .AddEdge("overlay", "gateway", "replica", "Shared control plane", direction: VisualLinkDirection.Bidirectional)
-            .WithEdgeLineStyle("mirror", TopologyEdgeLineStyle.Dashed)
-            .WithLegend(TopologyLegend.Create().AddStatus("Current < 15 min", TopologyHealthStatus.Healthy)
+            .UpdateEdge("mirror", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
+            .Legend(TopologyLegend.Create().AddStatus("Current < 15 min", TopologyHealthStatus.Healthy)
                 .AddStatus("Scheduled, 15–60 min", TopologyHealthStatus.Warning).AddStatus("Failing", TopologyHealthStatus.Critical));
         chart.Nodes.Single(node => node.Id == "gateway").Weight = TopologyNodeWeight.Primary;
         chart.Groups[1].StatusText = "Attention";
@@ -52,10 +52,10 @@ public static class TopologyHierarchyExamples {
     /// <summary>Creates a timing tree whose incoming edge labels are ordinary caller-supplied strings.</summary>
     public static TopologyChart CreateHierarchy(int width, bool dark) =>
         Frame("timing-hierarchy", "Timing hierarchy", "Reference → coordinator → regional clocks · illustrative offsets", width, dark)
-            .WithLegend(TopologyLegend.Create("Health")
+            .Legend(TopologyLegend.Create("Health")
                 .AddStatus("Healthy", TopologyHealthStatus.Healthy)
                 .AddStatus("Needs attention", TopologyHealthStatus.Warning))
-            .WithViewport(width - 48, width < 640 ? 820 : 580, 24)
+            .Viewport(new TopologyViewport(width - 48, width < 640 ? 820 : 580, 24))
             .AddHierarchy(new[] {
                 new TopologyHierarchyItem("reference", "Reference clock") { Subtitle = "Independent source", Badge = "REF", Status = TopologyHealthStatus.Healthy },
                 new TopologyHierarchyItem("coordinator", "Coordinator", "reference") { Subtitle = "Level 2 · last sync 15 s", ParentEdgeLabel = "+0.2 ms", Status = TopologyHealthStatus.Healthy },
@@ -65,18 +65,18 @@ public static class TopologyHierarchyExamples {
                 EdgeStatus = TopologyHealthStatus.Healthy, EdgeKind = TopologyEdgeKind.Dependency });
 
     private static TopologyChart Frame(string id, string title, string subtitle, int width, bool dark) =>
-        TopologyChart.Create().WithId(id).WithTitle(title).WithSubtitle(subtitle)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithLegend(TopologyLegend.Create("Health and relationships")
+        TopologyChart.Create().Id(id).Title(title).Subtitle(subtitle)
+            .Theme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Legend(TopologyLegend.Create("Health and relationships")
                 .AddStatus("Healthy", TopologyHealthStatus.Healthy)
                 .AddStatus("Needs attention", TopologyHealthStatus.Warning)
                 .AddEdgeKind("Scheduled", TopologyEdgeKind.DataFlow, lineStyle: TopologyEdgeLineStyle.Dashed));
 
     // All directory vocabulary and mapping stays in the example, outside the rendering library.
     private static TopologyChart CreateDirectoryExample(int width, bool dark) {
-        var chart = CreateTopology(width, dark).WithId("directory-topology")
-            .WithTitle("Directory topology — illustrative")
-            .WithSubtitle("Example mapping only · synthetic sites and controllers · no directory access");
+        var chart = CreateTopology(width, dark).Id("directory-topology")
+            .Title("Directory topology — illustrative")
+            .Subtitle("Example mapping only · synthetic sites and controllers · no directory access");
         chart.Groups[0].Label = "HQ site";
         chart.Groups[0].Subtitle = "10.20.0.0/24 · two controllers";
         chart.Groups[1].Label = "Branch site";
@@ -94,13 +94,7 @@ public static class TopologyHierarchyExamples {
     }
 
     private static void WriteChart(string output, string name, TopologyChart chart, bool dark) {
-        var options = new TopologyRenderOptions {
-            IncludeTileSubtitles = true, IncludeIconLabels = true, WrapNodeLabels = true,
-            IncludeEdgeLabelLeaders = true,
-            ReadableDenseLayout = true, NodeSurfaceStyle = TopologyNodeSurfaceStyle.Card,
-            EnableHtmlViewportControls = true, EnableHtmlExportControls = true,
-            IncludeRegionDetails = true, HtmlNarrowMinimumHeight = 0
-        };
+        var options = new TopologyRenderOptions { IncludeTileSubtitles = true, IncludeIconLabels = true, WrapNodeLabels = true, IncludeEdgeLabelLeaders = true, ReadableDenseLayout = true, NodeSurfaceStyle = TopologyNodeSurfaceStyle.Card, Html = { ViewportControls = true, ExportControls = true, NarrowMinimumHeight = 0 }, IncludeRegionDetails = true };
         var stem = name + "-" + (int)(chart.Viewport.Width + 48) + (dark ? "-dark" : "-light");
         var prepared = chart.Prepare(options);
         ExampleArtifactWriter.WriteText(Path.Combine(output, stem + ".svg"), prepared.ToSvg());

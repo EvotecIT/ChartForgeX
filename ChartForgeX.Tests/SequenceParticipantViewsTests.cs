@@ -61,7 +61,7 @@ public sealed class SequenceParticipantViewsTests {
     }
     [Fact]
     public void EmptyVisibleViewRetainsSourceAndCanBeRefilledWithoutMutatingAnEarlierCapture() {
-        var model=SequenceArtifact.Create("view-empty").WithSize(700,600).AddParticipant("A","Review").AddParticipant("B","Archive");model.AddParticipantGroup("empty","Empty",0,1);
+        var model=SequenceArtifact.Create("view-empty").Width(700).Height(600).AddParticipant("A","Review").AddParticipant("B","Archive");model.AddParticipantGroup("empty","Empty",0,1);
         model.Layout=new SequenceLayoutPolicy(hideUnusedParticipants:true,mirrorParticipants:true);var empty=model.Prepare(SequenceViewFixture.Context());var svg=empty.ToSvg();SequenceViewFixture.Capture("sequence-view-empty",empty);
         Assert.DoesNotContain(empty.Regions,item=>item.Role.StartsWith("sequence-participant",StringComparison.Ordinal));Assert.Equal(2,empty.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeEnvelope().Nodes.Count);
         model.AddMessage("A","B","Save");var filled=model.Prepare(SequenceViewFixture.Context());SequenceViewFixture.Capture("sequence-view-refilled",filled);
@@ -70,7 +70,7 @@ public sealed class SequenceParticipantViewsTests {
     [Theory]
     [InlineData("note")] [InlineData("activation")] [InlineData("reference")]
     public void NonArrowReferencesCountAsActualParticipantUse(string usage) {
-        var model=SequenceArtifact.Create("view-"+usage).WithSize(700,700).AddParticipant("Unused","Unused").AddParticipant("B","Archive");
+        var model=SequenceArtifact.Create("view-"+usage).Width(700).Height(700).AddParticipant("Unused","Unused").AddParticipant("B","Archive");
         if(usage=="note")model.AddNote(SequenceArtifactNotePlacement.Over,new[]{"B"},"Note-only use");
         if(usage=="activation")model.AddActivation("B",true,0);
         if(usage=="reference"){model.AddBlock(SequenceArtifactBlockKind.Reference,"Audit",0,0,true);model.Blocks[0].ParticipantIds.Add("B");}
@@ -81,7 +81,7 @@ public sealed class SequenceParticipantViewsTests {
     [Theory]
     [InlineData("source")] [InlineData("target")] [InlineData("self")]
     public void DestroyedFooterAndLifelineEndAtTheSameMeasuredTerminalOccurrence(string endpoint) {
-        var model=SequenceArtifact.Create("view-death").WithSize(1200,800).AddParticipant("A","Review").AddParticipant("B","Archive");
+        var model=SequenceArtifact.Create("view-death").Width(1200).Height(800).AddParticipant("A","Review").AddParticipant("B","Archive");
         model.AddMessage(endpoint=="target"?"A":"B",endpoint=="source"?"A":"B","Close");model.Participants[1].DestroyedAtMessageIndex=0;
         model.Layout=new SequenceLayoutPolicy(mirrorParticipants:true);var prepared=model.Prepare(SequenceViewFixture.Context(1500));SequenceViewFixture.Capture("sequence-view-terminal-"+endpoint,prepared);
         var footer=prepared.Regions.Single(item=>item.Role=="sequence-participant-footer"&&item.Id=="B");var facts=prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeEnvelope();var route=facts.Edges[0].ResolvedRoute;
@@ -133,7 +133,7 @@ public sealed class SequenceParticipantViewsTests {
 }
 
 internal static class SequenceViewFixture {
-    internal static SequenceArtifact Basic()=>SequenceArtifact.Create("sequence-view").WithSize(1000,800).AddParticipant("A","Review").AddParticipant("Unused","Unused").AddParticipant("B","Archive")
+    internal static SequenceArtifact Basic()=>SequenceArtifact.Create("sequence-view").Width(1000).Height(800).AddParticipant("A","Review").AddParticipant("Unused","Unused").AddParticipant("B","Archive")
         .AddMessage("A","B","Save").AddMessage("B","A","Ready",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return);
     internal static VisualRenderContext Context(double width=1000)=>new(new VisualLayoutOptions(new VisualSize(width,1000),24));
     internal static XElement Lifeline(PreparedVisual prepared,double x)=>XDocument.Parse(prepared.ToSvg()).Descendants().First(item=>(string?)item.Attribute("data-cfx-role")=="sequence-lifeline"&&item.Attribute("x1")!.Value==x.ToString("0.###",CultureInfo.InvariantCulture));

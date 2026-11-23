@@ -22,8 +22,8 @@ public sealed class PolarViewportContractTests {
         var fullRadius = chart.PreparePolar(context, new ChartPolarViewport(radius: new ChartAxisWindow(0, 100)));
         Assert.Equal(full.ToSvg(), fullRadius.ToSvg()); Assert.Equal(full.ToPng(), fullRadius.ToPng());
         Assert.NotNull(reset.PolarProjection); Assert.Null(reset.XProjection); Assert.Null(reset.YProjection);
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum);
-        Assert.Null(chart.Options.YAxis.PreparedViewportWindow); Assert.Null(chart.Options.XAxis.Minimum);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(100, chart.Options.YAxis.Max);
+        Assert.Null(chart.Options.YAxis.PreparedViewportWindow); Assert.Null(chart.Options.XAxis.Min);
     }
 
     [Theory]
@@ -72,8 +72,8 @@ public sealed class PolarViewportContractTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public void PrimaryAndSecondaryRadiusWindowsUseTheirCapturedTransformAndReversal(bool primaryReversed, bool secondaryReversed) {
         var chart = Create(new[] { new ChartPoint(0, 20), new ChartPoint(1, 50), new ChartPoint(2, 80) })
-            .WithSecondaryYAxisBounds(1, 1000).AddPolar("Log radius", new[] { new ChartPoint(0, 1), new ChartPoint(1, 10), new ChartPoint(2, 100), new ChartPoint(3, 1000) });
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
+            .SecondaryYAxis(s => s.Bounds(1, 1000)).AddPolar("Log radius", new[] { new ChartPoint(0, 1), new ChartPoint(1, 10), new ChartPoint(2, 100), new ChartPoint(3, 1000) });
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
         chart.Options.YAxis.Reversed = primaryReversed; chart.Options.SecondaryYAxis.Reversed = secondaryReversed;
         var request = new ChartPolarViewport(radius: new ChartAxisWindow(20, 80), secondaryRadius: new ChartAxisWindow(10, 100));
         var prepared = Prepare(chart, request); var projection = prepared.PolarProjection!;
@@ -94,7 +94,7 @@ public sealed class PolarViewportContractTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => projection.Project(0, -1));
         Assert.Null(projection.ConstrainRadius(new ChartAxisWindow(-100, 200)));
         var confined = projection.ConstrainRadius(new ChartAxisWindow(70, 110))!; Assert.Equal(60, confined.Minimum); Assert.Equal(100, confined.Maximum);
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(1000, chart.Options.SecondaryYAxis.Maximum);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(1000, chart.Options.SecondaryYAxis.Max);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.Options.SecondaryYAxis.Reversed = !secondaryReversed; chart.Series[0].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -103,10 +103,10 @@ public sealed class PolarViewportContractTests {
     [InlineData(360, false, false)] [InlineData(360, true, true)] [InlineData(800, false, true)] [InlineData(800, true, false)]
     public void DirectionalSectorMaskPaintsOnlyItsSectorAcrossBothNativeExports(int width, bool dark, bool reversed) {
         var points = Enumerable.Range(0, 12).Select(index => new ChartPoint(index * Math.PI / 6, 80)).ToArray();
-        var chart = Create(points).WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Create(points).Size(width, 380).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Options.TransparentBackground = true; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
-        chart.Options.XAxis.Reversed = reversed; chart.Options.PolarRotationDegrees = 25;
-        chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
+        chart.Options.XAxis.Reversed = reversed; chart.Options.Polar.RotationDegrees = 25;
+        chart.Series[0].Polar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
         chart.Series[0].Markers.Enabled = false;
         var prepared = Prepare(chart, new ChartPolarViewport(angle: new ChartAxisWindow(0, Math.PI / 2)));
         var projection = prepared.PolarProjection!; var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 2));
@@ -132,16 +132,16 @@ public sealed class PolarViewportContractTests {
         var radar = Chart.Create().AddRadar("Categories", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2), new ChartPoint(2, 3) });
         Assert.Throws<NotSupportedException>(() => radar.PreparePolar(VisualExportRequest.ForChart(radar).Context));
         chart.Series[0].Points.Clear(); Assert.Throws<InvalidOperationException>(() => Prepare(chart, new ChartPolarViewport(angle: new ChartAxisWindow(0, 1))));
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(100, chart.Options.YAxis.Max);
     }
 
     internal static Chart Create(ChartPoint[]? points = null) {
         points ??= new[] { new ChartPoint(0, 20), new ChartPoint(1, 50), new ChartPoint(2, 80), new ChartPoint(3, 100) };
-        var series = new ChartSeries(new ChartSeriesId("readings"), "Readings", ChartSeriesKind.Polar, points).WithColor(ChartColor.FromHex("#2563EB"));
-        for (var index = 0; index < points.Length; index++) series.WithObservationId(index, new ChartObservationId("reading-" + index));
-        series.ConfigureMarkers(options => { options.Enabled = true; options.Radius = 5; });
-        return Chart.Create().WithSize(600, 380).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).AddSeries(series);
+        var series = new ChartSeries(new ChartSeriesId("readings"), "Readings", ChartSeriesKind.Polar, points).Color(ChartColor.FromHex("#2563EB"));
+        for (var index = 0; index < points.Length; index++) series.ObservationId(index, new ChartObservationId("reading-" + index));
+        series.Markers(options => { options.Enabled = true; options.Radius = 5; });
+        return Chart.Create().Size(600, 380).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).AddSeries(series);
     }
     internal static PreparedVisual Prepare(Chart chart, ChartPolarViewport? viewport = null) => chart.PreparePolar(VisualExportRequest.ForChart(chart).Context, viewport);
     internal static VisualSceneGroup[] Sources(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "polar-point-source").ToArray();

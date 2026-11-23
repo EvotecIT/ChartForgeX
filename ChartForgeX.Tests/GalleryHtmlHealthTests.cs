@@ -11,16 +11,16 @@ namespace ChartForgeX.Tests;
 public sealed class GalleryHtmlHealthTests {
     [Fact]
     public void NativeGridAndHostOwnedFlatSurfacesQualifyWhileClippingAndMissingPagePoliciesFail() {
-        var chart = Chart.Create().WithSize(320, 220).WithTitle("Counts").WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
+        var chart = Chart.Create().Size(320, 220).Title("Counts").Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
             .AddBar("Counts", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
-        var grid = ChartGrid.Create().WithTitle("Comparison").WithColumns(1).Add(chart);
+        var grid = ChartGrid.Create().Title("Comparison").Columns(1).Add(chart);
         var gridHtml = grid.ToHtmlPage();
         Assert.DoesNotContain("overflow:visible", gridHtml);
         Assert.Contains("data-cfx-role=\"panel\"", gridHtml);
-        var host = chart.WithHostFrame().ToHtmlPage();
+        var host = chart.HostOwnsFrame().ToHtmlPage();
         Assert.DoesNotContain("data-cfx-role=\"frame-card\"", host);
-        var table = ChartTable.Create().WithTitle("Release gates").WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
-            .WithColumns("Gate", "Status").AddRow("Build", "Passed");
+        var table = ChartTable.Create().Title("Release gates").Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
+            .Columns("Gate", "Status").AddRow("Build", "Passed");
         var tableHtml = table.ToHtmlPage();
         var artifactHtml = TableArtifact.Create("packed-table").AddColumn("gate", "Gate")
             .AddRow("build", "Passed").ToVisualArtifact().ToHtmlPage();

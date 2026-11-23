@@ -31,7 +31,7 @@ internal static partial class VisualNumericRadialCompiler {
         var categoryLabels = categoryValues.Select(value => axisLabels.Format(chart.Options.XAxis, value, categoryFormatter)).ToArray();
         var tickLabels = scales.ToDictionary(pair => pair.Key, pair => {
             var format = ChartAxisValueFormatter.Create(Axis(chart, pair.Key), pair.Value.Ticks,
-                pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
+                pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis.LabelFormatter : chart.Options.ValueFormatter);
             return pair.Value.Ticks.Select(format).ToArray();
         });
         plot = AxisTitles(chart, context, builder, plot, scales);
@@ -42,7 +42,7 @@ internal static partial class VisualNumericRadialCompiler {
         }
         var labels = new List<RadialSeriesLabel>();
         // Axis captions and totals also need mark avoidance when point captions are off.
-        var obstacles = chart.Options.ShowAxes || chart.Options.ShowStackTotals || chart.Series.Any(series => series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
+        var obstacles = chart.Options.ShowAxes || chart.Options.Bars.ShowTotals || chart.Series.Any(series => series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false))
             ? new List<LabelObstacle>() : null;
         if (obstacles != null && geometry.Inner > 0 && ChartSeriesKindTraits.IsMixedNumericRadial(chart))
             obstacles.Add(new LabelObstacle("radial-hole", new LabelMarkShape(new[] {
@@ -82,14 +82,14 @@ internal static partial class VisualNumericRadialCompiler {
                     }
                 }
             }
-            if (geometry.Outer > 0 && chart.Options.ShowStackTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
+            if (geometry.Outer > 0 && chart.Options.Bars.ShowTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
             DrawLabels(builder, plot, labels, obstacles, context.Theme.Spacing);
         }
     }
 
     private static void Validate(Chart chart) {
         ChartGuards.ValidateRadialValueEncoding(chart);
-        if (chart.Options.XAxis.Minimum.HasValue || chart.Options.XAxis.Maximum.HasValue)
+        if (chart.Options.XAxis.Min.HasValue || chart.Options.XAxis.Max.HasValue)
             throw new NotSupportedException("Numeric radial category axes use observation categories; explicit category bounds are not supported.");
         if (chart.Options.XAxis.Scale is ChartScaleKind.Logarithmic or ChartScaleKind.SymmetricLogarithmic)
             throw new NotSupportedException("Numeric radial categories use ordinal spacing; logarithmic category scales are not supported.");
@@ -128,7 +128,7 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-start-angle"] = N(mark.Start), ["data-cfx-sweep-angle"] = N(mark.Sweep),
             ["data-cfx-inner-radius"] = N(mark.Inner), ["data-cfx-outer-radius"] = N(mark.Outer),
             ["data-cfx-clipped"] = mark.Clipped ? "true" : "false",
-            ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false"
+            ["data-cfx-pin-state-colors"] = chart.Options.StateTimeline.PinColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false"
         };
         if (chart.Options.RadialGeometry.ValueEncoding == ChartRadialValueEncoding.Area) metadata["data-cfx-value-encoding"] = "area";
         if (geometry.Outer <= 0) metadata["data-cfx-geometry-status"] = "layout-collapse";
@@ -155,7 +155,7 @@ internal static partial class VisualNumericRadialCompiler {
                     pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern", cornerRadius: cornerRadius);
             }
         }
-        if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
+        if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false))) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
     }
 
     private static ChartAxis Axis(Chart chart, ChartAxisSide side) => side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;

@@ -54,7 +54,7 @@ public sealed class TopologyPathDecorationInterchangeTests {
 
     [Fact]
     public void PreparedManualSceneKeepsLowOriginOverlappingBodiesGroupsAndAuthoredCoordinateSiblingsUntilFreshLayout() {
-        var chart = TopologyChart.Create().WithId("retained-scene-domain").WithViewport(400, 260, 0).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Id("retained-scene-domain").Viewport(new TopologyViewport(400, 260, 0)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 60, width: 120, height: 70).AddNode("b", "B", 220, 60, width: 120, height: 70)
             .AddEdge("hints", "a", "b").AddEdge("curve", "a", "b", "Label");
         chart.Groups.Add(new TopologyGroup { Id = "frame", Label = "Frame", X = 30, Y = 30, Width = 320, Height = 180, ShowLabel = false });
@@ -91,7 +91,7 @@ public sealed class TopologyPathDecorationInterchangeTests {
 
     [Fact]
     public void HierarchyKeepsRawAuthoredInkSeparateFromItsFittedVisibleSnapshot() {
-        var chart = TopologyChart.Create().WithId("organization").WithViewport(1000, 650).WithLegend(null).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Id("organization").Viewport(new TopologyViewport(1000, 650)).Legend((TopologyLegend?)null).AddHierarchy(new[] {
             new TopologyHierarchyItem("lead", "Avery Quinn"), new TopologyHierarchyItem("engineering", "Engineering", "lead"),
             new TopologyHierarchyItem("platform", "Platform", "engineering") });
         var ink = new TopologyPathDecoration("service-zone", "M 10.123456789012346 20 L 900 500", stroke: ChartColor.FromHex("#123456"));
@@ -139,7 +139,7 @@ public sealed class TopologyPathDecorationInterchangeTests {
 
     [Fact]
     public void PortableIdsRejectMappedEntityCollisionsRatherThanDroppingOrRenamingInk() {
-        var chart = TopologyChart.Create().WithViewport(400, 250).WithLegend(null).AddNode("shared", "Worker", 40, 40);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 250)).Legend((TopologyLegend?)null).AddNode("shared", "Worker", 40, 40);
         chart.Groups.Add(new TopologyGroup { Id = "shared", Label = "Group", X = 0, Y = 0, Width = 300, Height = 180 });
         chart.PathDecorations.Add(new TopologyPathDecoration("node-shared", "M 0 0 L 20 20"));
         Assert.Contains("node-shared", Assert.Throws<ArgumentException>(() => chart.Prepare().ToInterchangeEnvelope().ToJson()).Message);

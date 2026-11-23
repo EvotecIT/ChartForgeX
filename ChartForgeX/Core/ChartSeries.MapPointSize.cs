@@ -11,7 +11,7 @@ public sealed partial class ChartSeries {
     /// <summary>Configures one dotted-map dataset's marker sizes atomically, independently of its geographic coordinates and numeric color.</summary>
     /// <param name="configure">Edits detached size options; a thrown callback leaves the installed options unchanged.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries ConfigureMapPointSize(Action<ChartMapPointSizeOptions> configure) {
+    internal ChartSeries SetMapPointSize(Action<ChartMapPointSizeOptions> configure) {
         RequireObservationKind(ChartSeriesKind.DottedMap);
         MapPointSize = ChartOptionConfiguration.Configure(MapPointSize, configure, options => options.Clone());
         return this;

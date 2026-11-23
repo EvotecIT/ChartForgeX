@@ -17,7 +17,7 @@ public sealed partial class ChartSeries {
     /// <param name="configure">Configures StartMarker and EndMarker overrides; unspecified settings inherit the shared series markers.</param>
     /// <returns>The current series.</returns>
     /// <exception cref="InvalidOperationException">The series is not a dumbbell.</exception>
-    public ChartSeries ConfigureDumbbell(Action<ChartDumbbellOptions> configure) {
+    internal ChartSeries SetDumbbell(Action<ChartDumbbellOptions> configure) {
         RequireDumbbellOptions();
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         _dumbbell = ChartOptionConfiguration.Configure(_dumbbell, configure, options => options.Clone());

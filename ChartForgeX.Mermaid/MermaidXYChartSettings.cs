@@ -74,15 +74,15 @@ internal sealed partial class MermaidXYChartSettings {
     internal void Apply(Chart chart, bool horizontal, MermaidPresentationOptions? host) {
         var x = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var y = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        if (_xTitle == false) { if (horizontal) chart.WithYAxis(string.Empty); else chart.WithXAxis(string.Empty); }
-        if (_yTitle == false) { if (horizontal) chart.WithXAxis(string.Empty); else chart.WithYAxis(string.Empty); }
+        if (_xTitle == false) { if (horizontal) chart.YAxis(yAxis => yAxis.Title(string.Empty)); else chart.XAxis(xAxis => xAxis.Title(string.Empty)); }
+        if (_yTitle == false) { if (horizontal) chart.XAxis(xAxis => xAxis.Title(string.Empty)); else chart.YAxis(yAxis => yAxis.Title(string.Empty)); }
         if (_xLine.HasValue) x.ShowLine = _xLine.Value;
         if (_yLine.HasValue) y.ShowLine = _yLine.Value;
         if (_xRotation.HasValue) x.LabelAngle = _xRotation.Value;
         if (_yRotation.HasValue) y.LabelAngle = _yRotation.Value;
         if (host?.Theme == null && host?.FontSize == null) {
-            if (_titleFontSize.HasValue) chart.ConfigureTitleStyle(style => style.FontSize = _titleFontSize.Value);
-            if (_legendFontSize.HasValue) chart.ConfigureLegendStyle(style => style.FontSize = _legendFontSize.Value);
+            if (_titleFontSize.HasValue) chart.TitleStyle(style => style.FontSize = _titleFontSize.Value);
+            if (_legendFontSize.HasValue) chart.LegendStyle(style => style.FontSize = _legendFontSize.Value);
         }
         ApplyPaint(chart, host);
     }

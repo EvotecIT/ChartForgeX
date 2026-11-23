@@ -18,7 +18,7 @@ public sealed class ChartSeriesIdentityTests {
         var chart = Chart.Create().AddSeries(first).AddSeries(second);
         first.StateRole = ChartSeriesState.Warning;
         chart.MoveSeries(first, 1);
-        first.WithName("Localized reading");
+        first.Name("Localized reading");
         Assert.Same(first, chart.Series[1]);
         Assert.Equal("actual", first.Id.Value);
         Assert.Equal("target", second.Id.Value);
@@ -79,14 +79,14 @@ public sealed class ChartSeriesIdentityTests {
     [Fact]
     public void PreparationCapturesSeriesAndObservationIdsBeforeLaterHandleEdits() {
         var series = ChartSeries.CreateScatter(new ChartSeriesId("readings"), "Reading", Points(5, 8))
-            .WithObservationId(0, new ChartObservationId("north:primary"));
+            .ObservationId(0, new ChartObservationId("north:primary"));
         var chart = Chart.Create().AddSeries(series);
         var prepared = chart.Prepare(new VisualRenderContext());
         var svg = prepared.ToSvg();
         var point = XDocument.Parse(svg).Descendants().Single(node => (string?)node.Attribute("data-cfx-source-id") == "series-0-point-0");
         Assert.Equal("readings", (string?)point.Attribute("data-cfx-series-key"));
         Assert.Equal("north:primary", (string?)point.Attribute("data-cfx-observation-id"));
-        series.WithName("Changed").WithObservationId(0, new ChartObservationId("replacement"));
+        series.Name("Changed").ObservationId(0, new ChartObservationId("replacement"));
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Empty(chart.Series);
@@ -96,10 +96,10 @@ public sealed class ChartSeriesIdentityTests {
     [Fact]
     public void ObservationIdsRejectAmbiguousOrMissingSourcesWithoutReplacingExistingIdentity() {
         var series = ChartSeries.CreateScatter(new ChartSeriesId("readings"), "Reading", Points(5, 8))
-            .WithObservationId(0, new ChartObservationId("north"));
-        Assert.Throws<ArgumentException>(() => series.WithObservationId(1, new ChartObservationId("north")));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.WithObservationId(2, new ChartObservationId("east")));
-        Assert.Throws<InvalidOperationException>(() => series.WithObservationId(1, default));
+            .ObservationId(0, new ChartObservationId("north"));
+        Assert.Throws<ArgumentException>(() => series.ObservationId(1, new ChartObservationId("north")));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.ObservationId(2, new ChartObservationId("east")));
+        Assert.Throws<InvalidOperationException>(() => series.ObservationId(1, default));
         Assert.Equal("north", Assert.Single(series.ObservationIds).Value.Value);
         Assert.Throws<NotSupportedException>(() => ((IDictionary<int, ChartObservationId>)series.ObservationIds).Clear());
     }

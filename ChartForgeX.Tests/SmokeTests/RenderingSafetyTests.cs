@@ -13,14 +13,14 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void DefaultStaticRenderersStayDeterministic() {
         var chart = Chart.Create()
-            .WithTitle("Deterministic chart")
-            .WithSize(360, 220)
+            .Title("Deterministic chart")
+            .Size(360, 220)
             .AddLine("Values", Points(10, 20, 15));
         var block = MetricCard.Create()
-            .WithMetric("Coverage", "98.2%")
-            .WithSize(280, 150);
+            .Metric("Coverage", "98.2%")
+            .Size(280, 150);
         var grid = VisualGrid.Create()
-            .WithTitle("Deterministic grid")
+            .Title("Deterministic grid")
             .Add(chart)
             .Add(block);
 
@@ -34,28 +34,28 @@ internal static partial class SmokeTests {
         AssertNoDuplicateIds(grid.ToHtmlFragment("grid-a") + grid.ToHtmlFragment("grid-b"), "Explicitly scoped visual grid fragments");
 
         var lightBlock = MetricCard.Create()
-            .WithMetric("Visual identity", "98.2%")
-            .WithSize(280, 150)
-            .WithTheme(VisualTheme.Graphite());
+            .Metric("Visual identity", "98.2%")
+            .Size(280, 150)
+            .Theme(VisualTheme.Graphite());
         var darkBlock = MetricCard.Create()
-            .WithMetric("Visual identity", "98.2%")
-            .WithSize(280, 150)
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+            .Metric("Visual identity", "98.2%")
+            .Size(280, 150)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
         var contentVariant = MetricCard.Create()
-            .WithMetric("Visual identity", "76.4%")
-            .WithSize(280, 150)
-            .WithTheme(VisualTheme.Graphite());
+            .Metric("Visual identity", "76.4%")
+            .Size(280, 150)
+            .Theme(VisualTheme.Graphite());
         AssertNoDuplicateIds(lightBlock.ToHtmlFragment() + darkBlock.ToHtmlFragment() + contentVariant.ToHtmlFragment(), "Unscoped visual blocks with distinct visual identities");
         var deterministicBlockSvg = lightBlock.ToSvg();
         Assert(deterministicBlockSvg == lightBlock.ToSvg(), "Content-derived visual block IDs should remain deterministic.");
         Assert(!deterministicBlockSvg.Contains("cfx-visual-seed-", StringComparison.Ordinal), "Provisional visual block IDs should not leak into rendered SVG.");
 
-        var chartGridA = ChartGrid.Create().WithTitle("Same grid").Add(Chart.Create().AddLine("Values", Points(1, 2, 3)));
-        var chartGridB = ChartGrid.Create().WithTitle("Same grid").Add(Chart.Create().AddLine("Values", Points(3, 2, 1)));
-        var visualGridA = VisualGrid.Create().WithTitle("Same visual grid").Add(MetricCard.Create().WithMetric("Coverage", "98%"));
-        var visualGridB = VisualGrid.Create().WithTitle("Same visual grid").Add(MetricCard.Create().WithMetric("Coverage", "76%"));
-        var canvasA = VisualCanvas.Create(320, 180).WithTitle("Same canvas").WithBackground(ChartColor.FromHex("#071A35"));
-        var canvasB = VisualCanvas.Create(320, 180).WithTitle("Same canvas").WithBackground(ChartColor.FromHex("#34120A"));
+        var chartGridA = ChartGrid.Create().Title("Same grid").Add(Chart.Create().AddLine("Values", Points(1, 2, 3)));
+        var chartGridB = ChartGrid.Create().Title("Same grid").Add(Chart.Create().AddLine("Values", Points(3, 2, 1)));
+        var visualGridA = VisualGrid.Create().Title("Same visual grid").Add(MetricCard.Create().Metric("Coverage", "98%"));
+        var visualGridB = VisualGrid.Create().Title("Same visual grid").Add(MetricCard.Create().Metric("Coverage", "76%"));
+        var canvasA = VisualCanvas.Create(320, 180).Title("Same canvas").BackgroundTop(ChartColor.FromHex("#071A35")).BackgroundBottom(ChartColor.FromHex("#071A35"));
+        var canvasB = VisualCanvas.Create(320, 180).Title("Same canvas").BackgroundTop(ChartColor.FromHex("#34120A")).BackgroundBottom(ChartColor.FromHex("#34120A"));
         AssertNoDuplicateIds(chartGridA.ToSvg() + chartGridB.ToSvg(), "Unscoped chart grids with distinct content");
         AssertNoDuplicateIds(visualGridA.ToSvg() + visualGridB.ToSvg(), "Unscoped visual grids with distinct content");
         AssertNoDuplicateIds(canvasA.ToSvg() + canvasB.ToSvg(), "Unscoped visual canvases with distinct themes");
@@ -65,7 +65,7 @@ internal static partial class SmokeTests {
 
     private static void RasterRenderingRejectsUnsafeAllocationsEarly() {
         var oversized = Chart.Create()
-            .WithSize(int.MaxValue, 1)
+            .Size(int.MaxValue, 1)
             .AddLine("Values", Points(1, 2));
 
         AssertThrows<ArgumentOutOfRangeException>(
@@ -75,8 +75,8 @@ internal static partial class SmokeTests {
 
     private static void ExtremeFiniteAxisBoundsRenderWithoutInvalidNumbers() {
         var extreme = Chart.Create()
-            .WithSize(420, 260)
-            .WithYAxisBounds(-double.MaxValue, double.MaxValue)
+            .Size(420, 260)
+            .YAxis(y => y.Bounds(-double.MaxValue, double.MaxValue))
             .AddLine("Values", new[] {
                 new ChartPoint(1, -double.MaxValue),
                 new ChartPoint(2, 0),
@@ -87,8 +87,8 @@ internal static partial class SmokeTests {
         Assert(!extremeMarkup.Contains("NaN", StringComparison.Ordinal) && !extremeMarkup.Contains("Infinity", StringComparison.Ordinal), "Extreme finite bounds should not produce invalid SVG numeric values.");
 
         var subnormal = Chart.Create()
-            .WithSize(420, 260)
-            .WithYAxisBounds(0, double.Epsilon)
+            .Size(420, 260)
+            .YAxis(y => y.Bounds(0, double.Epsilon))
             .AddLine("Values", new[] { new ChartPoint(1, 0), new ChartPoint(2, double.Epsilon) })
             .ToSvg();
         var subnormalMarkup = NumericMarkup(subnormal);

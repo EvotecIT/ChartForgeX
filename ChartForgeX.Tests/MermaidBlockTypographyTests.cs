@@ -106,12 +106,12 @@ public sealed class MermaidBlockTypographyTests {
         Assert.DoesNotContain(result.Diagnostics, diagnostic => diagnostic.Severity == MermaidDiagnosticSeverity.Error || diagnostic.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
         var artifact = result.Artifact!;
         switch (artifact.Model) {
-            case PacketLayoutBlock item: item.WithTitle("").WithSubtitle(""); break;
-            case BlockLayoutBlock item: item.WithTitle("").WithSubtitle(""); break;
-            case GitGraphBlock item: item.WithTitle("").WithSubtitle(""); break;
-            case WardleyMapBlock item: item.WithTitle("").WithSubtitle(""); break;
-            case VennDiagramBlock item: item.WithTitle("").WithSubtitle(""); break;
-            case FishboneDiagramBlock item: item.WithTitle("").WithSubtitle(""); break;
+            case PacketLayoutBlock item: item.Title("").Subtitle(""); break;
+            case BlockLayoutBlock item: item.Title("").Subtitle(""); break;
+            case GitGraphBlock item: item.Title("").Subtitle(""); break;
+            case WardleyMapBlock item: item.Title("").Subtitle(""); break;
+            case VennDiagramBlock item: item.Title("").Subtitle(""); break;
+            case FishboneDiagramBlock item: item.Title("").Subtitle(""); break;
             default: throw new InvalidOperationException("Expected native block model.");
         }
         return artifact;

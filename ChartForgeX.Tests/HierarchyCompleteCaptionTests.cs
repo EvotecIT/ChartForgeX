@@ -41,7 +41,7 @@ public sealed class HierarchyCompleteCaptionTests {
             if (leaf.Id == (dense ? "group0-0" : "a")) AssertCaptionInk(prepared, caption, bounds);
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         var without = chart.Prepare(Context(760, 420, mode));
         foreach (var node in prepared.Regions.Where(region => region.Role == "tree-node")) {
             var other = without.Regions.Single(region => region.Id == node.Id);
@@ -73,7 +73,7 @@ public sealed class HierarchyCompleteCaptionTests {
     [Fact]
     public void TreeAuthoredCaptionControlsSizingPaintAndDescriptionWithoutChangingTheNodeName() {
         var chart = Tree(false);
-        chart.Series[0].WithPointLabel(0, Name);
+        chart.Series[0].PointLabel(0, Name);
         var prepared = chart.Prepare(Context(760, 420, ThemeMode.Light));
         var caption = Caption(prepared, "root", "tree-node-label");
         Assert.Equal(Name, string.Join(" ", caption.Text.Lines.Select(line => line.Text)));
@@ -88,7 +88,7 @@ public sealed class HierarchyCompleteCaptionTests {
         AssertCaptionInk(prepared, caption, region.Bounds);
         ScatterBubbleColorRenderingTests.Capture(prepared, "tree-authored-caption");
         var frozen = prepared.ToSvg();
-        chart.Series[0].UseFormattedPointLabel(0);
+        chart.Series[0].ResetPointLabel(0);
         Assert.Equal("Operations", Assert.Single(Caption(chart.Prepare(Context(760, 420, ThemeMode.Light)), "root", "tree-node-label").Text.Lines).Text);
         Assert.Equal("Operations", chart.Series[0].Nodes[0].Label);
         Assert.Equal(frozen, prepared.ToSvg());
@@ -106,18 +106,18 @@ public sealed class HierarchyCompleteCaptionTests {
                 nodes.Add(new ChartNode(child, "Region " + (char)('A' + leaf))); links.Add(new ChartTreeLink(id, child));
             }
         }
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().AddTree("Operations", nodes, links);
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(12));
+        var chart = Chart.Create().Legend(false).DataLabels().AddTree("Operations", nodes, links);
+        chart.Series[0].DataLabelStyle(style => style.FontSize(12));
         return chart;
     }
 
     internal static Chart Treemap() {
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().AddTreemap("Operations", new[] {
+        var chart = Chart.Create().Legend(false).DataLabels().AddTreemap("Operations", new[] {
             new ChartHierarchyItem("group", "Operations"),
             new ChartHierarchyItem("region", Name, "group", 28),
             new ChartHierarchyItem("other", "Other regions", "group", 72)
         });
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(12));
+        chart.Series[0].DataLabelStyle(style => style.FontSize(12));
         return chart;
     }
 

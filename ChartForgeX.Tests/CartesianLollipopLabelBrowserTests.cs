@@ -4,6 +4,7 @@ using ChartForgeX.Themes;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -14,7 +15,7 @@ public sealed class CartesianLollipopLabelBrowserTests {
     public async Task ReversedEndpointCaptionAndPhysicalReadoutRetainTheirSignedSource(bool secondary, int sign, bool dark) {
         if (!Enabled) return;
         var chart = CartesianLollipopLabelTests.Create(secondary, true, sign)
-            .WithSize(dark ? 360 : 640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Size(dark ? 360 : 640, 360).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), dark ? 390 : 700, 520);
         var page = session.Page; var point = page.Locator(Point(0, 0));
         var marker = await point.Locator("[data-cfx-role='lollipop-marker']").BoundingBoxAsync() ?? throw new InvalidOperationException("No native endpoint marker.");

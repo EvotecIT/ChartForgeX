@@ -57,23 +57,23 @@ internal static partial class SmokeTests {
         var fallback = TextStyle.Create(16, ChartColor.Black);
         fallback.Font = FontSpec.FromFamily("system-ui, sans-serif");
         var overrides = new TextStyleOverride()
-            .WithColor("#7C3AED")
-            .WithFontFamily("Aptos, sans-serif")
-            .WithFontSize(22)
-            .WithWeight("bold")
-            .WithItalic()
-            .WithUnderline(TextDecorationStyle.Wavy)
-            .WithStrikethrough(TextDecorationStyle.Double)
-            .WithSuperscript()
-            .WithTextCase(TextCaseTransform.Uppercase);
+            .Color(ChartColor.FromHex("#7C3AED"))
+            .FontFamily("Aptos, sans-serif")
+            .FontSize(22)
+            .FontWeight("bold")
+            .Italic()
+            .UnderlineStyle(TextDecorationStyle.Wavy)
+            .StrikethroughStyle(TextDecorationStyle.Double)
+            .Baseline(TextBaseline.Superscript)
+            .TextCase(TextCaseTransform.Uppercase);
 
         var resolved = overrides.Resolve(fallback);
         Assert(resolved.Color.ToHex() == "#7C3AED" && resolved.Font.Family == "Aptos, sans-serif" && resolved.FontSize == 22, "Text overrides should resolve color, family, and size over the shared complete style.");
         Assert(resolved.Font.Weight == 700 && resolved.Font.Italic && resolved.UnderlineStyle == TextDecorationStyle.Wavy && resolved.StrikethroughStyle == TextDecorationStyle.Double, "Text overrides should resolve weight and typed decorations into the shared typography model.");
         Assert(resolved.Baseline == TextBaseline.Superscript && resolved.TextCase == TextCaseTransform.Uppercase && resolved.EffectiveFontSize == 22 * 0.65, "Text overrides should resolve script placement and casing into the shared typography model.");
         Assert(fallback.Font.Family == "system-ui, sans-serif" && fallback.FontSize == 16, "Resolving text overrides should not mutate the fallback style.");
-        AssertThrows<ArgumentOutOfRangeException>(() => overrides.WithUnderline((TextDecorationStyle)999), "Text overrides should reject unknown underline variants.");
-        AssertThrows<ArgumentOutOfRangeException>(() => overrides.WithBaseline((TextBaseline)999), "Text overrides should reject unknown baselines.");
+        AssertThrows<ArgumentOutOfRangeException>(() => overrides.UnderlineStyle((TextDecorationStyle)999), "Text overrides should reject unknown underline variants.");
+        AssertThrows<ArgumentOutOfRangeException>(() => overrides.Baseline((TextBaseline)999), "Text overrides should reject unknown baselines.");
     }
 
     private static void TextCaseTransformsCoverEverySharedVariant() {
@@ -106,14 +106,14 @@ internal static partial class SmokeTests {
     }
 
     private static void RasterWeightThresholdPreservesNumericSemantics() {
-        Assert(new TextStyleOverride().WithWeight("550").ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
-        Assert(new TextStyleOverride().WithWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
-        Assert(new TextStyleOverride().WithWeight("bolder").ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
-        Assert(new TextStyleOverride().WithWeight("lighter").ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
+        Assert(new TextStyleOverride().FontWeight("550").ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
+        Assert(new TextStyleOverride().FontWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
+        Assert(new TextStyleOverride().FontWeight("bolder").ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
+        Assert(new TextStyleOverride().FontWeight("lighter").ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
         foreach (var weight in new[] { 1, 650, 850, 1000 }) {
             var font = new FontSpec { Weight = weight };
             Assert(font.Clone().Weight == weight, "Font specifications must preserve exact CSS weights when cloned.");
-            Assert(new TextStyleOverride().WithWeight(weight.ToString(CultureInfo.InvariantCulture)).Resolve(new TextStyle()).Font.Weight == weight,
+            Assert(new TextStyleOverride().FontWeight(weight.ToString(CultureInfo.InvariantCulture)).Resolve(new TextStyle()).Font.Weight == weight,
                 "Complete style resolution must retain the requested weight independently of available faces.");
         }
         AssertThrows<ArgumentOutOfRangeException>(() => new FontSpec { Weight = 0 }, "CSS font weights below one must be rejected.");

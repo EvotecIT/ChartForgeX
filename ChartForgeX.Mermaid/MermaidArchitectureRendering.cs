@@ -21,12 +21,12 @@ public static class MermaidArchitectureRendering {
         using var sourceScope = MermaidResourceGuard.BeginIfAbsent(document.CapturedResourceLimits);
         if (document.Alignments.Count > 0) MermaidResourceGuard.ValidateDocument(document);
         var chart = TopologyChart.Create()
-            .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-architecture" : options.Id!.Trim())
-            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid architecture"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(document.Alignments.Count > 0 || document.Groups.Any(group => !string.IsNullOrWhiteSpace(group.ParentId))
-                ? TopologyLayoutMode.Layered : TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+            .Id(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-architecture" : options.Id!.Trim())
+            .Title(MermaidHeading.Title(document, options.Title, null, "Mermaid architecture"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Viewport(new TopologyViewport(options.Width, options.Height, options.Padding))
+            .LayoutMode(document.Alignments.Count > 0 || document.Groups.Any(group => !string.IsNullOrWhiteSpace(group.ParentId))
+                ? TopologyLayoutMode.Layered : TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight);
 
         foreach (var group in document.Groups) {
             chart.AddAutoGroup(group.Id, string.IsNullOrWhiteSpace(group.Title) ? group.Id : group.Title, TopologyHealthStatus.Unknown, cssClass: "cfx-mermaid-architecture-group", iconId: MermaidArchitectureIcons.NativeId(group.Icon));

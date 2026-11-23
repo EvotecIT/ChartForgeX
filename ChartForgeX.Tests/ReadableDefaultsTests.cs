@@ -17,7 +17,7 @@ public sealed class ReadableDefaultsTests {
         svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 
     internal static Chart Availability(int width) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(width, 420).WithTitle("Daily availability");
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(width, 420).Title("Daily availability");
         for (var row = 0; row < 14; row++)
             chart.AddHeatmapRow($"DC{row + 1}.ad.evotec.pl", Enumerable.Range(0, 30).Select(day => new ChartPoint(day, 99 + (row + day) % 10 / 10d)));
         return chart;
@@ -44,7 +44,7 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void ToSvg_WideNumericBarAxis_KeepsAboutOneTickPerEightyPixels() {
-        var chart = Chart.Create().WithSize(900, 360).WithLegend(false)
+        var chart = Chart.Create().Size(900, 360).Legend(false)
             .AddBar("Orders", Enumerable.Range(0, 7).Select(index => new ChartPoint(index * 8, 20 + index * 3)));
         var ticks = ByRole(XDocument.Parse(chart.ToSvg()), "axis-x-label");
         Assert.InRange(ticks.Length, 4, 12);
@@ -55,13 +55,13 @@ public sealed class ReadableDefaultsTests {
     [InlineData(360)]
     [InlineData(520)]
     public void ToSvg_ValueAxisOfUsefulLength_HasFourToNineTicks(int height) {
-        var chart = Chart.Create().WithSize(640, height).WithLegend(false).WithHeader(false)
+        var chart = Chart.Create().Size(640, height).Legend(false).ShowHeader(false)
             .AddLine("Requests", new[] { new ChartPoint(1, 3), new ChartPoint(2, 41), new ChartPoint(3, 27), new ChartPoint(4, 45) });
         var ticks = ByRole(XDocument.Parse(chart.ToSvg()), "axis-y-label");
         Assert.InRange(ticks.Length, 4, 9);
     }
 
-    private static Chart Latency() => Chart.Create().WithSize(800, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+    private static Chart Latency() => Chart.Create().Size(800, 320).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
         .AddLine("dc-03", Enumerable.Range(0, 6).Select(index => new ChartPoint(Start.AddHours(index * 4), 50 + index * 1.5)));
 
     [Fact]
@@ -76,8 +76,8 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithValueUnit_HeatmapCellReadoutsCarryTheUnit() {
-        var chart = Chart.Create().WithSize(600, 300).WithXLabels("14 Oct", "15 Oct").WithValueUnit("%")
-            .WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture))
+        var chart = Chart.Create().Size(600, 300).XLabels("14 Oct", "15 Oct").ValueUnit("%")
+            .ValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture))
             .AddHeatmapRow("dc1", new double?[] { 99.5, 100 });
 
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
@@ -91,9 +91,9 @@ public sealed class ReadableDefaultsTests {
     [InlineData("0.0", "12.5\u00A0ms")]
     [InlineData("0.0 'ms'", "12.5 ms")]
     public void WithValueUnit_HeatmapColorDimensionFormatsKeepOneUnit(string format, string expected) {
-        var chart = Chart.Create().WithSize(600, 300).WithXLabels("14 Oct", "15 Oct").WithValueUnit("ms")
+        var chart = Chart.Create().Size(600, 300).XLabels("14 Oct", "15 Oct").ValueUnit("ms")
             .AddHeatmapRow("dc1", new double?[] { 12.5, 30 })
-            .ConfigureHeatmapColorDimension(options => options.ValueFormat = ChartValueFormat.Number(format, CultureInfo.InvariantCulture));
+            .Heatmap(heatmap => heatmap.ColorDimension(options => options.ValueFormat = ChartValueFormat.Number(format, CultureInfo.InvariantCulture)));
 
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
 
@@ -105,9 +105,9 @@ public sealed class ReadableDefaultsTests {
     [InlineData("0.0", "12.5 ms")]
     [InlineData("0.0 'ms'", "12.5 ms")]
     public void WithValueUnit_CalendarReadoutsKeepOneUnit(string format, string expected) {
-        var chart = Chart.Create().WithSize(600, 300).WithValueUnit("ms")
+        var chart = Chart.Create().Size(600, 300).ValueUnit("ms")
             .AddCalendarHeatmap("Latency", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 10, 1), 12.5) })
-            .WithValueFormat(ChartValueFormat.Number(format, CultureInfo.InvariantCulture));
+            .ValueFormat(ChartValueFormat.Number(format, CultureInfo.InvariantCulture));
 
         var day = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-cell").First(cell => (string?)cell.Attribute("data-cfx-empty") == "false");
 
@@ -117,8 +117,8 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithValueUnit_CartesianFormatThatWritesTheUnitKeepsOneCopy() {
-        var chart = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").WithValueUnit("ms")
-            .WithValueFormat(ChartValueFormat.Number("0.0 'ms'", CultureInfo.InvariantCulture))
+        var chart = Chart.Create().Size(600, 300).XLabels("Mon", "Tue").ValueUnit("ms")
+            .ValueFormat(ChartValueFormat.Number("0.0 'ms'", CultureInfo.InvariantCulture))
             .AddLine("dc1", new[] { new ChartPoint(1, 12.5), new ChartPoint(2, 30) });
 
         var svg = chart.ToSvg();
@@ -130,7 +130,7 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithValueUnit_WaterfallTooltipValuesCarryTheUnitWhileTheirAccessibleNamesStayAsDescribed() {
-        var chart = Chart.Create().WithSize(600, 300).WithXLabels("Open", "Change", "Total").WithValueUnit("ms")
+        var chart = Chart.Create().Size(600, 300).XLabels("Open", "Change", "Total").ValueUnit("ms")
             .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("w"), "Budget",
                 new[] { ChartWaterfallItem.OpeningBalance(1, 100), ChartWaterfallItem.Delta(2, -20), ChartWaterfallItem.Total(3) }));
 
@@ -143,8 +143,8 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithValueUnit_CategoricalHeatmapCellsNameTheirStateWithoutAUnit() {
-        var chart = Chart.Create().WithSize(600, 300).WithXLabels("14 Oct", "15 Oct").WithValueUnit("%")
-            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+        var chart = Chart.Create().Size(600, 300).XLabels("14 Oct", "15 Oct").ValueUnit("%")
+            .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
             .AddHeatmapCategoryRow("dc1", new ChartHeatmapCell?[] { new ChartHeatmapCell("up"), new ChartHeatmapCell("up") });
 
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").First();
@@ -158,8 +158,8 @@ public sealed class ReadableDefaultsTests {
     [InlineData("0.0 's'", "s", "12.0 s")]
     [InlineData("0.0", "s", "12.0 s")]
     public void WithValueUnit_OnlyAWholeMatchingUnitCountsAsAlreadyWritten(string format, string unit, string expected) {
-        var chart = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").WithValueUnit(unit)
-            .WithValueFormat(ChartValueFormat.Number(format, CultureInfo.InvariantCulture))
+        var chart = Chart.Create().Size(600, 300).XLabels("Mon", "Tue").ValueUnit(unit)
+            .ValueFormat(ChartValueFormat.Number(format, CultureInfo.InvariantCulture))
             .AddLine("dc1", new[] { new ChartPoint(1, 12), new ChartPoint(2, 30) });
 
         var point = XDocument.Parse(chart.ToSvg()).Descendants().First(element => (string?)element.Attribute("data-cfx-formatted-value") != null);
@@ -169,8 +169,8 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithValueUnit_RoundedTimeReadoutKeepsTheExactValueInItsAccessibleName() {
-        var chart = Chart.Create().WithSize(600, 300).WithXAxisTimeScale(TimeZoneInfo.Utc).WithValueUnit("ms")
-            .WithValueFormat(ChartValueFormat.Number("0.0", CultureInfo.InvariantCulture))
+        var chart = Chart.Create().Size(600, 300).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc)).ValueUnit("ms")
+            .ValueFormat(ChartValueFormat.Number("0.0", CultureInfo.InvariantCulture))
             .AddLine("dc-03", new[] { new ChartPoint(Start, 52.734), new ChartPoint(Start.AddHours(1), 40) });
 
         var point = ByRole(XDocument.Parse(chart.ToSvg()), "point").First();
@@ -182,9 +182,9 @@ public sealed class ReadableDefaultsTests {
     [InlineData("")]
     [InlineData("   ")]
     public void ValueUnit_BlankSetThroughOptionsMeansNoUnit(string unit) {
-        var line = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").AddLine("dc1", new[] { new ChartPoint(1, 12), new ChartPoint(2, 30) });
+        var line = Chart.Create().Size(600, 300).XLabels("Mon", "Tue").AddLine("dc1", new[] { new ChartPoint(1, 12), new ChartPoint(2, 30) });
         line.Options.ValueUnit = unit;
-        var heatmap = Chart.Create().WithSize(600, 300).WithXLabels("Mon", "Tue").AddHeatmapRow("dc1", new double?[] { 99.5, 100 });
+        var heatmap = Chart.Create().Size(600, 300).XLabels("Mon", "Tue").AddHeatmapRow("dc1", new double?[] { 99.5, 100 });
         heatmap.Options.ValueUnit = unit;
         var waterfall = WaterfallInterchangeTests.Model();
         waterfall.Options.ValueUnit = unit;
@@ -198,7 +198,7 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithValueUnit_AppearsInReadoutsButNotOnTicks() {
-        var svg = XDocument.Parse(Latency().WithValueUnit("ms").ToSvg());
+        var svg = XDocument.Parse(Latency().ValueUnit("ms").ToSvg());
         var point = ByRole(svg, "point")[1];
         Assert.Equal("51.5\u00A0ms", (string?)point.Attribute("data-cfx-formatted-value"));
         Assert.EndsWith("51.5\u00A0ms", (string)point.Attribute("data-cfx-description")!, StringComparison.Ordinal);
@@ -209,7 +209,7 @@ public sealed class ReadableDefaultsTests {
     [InlineData(false)]
     [InlineData(true)]
     public void WithValueUnit_TransitionFramesMatchThePreparedReadoutsAndNames(bool time) {
-        Chart Build(double value) => NativeCartesianValueBeforeControls.Model(false, time ? "elapsed-time" : "linear", value).WithValueUnit("ms");
+        Chart Build(double value) => NativeCartesianValueBeforeControls.Model(false, time ? "elapsed-time" : "linear", value).ValueUnit("ms");
         var renderer = new ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer();
         var from = renderer.PrepareSection(Build(20)); var to = renderer.PrepareSection(Build(80)); var middle = renderer.PrepareSection(Build(50));
         var frames = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3);
@@ -219,7 +219,7 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void ToSvg_OverfullHeatmap_HidesRowLabelsRatherThanOverlappingThem() {
-        var chart = Chart.Create().WithSize(600, 260).WithLegend(false);
+        var chart = Chart.Create().Size(600, 260).Legend(false);
         for (var row = 0; row < 30; row++) chart.AddHeatmapRow($"target-{row:00}", Enumerable.Range(0, 10).Select(day => new ChartPoint(day, row + day)));
         var labels = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-row-label").SelectMany(label => label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text"))
             .Select(label => (Y: double.Parse((string)label.Attribute("y")!, CultureInfo.InvariantCulture), Size: double.Parse((string)label.Attribute("font-size")!, CultureInfo.InvariantCulture)))
@@ -230,8 +230,8 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void TimeSeriesPoint_AuthoredCaptionThatPrefixesTheValueKeepsBothCaptionAndValue() {
-        var chart = Latency().WithValueUnit("ms").WithDataLabels();
-        chart.Series[0].WithPointLabel(0, "5");
+        var chart = Latency().ValueUnit("ms").DataLabels();
+        chart.Series[0].PointLabel(0, "5");
         var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("data-cfx-description")!;
         Assert.EndsWith(", 5 (50\u00A0ms)", label, StringComparison.Ordinal);
     }
@@ -241,7 +241,7 @@ public sealed class ReadableDefaultsTests {
     [InlineData(ChartSeriesKind.Bar)]
     [InlineData(ChartSeriesKind.Scatter)]
     public void NumericPoint_AccessibleNameIncludesUnitAndExactCoordinates(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(800, 320).WithValueUnit("ms")
+        var chart = Chart.Create().Size(800, 320).ValueUnit("ms")
             .AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", kind,
                 new[] { new ChartPoint(1.125, 50.25), new ChartPoint(2, 60) }));
         var point = ByRole(XDocument.Parse(chart.ToSvg()), "point")[0];
@@ -255,8 +255,8 @@ public sealed class ReadableDefaultsTests {
     [InlineData(ChartTimeTickUnit.Millisecond)]
     public void Gantt_FixedTimeTicksUseGermanCulture(ChartTimeTickUnit unit) {
         var end = unit == ChartTimeTickUnit.Day ? Start.AddDays(3) : Start.AddMilliseconds(800);
-        var chart = Chart.Create().WithSize(1000, 320).WithLegend(false).WithCulture(CultureInfo.GetCultureInfo("de-DE"))
-            .AddGanttTask("Task", Start, end).WithGanttTickInterval(new ChartTimeTickInterval(unit, unit == ChartTimeTickUnit.Day ? 1 : 200));
+        var chart = Chart.Create().Size(1000, 320).Legend(false).Culture(CultureInfo.GetCultureInfo("de-DE"))
+            .AddGanttTask("Task", Start, end).Gantt(g => g.TickInterval(new ChartTimeTickInterval(unit, unit == ChartTimeTickUnit.Day ? 1 : 200)));
         var labels = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-tick-label").Select(node => node.Value).ToArray();
         Assert.NotEmpty(labels);
         Assert.Contains(labels, label => label.Contains("21.10.2026", StringComparison.Ordinal));
@@ -265,10 +265,10 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void MixedGantt_FixedMillisecondTicksKeepLocalizedDistinctInstants() {
-        var chart = Chart.Create().WithSize(1000, 400).WithLegend(false).WithCulture(CultureInfo.GetCultureInfo("de-DE"))
+        var chart = Chart.Create().Size(1000, 400).Legend(false).Culture(CultureInfo.GetCultureInfo("de-DE"))
             .AddGanttTask("Task", Start, Start.AddMilliseconds(800))
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddMilliseconds(800), "up") })
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 200));
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 200)));
         var labels = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-tick-label").Select(node => node.Value).ToArray();
         Assert.Contains(labels, label => label.Contains(",200", StringComparison.Ordinal));
         Assert.Equal(labels.Length, labels.Distinct().Count());
@@ -276,16 +276,16 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithCulture_FractionalSecondInstantsUseTheCulture() {
-        var chart = Chart.Create().WithSize(800, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+        var chart = Chart.Create().Size(800, 320).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
             .AddLine("dc-03", Enumerable.Range(0, 4).Select(index => new ChartPoint(Start.AddSeconds(index + .25), 50 + index)))
-            .WithCulture(CultureInfo.GetCultureInfo("de-DE"));
+            .Culture(CultureInfo.GetCultureInfo("de-DE"));
         var label = (string)ByRole(XDocument.Parse(chart.ToSvg()), "point")[0].Attribute("data-cfx-description")!;
         Assert.Contains("21.10.2026 00:00:00,250", label, StringComparison.Ordinal);
     }
 
     [Fact]
     public void WithValueUnit_SymbolAttachesWithoutSpace() {
-        var point = ByRole(XDocument.Parse(Latency().WithValueUnit("%").ToSvg()), "point")[1];
+        var point = ByRole(XDocument.Parse(Latency().ValueUnit("%").ToSvg()), "point")[1];
         Assert.Equal("51.5%", (string?)point.Attribute("data-cfx-formatted-value"));
     }
 
@@ -300,13 +300,13 @@ public sealed class ReadableDefaultsTests {
     [InlineData("pl-PL", "paź")]
     [InlineData("en-US", "Oct")]
     public void WithCulture_LocalisesDayLabelsAndKeepsNumbersAndCompactTicks(string name, string month) {
-        var chart = Chart.Create().WithSize(900, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+        var chart = Chart.Create().Size(900, 320).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
             .AddLine("Requests", Enumerable.Range(0, 8).Select(index => new ChartPoint(Start.AddDays(index), 1000 + index * 700)))
-            .WithCulture(CultureInfo.GetCultureInfo(name));
+            .Culture(CultureInfo.GetCultureInfo(name));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(ByRole(svg, "axis-x-label"), tick => tick.Value.Contains(month, StringComparison.OrdinalIgnoreCase));
         // The default value policy, including compact value ticks, is unchanged by a date culture.
-        var invariant = XDocument.Parse(Chart.Create().WithSize(900, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+        var invariant = XDocument.Parse(Chart.Create().Size(900, 320).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
             .AddLine("Requests", Enumerable.Range(0, 8).Select(index => new ChartPoint(Start.AddDays(index), 1000 + index * 700))).ToSvg());
         Assert.Equal(ByRole(invariant, "axis-y-label").Select(tick => tick.Value), ByRole(svg, "axis-y-label").Select(tick => tick.Value));
         Assert.Equal((string?)ByRole(invariant, "point")[1].Attribute("data-cfx-formatted-value"), (string?)ByRole(svg, "point")[1].Attribute("data-cfx-formatted-value"));
@@ -314,9 +314,9 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithCulture_YearlyTicksKeepTheirYear() {
-        var chart = Chart.Create().WithSize(900, 320).WithXAxisTimeScale(TimeZoneInfo.Utc)
+        var chart = Chart.Create().Size(900, 320).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
             .AddLine("Certificates", Enumerable.Range(0, 5).Select(index => new ChartPoint(new DateTime(2022 + index, 1, 1, 0, 0, 0, DateTimeKind.Utc), index)))
-            .WithCulture(CultureInfo.GetCultureInfo("en-GB"));
+            .Culture(CultureInfo.GetCultureInfo("en-GB"));
         var ticks = ByRole(XDocument.Parse(chart.ToSvg()), "axis-x-label").Select(tick => tick.Value).ToArray();
         Assert.Equal(ticks.Length, ticks.Distinct().Count());
         Assert.Contains(ticks, tick => tick.Contains("2023", StringComparison.Ordinal));
@@ -324,14 +324,14 @@ public sealed class ReadableDefaultsTests {
 
     [Fact]
     public void WithCulture_InvariantRestoresIsoDates() {
-        var ticks = ByRole(XDocument.Parse(Latency().WithCulture(CultureInfo.GetCultureInfo("de-DE")).WithCulture(CultureInfo.InvariantCulture).ToSvg()), "axis-x-label")
+        var ticks = ByRole(XDocument.Parse(Latency().Culture(CultureInfo.GetCultureInfo("de-DE")).Culture(CultureInfo.InvariantCulture).ToSvg()), "axis-x-label")
             .Select(tick => tick.Value).ToArray();
         Assert.Contains(ticks, tick => tick.StartsWith("2026-10-2", StringComparison.Ordinal));
     }
 
     [Fact]
     public void WithCulture_KeepsAnAuthoredValueFormat() {
-        var chart = Latency().WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.GetCultureInfo("de-DE"))).WithCulture(CultureInfo.GetCultureInfo("de-DE"));
+        var chart = Latency().ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.GetCultureInfo("de-DE"))).Culture(CultureInfo.GetCultureInfo("de-DE"));
         Assert.Equal("51,50", (string?)ByRole(XDocument.Parse(chart.ToSvg()), "point")[1].Attribute("data-cfx-formatted-value"));
     }
 }

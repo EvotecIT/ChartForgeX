@@ -53,7 +53,7 @@ public sealed class MapColorScaleStopsTests {
     [InlineData(60, 0)]
     public void Legend_WhenTheMidpointSitsAtAnEnd_SpacesSwatchesEvenlyAndLabelsThatEnd(double midpoint, int labelledStep) {
         var chart = Map("tile-map", ChartColorScale.Diverging(Low, Neutral, High, midpoint).WithValueRange(60, 110).WithLabels("60", "Target", "110"));
-        Assert.Equal(midpoint == 60 ? Neutral : Low[0], chart.Options.MapColorScale!.ColorFor(0, 0, 10));
+        Assert.Equal(midpoint == 60 ? Neutral : Low[0], chart.Options.Map.ColorScale!.ColorFor(0, 0, 10));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         var steps = ByRole(svg, "map-scale-step");
@@ -103,7 +103,7 @@ public sealed class MapColorScaleStopsTests {
         FontRegistry.Register(family, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         var scale = (multiStop ? ChartColorScale.Diverging(new[] { Low[0] }, Neutral, High, midpoint)
             : ChartColorScale.Diverging(Low[0], Neutral, High[2], midpoint)).WithValueRange(0, 10).WithLabels(null, "Target temperature", null);
-        var chart = Map("tile-map", scale).WithSize(360, 360).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Bottom);
+        var chart = Map("tile-map", scale).Size(360, 360).Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Bottom));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)),
             VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
         var document = XDocument.Parse(prepared.ToSvg());
@@ -195,7 +195,7 @@ public sealed class MapColorScaleStopsTests {
 
     private static Chart Map(string role, ChartColorScale scale) {
         var regions = new[] { new ChartRegionMapItem("CA", 0), new ChartRegionMapItem("NY", 2), new ChartRegionMapItem("TX", 8) };
-        var chart = Chart.Create().WithSize(760, 420).WithMapLabels(false).WithMapColorScale(scale);
+        var chart = Chart.Create().Size(760, 420).Map(m => m.ShowLabels(false).ColorScale(scale));
         return role == "tile-map"
             ? chart.AddTileMap("Change", ChartTileMapCatalog.Get("us-states"), regions)
             : chart.AddRegionMap("Change", ChartMapCatalog.Get("us-states"), regions);

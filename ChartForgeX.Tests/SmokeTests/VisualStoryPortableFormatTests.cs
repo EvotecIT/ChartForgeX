@@ -15,8 +15,8 @@ internal static partial class SmokeTests {
             .AddSpan(0, 12, StorySyntaxKind.Command)
             .AddSpan(13, 7, StorySyntaxKind.String);
         var story = VisualStory.Create("Portable story")
-            .WithDescription("A resolved source-to-result presentation.")
-            .WithSize(480, 320);
+            .Description("A resolved source-to-result presentation.")
+            .Size(480, 320);
         story.Scene("source", "Run the example", 0.25)
             .Panel("code", new VisualStorySourceSurface(source, "PowerShell source"));
         story.Scene("result", "See the result", 0.25, VisualStorySceneLayout.Split)
@@ -35,10 +35,10 @@ internal static partial class SmokeTests {
         var html = story.ToHtmlPage();
         var png = story.ToPng();
         var options = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(4);
+            .FramesPerSecond(4)
+            .EndHoldSeconds(0)
+            .Loop(false)
+            .MaximumFrames(4);
         var gif = story.ToGif(options);
         var apng = story.ToApng(options);
 
@@ -89,18 +89,18 @@ internal static partial class SmokeTests {
             "Animated story frame quantization should retain the completed endpoint without adding a full extra frame interval.");
 
         var longTransition = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(1)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(4);
+            .FramesPerSecond(4)
+            .TransitionSeconds(1)
+            .EndHoldSeconds(0)
+            .Loop(false)
+            .MaximumFrames(4);
         var firstAnimatedFrame = GifReader.Decode(story.ToGif(longTransition));
         var noTransition = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(4);
+            .FramesPerSecond(4)
+            .TransitionSeconds(0)
+            .EndHoldSeconds(0)
+            .Loop(false)
+            .MaximumFrames(4);
         var expectedFirstFrame = GifReader.Decode(story.ToGif(noTransition));
         Assert(firstAnimatedFrame.Pixels.SequenceEqual(expectedFirstFrame.Pixels),
             "A transition longer than its scene should still begin with the complete current scene.");

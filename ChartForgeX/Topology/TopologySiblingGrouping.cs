@@ -44,7 +44,8 @@ public sealed class TopologySiblingGrouping {
     }
 
     /// <summary>Gets or sets an optional card title. It receives the shared kind and the members; null uses the shared symbol or the kind name.</summary>
-    public Func<TopologyNodeKind, IReadOnlyList<TopologyNode>, string>? TitleFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("TitleBy")]
+public Func<TopologyNodeKind, IReadOnlyList<TopologyNode>, string>? TitleFormatter { get; set; }
 
     internal TopologySiblingGrouping Clone() => new() { MinimumCount = MinimumCount, StaggerCount = StaggerCount, MaximumRows = MaximumRows, CollapseCount = CollapseCount, TitleFormatter = TitleFormatter };
 }

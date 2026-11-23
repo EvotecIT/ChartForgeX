@@ -72,8 +72,8 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
     public async Task AdaptiveOverflowRestoresAnIndividuallyMutedKeyAndKeepsDisclosurePreferenceWhenTheWideLegendFits() {
         if (!Enabled) return;
         var labels = new[] { "Service request measures North", "Service request measures South", "Service request measures West" };
-        var chart = Chart.Create().WithSize(1100, 360).WithTitle("Adaptive legend access").WithLegend()
-            .WithLegendBudget(maximumRows: 1).WithTheme(VisualTheme.Graphite());
+        var chart = Chart.Create().Size(1100, 360).Title("Adaptive legend access").Legend()
+            .Legend(l => l.MaxRows(1)).Theme(VisualTheme.Graphite());
         for (var index = 0; index < labels.Length; index++) chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("area-" + index), labels[index],
             new[] { new ChartPoint(0, index + 2), new ChartPoint(1, index + 4) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive), 1440, 900);

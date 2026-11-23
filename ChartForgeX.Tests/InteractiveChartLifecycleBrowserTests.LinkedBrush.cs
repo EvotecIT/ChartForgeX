@@ -18,10 +18,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var start = axis == "time" ? new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
         var span = axis == "category" ? 2 : 10;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(start, start + span).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(640, 360).XAxis(xAxis => xAxis.Bounds(start, start + span)).YAxis(yAxis => yAxis.Bounds(0, 10))
             .AddLine("Readings", new[] { new ChartPoint(start, 0), new ChartPoint(start + span / 2, 5), new ChartPoint(start + span, 10) });
         if (axis == "time") chart.Options.XAxis.Scale = ChartScaleKind.Time;
-        if (axis == "category") chart.WithXLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") });
+        if (axis == "category") chart.XLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Brush); options.Interaction.BrushAxis = brushAxis;
             options.Interaction.Disable(ChartInteractionFeatures.CompareMarkers);
@@ -97,7 +97,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserFact]
     public async Task GroupedNativeBrushAndVisualViewportKeepPeerFactsWithoutEcho() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(560, 320).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(560, 320).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), "Observed", new[] {
                 new ChartPoint(0, 0), new ChartPoint(5, 5), new ChartPoint(10, 10) }));
         var html = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
@@ -164,8 +164,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var series = kind == ChartSeriesKind.BoxPlot
             ? ChartSeries.CreateBoxPlot(new ChartSeriesId("readings"), "Readings", new[] { new ChartBoxPlot(0, 1, 2, 3, 4, 5), new ChartBoxPlot(1, 2, 3, 4, 5, 6), new ChartBoxPlot(2, 3, 4, 5, 6, 7) })
             : new ChartSeries(new ChartSeriesId("readings"), "Readings", kind, new[] { new ChartPoint(0, 3), new ChartPoint(1, 4), new ChartPoint(2, 5) });
-        series.WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("third") });
-        var chart = Chart.Create().WithSize(640, 360).WithXLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") }).AddSeries(series);
+        series.ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("third") });
+        var chart = Chart.Create().Size(640, 360).XLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") }).AddSeries(series);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Fit), 820, 600);
         var page = session.Page;
         await BindLinkedEventsAsync(page);
@@ -183,9 +183,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", ChartSeriesKind.Pie,
             new[] { new ChartPoint(1, 50), new ChartPoint(2, 25), new ChartPoint(3, 10), new ChartPoint(4, 5) })
-            .WithObservationIds(new[] { new ChartObservationId("up"), new ChartObservationId("down"), new ChartObservationId("queued"), new ChartObservationId("unknown") });
-        var chart = Chart.Create().WithSize(640, 360).WithXLabels("Up", "Down", "Queued", "Unknown").AddSeries(series);
-        chart.Options.MaximumPieSlices = 3;
+            .ObservationIds(new[] { new ChartObservationId("up"), new ChartObservationId("down"), new ChartObservationId("queued"), new ChartObservationId("unknown") });
+        var chart = Chart.Create().Size(640, 360).XLabels("Up", "Down", "Queued", "Unknown").AddSeries(series);
+        chart.Options.Pie.MaxSlices = 3;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Fit), 820, 600);
         var page = session.Page;
         await BindLinkedEventsAsync(page);

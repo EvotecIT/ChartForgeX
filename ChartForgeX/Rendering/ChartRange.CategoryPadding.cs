@@ -12,7 +12,7 @@ internal sealed partial class ChartRange {
     private void ApplyCategoryPadding(Chart chart) {
         var axis = chart.Options.XAxis;
         if (axis.Scale != ChartScaleKind.Linear || axis.Labels.Count == 0 || axis.PreparedTimeDomain != null || axis.TimeSessions != null) return;
-        if (axis.Minimum.HasValue || axis.Maximum.HasValue || chart.Options.IsSparkline) return;
+        if (axis.Min.HasValue || axis.Max.HasValue || chart.Options.IsSparkline) return;
         if (chart.Series.Count == 0 || !chart.Series.All(series => IsCategoryLine(series.Kind))) return;
         var values = chart.Series.SelectMany(series => series.RenderPoints.Select(point => point.X)).Where(ChartMath.IsFinite).Distinct().ToList();
         if (values.Count < 2) return;

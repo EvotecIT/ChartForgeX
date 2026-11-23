@@ -42,7 +42,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
     [InlineData(true)]
     public void ObstacleCandidatesKeepExplicitSidesAndNamedCrossAxisPositions(bool named) {
         var chart = MiniMap();
-        foreach (var edge in chart.Edges) chart.WithEdgePorts(edge.Id, TopologyEdgePort.Right, TopologyEdgePort.Left);
+        foreach (var edge in chart.Edges) chart.UpdateEdge(edge.Id, e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         if (named) {
             chart.AddNodePort("domain", "verified", TopologyEdgePort.Left, .25)
                 .AddNodePort("domain", "observed", TopologyEdgePort.Left, .75);
@@ -68,7 +68,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
     [InlineData(false, false)]
     [InlineData(false, true)]
     public void WideAndTallAutomaticCandidatesAndRoutedEndsKeepPhysicalNormals(bool horizontal, bool reversed) {
-        var chart = TopologyChart.Create().WithViewport(850, 850).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(850, 850)).Legend((TopologyLegend?)null)
             .AddNode("source", "S", horizontal && reversed ? 600 : 0, !horizontal && reversed ? 600 : 0,
                 width: horizontal ? 200 : 50, height: horizontal ? 50 : 200)
             .AddNode("target", "T", horizontal ? reversed ? 0 : 400 : 150,
@@ -117,7 +117,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
 
     private static TopologyRenderOptions Options() {
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
-            .WithSelectedNode("domain").WithSelectedEdge("finding-domain");
+            .SelectNode("domain").SelectEdge("finding-domain");
         options.ArrowMarkerStyle = TopologyArrowMarkerStyle.Diamond;
         return options;
     }
@@ -141,12 +141,12 @@ public sealed class TopologyObstacleAutomaticPortTests {
 
     private static TopologyChart MiniMap() {
         return TopologyChart.Create()
-            .WithId("visual-mini-correlation-map")
-            .WithTitle("Mini Correlation Map")
-            .WithSubtitle("Small dashboard-card relationship map for selected assets.")
-            .WithViewport(920, 420, 24)
-            .WithTheme(VisualTheme.Graphite())
-            .WithLegend(TopologyLegend.Create(null)
+            .Id("visual-mini-correlation-map")
+            .Title("Mini Correlation Map")
+            .Subtitle("Small dashboard-card relationship map for selected assets.")
+            .Viewport(new TopologyViewport(920, 420, 24))
+            .Theme(VisualTheme.Graphite())
+            .Legend(TopologyLegend.Create(null)
                 .AddEdgeKind("Verified", TopologyEdgeKind.Mapping, "#16A34A", TopologyEdgeLineStyle.Solid)
                 .AddEdgeKind("Observed", TopologyEdgeKind.Link, "#2563EB", TopologyEdgeLineStyle.Dashed)
                 .AddEdgeKind("Inferred", TopologyEdgeKind.Dependency, "#94A3B8", TopologyEdgeLineStyle.Dotted))
@@ -159,13 +159,13 @@ public sealed class TopologyObstacleAutomaticPortTests {
             .AddEdge("ip-domain", "ip", "domain", "observed", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "IP")
             .AddEdge("domain-server", "domain", "server", "inferred", TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "host")
             .AddEdge("finding-domain", "domain", "finding", "selected", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "risk")
-            .WithEdgeLineStyle("ip-domain", TopologyEdgeLineStyle.Dashed)
-            .WithEdgeLineStyle("domain-server", TopologyEdgeLineStyle.Dotted)
-            .WithEdgeLineStyle("finding-domain", TopologyEdgeLineStyle.Dashed)
-            .WithEdgeColor("dns-domain", "#16A34A")
-            .WithEdgeColor("ip-domain", "#2563EB")
-            .WithEdgeColor("domain-server", "#94A3B8")
-            .WithEdgeColor("finding-domain", "#EF4444");
+            .UpdateEdge("ip-domain", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
+            .UpdateEdge("domain-server", e => e.LineStyle(TopologyEdgeLineStyle.Dotted))
+            .UpdateEdge("finding-domain", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
+            .UpdateEdge("dns-domain", e => e.Color("#16A34A"))
+            .UpdateEdge("ip-domain", e => e.Color("#2563EB"))
+            .UpdateEdge("domain-server", e => e.Color("#94A3B8"))
+            .UpdateEdge("finding-domain", e => e.Color("#EF4444"));
     }
 
 }

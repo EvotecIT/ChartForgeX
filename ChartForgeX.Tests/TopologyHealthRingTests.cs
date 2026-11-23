@@ -99,10 +99,10 @@ public sealed class TopologyHealthRingTests {
     internal static string? AccessibleName(XElement element) => (string?)(element.Attribute("aria-label") ?? element.Attribute("data-cfx-description"));
 
     private static TopologyChart Diagram(ThemeMode mode, TopologyHealthStatus status) {
-        var chart = TopologyChart.Create().WithId("health-ring").WithViewport(240, 200)
-            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(null)
+        var chart = TopologyChart.Create().Id("health-ring").Viewport(new TopologyViewport(240, 200))
+            .Theme(VisualTheme.Graphite(), mode).Legend((TopologyLegend?)null)
             .AddNode("gateway", "Gateway service", 60, 50, width: 80, height: 80, color: "#673AB7", status: status)
-            .WithNodeHealthRing("gateway");
+            .UpdateNode("gateway", n => n.ShowHealthRing());
         chart.Nodes[0].Shape = TopologyNodeShape.Circle;
         chart.Nodes[0].DisplayMode = TopologyNodeDisplayMode.Icon;
         chart.Nodes[0].PreserveDisplayModeSize = true;

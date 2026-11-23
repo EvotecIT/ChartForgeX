@@ -83,16 +83,16 @@ public sealed class ChartLinkedValueEndpointContractsTests {
 
     // Reused by actual browser acceptance: a category formatter cannot consume a value-domain endpoint.
     internal static Chart CreateChart(string family, bool horizontal, bool secondary, Action<double>? onValueFormat = null) {
-        var chart = Chart.Create().WithSize(800, 400).WithTitle("Value endpoint formatting").WithDataLabels(false);
+        var chart = Chart.Create().Size(800, 400).Title("Value endpoint formatting").DataLabels(false);
         if (family == "rangebar") chart.AddRangeBar("Intervals", new[] { new ChartInterval(0, 10.25, 24.75), new ChartInterval(1, 12.5, 30.25) })
-            .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            .RangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         else if (family == "waterfall") chart.AddWaterfall("Net change", new[] {
             ChartWaterfallItem.OpeningBalance(0, 10.25), ChartWaterfallItem.Delta(1, 14.5) })
-            .ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            .Waterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         else if (family == "dumbbell") chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(0, 10.25, 24.75), new ChartDumbbell(1, 12.5, 30.25) });
         else throw new ArgumentOutOfRangeException(nameof(family));
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
-        chart.Series[0].WithObservationIds(new[] { new ChartObservationId("value-first"), new ChartObservationId("value-second") });
+        if (secondary) chart.Series[0].SecondaryAxis();
+        chart.Series[0].ObservationIds(new[] { new ChartObservationId("value-first"), new ChartObservationId("value-second") });
         var category = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         category.LabelFormatter = value => {
             if (Math.Abs(value) > 4) throw new InvalidOperationException("A value endpoint was passed to the category formatter.");

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-/// <summary>Column labels under matrix and categorical heatmaps follow <see cref="ChartOptions.XAxisLabelAngle"/>.</summary>
+/// <summary>Column labels under matrix and categorical heatmaps follow <see cref="ChartAxis.LabelAngle"/>.</summary>
 public sealed class HeatmapColumnLabelTests {
     private static readonly string[] Checks = {
         "Replication health", "SYSVOL sharing", "DNS scavenging", "Time source", "LDAP signing", "Kerberos armoring",
@@ -18,7 +18,7 @@ public sealed class HeatmapColumnLabelTests {
 
     [Fact]
     public void ToSvg_RotatedColumnLabels_KeepTheTickSizeAndFullTextInsideTheChart() {
-        var chart = MatrixWithPinnedFont().WithXAxisLabelAngle(-45);
+        var chart = MatrixWithPinnedFont().XAxis(x => x.LabelAngle(-45));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
@@ -38,7 +38,7 @@ public sealed class HeatmapColumnLabelTests {
         var legendTop = ByRole(svg, "state-legend-swatch").Min(swatch => Number(swatch, "y"));
         Assert.All(ColumnGeometry(prepared), label => Assert.All(label.Corners,
             corner => Assert.True(corner.Y <= legendTop + 1, "Rotated labels must not run into the legend.")));
-        Assert.NotEqual(MatrixWithPinnedFont().WithXAxisLabelAngle(45).ToPng(), chart.ToPng());
+        Assert.NotEqual(MatrixWithPinnedFont().XAxis(x => x.LabelAngle(45)).ToPng(), chart.ToPng());
     }
 
     [Theory]
@@ -46,13 +46,13 @@ public sealed class HeatmapColumnLabelTests {
     [InlineData(-45)]
     public void ToSvg_RotatedColumnLabels_LeaveRoomForTheOutermostLabel(double angle) {
         // Labels slant towards one side; the plot moves in there so the outermost label is drawn in full.
-        var chart = MatrixWithPinnedFont().WithXAxisLabelAngle(angle);
+        var chart = MatrixWithPinnedFont().XAxis(x => x.LabelAngle(angle));
         var svg = XDocument.Parse(chart.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
         Assert.Equal(Checks, labels.Select(label => label.Value).ToArray());
         Assert.All(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-column-label"),
             node => Assert.Equal(angle < 0 ? TextAlignment.Right : TextAlignment.Left, node.Alignment));
-        Assert.NotEqual(MatrixWithPinnedFont().WithXAxisLabelAngle(-angle).ToPng(), chart.ToPng());
+        Assert.NotEqual(MatrixWithPinnedFont().XAxis(x => x.LabelAngle(-angle)).ToPng(), chart.ToPng());
     }
 
     [Theory]
@@ -61,7 +61,7 @@ public sealed class HeatmapColumnLabelTests {
     public void DefaultFontColumnLabelsRetainCompleteSemanticsAndFitTheirMeasuredBands(double angle) {
         // Host fallbacks can require shortening in the bounded 520x380 panel. Keep that
         // default path covered without treating one font's advances as a portable text budget.
-        var chart = Matrix().WithXAxisLabelAngle(angle);
+        var chart = Matrix().XAxis(x => x.LabelAngle(angle));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(Checks, prepared.Regions.Where(region => region.Role == "heatmap-column-label").Select(region => region.Label).ToArray());
         var geometry = ColumnGeometry(prepared);
@@ -94,7 +94,7 @@ public sealed class HeatmapColumnLabelTests {
     public void ToSvg_PositiveColumnAnglesReserveTheRightEdgeIndependentlyOfWideRowLabels() {
         // Pin this regression's font so the wide left gutter reproduces the old right-edge
         // shortage independently of host fonts. The ordinary default-font cases remain above.
-        var chart = MatrixWithPinnedFont("Production domain controller ").WithXAxisLabelAngle(45);
+        var chart = MatrixWithPinnedFont("Production domain controller ").XAxis(x => x.LabelAngle(45));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(Checks, ByRole(svg, "heatmap-column-label").Select(label => label.Value).ToArray());
@@ -115,8 +115,8 @@ public sealed class HeatmapColumnLabelTests {
 
     [Fact]
     public void ToSvg_ShortRotatedLabels_AreNotThinned() {
-        var chart = Chart.Create().WithSize(520, 300).WithXAxisLabelAngle(-20)
-            .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        var chart = Chart.Create().Size(520, 300).XAxis(x => x.LabelAngle(-20))
+            .XLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             .AddHeatmapRow("Changes", Enumerable.Range(0, 12).Select(i => (double)i).ToArray());
         Assert.Equal(12, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-column-label").Length);
     }
@@ -138,8 +138,8 @@ public sealed class HeatmapColumnLabelTests {
     [InlineData(true)]
     public void ExplicitZeroAngleSurvivesConfigurationAndPreparationAndCanReturnToAutomatic(bool configure) {
         var chart = MatrixWithPinnedFont();
-        if (configure) chart.ConfigureXAxis(axis => axis.LabelAngle = 0);
-        else chart.WithXAxisLabelAngle(0);
+        if (configure) chart.XAxis(axis => axis.LabelAngle = 0);
+        else chart.XAxis(x => x.LabelAngle(0));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, "matrix-explicit-zero-" + configure);
         var fixedSvg = prepared.ToSvg();
@@ -148,7 +148,7 @@ public sealed class HeatmapColumnLabelTests {
         Assert.All(flat, label => Assert.DoesNotContain("rotate(", (string?)label.RenderedAttribute("transform") ?? string.Empty, StringComparison.Ordinal));
         Assert.Equal(Checks, prepared.Regions.Where(region => region.Role == "heatmap-column-label").Select(region => region.Label));
         Assert.NotEmpty(prepared.ToPng());
-        chart.ConfigureXAxis(axis => axis.WithAutomaticLabelAngle());
+        chart.XAxis(axis => axis.AutomaticLabelAngle());
         var automatic = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-column-label");
         Assert.Equal(Checks, automatic.Select(label => label.Value));
         Assert.All(automatic, label => Assert.StartsWith("rotate(-45 ", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal));
@@ -159,7 +159,7 @@ public sealed class HeatmapColumnLabelTests {
     [Fact]
     public void ToSvg_RotatedLabelsOnANumericHeatmap_PutTheScaleBelowThem() {
         // Leave space for the label band measured from the installed font, including wider Linux/macOS fallbacks.
-        var chart = Chart.Create().WithSize(520, 380).WithXAxisLabelAngle(60).WithXLabels(Checks)
+        var chart = Chart.Create().Size(520, 380).XAxis(x => x.LabelAngle(60)).XLabels(Checks)
             .AddHeatmapRow("DC01", Enumerable.Range(0, Checks.Length).Select(i => (double)(i * 7 % 10)).ToArray())
             .AddHeatmapRow("DC02", Enumerable.Range(0, Checks.Length).Select(i => (double)(i * 3 % 10)).ToArray());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -177,14 +177,14 @@ public sealed class HeatmapColumnLabelTests {
 
     [Fact]
     public void ToSvg_ManyColumnsRotated_ThinsLabelsSoTheyDoNotOverlap() {
-        var chart = Chart.Create().WithSize(480, 320).WithXAxisLabelAngle(-30)
-            .WithXLabels(Enumerable.Range(1, 60).Select(i => "Check " + i.ToString(CultureInfo.InvariantCulture)).ToArray())
+        var chart = Chart.Create().Size(480, 320).XAxis(x => x.LabelAngle(-30))
+            .XLabels(Enumerable.Range(1, 60).Select(i => "Check " + i.ToString(CultureInfo.InvariantCulture)).ToArray())
             .AddHeatmapRow("DC01", Enumerable.Range(0, 60).Select(i => (double)(i % 10)).ToArray());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-column-label");
         Assert.InRange(labels.Length, 2, 59);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.column-label-density");
-        Assert.Equal(chart.Options.XAxisLabels.Select(label => label.Text), prepared.Regions.Where(region => region.Role == "heatmap-column-label").Select(region => region.Label));
+        Assert.Equal(chart.Options.XAxis.Labels.Select(label => label.Text), prepared.Regions.Where(region => region.Role == "heatmap-column-label").Select(region => region.Label));
         // SVG writes each right-aligned caption at its measured left edge. Its
         // varying text widths are unrelated to the separation between columns.
         var geometry = ColumnGeometry(prepared);
@@ -200,9 +200,9 @@ public sealed class HeatmapColumnLabelTests {
     [InlineData(80)] [InlineData(-80)]
     public void ToSvg_LongRotatedLabels_PreserveReadableCellsAndFitBothCanvasDimensions(double angle) {
         var longLabel = new string('W', 100);
-        var chart = Chart.Create().WithSize(520, 380).WithXAxisLabelAngle(angle)
-            .ConfigureTickLabelStyle(style => style.WithWeight("700"))
-            .WithXLabels(longLabel, longLabel, longLabel)
+        var chart = Chart.Create().Size(520, 380).XAxis(x => x.LabelAngle(angle))
+            .TickLabelStyle(style => style.FontWeight("700"))
+            .XLabels(longLabel, longLabel, longLabel)
             .AddHeatmapRow("Row", new[] { 1d, 2d, 3d });
         var svg = XDocument.Parse(chart.ToSvg());
         var cells = ByRole(svg, "heatmap-cell");
@@ -230,9 +230,9 @@ public sealed class HeatmapColumnLabelTests {
         // stride with the first and last day, because thinning ordered captions hides no column.
         string[] targets = { "dc1", "dc2", "dc3", "dc4", "dc5", "adfs", "dns", "exchange", "1.1.1.1", "8.8.8.8" };
         var days = Enumerable.Range(0, 14).Select(day => new DateTime(2026, 10, 14).AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)).ToArray();
-        var chart = Chart.Create().WithSize(360, 480).WithTitle("Daily availability per target").WithXLabels(days);
+        var chart = Chart.Create().Size(360, 480).Title("Daily availability per target").XLabels(days);
         foreach (var target in targets) chart.AddHeatmapRow(target, days.Select((_, day) => (double?)(day % 5 == 0 ? 97 : 100)).ToArray());
-        chart = chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        chart = chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
         var svg = XDocument.Parse(chart.ToSvg());
 
@@ -245,7 +245,7 @@ public sealed class HeatmapColumnLabelTests {
 
     [Fact]
     public void NumericMissingPositionsHaveOutlinesAndOneNoDataKeyWithoutInventedValues() {
-        var chart = Chart.Create().WithSize(520, 380).WithXLabels("One", "Two")
+        var chart = Chart.Create().Size(520, 380).XLabels("One", "Two")
             .AddHeatmapRow("Complete", new[] { 1d, 2d })
             .AddHeatmapRow("Partial", new[] { 3d })
             .AddHeatmapRow("Empty", Array.Empty<double>());
@@ -257,13 +257,13 @@ public sealed class HeatmapColumnLabelTests {
         Assert.NotEmpty(ByRole(svg, "heatmap-key-missing-hatch"));
         Assert.NotEmpty(chart.ToPng());
 
-        var complete = Chart.Create().WithSize(520, 380).AddHeatmapRow("Complete", new[] { 1d, 2d });
+        var complete = Chart.Create().Size(520, 380).AddHeatmapRow("Complete", new[] { 1d, 2d });
         Assert.Empty(ByRole(XDocument.Parse(complete.ToSvg()), "heatmap-key-missing-swatch"));
     }
 
     [Fact]
     public void ShortFrameReportsRowDensityAndKeepsSomeNamesVisibleWithCompleteSemantics() {
-        var chart = Chart.Create().WithSize(360, 180).WithXLabels("One", "Two");
+        var chart = Chart.Create().Size(360, 180).XLabels("One", "Two");
         var names = Enumerable.Range(1, 20).Select(i => "Target " + i).ToArray();
         foreach (var name in names) chart.AddHeatmapRow(name, new[] { 1d, 2d });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -279,7 +279,7 @@ public sealed class HeatmapColumnLabelTests {
 
     [Fact]
     public void NaturalHeightGrowsShortHeatmapToFitEveryRow() {
-        var chart = Chart.Create().WithSize(360, 180).WithHeatmapNaturalHeight().WithXLabels("One", "Two");
+        var chart = Chart.Create().Size(360, 180).Heatmap(h => h.NaturalHeight()).XLabels("One", "Two");
         for (var row = 0; row < 20; row++) chart.AddHeatmapRow("Target " + row, new[] { 1d, 2d });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.True(prepared.Size.Height > 180);
@@ -295,7 +295,7 @@ public sealed class HeatmapColumnLabelTests {
     [InlineData(390)]
     public void NarrowStaticHeatmapKeepsLatestColumnsAtReadableWidth(int width) {
         var days = Enumerable.Range(0, 30).Select(day => new DateTime(2026, 9, 29).AddDays(day).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ToArray();
-        var chart = Chart.Create().WithSize(width, 360).WithXLabels(days);
+        var chart = Chart.Create().Size(width, 360).XLabels(days);
         for (var row = 0; row < 12; row++) chart.AddHeatmapRow("dc" + row + ".ad.evotec.xyz · LDAP bind", Enumerable.Range(1, 30).Select(i => (double)i).ToArray());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -310,14 +310,14 @@ public sealed class HeatmapColumnLabelTests {
         Assert.All(captions, label => Assert.All(label.Corners, corner => Assert.InRange(corner.X, -.001, width + .001)));
         for (var index = 1; index < captions.Length; index++)
             Assert.True(captions[index].Corners.Min(point => point.X) >= captions[index - 1].Corners.Max(point => point.X));
-        chart.WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze);
+        chart.Heatmap(h => h.ColumnWindow(ChartHeatmapColumnWindow.Squeeze));
         Assert.Equal(360, ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell").Length);
     }
 
     private static Chart Matrix(string rowPrefix = "DC0") {
-        var chart = Chart.Create().WithSize(520, 380).WithLegendPosition(ChartLegendPosition.Bottom)
-            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("fail", "Failed", ChartColor.FromHex("#d4302f")))
-            .WithXLabels(Checks);
+        var chart = Chart.Create().Size(520, 380).Legend(l => l.Position(ChartLegendPosition.Bottom))
+            .StateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("fail", "Failed", ChartColor.FromHex("#d4302f")))
+            .XLabels(Checks);
         for (var row = 0; row < 4; row++) {
             chart.AddHeatmapCategoryRow(rowPrefix + (row + 1).ToString(CultureInfo.InvariantCulture), Checks.Select((_, column) => (ChartHeatmapCell?)new ChartHeatmapCell((row + column) % 5 == 0 ? "fail" : "pass")).ToArray());
         }
@@ -330,7 +330,7 @@ public sealed class HeatmapColumnLabelTests {
         // measured geometry and complete semantic-caption proof above.
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito example fixture must be available.");
-        return Matrix(rowPrefix).WithPngFont(font);
+        return Matrix(rowPrefix).Png(p => p.FontPath(font));
     }
 
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();

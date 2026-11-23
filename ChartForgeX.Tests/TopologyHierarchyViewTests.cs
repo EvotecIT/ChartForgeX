@@ -193,7 +193,7 @@ public sealed class TopologyHierarchyViewTests {
     }
     private static TopologyRenderOptions Options(TopologyHierarchyView? view) => new() { IncludeLegend = false, HierarchyView = view };
     private static TopologyChart Source() {
-        var chart = TopologyChart.Create().WithId("organization-source").WithViewport(920, 620, 19).WithLegend(null).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Id("organization-source").Viewport(new TopologyViewport(920, 620, 19)).Legend((TopologyLegend?)null).AddHierarchy(new[] {
             new TopologyHierarchyItem("company", "Organization"), new TopologyHierarchyItem("engineering", "Engineering", "company"),
             new TopologyHierarchyItem("sales", "Sales", "company"), new TopologyHierarchyItem("platform", "Platform", "engineering"),
             new TopologyHierarchyItem("research", "Research", "engineering"), new TopologyHierarchyItem("field", "Field", "sales")

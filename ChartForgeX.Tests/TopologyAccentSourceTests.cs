@@ -17,7 +17,7 @@ public sealed class TopologyAccentSourceTests {
         var chart = Chart();
         var theme = graphite ? VisualTheme.Graphite() : VisualTheme.Graphite().Configure(b => { b.Light.Status.Critical = new VisualTokenColor(ChartColor.Parse("#AF1328"), ChartColor.Black); b.Dark.Status.Critical = new VisualTokenColor(ChartColor.Parse("#FA5376"), ChartColor.White); });
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
-        chart.WithTheme(theme).WithThemeMode(mode);
+        chart.Theme(theme).ThemeMode(mode);
         chart.Nodes[0].Color = "#713CA6";
         chart.Nodes[0].PaletteIndex = 1;
         var options = Options(TopologyAccentSource.Status);
@@ -28,7 +28,7 @@ public sealed class TopologyAccentSourceTests {
         var native = prepared.ToPng();
         options.SvgColorVariables = null;
         Assert.Equal(native, chart.ToPng(options));
-        var reference = Chart().WithTheme(theme, mode);
+        var reference = Chart().Theme(theme, mode);
         reference.Nodes[0].IconId = null;
         reference.Nodes[0].Color = null;
         Assert.Equal(Surface(reference.ToSvg(options)), Surface(chart.ToSvg(options)));
@@ -62,7 +62,7 @@ public sealed class TopologyAccentSourceTests {
     [InlineData(true)]
     public void IconConstructorsKeepCatalogueColorSeparateFromExplicitPalettePaint(bool automatic) {
         var options = Options(TopologyAccentSource.Explicit);
-        var chart = TopologyChart.Create().WithViewport(420, 200, 20).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 200, 20)).Legend((TopologyLegend?)null);
         if (automatic) chart.AddAutoIconNode("node", "Service", "accent-proof:certificate", width:180,height:80,catalog:options.IconCatalog);
         else chart.AddIconNode("node", "Service", "accent-proof:certificate", 60,70,width:180,height:80,catalog:options.IconCatalog);
         Assert.Null(chart.Nodes[0].Color);
@@ -79,13 +79,13 @@ public sealed class TopologyAccentSourceTests {
     [InlineData("   ", false)]
     [InlineData("   ", true)]
     public void AutoAccentSkipsBlankNodeColorForIconInSvgNativeAndGraph(string color, bool dark) {
-        var chart = Chart().WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart().ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Nodes[0].Color = color;
         chart.Nodes[0].PaletteIndex = 1;
         var options = Options(TopologyAccentSource.Auto);
         var iconColor = ChartColor.Parse("#2468AC");
         Assert.Equal(iconColor.ToCss(), Surface(chart.ToSvg(options)));
-        var reference = Chart().WithThemeMode(chart.ThemeMode);
+        var reference = Chart().ThemeMode(chart.ThemeMode);
         reference.Nodes[0].Color = "#2468AC";
         Assert.Equal(reference.ToPng(options), chart.ToPng(options));
         var graph = chart.ToGraphScene(o => { o.IconCatalog = options.IconCatalog; o.AccentSource = TopologyAccentSource.Auto; });
@@ -97,9 +97,9 @@ public sealed class TopologyAccentSourceTests {
     }
 
     internal static TopologyChart Chart() {
-        var chart = TopologyChart.Create().WithId("status-accent").WithViewport(420, 200, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Id("status-accent").Viewport(new TopologyViewport(420, 200, 20)).Legend((TopologyLegend?)null)
             .AddNode("node", "Service", 60, 70, width: 180, height: 80, status: TopologyHealthStatus.Critical);
-        chart.WithNodeIcon("node", "accent-proof:certificate", Options(TopologyAccentSource.Auto).IconCatalog);
+        chart.NodeIcon("node", "accent-proof:certificate", Options(TopologyAccentSource.Auto).IconCatalog);
         return chart;
     }
 

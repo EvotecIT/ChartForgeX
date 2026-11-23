@@ -144,7 +144,7 @@ public sealed class SequenceLayoutTypographyTests {
     }
     [Fact]
     public void EmptyMessageSourceCanBeAppendedWithoutChangingExistingPreparedIdentity() {
-        var model=SequenceArtifact.Create("refill").WithSize(800,600);model.Layout=new SequenceLayoutPolicy(messageSpacing:24);
+        var model=SequenceArtifact.Create("refill").Width(800).Height(600);model.Layout=new SequenceLayoutPolicy(messageSpacing:24);
         Assert.Throws<InvalidOperationException>(()=>model.Prepare(SequencePolicyFixture.Context()));
         model.AddParticipant("A","Review");var empty=model.Prepare(SequencePolicyFixture.Context());var old=empty.ToSvg();
         model.AddParticipant("B","Store").AddMessage("A","B","Save");var filled=model.Prepare(SequencePolicyFixture.Context());
@@ -192,7 +192,7 @@ public sealed class SequenceLayoutTypographyTests {
 }
 
 internal static class SequencePolicyFixture {
-    internal static SequenceArtifact Basic()=>SequenceArtifact.Create("m02-policy").WithSize(960,700).AddParticipant("A","Review").AddParticipant("B","Store")
+    internal static SequenceArtifact Basic()=>SequenceArtifact.Create("m02-policy").Width(960).Height(700).AddParticipant("A","Review").AddParticipant("B","Store")
         .AddMessage("A","B","Save").AddMessage("B","A","Ready",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return);
     internal static SequenceArtifact Styled() {
         var model=Basic();model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:132,participantMinimumHeight:72,participantSpacing:32,messageSpacing:24,noteSpacing:14,fragmentMargin:10,fragmentLabelPadding:6,activationWidth:14,wrapPadding:10);

@@ -14,7 +14,7 @@ public sealed class MermaidC4OrdinaryByteControls {
     public void ExistingC4AndOrdinaryNativeGroupGridExposeBeforeAfterBytes(bool nested) {
         var source = nested ? MermaidC4NativeSemanticsTests.Source : "C4Context\nPerson(user, \"User\")\nSystem(app, \"App\")\nRel(user,app,\"Uses\")";
         var parsed = new MermaidParser().ParseC4(source); Assert.False(parsed.HasErrors); var c4 = parsed.Document!.ToTopologyChart();
-        var grid = TopologyChart.Create().WithTitle("").WithViewport(600,400).WithLayout(TopologyLayoutMode.GroupGrid)
+        var grid = TopologyChart.Create().Title("").Viewport(new TopologyViewport(600, 400)).LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoGroup("scope","Scope").AddAutoNode("one","One",groupId:"scope").AddAutoNode("two","Two",groupId:"scope");
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output) && !Path.IsPathRooted(output)) throw new InvalidOperationException("A configured byte-control capture directory must be absolute.");

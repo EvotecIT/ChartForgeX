@@ -75,7 +75,7 @@ public sealed class TopologyMotionTraversalTests {
     }
 
     private static TopologyChart Chart(string? previous, string? following) {
-        var chart = TopologyChart.Create().WithViewport(520, 300, 20).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(520, 300, 20)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("a", "First", 20, 80, width: 80, height: 60)
             .AddNode("b", "Second", 340, 80, width: 80, height: 60)
             .AddNode("c", "Other", 200, 210, width: 80, height: 60)
@@ -96,7 +96,7 @@ public sealed class TopologyMotionTraversalTests {
     private static TopologyMotionOptions ExplicitMotion() => NonLooping(TopologyMotionOptions.RoutePulseForEdges("route"));
     private static TopologyMotionOptions NonLooping(TopologyMotionOptions motion) {
         motion.Loop = false;
-        return motion.WithMarker(6, "#ED17D6").WithEndpointPulses(false);
+        return motion.MarkerRadius(6).MarkerColor("#ED17D6").PulseRouteEndpoints(false);
     }
 
     private static void AssertRoute(ChartPoint[] expected, TopologyMotionPresentation presentation) {

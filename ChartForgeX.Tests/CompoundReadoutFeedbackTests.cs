@@ -26,7 +26,7 @@ public sealed class CompoundReadoutFeedbackTests {
         var chart = CreateChart(family);
         var axisCalls = new Dictionary<double, int>();
         var nativeCalls = 0;
-        chart.WithValueFormatter(value => { nativeCalls++; return NativeCaption(value); });
+        chart.FormatValuesBy(value => { nativeCalls++; return NativeCaption(value); });
         ValueAxis(chart, family).LabelFormatter = value => {
             axisCalls[value] = axisCalls.TryGetValue(value, out var count) ? count + 1 : 1;
             return AxisCaption(family, value);
@@ -45,7 +45,7 @@ public sealed class CompoundReadoutFeedbackTests {
         Assert.Equal(AxisCaption(family, IsBoxPlot(family) ? 3.15 : 2.05), Attribute(point, "formatted-value"));
         if (IsBoxPlot(family)) Assert.Equal(Attribute(point, "formatted-median"), Attribute(point, "formatted-value"));
         if (prepared != null) {
-            chart.WithValueFormatter(_ => throw new InvalidOperationException("Export must retain the prepared native caption."));
+            chart.FormatValuesBy(_ => throw new InvalidOperationException("Export must retain the prepared native caption."));
             ValueAxis(chart, family).LabelFormatter = _ => throw new InvalidOperationException("Export must retain prepared axis captions.");
             Assert.Equal(markup, prepared.ToSvg());
             Assert.NotEmpty(prepared.ToPng());
@@ -67,9 +67,9 @@ public sealed class CompoundReadoutFeedbackTests {
     public void AutomaticCompoundFactsReusePreparedCaptionsAndKeepCustomLabelsLazy(string family, bool customLabel) {
         var chart = CreateChart(family);
         const string authoredLabel = "Operator supplied complete caption";
-        if (customLabel) chart.Series[0].WithPointLabel(0, authoredLabel);
+        if (customLabel) chart.Series[0].PointLabel(0, authoredLabel);
         var calls = 0;
-        chart.WithValueFormatter(value => {
+        chart.FormatValuesBy(value => {
             calls++;
             if (customLabel) throw new InvalidOperationException("A custom observation label must keep value formatting lazy.");
             return NativeCaption(value);
@@ -88,7 +88,7 @@ public sealed class CompoundReadoutFeedbackTests {
         Assert.Equal(customLabel ? 0 : 1, calls);
         Assert.Equal(customLabel ? authoredLabel : NativeCaption(IsBoxPlot(family) ? 3.15 : 4.25), Attribute(point, "label"));
         Assert.Equal(IsBoxPlot(family) ? Attribute(point, "formatted-median") : ExactCaption(2.05), Attribute(point, "formatted-value"));
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("The prepared snapshot must be detached."));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("The prepared snapshot must be detached."));
         Assert.Equal(svg, prepared.ToSvg());
         Assert.NotEmpty(prepared.ToPng());
         Assert.Equal(customLabel ? 0 : 1, calls);
@@ -128,13 +128,13 @@ public sealed class CompoundReadoutFeedbackTests {
     [InlineData("ohlc", true)]
     public async Task CompoundTooltipsUseCapturedMemberFormatsAndKeepRawSelectionValues(string family, bool compact) {
         if (!Enabled) return;
-        var chart = CreateChart(family).WithSize(compact ? 316 : 596, 338)
-            .WithPointLegend().WithLegend()
-            .WithTheme(VisualTheme.Graphite(), compact ? ThemeMode.Dark : ThemeMode.Light)
-            .WithValueFormatter(NativeCaption);
+        var chart = CreateChart(family).Size(compact ? 316 : 596, 338)
+            .Legend(l => l.ShowPoints()).Legend()
+            .Theme(VisualTheme.Graphite()).ThemeMode(compact ? ThemeMode.Dark : ThemeMode.Light)
+            .FormatValuesBy(NativeCaption);
         ValueAxis(chart, family).LabelFormatter = value => AxisCaption(family, value);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("The browser consumes captured native captions."));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("The browser consumes captured native captions."));
         ValueAxis(chart, family).LabelFormatter = _ => throw new InvalidOperationException("The browser consumes captured member captions.");
         await using var session = await OpenAsync(html, compact ? 340 : 700, 500);
         var page = session.Page;
@@ -183,7 +183,7 @@ public sealed class CompoundReadoutFeedbackTests {
     [BrowserFact]
     public async Task DumbbellPointLegendUsesCapturedDeltaAlongsideFormattedEndpoints() {
         if (!Enabled) return;
-        var chart = CreateChart("dumbbell").WithSize(396, 338).WithPointLegend().WithLegend();
+        var chart = CreateChart("dumbbell").Size(396, 338).Legend(l => l.ShowPoints()).Legend();
         chart.Options.YAxis.LabelFormatter = value => AxisCaption("dumbbell", value);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);
         chart.Options.YAxis.LabelFormatter = _ => throw new InvalidOperationException("The browser consumes the captured delta.");
@@ -203,12 +203,12 @@ public sealed class CompoundReadoutFeedbackTests {
     }
 
     private static Chart CreateChart(string family) {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).WithHeader(false).WithDataLabels(false)
-            .WithXLabels(new[] { new ChartAxisLabel(.025, "Próbka") });
+        var chart = Chart.Create().Axes(false).Legend(false).ShowHeader(false).DataLabels(false)
+            .XLabels(new[] { new ChartAxisLabel(.025, "Próbka") });
         chart.Options.ShowGrid = false;
         if (IsBoxPlot(family)) {
             chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("compound"), "Compound", new[] { new ChartBoxPlot(.025, 1.025, 2.05, 3.15, 4.25, 5.35) }));
-            if (family == "horizontal-boxplot") chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
+            if (family == "horizontal-boxplot") chart.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
         } else if (family == "dumbbell") {
             chart.AddSeries(ChartSeries.CreateDumbbell(new ChartSeriesId("compound"), "Compound", new[] { new ChartDumbbell(.025, 2.05, 4.25) }));
         } else {
@@ -218,7 +218,7 @@ public sealed class CompoundReadoutFeedbackTests {
                 : ChartSeries.CreateOhlc(new ChartSeriesId("compound"), "Compound", prices));
         }
         if (IsBoxPlot(family)) {
-            chart.ConfigureLabels(labels => {
+            chart.Labels(labels => {
                 labels.Category = "Kategoria"; labels.Minimum = "Minimum"; labels.Q1 = "Dolny kwartyl";
                 labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum";
             });

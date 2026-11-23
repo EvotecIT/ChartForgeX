@@ -8,16 +8,15 @@ public static class TileMapPartialColorRangeRecipe {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL" };
         var counts = new[] { 0d, 18, 42, 76, 29, 51 };
-        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not reported")
+        return Chart.Create().Labels(labels => labels.NoData = "Not reported")
             .AddTileMap("Requests", ChartTileMapCatalog.Get("us-states"),
                 codes.Select((code, index) => new ChartRegionMapItem(code, counts[index])), id: new ChartSeriesId("state-requests"))
-            .WithMapLabels()
-            .WithMapColorScale(ChartColorScale.Sequential(colors.SequentialRamp)
-                .WithValueRange(0, null).WithLabels("None", null, "Observed peak").WithNoDataColor(colors.Border))
-            .ConfigureMapColorDimension(options => {
+            .Map(m => m.ShowLabels().ColorScale(ChartColorScale.Sequential(colors.SequentialRamp)
+                .WithValueRange(0, null).WithLabels("None", null, "Observed peak").WithNoDataColor(colors.Border)))
+            .Map(map => map.ColorDimension(options => {
                 options.Name = "Requests";
                 options.ValueFormat = ChartValueFormat.Number("0", System.Globalization.CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Gradient;
-            });
+            }));
     }
 }

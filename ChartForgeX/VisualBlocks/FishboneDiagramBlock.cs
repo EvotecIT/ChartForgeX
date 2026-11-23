@@ -25,7 +25,7 @@ public sealed class FishboneDiagramBlock : VisualBlock<FishboneDiagramBlock> {
     /// <summary>Selects measured parent-connected cause lanes and sets their complete natural frame.</summary>
     /// <remarks>Call again after changing causes, padding or typography. A smaller subsequent explicit
     /// frame is rejected rather than dropping captions or reducing every label to a tiny font.</remarks>
-    public FishboneDiagramBlock WithNaturalSize(int minimumWidth = 0, int minimumHeight = 0) {
+    public FishboneDiagramBlock NaturalSize(int minimumWidth = 0, int minimumHeight = 0) {
         if (minimumWidth < 0) throw new ArgumentOutOfRangeException(nameof(minimumWidth));
         if (minimumHeight < 0) throw new ArgumentOutOfRangeException(nameof(minimumHeight));
         var size = MeasureNaturalSize();

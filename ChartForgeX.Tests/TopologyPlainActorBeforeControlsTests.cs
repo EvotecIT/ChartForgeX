@@ -12,16 +12,16 @@ public sealed class TopologyPlainActorBeforeControlsTests {
     [Theory]
     [InlineData(390, false)] [InlineData(900, false)] [InlineData(390, true)] [InlineData(900, true)]
     public void OrdinaryActorKeepsItsNativeFigureCaptionRouteIdentityAndStaticExports(int width, bool dark) {
-        var chart = TopologyChart.Create().WithId("plain-actor-before").WithTitle("An ordinary external actor")
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithViewport(width, 420, 24).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("plain-actor-before").Title("An ordinary external actor")
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Viewport(new TopologyViewport(width, 420, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("operator", "External operator", 50, 50, width: 180, height: 120)
             .AddNode("submit", "Submit request", 320, 65, width: 190, height: 90)
             .AddEdge("request", "operator", "submit", "requests");
         chart.Nodes[0].Kind = TopologyNodeKind.Generic; chart.Nodes[0].Shape = TopologyNodeShape.Actor;
         chart.Nodes[1].Kind = TopologyNodeKind.Generic; chart.Nodes[1].Shape = TopologyNodeShape.Ellipse;
         foreach (var node in chart.Nodes) { node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true; }
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
         var prepared = chart.Prepare(); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var envelope = prepared.ToInterchangeEnvelope();
         Assert.Equal(2, prepared.NodeCount); Assert.Equal(1, prepared.EdgeCount);
         Assert.Equal(new[] { "operator", "submit" }, envelope.Nodes.Select(node => node.Id));

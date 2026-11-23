@@ -34,8 +34,8 @@ public sealed class GaugeConfigurationDataTests {
         var original = new ChartGaugeValue(40, targets: new[] { new ChartGaugeTarget(60, "Budget") });
         var color = ChartColor.FromHex("#123456");
         var series = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", original)
-            .WithObservationId(0, new ChartObservationId("reading"))
-            .WithPointLabel(0, "Measured capacity").WithPointColor(0, color);
+            .ObservationId(0, new ChartObservationId("reading"))
+            .PointLabel(0, "Measured capacity").PointColor(0, color);
         Chart.Create().AddSeries(series);
 
         series.UpdateGaugeValue(0, new ChartGaugeValue(70, 10, 110,
@@ -59,7 +59,7 @@ public sealed class GaugeConfigurationDataTests {
     public void ClearingAndReplacingReadingsRemoveStaleReferencesAndResetObservationOverrides() {
         var series = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(40, targets: new[] { new ChartGaugeTarget(60, "Budget") }))
-            .WithObservationId(0, new ChartObservationId("reading")).WithPointLabel(0, "Old label");
+            .ObservationId(0, new ChartObservationId("reading")).PointLabel(0, "Old label");
 
         series.ReplaceGaugeValues(Array.Empty<ChartGaugeValue>());
         Assert.Empty(series.GaugeValues); Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
@@ -75,7 +75,7 @@ public sealed class GaugeConfigurationDataTests {
     public void InvalidGaugeReplacementKeepsTheCompleteReadingAndIdentity() {
         var series = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(40, targets: new[] { new ChartGaugeTarget(60, "Budget") }))
-            .WithObservationId(0, new ChartObservationId("reading")).WithPointLabel(0, "Measured capacity");
+            .ObservationId(0, new ChartObservationId("reading")).PointLabel(0, "Measured capacity");
 
         Assert.Throws<ArgumentOutOfRangeException>(() => series.UpdateGaugeValue(0, default));
         Assert.Throws<ArgumentOutOfRangeException>(() => series.ReplaceGaugeValues(new[] { default(ChartGaugeValue) }));
@@ -98,7 +98,7 @@ public sealed class GaugeConfigurationDataTests {
     [InlineData(true)]
     public void CircleMutationsRejectTargetsWithoutChangingTheReadingOrIdentity(bool replace) {
         var series = ChartSeries.CreateCircle(new ChartSeriesId("progress"), "Progress", 40)
-            .WithObservationId(0, new ChartObservationId("reading")).WithPointLabel(0, "Measured progress");
+            .ObservationId(0, new ChartObservationId("reading")).PointLabel(0, "Measured progress");
         var targeted = new ChartGaugeValue(70, targets: new[] { new ChartGaugeTarget(80) });
 
         Assert.Throws<InvalidOperationException>(() => {
@@ -118,7 +118,7 @@ public sealed class GaugeConfigurationDataTests {
         Assert.Equal(150, options.StartAngleDegrees); Assert.Equal(240, options.SweepAngleDegrees);
         Assert.Null(options.TickCount); Assert.Empty(options.TickLabels);
 
-        chart.ConfigureGauge(candidate => {
+        chart.Gauge(candidate => {
             candidate.Form = ChartGaugeForm.Needle; candidate.Orientation = ChartOrientation.Vertical;
             candidate.StartAngleDegrees = -720; candidate.SweepAngleDegrees = 360; candidate.TickCount = 2;
         });
@@ -134,7 +134,7 @@ public sealed class GaugeConfigurationDataTests {
         var labels = new[] { new ChartAxisLabel(10, "Low"), new ChartAxisLabel(90, "High") };
         var chart = Chart.Create(); var previous = chart.Options.Gauge;
         ChartGaugeOptions? retained = null;
-        chart.ConfigureGauge(options => {
+        chart.Gauge(options => {
             retained = options;
             options.Form = ChartGaugeForm.Linear; options.Orientation = ChartOrientation.Vertical;
             options.StartAngleDegrees = 450; options.SweepAngleDegrees = 180; options.TickCount = 3;
@@ -165,14 +165,14 @@ public sealed class GaugeConfigurationDataTests {
     [InlineData("ticks-too-few")]
     [InlineData("ticks-too-many")]
     public void InvalidConfigurationRollsBackAnatomyAndTickLabelChanges(string setting) {
-        var chart = Chart.Create().ConfigureGauge(options => {
+        var chart = Chart.Create().Gauge(options => {
             options.Orientation = ChartOrientation.Vertical; options.StartAngleDegrees = 45;
             options.SweepAngleDegrees = 180; options.TickCount = 3;
             options.TickLabels = new[] { new ChartAxisLabel(50, "Middle") };
         });
         var previous = chart.Options.Gauge;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureGauge(options => {
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Gauge(options => {
             options.Orientation = ChartOrientation.Horizontal; options.StartAngleDegrees = 90;
             options.SweepAngleDegrees = 270; options.TickCount = 5;
             options.TickLabels = new[] { new ChartAxisLabel(25, "Changed") };

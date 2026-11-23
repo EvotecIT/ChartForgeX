@@ -30,7 +30,7 @@ public sealed class NativeBurstShapeTests {
         var caption = TopologyNodeShapeGeometry.CaptionBounds(node, 30);
         Assert.Equal(node.Width * .5, caption.Width); Assert.True(caption.Height <= node.Height * .5);
         Assert.True(caption.Left >= node.X + node.Width * .25 && caption.Right <= node.X + node.Width * .75);
-        var chart = TopologyChart.Create().WithViewport(380, 230, 12).WithLegend(null); chart.Nodes.Add(node);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(380, 230, 12)).Legend((TopologyLegend?)null); chart.Nodes.Add(node);
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeStatusBadges = false });
         Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "topology-node-surface");
         Assert.Contains("data-node-shape=\"Burst\"", prepared.ToSvg(), StringComparison.Ordinal); Assert.NotEmpty(prepared.ToPng());

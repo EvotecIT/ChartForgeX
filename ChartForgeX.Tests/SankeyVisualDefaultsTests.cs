@@ -32,8 +32,8 @@ public sealed class SankeyVisualDefaultsTests {
     public void AuthoredNodeColorsAndStatesRemainIndependentOfNeutralDefaults() {
         var chart = Flow();
         var authored = ChartColor.FromHex("#7D3F98");
-        chart.Series[0].WithPointColor(0, authored);
-        chart.Series[0].WithNodeState(chart.Series[0].Nodes[1].Id, ChartSeriesState.Warning);
+        chart.Series[0].PointColor(0, authored);
+        chart.Series[0].NodeState(chart.Series[0].Nodes[1].Id, ChartSeriesState.Warning);
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var nodes = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "sankey-node-mark").ToArray();
@@ -52,7 +52,7 @@ public sealed class SankeyVisualDefaultsTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "legend-entry");
         Assert.Equal(3, prepared.Scene.Nodes.Count(node => node.Role == "sankey-node-label"));
-        chart.WithLegend(true);
+        chart.Legend(true);
         prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Single(prepared.Scene.Nodes, node => node.Role == "legend-entry");
     }
@@ -63,16 +63,16 @@ public sealed class SankeyVisualDefaultsTests {
     public void CompactNodeCaptionsWrapNamesAndValuesWithoutDiscardingAuthoredTextStyle(bool dark) {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito example fixture must be available.");
-        var chart = Chart.Create().WithSize(360, 360).WithPngFont(font)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Request routing").WithSubtitle("Observed weighted flows")
+        var chart = Chart.Create().Size(360, 360).Png(p => p.FontPath(font))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Request routing").Subtitle("Observed weighted flows")
             .AddSankey("Requests", new[] { new ChartNode("Received", "Received"), new ChartNode("Automatic", "Automatic"), new ChartNode("Manual", "Manual"), new ChartNode("Completed", "Completed"), new ChartNode("Review", "Review") }, new[] {
                 new ChartFlowLink("flow-1", "Received", "Automatic", 72), new ChartFlowLink("flow-2", "Received", "Manual", 28),
                 new ChartFlowLink("flow-3", "Automatic", "Completed", 65), new ChartFlowLink("flow-4", "Automatic", "Review", 7),
                 new ChartFlowLink("flow-5", "Manual", "Completed", 20), new ChartFlowLink("flow-6", "Manual", "Review", 8)
             });
         var authored = ChartColor.FromHex("#7D3F98");
-        chart.Series[0].ConfigurePointDataLabelStyle(0, style => { style.Color = authored; style.FontSize = 13; style.Underline = true; });
+        chart.Series[0].PointDataLabelStyle(0, style => { style.Color = authored; style.FontSize = 13; style.Underline = true; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "sankey-node-label").ToArray();
         Assert.Equal(new[] { "Received 100", "Automatic 72", "Manual 28", "Completed 85", "Review 15" },
@@ -94,7 +94,7 @@ public sealed class SankeyVisualDefaultsTests {
     [Fact]
     public void UnbreakableDenseCaptionsRetainCompleteNodeSemanticsAndReportTheirFittingLimit() {
         var name = new string('W', 60);
-        var chart = Chart.Create().WithSize(360, 240).AddSankey("Requests", new[] { new ChartNode(name, name), new ChartNode("Completed", "Completed") }, new[] { new ChartFlowLink("flow-7", name, "Completed", 100) });
+        var chart = Chart.Create().Size(360, 240).AddSankey("Requests", new[] { new ChartNode(name, name), new ChartNode("Completed", "Completed") }, new[] { new ChartFlowLink("flow-7", name, "Completed", 100) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Regions, region => region.Role == "sankey-node" && region.Label == name + " 100");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "sankey.label-overflow");

@@ -20,12 +20,12 @@ public sealed class SlopeStagesBrowserTests {
     [InlineData(900, ThemeMode.Light)]
     public async Task HorizontalStagesUseNativePhysicalWindowsAndKeepMiddleIdentityInCurrentExports(int width, ThemeMode mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, 400).WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), mode)
-            .WithLegend(false).WithXLabels("First", "Second", "Third", "Fourth")
+        var chart = Chart.Create().Size(width, 400).FontFamily(BrowserProofFonts.Family).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Legend(false).XLabels("First", "Second", "Third", "Fourth")
             .AddSlope("Recorded", new[] { new ChartPoint(1, 20), new ChartPoint(2, 45), new ChartPoint(3, 35, true), new ChartPoint(4, 70) });
-        chart.Series[0].UseSecondaryValueAxis().WithObservationIds(new[] { "first", "second", "third", "fourth" }.Select(id => new ChartObservationId(id)));
+        chart.Series[0].SecondaryAxis().ObservationIds(new[] { "first", "second", "third", "fourth" }.Select(id => new ChartObservationId(id)));
         chart.Options.SlopeOrientation = ChartOrientation.Horizontal;
-        chart.WithXAxisBounds(0, 100).WithYAxisBounds(0, 5).WithSecondaryXAxisBounds(0, 100);
+        chart.XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 5)).SecondaryXAxis(s => s.Bounds(0, 100));
         var renderer = new HtmlInteractiveChartRenderer(); var initial = renderer.PrepareSection(chart, configure: Configure);
         var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";

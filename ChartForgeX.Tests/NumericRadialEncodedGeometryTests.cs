@@ -15,8 +15,8 @@ public sealed class NumericRadialEncodedGeometryTests {
     [InlineData(false, 6)]
     public void EncodedNativeSlicesRetainTheirNonzeroFactWithoutInventingPaint(bool bars, double cornerRadius) {
         var chart = Create(bars);
-        chart.WithRadialGeometry(new(cornerRadius: cornerRadius));
-        if (cornerRadius > 0) chart.Series[0].WithPointFillPattern(0, ChartFillPattern.Crosshatch);
+        chart.RadialGeometry(new(cornerRadius: cornerRadius));
+        if (cornerRadius > 0) chart.Series[0].PointFillPattern(0, ChartFillPattern.Crosshatch);
         Capture(chart, (bars ? "bar" : "column") + "-precision-" + cornerRadius);
         var svg = XDocument.Parse(chart.ToSvg());
         var small = Point(svg, 0);
@@ -34,12 +34,12 @@ public sealed class NumericRadialEncodedGeometryTests {
     [InlineData(true)]
     [InlineData(false)]
     public void RotatedReversedSlicesAndFullThinColumnsUseTheSameEncodedPaintContract(bool bars) {
-        var chart = Create(bars).WithRadialGeometry(new(45, 315));
+        var chart = Create(bars).RadialGeometry(new(45, 315));
         chart.Options.YAxis.Reversed = true;
         Assert.Equal("precision-collapse", (string?)Point(XDocument.Parse(chart.ToSvg()), 0).Attribute("data-cfx-geometry-status"));
         if (bars) return;
         chart.Series[0].Points.RemoveAt(1);
-        chart.WithYAxisBounds(0, 100000000).WithRadialGeometry(new(-90, 270, .2, 0, 0));
+        chart.YAxis(y => y.Bounds(0, 100000000)).RadialGeometry(new(-90, 270, .2, 0, 0));
         var small = Point(XDocument.Parse(chart.ToSvg()), 0);
         Assert.Equal("precision-collapse", (string?)small.Attribute("data-cfx-geometry-status"));
         Assert.DoesNotContain(small.Descendants(), node => node.Name.LocalName == "path");
@@ -59,9 +59,9 @@ public sealed class NumericRadialEncodedGeometryTests {
     }
 
     internal static Chart Create(bool bars) {
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithAxes(false).WithGrid(false)
-            .WithLegend(false).WithDataLabels(false).WithFontFamily("Carlito");
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).Axes(false).ShowGrid(false)
+            .Legend(false).DataLabels(false).FontFamily("Carlito");
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return NumericRadialSeriesTests.Add(chart, bars, "Observed", new ChartPoint(1, 1), new ChartPoint(2, 100000000));
     }
 
@@ -69,7 +69,7 @@ public sealed class NumericRadialEncodedGeometryTests {
         var chart = Create(true); chart.ClearSeries();
         var points = new[] { new ChartPoint(1, 100000000), new ChartPoint(2, 1) };
         if (donut) chart.AddDonut("Observed", points); else chart.AddPie("Observed", points);
-        return chart.WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Right);
+        return chart.DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Right));
     }
 
     private static XElement Point(XDocument svg, int point) => svg.Descendants().Single(node =>

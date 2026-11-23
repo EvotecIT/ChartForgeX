@@ -11,8 +11,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void ResponsiveVisualCanvasPreservesDesignLayoutAcrossOutputs() {
         var canvas = VisualCanvas.Create(960, 540)
-            .WithResponsiveLayout(1920, 1080, VisualCanvasImageFit.Contain)
-            .WithTitle("Responsive wallpaper")
+            .ResponsiveLayout(1920, 1080, VisualCanvasImageFit.Contain)
+            .Title("Responsive wallpaper")
             .AddText(120, 120, 900, "One design, multiple outputs", 48, ChartColor.White)
             .AddInfoTile(120, 240, 520, 160, "CPU", "Processor", "42%");
 
@@ -24,16 +24,16 @@ internal static partial class SmokeTests {
         Assert(canvas.AnalyzeLayout().Diagnostics.Count == 0, "Responsive layout analysis should validate layers against design coordinates.");
 
         var letterboxed = VisualCanvas.Create(320, 320)
-            .WithResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
-            .WithBackground(ChartColor.FromHex("#123456"), ChartColor.FromHex("#214365"));
+            .ResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
+            .BackgroundTop(ChartColor.FromHex("#123456")).BackgroundBottom(ChartColor.FromHex("#214365"));
         var letterboxedSvg = letterboxed.ToSvg();
         var letterboxedPng = RasterImageDecoder.Decode(letterboxed.ToPng());
         Assert(letterboxedSvg.Contains("background-color:#214365", StringComparison.Ordinal), "Opaque responsive SVG contain output should fill its viewport letterbox with the PNG background color.");
         Assert(letterboxedPng.Pixels[0] == 0x21 && letterboxedPng.Pixels[1] == 0x43 && letterboxedPng.Pixels[2] == 0x65 && letterboxedPng.Pixels[3] == 255, "Opaque responsive PNG contain output should preserve the shared letterbox color.");
 
         var transparent = VisualCanvas.Create(320, 320)
-            .WithResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent);
+            .ResponsiveLayout(320, 160, VisualCanvasImageFit.Contain)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent);
         var transparentSvg = transparent.ToSvg();
         var transparentPng = RasterImageDecoder.Decode(transparent.ToPng());
         Assert(!transparentSvg.Contains("background-color:", StringComparison.Ordinal), "Transparent responsive SVG letterboxes should remain transparent.");
@@ -42,9 +42,9 @@ internal static partial class SmokeTests {
 
     private static void VisualCanvasComposesWallpaperStyleArtboards() {
         var canvas = VisualCanvas.CreateSocialPreview()
-            .WithTitle("PowerBGInfo social preview")
-            .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
-            .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
+            .Title("PowerBGInfo social preview")
+            .BackgroundTop(ChartColor.FromHex("#020713")).BackgroundBottom(ChartColor.FromHex("#071A35"))
+            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
             .AddInfoTile(48, 92, 300, 82, "PC", "HOSTNAME", "DEV-WKS-01", accent: ChartColor.FromHex("#2F80FF"))
             .AddInfoTile(48, 190, 300, 82, "IP", "IP ADDRESS", "10.0.0.42", "192.168.1.42", ChartColor.FromHex("#2F80FF"))
             .AddInfoTile(852, 70, 300, 96, "CPU", "CPU", "Intel Core i7", accent: ChartColor.FromHex("#60A5FA"), progress: 0.23, surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, miniChartKind: VisualCanvasInfoTileMiniChartKind.Area, miniChartValues: new[] { 18d, 26d, 22d, 37d, 48d, 43d })
@@ -77,7 +77,7 @@ internal static partial class SmokeTests {
             255, 32, 32, 255, 255, 32, 32, 255
         };
         var brandedBadgeCanvas = VisualCanvas.Create(180, 120)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddHeroBadge(40, 20, 100, 70, "LG", ChartColor.FromHex("#22A7FF"), "data:image/png;base64,AA==", badgeLogoPixels, 2, 2, VisualCanvasImageFit.Contain, imagePadding: 12);
         var brandedBadgeSvg = brandedBadgeCanvas.ToSvg("visual-canvas-branded-badge");
         Assert(brandedBadgeSvg.Contains("data:image/png;base64", StringComparison.Ordinal), "VisualCanvas hero badges should embed configured logo images in SVG output.");
@@ -85,7 +85,7 @@ internal static partial class SmokeTests {
         var brandedBadgePng = RasterImageDecoder.Decode(brandedBadgeCanvas.ToPng());
         Assert(CountPixels(brandedBadgePng, (r, g, b, a) => a > 240 && r > 220 && g < 80 && b < 80) > 500, "VisualCanvas hero badges should render configured logo pixels in PNG output.");
         var rgbaOnlyBadgeSvg = VisualCanvas.Create(180, 120)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddHeroBadge(20, 20, 60, 50, string.Empty, null, null, imageRgba: badgeLogoPixels, imageSourceWidth: 2, imageSourceHeight: 2, imageFit: VisualCanvasImageFit.Tile)
             .AddHeroBadge(100, 20, 60, 50, string.Empty, null, null, imageRgba: badgeLogoPixels, imageSourceWidth: 2, imageSourceHeight: 2, imageFit: VisualCanvasImageFit.Center)
             .ToSvg("visual-canvas-rgba-only-badges");
@@ -93,7 +93,7 @@ internal static partial class SmokeTests {
         Assert(rgbaOnlyBadgeSvg.Contains("-hero-badge-image-0", StringComparison.Ordinal) && rgbaOnlyBadgeSvg.Contains("-hero-badge-image-1", StringComparison.Ordinal), "Multiple hero badge images should use unique SVG image IDs.");
 
         var resizedTileCanvas = VisualCanvas.Create(620, 220)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddInfoTile(24, 24, 520, 150, "OS", "OPERATING SYSTEM", "Windows 11 Enterprise Intune compliance", "cross-site policy drift", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, iconKind: VisualCanvasInfoTileIconKind.OperatingSystem);
         var resizedTileSvg = resizedTileCanvas.ToSvg("visual-canvas-resized-tile-text");
         Assert(resizedTileSvg.Contains("compliance", StringComparison.Ordinal), "Resized VisualCanvas info tiles should preserve long value text across wrapped lines.");
@@ -102,20 +102,20 @@ internal static partial class SmokeTests {
         Assert(resizedTileCanvas.ToPng().Length > 64, "Resized VisualCanvas info tiles should render wrapped text to PNG output.");
 
         var constrainedTileCanvas = VisualCanvas.Create(230, 120)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddInfoTile(12, 12, 160, 72, "OS", "OPERATING SYSTEM", "Windows 11 Enterprise Intune compliance", textFitPolicy: VisualCanvasTextFitPolicy.SingleLineEllipsis);
         var constrainedTileSvg = constrainedTileCanvas.ToSvg("visual-canvas-constrained-tile-text");
         Assert(constrainedTileSvg.Contains("...", StringComparison.Ordinal), "Single-line VisualCanvas info tile policy should trim overflowing values with an ellipsis.");
         Assert(constrainedTileCanvas.AnalyzeLayout().HasWarnings, "Constrained VisualCanvas info tiles should report layout diagnostics when text is trimmed.");
 
         var spacedTileSvg = VisualCanvas.Create(360, 112)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddInfoTile(12, 12, 300, 82, "PC", "HOST", "DEV  WKS  01")
             .ToSvg("visual-canvas-spaced-tile-text");
         Assert(spacedTileSvg.Contains("DEV  WKS  01", StringComparison.Ordinal), "VisualCanvas info tile fitting should preserve intentional spacing when text fits without wrapping.");
 
         var progressDetailCanvas = VisualCanvas.Create(360, 128)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddInfoTile(12, 12, 300, 96, "CPU", "CPU", "Intel Core i7", "Package temperature nominal", progress: 0.23);
         var progressDetailReport = progressDetailCanvas.AnalyzeLayout();
         var progressDetailTrimmed = false;
@@ -132,10 +132,10 @@ internal static partial class SmokeTests {
         Assert(outsideCanvas.AnalyzeLayout().HasWarnings, "VisualCanvas layout diagnostics should detect layers outside the canvas bounds.");
 
         var cpuChart = Chart.Create()
-            .WithSize(220, 120)
-            .WithTransparentBackground()
-            .WithHeader(false)
-            .WithCard(false)
+            .Size(220, 120)
+            .TransparentBackground()
+            .ShowHeader(false)
+            .ShowCard(false)
             .AddLine("CPU", new[] {
                 new ChartPoint(1, 18),
                 new ChartPoint(2, 31),
@@ -144,20 +144,20 @@ internal static partial class SmokeTests {
                 new ChartPoint(5, 39)
             }, ChartColor.FromHex("#60A5FA"));
         var memoryCard = MetricCard.Create()
-            .WithSize(180, 104)
-            .WithTransparentBackground()
-            .WithCard(false)
-            .WithMetric("RAM", "41%")
-            .WithMiniSparkline(new[] { 32d, 36d, 41d, 38d, 43d }, color: ChartColor.FromHex("#22C55E"));
+            .Size(180, 104)
+            .TransparentBackground()
+            .ShowCard(false)
+            .Metric("RAM", "41%")
+            .MiniSparkline(new[] { 32d, 36d, 41d, 38d, 43d }, color: ChartColor.FromHex("#22C55E"));
         var topology = TopologyChart.Create()
-            .WithViewport(260, 142, 14)
-            .WithLayout(TopologyLayoutMode.Manual)
+            .Viewport(new TopologyViewport(260, 142, 14))
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("host", "Host", 20, 45, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, symbol: "PC")
             .AddNode("dc", "DC", 160, 45, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, symbol: "AD")
             .AddEdge("host-dc", "host", "dc", "LDAP", status: TopologyHealthStatus.Healthy);
         var nativeCanvas = VisualCanvas.Create(760, 260)
-            .WithTitle("Native renderables")
-            .WithBackground(ChartColor.FromHex("#09111F"), ChartColor.FromHex("#102A43"))
+            .Title("Native renderables")
+            .BackgroundTop(ChartColor.FromHex("#09111F")).BackgroundBottom(ChartColor.FromHex("#102A43"))
             .AddImage(24, 24, 120, 78, "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2010%22%3E%3Crect%20width%3D%2220%22%20height%3D%2210%22%20fill%3D%22%23ff0000%22%2F%3E%3C%2Fsvg%3E", new byte[] {
                 255, 0, 0, 255, 0, 255, 0, 255,
                 0, 0, 255, 255, 255, 255, 0, 255
@@ -174,7 +174,7 @@ internal static partial class SmokeTests {
         Assert(nativeCanvas.ToBmp().Length > 64, "VisualCanvas should render embedded ChartForgeX renderables to BMP output.");
 
         var sourceImage = VisualCanvas.Create(18, 12)
-            .WithBackground(ChartColor.FromHex("#123456"), ChartColor.FromHex("#ABCDEF"))
+            .BackgroundTop(ChartColor.FromHex("#123456")).BackgroundBottom(ChartColor.FromHex("#ABCDEF"))
             .AddText(2, 2, 14, "PX", 8, ChartColor.White, emphasized: true);
         var sourcePng = sourceImage.ToPng();
         var decodedPng = RasterImageDecoder.Decode(sourcePng);
@@ -216,7 +216,7 @@ internal static partial class SmokeTests {
             System.IO.File.WriteAllBytes(imageFilePath, sourcePng);
             Assert(RasterImageDecoder.TryRead(imageFilePath, out var tryReadPng) && tryReadPng.Height == 12, "RasterImageDecoder should expose a non-throwing file read helper.");
             var imageLayerCanvas = VisualCanvas.Create(48, 32)
-                .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+                .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
                 .AddImageFile(0, 0, 48, 32, imageFilePath, VisualCanvasImageFit.Cover)
                 .AddImageBytes(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 4, 4), 12, 8, sourcePng, VisualCanvasImageFit.Contain)
                 .AddImageBytes(VisualCanvasPlacement.At(VisualCanvasAnchor.TopRight, 4, 4), 12, 8, sampleJpeg, VisualCanvasImageFit.Contain)
@@ -227,7 +227,7 @@ internal static partial class SmokeTests {
             Assert(imageLayerCanvas.ToPng().Length > 64, "VisualCanvas image file layers should render to PNG output.");
             Assert(decodedPng.ToVisualCanvas().ToPng().Length > 64, "Decoded RGBA images should be reusable as visual canvases.");
             var nonWebRasterSvg = VisualCanvas.Create(60, 20)
-                .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+                .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
                 .AddImageBytes(0, 0, 20, 20, sourceImage.ToBmp())
                 .AddImageBytes(20, 0, 20, 20, sourceImage.ToPpm())
                 .AddImageBytes(40, 0, 20, 20, sourceImage.ToTiff())
@@ -256,8 +256,8 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvasPlacement.At((VisualCanvasAnchor)999, 0, 0), "VisualCanvas placement should reject unknown anchors.");
 
         var keyValueCanvas = VisualCanvas.Create(420, 260)
-            .WithTitle("Key/value block")
-            .WithBackground(ChartColor.FromHex("#07111F"), ChartColor.FromHex("#102A43"))
+            .Title("Key/value block")
+            .BackgroundTop(ChartColor.FromHex("#07111F")).BackgroundBottom(ChartColor.FromHex("#102A43"))
             .AddKeyValueBlock(
                 VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 24, 24),
                 300,
@@ -283,8 +283,8 @@ internal static partial class SmokeTests {
         Assert(keyValueCanvas.ToPng().Length > 64, "VisualCanvas key/value blocks should render PNG output.");
 
         var overlay = VisualCanvas.CreateDesktopWallpaper()
-            .WithTitle("Transparent overlay")
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .Title("Transparent overlay")
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddInfoTile(80, 120, 360, 92, "PC", "HOSTNAME", "DEV-WKS-01", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline, iconKind: VisualCanvasInfoTileIconKind.Computer);
         var overlaySvg = overlay.ToSvg("visual-canvas-overlay");
         Assert(!overlaySvg.Contains("data-cfx-role=\"visual-canvas-background\"", StringComparison.Ordinal), "Transparent VisualCanvas overlays should not render a full background rect.");
@@ -293,8 +293,8 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvas.Create(0, 630), "VisualCanvas should reject invalid widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => canvas.PngOutputScale = 5, "VisualCanvas should reject unsupported PNG output scales.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").Progress = 1.2, "VisualCanvas info tile progress should stay normalized.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").WithMiniChart(VisualCanvasInfoTileMiniChartKind.Sparkline, new[] { double.NaN }), "VisualCanvas info tile mini charts should reject invalid values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").WithTextFitPolicy((VisualCanvasTextFitPolicy)999), "VisualCanvas info tile text fit policy should reject unknown values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").MiniChart(VisualCanvasInfoTileMiniChartKind.Sparkline, new[] { double.NaN }), "VisualCanvas info tile mini charts should reject invalid values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").TextFitPolicy((VisualCanvasTextFitPolicy)999), "VisualCanvas info tile text fit policy should reject unknown values.");
         AssertThrows<ArgumentException>(() => new VisualCanvasKeyValueBlockLayer(0, 0, 100, 1, Array.Empty<VisualCanvasKeyValueItem>()), "VisualCanvas key/value blocks should require rows.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasKeyValueBlockLayer(0, 0, 100, 1, new[] { VisualCanvasKeyValueItem.Pair("A", "B") }) { LabelFontSize = 0 }, "VisualCanvas key/value blocks should reject invalid font sizes.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvas.Create(24, 24).AddImage(0, 0, 12, 12, rgba: new byte[] { 0, 0, 0, 255 }, sourceWidth: 1, sourceHeight: 1, fit: (VisualCanvasImageFit)999), "VisualCanvas image fit should reject unknown values.");

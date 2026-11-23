@@ -84,7 +84,7 @@ public sealed partial class TopologyAlignmentReviewRepairTests {
     }
 
     internal static TopologyChart NarrowGapChart(bool horizontal, bool reverse, bool aligned, bool named) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(900, 700).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(900, 700)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", horizontal ? 80 : 160, horizontal ? 160 : 80, width: 150, height: 72)
             .AddNode("obstacle", "Audit", horizontal ? 246 : 160, horizontal ? 160 : 168, width: 150, height: 72)
             .AddNode("target", "Bus", horizontal ? 412 : 206, horizontal ? 174 : 256, width: 58, height: 44);

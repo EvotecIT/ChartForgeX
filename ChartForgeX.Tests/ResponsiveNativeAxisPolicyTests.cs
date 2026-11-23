@@ -98,17 +98,17 @@ public sealed class ResponsiveNativeAxisPolicyTests {
         var values = mode == "calendar" ? new[] { january.AddDays(9).ToOADate(), january.AddMonths(2).AddDays(29).ToOADate() }
             : mode == "ordinal" ? new[] { january.ToOADate(), january.AddDays(1).ToOADate(), january.AddDays(11).ToOADate() }
             : mode == "negative-log" ? new[] { -16d, -4, -1 } : new[] { 1d, 2, 3 };
-        var chart = Chart.Create().WithSize(width, 280).WithFontFamily(BrowserProofFonts.Family);
-        if (sparkline || mode == "sparkline") chart.WithSparkline();
-        chart.WithPadding(0, 0, 0, 0).WithAxes(false).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithCard(false).WithBarStyle(ChartBarStyle.Flat).WithYAxisBounds(0, 4);
-        if (!sparkline && mode != "sparkline") chart.WithMaximumBarWidth(1000);
+        var chart = Chart.Create().Size(width, 280).FontFamily(BrowserProofFonts.Family);
+        if (sparkline || mode == "sparkline") chart.Sparkline();
+        chart.Padding(0, 0, 0, 0).Axes(false).ShowHeader(false).Legend(false).DataLabels(false)
+            .ShowCard(false).Bars(b => b.Style(ChartBarStyle.Flat)).YAxis(y => y.Bounds(0, 4));
+        if (!sparkline && mode != "sparkline") chart.Bars(b => b.MaxWidth(1000));
         var points = values.Select((value, index) => new ChartPoint(value, index + 1)).ToArray();
         if (line) chart.AddLine("Observations", points); else chart.AddBar("Observations", points);
-        if (mode == "negative-log") chart.Options.XAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-32, -.5);
-        else if (mode == "ordinal") chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Ordinal);
-        else if (mode == "calendar") chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
-        else chart.Options.XAxis.WithBounds(.5, 3.5);
+        if (mode == "negative-log") chart.Options.XAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-32, -.5);
+        else if (mode == "ordinal") chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Ordinal);
+        else if (mode == "calendar") chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
+        else chart.Options.XAxis.Bounds(.5, 3.5);
         chart.Options.XAxis.Reversed = reversed;
         return chart;
     }

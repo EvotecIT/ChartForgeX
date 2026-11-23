@@ -39,7 +39,7 @@ public sealed partial class TopologySwimlaneAutomaticOrderingTests {
         Assert.True(MermaidSwimlaneOrderingCausalTests.Cost(MermaidSwimlaneOrderingCausalTests.Order(first.ToInterchangeEnvelope(),"LR"))<=12);
     }
     private static TopologyChart Chart(TopologyLayoutDirection direction,bool local) {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(1100,900,24).WithLayout(TopologyLayoutMode.Swimlane,direction);
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(1100, 900, 24)).LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(direction);
         foreach(var id in new[]{"A","B","C","D"})chart.AddAutoGroup(id,id);
         if(local){chart.AddAutoGroup("nested","Nested");chart.Groups.Last().ParentGroupId="A";chart.Groups.Last().LayoutDirection=direction==TopologyLayoutDirection.TopToBottom?TopologyLayoutDirection.LeftToRight:TopologyLayoutDirection.TopToBottom;}
         foreach(var id in new[]{"a","b","c","d"})chart.AddAutoNode(id,id,groupId:local&&id=="a"?"nested":id.ToUpperInvariant(),width:120,height:56);

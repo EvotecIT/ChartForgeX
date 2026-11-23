@@ -14,16 +14,16 @@ public sealed class AxisReversalTests {
     public void CartesianAxisReversalMovesMarksGridAndTickFactsTogether(ChartScaleKind scale) {
         var xs = scale == ChartScaleKind.Time ? new[] { 45000d, 45001, 45002 } : new[] { 1d, 10, 100 };
         var ys = new[] { 1d, 10, 100 };
-        var chart = Chart.Create().WithSize(800, 460).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.All).ConfigureGridStyle(style => style.WithVerticalLines())
+        var chart = Chart.Create().Size(800, 460).Legend(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.All)).GridLineStyle(style => style.ShowVerticalLines())
             .AddLine("Values", xs.Select((x, index) => new ChartPoint(x, ys[index])));
-        chart.Options.XAxis.WithScale(scale).WithBounds(xs[0], xs[2]);
-        chart.Options.YAxis.WithScale(scale == ChartScaleKind.Logarithmic ? scale : ChartScaleKind.Linear).WithBounds(1, 100);
+        chart.Options.XAxis.Scale(scale).Bounds(xs[0], xs[2]);
+        chart.Options.YAxis.Scale(scale == ChartScaleKind.Logarithmic ? scale : ChartScaleKind.Linear).Bounds(1, 100);
         foreach (var x in xs) chart.Options.XAxis.Labels.Add(new ChartAxisLabel(x, "X" + x.ToString(CultureInfo.InvariantCulture)));
         foreach (var y in ys) chart.Options.YAxis.Labels.Add(new ChartAxisLabel(y, "Y" + y.ToString(CultureInfo.InvariantCulture)));
         var normal = Prepare(chart);
         var first = Markers(normal)[0]; var last = Markers(normal)[2];
         Assert.True(first.Cx < last.Cx); Assert.True(first.Cy > last.Cy);
-        chart.Options.XAxis.WithReversal(); chart.Options.YAxis.WithReversal();
+        chart.Options.XAxis.Reversed(); chart.Options.YAxis.Reversed();
         var reversed = Prepare(chart); var reversedFirst = Markers(reversed)[0]; var reversedLast = Markers(reversed)[2];
         Assert.True(reversedFirst.Cx > reversedLast.Cx); Assert.True(reversedFirst.Cy < reversedLast.Cy);
         foreach (var prepared in new[] { normal, reversed }) {
@@ -40,15 +40,15 @@ public sealed class AxisReversalTests {
 
     [Fact]
     public void ReversedLogarithmicBarsRetainPositiveDomainBaselineAndCategoryDirection() {
-        var chart = Chart.Create().WithSize(800, 460).WithLegend(false).WithBarStyle(ChartBarStyle.Flat)
+        var chart = Chart.Create().Size(800, 460).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat))
             .AddBar("Counts", new[] { new ChartPoint(1, 10), new ChartPoint(2, 100) });
-        chart.Options.YAxis.WithScale(ChartScaleKind.Logarithmic).WithBounds(1, 100).WithReversal();
+        chart.Options.YAxis.Scale(ChartScaleKind.Logarithmic).Bounds(1, 100).Reversed();
         var prepared = Prepare(chart); var bars = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bar").ToArray();
         Assert.Equal(bars[0].Bounds.Top, bars[1].Bounds.Top, 10); Assert.True(bars[1].Bounds.Height > bars[0].Bounds.Height);
-        var horizontal = Chart.Create().WithSize(800, 460).WithLegend(false).WithBarStyle(ChartBarStyle.Flat)
+        var horizontal = Chart.Create().Size(800, 460).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat))
             .AddHorizontalBar("Counts", new[] { new ChartPoint(1, 10), new ChartPoint(2, 100) });
-        horizontal.Options.XAxis.WithScale(ChartScaleKind.Logarithmic).WithBounds(1, 100).WithReversal();
-        horizontal.Options.YAxis.WithReversal();
+        horizontal.Options.XAxis.Scale(ChartScaleKind.Logarithmic).Bounds(1, 100).Reversed();
+        horizontal.Options.YAxis.Reversed();
         var h = Prepare(horizontal); var marks = h.Scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "horizontal-bar").ToArray();
         // Named horizontal categories read top-down; an authored reversal puts the first at the bottom.
         Assert.Equal(marks[0].Bounds.Right, marks[1].Bounds.Right, 10); Assert.True(marks[0].Bounds.Top > marks[1].Bounds.Top);
@@ -57,8 +57,8 @@ public sealed class AxisReversalTests {
 
     [Fact]
     public void ScheduleAxisReversalKeepsItsAuthoredTicksAndSpanOnTheSameCapturedMap() {
-        var chart = Chart.Create().WithSize(800, 460).WithXAxisBounds(0, 4).AddTimelineRange("Window", 1, 3)
-            .ConfigureXAxis(axis => { axis.WithReversal(); axis.Labels.Add(new ChartAxisLabel(1, "Start")); axis.Labels.Add(new ChartAxisLabel(3, "End")); });
+        var chart = Chart.Create().Size(800, 460).XAxis(x => x.Bounds(0, 4)).AddTimelineRange("Window", 1, 3)
+            .XAxis(axis => { axis.Reversed(); axis.Labels.Add(new ChartAxisLabel(1, "Start")); axis.Labels.Add(new ChartAxisLabel(3, "End")); });
         var prepared = Prepare(chart); var plot = prepared.Scene.DataProjection!.Plot;
         var span = prepared.Scene.Regions.Single(region => region.Role == "timeline-item").Bounds;
         var start = prepared.Scene.Regions.Single(region => region.Role == "schedule-tick-label" && region.Label == "Start").Bounds;
@@ -74,13 +74,13 @@ public sealed class AxisReversalTests {
     [InlineData(ChartSeriesKind.Ohlc, "ohlc-stem")]
     [InlineData(ChartSeriesKind.BoxPlot, "boxplot-whisker")]
     public void ReversedFinancialObservationBoundsContainThePaintedExtrema(ChartSeriesKind kind, string role) {
-        var chart = Chart.Create().WithSize(800, 460).WithLegend(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(800, 460).Legend(false).YAxis(y => y.Bounds(0, 100));
         if (kind == ChartSeriesKind.BoxPlot) chart.AddBoxPlot("Values", new[] { new ChartBoxPlot(1, 10, 30, 45, 60, 90) });
         else if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Values", new[] { new ChartCandlestick(1, 30, 90, 10, 60) });
         else chart.AddOhlc("Values", new[] { new ChartCandlestick(1, 30, 90, 10, 60) });
         var forward = kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc
             ? Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role) : null;
-        chart.Options.YAxis.WithReversal();
+        chart.Options.YAxis.Reversed();
         var prepared = Prepare(chart); var lines = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == role).ToArray();
         // A box plot paints its two stems separately, ending at the body; financial marks paint one line.
         Assert.Equal(kind == ChartSeriesKind.BoxPlot ? 2 : 1, lines.Length); var line = lines[0];

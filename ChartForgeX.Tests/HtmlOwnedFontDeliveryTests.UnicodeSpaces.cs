@@ -16,7 +16,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         var archivo = ChartFontAssets.Find("Archivo", 400, false)!.MemoryFont!;
         Assert.False(archivo.HasGlyph(0x202F)); Assert.True(archivo.HasGlyph(0x00A0));
         var captions = new[] { "1:00 AM", "1 234" };
-        var chart = Chart.Create().WithSize(720, 420).WithTitle("").WithXLabels(captions)
+        var chart = Chart.Create().Size(720, 420).Title("").XLabels(captions)
             .AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart);
 

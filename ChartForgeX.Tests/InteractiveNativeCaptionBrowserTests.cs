@@ -26,9 +26,9 @@ public sealed class InteractiveNativeCaptionBrowserTests {
     public async Task NestedNativeCaptionUsesItsOwnerThroughPointerPinAndAvailability(string family, string range, int delay) {
         if (!Enabled) return;
         var tile = family == "tile"; var gauge = family == "gauge";
-        var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false)
-            .WithMapLabels().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
-        if (!gauge) chart.ConfigureMapColorDimension(options => options.ShowLegend = false);
+        var chart = Chart.Create().Size(800, 440).ShowHeader(false).Legend(false)
+            .Map(m => m.ShowLabels()).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
+        if (!gauge) chart.Map(map => map.ColorDimension(options => options.ShowLegend = false));
         if (gauge) chart.AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("coverage"), "Coverage", 55));
         else if (tile) chart.AddTileMap("Coverage", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CO", 55) });
         else chart.AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {

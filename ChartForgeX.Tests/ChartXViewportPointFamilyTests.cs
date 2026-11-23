@@ -23,7 +23,7 @@ public sealed class ChartAxisWindowPointFamilyTests {
             ChartSeriesKind.Slope => new ChartSeries(id, "Source", kind, new[] { points[0], points[2] }),
             _ => new ChartSeries(id, "Source", kind, points)
         };
-        var chart = Chart.Create().WithLegend(false).WithXAxisBounds(0, 10).AddSeries(series);
+        var chart = Chart.Create().Legend(false).XAxis(x => x.Bounds(0, 10)).AddSeries(series);
         var context = VisualExportRequest.ForChart(chart).Context;
         var full = chart.Prepare(context); var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)));
         Assert.NotNull(window.XProjection);

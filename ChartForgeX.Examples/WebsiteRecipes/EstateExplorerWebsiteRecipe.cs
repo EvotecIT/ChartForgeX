@@ -48,7 +48,7 @@ public static class EstateExplorerWebsiteRecipe {
         }
 #endregion
 #region layout
-        graph.Options.UseSuperTopologyDefaults();
+        graph.Options.SuperTopologyDefaults();
         graph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
         graph.Options.Hierarchy.InitialRootNodeId = "global";
         graph.Options.Hierarchy.InitialDepth = 1;

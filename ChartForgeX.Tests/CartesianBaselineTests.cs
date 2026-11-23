@@ -17,14 +17,14 @@ public sealed class CartesianBaselineTests {
     [InlineData(true, false, -1)]
     [InlineData(true, true, -1)]
     public void StandaloneBarsClampTheirZeroOriginAndRetainInsideLabels(bool horizontal, bool clipping, int sign) {
-        var chart = Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels()
-            .WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        var chart = Chart.Create().Axes(false).ShowGrid(false).Legend(false).DataLabels()
+            .DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         var points = new[] { new ChartPoint(0, 9 * sign) };
         if (horizontal) chart.AddHorizontalBar("Observed", points); else chart.AddBar("Observed", points);
         var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        axis.WithBounds(sign > 0 ? 5 : -15, sign > 0 ? 15 : -5);
-        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(-.5, .5);
-        chart.Options.BarStyle = ChartBarStyle.Flat;
+        axis.Bounds(sign > 0 ? 5 : -15, sign > 0 ? 15 : -5);
+        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Bounds(-.5, .5);
+        chart.Options.Bars.Style = ChartBarStyle.Flat;
         chart.Options.ClipMarksToPlot = clipping;
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 260)),
             VisualTheme.Graphite(), frame: new VisualFrame(showLegend: false)));
@@ -43,10 +43,10 @@ public sealed class CartesianBaselineTests {
     [InlineData(false)]
     [InlineData(true)]
     public void SingleCategoryBarsUseACenteredAutomaticCategoryDomain(bool horizontal) {
-        var chart = Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false);
+        var chart = Chart.Create().Axes(false).ShowGrid(false).Legend(false);
         if (horizontal) chart.AddHorizontalBar("Observed", new[] { new ChartPoint(0, 9) });
         else chart.AddBar("Observed", new[] { new ChartPoint(0, 9) });
-        chart.Options.BarStyle = ChartBarStyle.Flat;
+        chart.Options.Bars.Style = ChartBarStyle.Flat;
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 260)),
             VisualTheme.Graphite(), frame: new VisualFrame(showLegend: false)));
         var mark = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;

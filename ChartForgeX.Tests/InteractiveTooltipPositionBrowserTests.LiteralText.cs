@@ -17,9 +17,9 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         if (!Enabled) return;
         var detail = "JobCorrelationId=" + new string('a', 96) + " & \"retained\" <script>window.cfxDetailInjection=1</script> 'verbatim'";
         var start = new DateTime(2026, 10, 10, 8, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(800, 440).WithTitle("Job execution")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithXAxisTimeScale()
-            .WithStateCategories(new VisualStatusTokens().SeverityCategories())
+        var chart = Chart.Create().Size(800, 440).Title("Job execution")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).XAxis(x => x.TimeScale())
+            .StateCategories(new VisualStatusTokens().SeverityCategories())
             .AddGanttLane("Worker", new[] { new ChartGanttLaneItem(start, start.AddHours(2), "info", "Export", detail) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

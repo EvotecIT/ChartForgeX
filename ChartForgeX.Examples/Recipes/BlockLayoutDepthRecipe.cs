@@ -3,8 +3,8 @@ public static class BlockLayoutDepthRecipe {
     /// <summary>Creates a deterministic organization of source blocks; no browser layout or Mermaid runtime is required.</summary>
     public static BlockLayoutBlock Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant != "wide" && variant != "compact") throw new ArgumentOutOfRangeException(nameof(variant));
-        var block = BlockLayoutBlock.Create().WithTitle("Request processing").WithSubtitle("Nested source grids and cross-boundary connectors")
-            .WithTheme(VisualTheme.Graphite(), mode).WithSize(variant == "compact" ? 390 : 1000, 620).WithColumns(3)
+        var block = BlockLayoutBlock.Create().Title("Request processing").Subtitle("Nested source grids and cross-boundary connectors")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(variant == "compact" ? 390 : 1000, 620).Columns(3)
             .AddComposite("services", "Services", columnSpan: 2, columns: 2)
             .AddItem("api", "API", "services", shape: BlockLayoutShape.Hexagon)
             .AddItem("worker", "Worker", "services", shape: BlockLayoutShape.Rounded)
@@ -15,7 +15,7 @@ public static class BlockLayoutDepthRecipe {
             .AddEdge("client", "api", "Submit").AddEdge("worker", "data", "Store");
         block.Items[1].Fill = ChartForgeX.Primitives.ChartColor.FromHex("#dbeafe");
         block.Items[1].Stroke = new ChartForgeX.Core.ChartStrokeStyle(ChartForgeX.Primitives.ChartColor.FromHex("#1e3a8a"), 2);
-        block.Items[1].TextStyle.WithColor("#172554").WithWeight("bold");
+        block.Items[1].TextStyle.Color(ChartColor.FromHex("#172554")).FontWeight("bold");
         return block;
     }
 }

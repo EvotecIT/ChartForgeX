@@ -8,7 +8,7 @@ namespace ChartForgeX.Core;
 
 /// <summary>
 /// An additional vertical value axis that stacks outward beside the primary (start) or secondary (end) axis.
-/// Create one with <see cref="Chart.AddValueAxis"/> and bind series to it with <see cref="ChartSeries.UseValueAxis"/>.
+/// Create one with <see cref="Chart.AddValueAxis"/> and bind series to it with <see cref="ChartSeries.ValueAxis"/>.
 /// </summary>
 /// <remarks>
 /// The axis owns its own domain, ticks, formatter and grid policy through <see cref="Axis"/>. It draws no grid lines
@@ -41,20 +41,6 @@ public sealed class ChartAdditionalValueAxis {
 
     /// <summary>Gets or sets the colour of the axis captions, rule and title. Null uses the first bound series colour.</summary>
     public ChartColor? Color { get; set; }
-
-    /// <summary>Configures the axis policy.</summary>
-    /// <param name="configure">The axis configuration.</param>
-    /// <returns>The current axis.</returns>
-    public ChartAdditionalValueAxis Configure(Action<ChartAxis> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Axis);
-        return this;
-    }
-
-    /// <summary>Sets the colour of the axis captions, rule and title.</summary>
-    /// <param name="color">The colour, or null to follow the first bound series.</param>
-    /// <returns>The current axis.</returns>
-    public ChartAdditionalValueAxis WithColor(ChartColor? color) { Color = color; return this; }
 
     /// <summary>Gets the zero-based position of this axis among the additional axes on its side, counted outward.</summary>
     internal int SideIndex => Owner.AdditionalValueAxes.Where(axis => axis.Placement == Placement).ToList().IndexOf(this);

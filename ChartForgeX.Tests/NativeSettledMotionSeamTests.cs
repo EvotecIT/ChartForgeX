@@ -55,7 +55,7 @@ public sealed class NativeSettledMotionSeamTests {
 /// <summary>Real native Chart scenes/effects in the existing test host; the internal placement is a compositor/adapter seam fixture, not a public Chart shadow policy.</summary>
 internal static class NativeSettledMotionFixture {
     internal static PreparedVisual Drawing(int width, bool dark, VisualSvgEffectProfile profile, bool maskInPlotScope = false) {
-        var chart = NativeSeriesVisibilityDefaultControls.Model("bar", width, dark).WithDataLabels(false);
+        var chart = NativeSeriesVisibilityDefaultControls.Model("bar", width, dark).DataLabels(false);
         var basis = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var scene = basis.Scene;
         var plot = basis.Regions.Single(region => region.Role == "cartesian-plot").Bounds;
         var shadow = new VisualSceneSurfaceShadow(new VisualDropShadow(ChartColor.Black, 4, 4, 0, opacity: .06), plot, plot);
@@ -75,7 +75,7 @@ internal static class NativeSettledMotionFixture {
         return maskInPlotScope ? drawing : drawing.WithMask(mask);
     }
     internal static HtmlChartSection Section(int width, bool dark, VisualSvgEffectProfile profile) {
-        var chart = NativeSeriesVisibilityDefaultControls.Model("bar", width, dark).WithDataLabels(false);
+        var chart = NativeSeriesVisibilityDefaultControls.Model("bar", width, dark).DataLabels(false);
         var ordinary = new HtmlInteractiveChartRenderer().PrepareSection(chart, configure: options => {
             options.TextPresentation = HtmlChartTextPresentation.NativeContours;
             options.Interaction.ChartId = "settled-native-effects"; options.Interaction.Enable(ChartInteractionFeatures.Export);

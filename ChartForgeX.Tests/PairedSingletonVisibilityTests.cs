@@ -74,12 +74,12 @@ public sealed class PairedSingletonVisibilityTests {
     private static PreparedVisual Prepare(Chart chart, int width, ThemeMode mode) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(width, 320)), themeMode: mode, frame: new VisualFrame(chart.Title)));
     private static Chart Create(ChartSeriesKind kind, (double X, double First, double Second, bool Break)[] values) {
-        var chart = Chart.Create().WithTitle("One observed pair");
+        var chart = Chart.Create().Title("One observed pair");
         var bands = values.Select(value => new ChartRangeBand(value.X, value.First, value.Second, value.Break));
         if (kind == ChartSeriesKind.DifferenceArea) chart.AddDifferenceArea("Comparison", values.Select(value => new ChartDifferencePoint(value.X, value.First, value.Second, value.Break)));
         else if (kind == ChartSeriesKind.RangeArea) chart.AddRangeArea("Range", bands);
         else chart.AddRangeBand("Range", bands);
-        chart.Series[0].WithObservationId(0, new ChartObservationId("single"));
+        chart.Series[0].ObservationId(0, new ChartObservationId("single"));
         return chart;
     }
 }

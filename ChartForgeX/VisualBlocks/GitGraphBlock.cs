@@ -42,12 +42,6 @@ public sealed partial class GitGraphBlock : VisualBlock<GitGraphBlock> {
         _commits.Add(new GitGraphCommit(id, branchName, parentIds, type, label, tag, sourceCommitId));
         return this;
     }
-
-    /// <summary>Sets whether branch labels are rendered.</summary>
-    public GitGraphBlock WithBranchLabels(bool visible = true) { ShowBranchLabels = visible; return this; }
-
-    /// <summary>Sets whether commit labels are rendered.</summary>
-    public GitGraphBlock WithCommitLabels(bool visible = true) { ShowCommitLabels = visible; return this; }
 }
 
 /// <summary>

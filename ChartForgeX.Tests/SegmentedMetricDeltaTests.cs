@@ -9,9 +9,9 @@ public sealed class SegmentedMetricDeltaTests {
     [Fact]
     public void ProgressRowsPreserveExactDeltaTextWithResolvedPlatformFonts() {
         var theme = VisualTheme.Graphite();
-        var block = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows).WithTheme(theme).WithSize(620, 260)
-            .AddItem(new SegmentedMetricItem("Posts", 86).WithProgress(100, 44).WithDisplayValue("132,034").WithDelta("+4.3%").WithStatus(Tone.Success))
-            .AddItem(new SegmentedMetricItem("Replies", 62).WithProgress(100, 44).WithDisplayValue("56,234").WithDelta("-6.4%").WithStatus(Tone.Danger));
+        var block = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows).Theme(theme).Size(620, 260)
+            .AddItem(new SegmentedMetricItem("Posts", 86).Maximum(100).Segments(44).DisplayValue("132,034").Delta("+4.3%").Status(Tone.Success))
+            .AddItem(new SegmentedMetricItem("Replies", 62).Maximum(100).Segments(44).DisplayValue("56,234").Delta("-6.4%").Status(Tone.Danger));
         var svg = block.ToSvg();
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {

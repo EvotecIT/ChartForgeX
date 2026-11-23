@@ -24,17 +24,17 @@ internal static class RendererGeometryFixture {
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; builder.Light.Muted = builder.Dark.Muted = builder.Light.Axis = builder.Dark.Axis = builder.Light.Grid = builder.Dark.Grid = builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ink, ink, ink, ink }; });
         if (family.StartsWith("funnel", StringComparison.Ordinal)) {
-            var chart = Chart.Create().WithSize(400, 280).WithTheme(theme).WithCard(false).WithPlotBackground(false).WithLegend(false);
-            chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.ShowDataLabels = false;
-            chart.Options.PngOutputScale = density;
+            var chart = Chart.Create().Size(400, 280).Theme(theme).ShowCard(false).ShowPlotBackground(false).Legend(false);
+            chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.DataLabels.Visible = false;
+            chart.Options.Png.OutputScale = density;
             chart.AddFunnel("Stages", new[] { new ChartPoint(0, 8), new ChartPoint(1, 5) }, family == "funnel-series" ? ink : null);
             chart.Series[0].ShowDataLabels = false;
-            if (family == "funnel-point") chart.Series[0].WithPointColor(0, ink).WithPointColor(1, ink);
+            if (family == "funnel-point") chart.Series[0].PointColor(0, ink).PointColor(1, ink);
             return chart;
         }
         if (family.StartsWith("wardley-contract", StringComparison.Ordinal)) {
             theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ink; });
-            var map = WardleyMapBlock.Create().WithSize(400, 280).WithTheme(theme).WithCard(false).WithTransparentBackground().WithPngOutputScale(density);
+            var map = WardleyMapBlock.Create().Size(400, 280).Theme(theme).ShowCard(false).TransparentBackground().PngOutputScale(density);
             map.AddNode("origin", "Origin", 0.5, 0.1).Strategy = "buy";
             map.AddNode("user", "User", 0.8, 0.6, WardleyMapNodeKind.Anchor);
             map.AddLink("user", "origin", flow: VisualLinkDirection.Bidirectional);
@@ -45,7 +45,7 @@ internal static class RendererGeometryFixture {
         if (family.StartsWith("wardley", StringComparison.Ordinal)) {
             if (family != "wardley") theme = VisualTheme.Graphite();
             var mode = family == "wardley-dark" ? ThemeMode.Dark : ThemeMode.Light;
-            var map = WardleyMapBlock.Create().WithSize(400, 280).WithTheme(theme, mode).WithCard(false).WithTransparentBackground().WithPngOutputScale(density);
+            var map = WardleyMapBlock.Create().Size(400, 280).Theme(theme).ThemeMode(mode).ShowCard(false).TransparentBackground().PngOutputScale(density);
             map.AddNode("origin", "Origin", 0.5, 0.1);
             map.AddEvolution("origin", 0.8);
             map.AddMarker("Forward", 0.8, 0.2, WardleyMapMarkerKind.Accelerator);
@@ -61,7 +61,7 @@ internal static class RendererGeometryFixture {
         }
         if (family is "fork" or "flame" or "droplet") {
             var icon = family == "fork" ? Icons.ForkKnife : family == "flame" ? Icons.Flame : Icons.Droplet;
-            var card = MetricCard.Create().WithMetric("Meals", 12).WithSize(200, 140).WithTheme(theme).WithCard(false).WithTransparentBackground().WithIcon(icon).WithPngOutputScale(density);
+            var card = MetricCard.Create().Metric("Meals", 12).Size(200, 140).Theme(theme).ShowCard(false).TransparentBackground().Icon(icon).PngOutputScale(density);
             return card;
         }
         var topologyTheme = VisualTheme.Graphite();
@@ -70,7 +70,7 @@ internal static class RendererGeometryFixture {
             builder.Light.Background = builder.Dark.Background = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
         });
-        var topology = TopologyChart.Create().WithId("geometry-" + family).WithViewport(400, 280, 20).WithLegend(null).WithTheme(topologyTheme);
+        var topology = TopologyChart.Create().Id("geometry-" + family).Viewport(new TopologyViewport(400, 280, 20)).Legend((TopologyLegend?)null).Theme(topologyTheme);
         topology.AddNode("a", "A", 40, 100, TopologyNodeKind.Database, width: 80, height: 64);
         topology.AddNode("b", "B", 280, 100, TopologyNodeKind.Queue, width: 80, height: 64);
         topology.AddEdge("route", "a", "b", null, TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
@@ -80,7 +80,7 @@ internal static class RendererGeometryFixture {
             topology.Edges[0].Opacity = 0.5;
         }
         if (family.StartsWith("geo-", StringComparison.Ordinal)) {
-            topology.WithLayout(TopologyLayoutMode.Geographic).WithNodeCoordinates("a", -80, 30).WithNodeCoordinates("b", 50, 30);
+            topology.LayoutMode(TopologyLayoutMode.Geographic).UpdateNode("a", n => n.Longitude(-80).Latitude(30)).UpdateNode("b", n => n.Longitude(50).Latitude(30));
             topology.Edges[0].Routing = TopologyEdgeRouting.Curved;
             topology.Edges[0].Kind = family == "geo-link" ? TopologyEdgeKind.Link : TopologyEdgeKind.Replication;
         }
@@ -88,11 +88,11 @@ internal static class RendererGeometryFixture {
             topology.AddNode("c", "Cloud", 40, 190, TopologyNodeKind.Cloud, width: 80, height: 64);
             if (family.Contains("theme")) topologyTheme = topologyTheme.Configure(builder => { var status = builder.Light.Status; status.Neutral = new VisualTokenColor(ChartColor.FromHex("#0000FF80"), status.Neutral.Ink); });
             else foreach (var id in new[] { "a", "b", "c" }) {
-                if (family.Contains("catalog")) topology.WithNodeIcon(id, "sample:" + id, TopologyOptions(family, density).IconCatalog);
-                else topology.WithNodeColor(id, "#0000FF80");
+                if (family.Contains("catalog")) topology.NodeIcon(id, "sample:" + id, TopologyOptions(family, density).IconCatalog);
+                else topology.UpdateNode(id, n => n.Color("#0000FF80"));
             }
         }
-        return topology.WithTheme(topologyTheme);
+        return topology.Theme(topologyTheme);
     }
 
     internal static TopologyRenderOptions TopologyOptions(string family, int density) {

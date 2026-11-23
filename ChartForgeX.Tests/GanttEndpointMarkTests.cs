@@ -59,27 +59,27 @@ public sealed class GanttEndpointMarkTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void AuthoredAxisSidesKeepTheirMilestoneClippingWindow(bool minimum, bool maximum) {
-        var chart = Milestones(360, false).ConfigureXAxis(axis => {
-            if (minimum) axis.Minimum = Start.ToOADate();
-            if (maximum) axis.Maximum = Finish.ToOADate();
+        var chart = Milestones(360, false).XAxis(axis => {
+            if (minimum) axis.Min = Start.ToOADate();
+            if (maximum) axis.Max = Finish.ToOADate();
         });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plot = ClipBounds(XDocument.Parse(prepared.ToSvg()), "gantt-milestone-shape");
         var milestones = prepared.Regions.Where(region => region.Role == "gantt-milestone").ToArray();
         Assert.Equal(minimum, milestones[0].Bounds.Left < plot.Left - .001);
         Assert.Equal(maximum, milestones[1].Bounds.Right > plot.Right + .001);
-        Assert.Equal(Start.ToOADate(), chart.Options.XAxis.Minimum ?? chart.Series[1].GanttItems[0].Start);
-        Assert.Equal(Finish.ToOADate(), chart.Options.XAxis.Maximum ?? chart.Series[2].GanttItems[0].Start);
+        Assert.Equal(Start.ToOADate(), chart.Options.XAxis.Min ?? chart.Series[1].GanttItems[0].Start);
+        Assert.Equal(Finish.ToOADate(), chart.Options.XAxis.Max ?? chart.Series[2].GanttItems[0].Start);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void LaneEndpointChevronsAndOutlinedStrokesReserveOnlyAutomaticSides(bool explicitBounds) {
-        var chart = Chart.Create().WithSize(360, 320).WithLegend(false).WithGanttLaneNow(Finish)
-            .WithStateCategories(new ChartStateCategory("up", "Available", MilestoneColor, ChartStatePattern.Outlined))
+        var chart = Chart.Create().Size(360, 320).Legend(false).GanttLaneNow(Finish)
+            .StateCategories(new ChartStateCategory("up", "Available", MilestoneColor, ChartStatePattern.Outlined))
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddDays(3), "up"), new ChartGanttLaneItem(Start.AddDays(3), null, "up") });
-        if (explicitBounds) chart.ConfigureXAxis(axis => axis.WithBounds(Start.ToOADate(), Finish.ToOADate()));
+        if (explicitBounds) chart.XAxis(axis => axis.Bounds(Start.ToOADate(), Finish.ToOADate()));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plot = prepared.Regions.Single(region => region.Role == "schedule-plot").Bounds;
         var outlines = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "gantt-lane-item-shape-outline").ToArray();
@@ -102,7 +102,7 @@ public sealed class GanttEndpointMarkTests {
 
     [Fact]
     public void AutomaticMaximumKeepsTheSupportedInstantTaskPixelFloor() {
-        var chart = Chart.Create().WithSize(360, 320).WithLegend(false)
+        var chart = Chart.Create().Size(360, 320).Legend(false)
             .AddGanttTask("Work", Start, Finish.AddDays(-1)).AddGanttTask("Instant", Finish, Finish);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plot = ClipBounds(XDocument.Parse(prepared.ToSvg()), "gantt-task-shape");
@@ -114,12 +114,12 @@ public sealed class GanttEndpointMarkTests {
     }
 
     private static Chart Milestones(int width, bool dark) {
-        var chart = Chart.Create().WithSize(width, 360)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(false)
-        .ConfigureGridStyle(style => style.ShowVerticalLines = true)
+        var chart = Chart.Create().Size(width, 360)
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(false)
+        .GridLineStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Work", Start, Finish, .5)
         .AddGanttMilestone("Start", Start, color: MilestoneColor).AddGanttMilestone("Delivery", Finish, color: MilestoneColor)
-        .ConfigureXAxis(axis => {
+        .XAxis(axis => {
             axis.Labels.Add(new ChartAxisLabel(Start, "Start")); axis.Labels.Add(new ChartAxisLabel(Finish, "Delivery"));
             axis.LabelDensity = ChartLabelDensity.All;
         });

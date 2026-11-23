@@ -127,9 +127,9 @@ public static partial class TopologyChartExtensions {
             if (page == null || page.Nodes.Count >= options.MaximumNodesPerPage ||
                 (page.Nodes.Count > 0 && pageEdgeCount + addedEdges > options.MaximumEdgesPerPage) || (y + node.Height > options.PageHeight - margin && page.Nodes.Count > 0)) {
                 string pageSuffix = " — " + (pages.Count + 1).ToString(CultureInfo.InvariantCulture);
-                page = TopologyChart.Create().WithId((chart.Id ?? "topology") + "-page-" + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
-                    .WithTitle(VisualArtifactInterchangeMapping.BoundedGeneratedText(source.Title!, pageSuffix))
-                    .WithViewport(options.PageWidth, options.PageHeight, margin);
+                page = TopologyChart.Create().Id((chart.Id ?? "topology") + "-page-" + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
+                    .Title(VisualArtifactInterchangeMapping.BoundedGeneratedText(source.Title!, pageSuffix))
+                    .Viewport(new TopologyViewport(options.PageWidth, options.PageHeight, margin));
                 page.Theme = source.Theme; page.ThemeMode = source.ThemeMode;
                 page.Accessibility.Name = source.Accessibility.Name;
                 page.Accessibility.Description = source.Accessibility.Description;
@@ -174,11 +174,11 @@ public static partial class TopologyChartExtensions {
 
     private static TopologyChart BuildReportOverview(TopologyChart source, List<TopologyChart> pages,
         List<TopologyReportLink> links, TopologyReportOptions options) {
-        var overview = TopologyChart.Create().WithId((source.Id ?? "topology") + "-overview")
-            .WithTitle(source.Title ?? source.Labels.UntitledReport)
-            .WithSubtitle(source.Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects across " + pages.Count.ToString(CultureInfo.InvariantCulture) + " detail pages")
-            .WithViewport(options.PageWidth, options.PageHeight)
-            .WithLayout(TopologyLayoutMode.Matrix);
+        var overview = TopologyChart.Create().Id((source.Id ?? "topology") + "-overview")
+            .Title(source.Title ?? source.Labels.UntitledReport)
+            .Subtitle(source.Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects across " + pages.Count.ToString(CultureInfo.InvariantCulture) + " detail pages")
+            .Viewport(new TopologyViewport(options.PageWidth, options.PageHeight))
+            .LayoutMode(TopologyLayoutMode.Matrix);
         overview.Theme = source.Theme; overview.ThemeMode = source.ThemeMode;
         overview.Accessibility.Name = source.Accessibility.Name;
         overview.Accessibility.Description = source.Accessibility.Description;

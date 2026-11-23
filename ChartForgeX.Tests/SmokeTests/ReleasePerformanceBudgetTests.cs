@@ -19,11 +19,11 @@ internal static partial class SmokeTests {
 
     private static void RepresentativeRenderingStaysWithinReleaseBudgets() {
         var chart = Chart.Create()
-            .WithTitle("Release performance chart")
-            .WithSubtitle("Representative line, area, and bar marks")
-            .WithSize(960, 540)
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithLegend()
+            .Title("Release performance chart")
+            .Subtitle("Representative line, area, and bar marks")
+            .Size(960, 540)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Legend()
             .AddLine("Observed", PerformancePoints(72, 48, 19))
             .AddSmoothArea("Forecast", PerformancePoints(72, 42, 13), ChartColor.FromHex("#38BDF8"))
             .AddBar("Capacity", PerformancePoints(72, 56, 7), ChartColor.FromHex("#A78BFA"));
@@ -34,9 +34,9 @@ internal static partial class SmokeTests {
         });
 
         var wallpaper = VisualCanvas.CreateDesktopWallpaper()
-            .WithPngOutputScale((int)ChartPngOutputScale.Retina)
-            .WithBackground(ChartColor.FromHex("#020617"), ChartColor.FromHex("#0B2447"))
-            .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
+            .PngOutputScale((int)ChartPngOutputScale.Retina)
+            .BackgroundTop(ChartColor.FromHex("#020617")).BackgroundBottom(ChartColor.FromHex("#0B2447"))
+            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
             .AddHeroTitle(520, 354, 880, 78, new[] {
                 new VisualCanvasTextRun("DEV-WKS-", ChartColor.FromHex("#F8FAFC")),
                 new VisualCanvasTextRun("01", ChartColor.FromHex("#38BDF8"))
@@ -55,10 +55,10 @@ internal static partial class SmokeTests {
         });
 
         var topology = CreateBusyForceGraphFixture("release-performance-topology", 8, 15)
-            .WithTitle("Release performance topology");
+            .Title("Release performance topology");
         var topologyOptions = new TopologyRenderOptions { IncludeLegend = false }
-            .WithForceGraphStyle()
-            .WithFitContentToViewport();
+            .ForceGraphStyle()
+            .FitContentToViewport();
         var topologyMeasurement = MeasureRender(() => {
             var svg = topology.ToSvg(topologyOptions);
             var png = topology.ToPng(topologyOptions);

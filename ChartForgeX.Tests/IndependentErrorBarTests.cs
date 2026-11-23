@@ -17,7 +17,7 @@ public sealed class IndependentErrorBarTests {
     [InlineData(true, true, true)]
     public void IndependentIntervalsPaintTheirPhysicalAxesAndKeepCompleteFacts(bool horizontal, bool vertical, bool reversed) {
         var source = new ChartErrorBar(5, 5, horizontal ? new ChartErrorBounds(1, 9) : null, vertical ? new ChartErrorBounds(2, 8) : null);
-        var chart = ChartFor(source).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = ChartFor(source).XAxis(xAxis => xAxis.Bounds(0, 10)).YAxis(yAxis => yAxis.Bounds(0, 10));
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var prepared = Prepare(chart); var x = prepared.XProjection!; var y = prepared.YProjection!;
         var group = Point(prepared); var region = Assert.Single(prepared.Regions, item => item.Id == group.Id && item.Role == "point");
@@ -59,7 +59,7 @@ public sealed class IndependentErrorBarTests {
 
     [Fact]
     public void NativeWindowKeepsACrossingHorizontalWhiskerWhenItsEstimateIsOutside() {
-        var chart = ChartFor(new ChartErrorBar(0, 5, xBounds: new ChartErrorBounds(-1, 9))).WithXAxisBounds(-2, 10).WithYAxisBounds(0, 10);
+        var chart = ChartFor(new ChartErrorBar(0, 5, xBounds: new ChartErrorBounds(-1, 9))).XAxis(x => x.Bounds(-2, 10)).YAxis(y => y.Bounds(0, 10));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)));
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), item => item.Role == "error-range-x");
         var plot = prepared.XProjection!.PlotBounds;
@@ -74,7 +74,7 @@ public sealed class IndependentErrorBarTests {
         var start = new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc);
         var source = new ChartErrorBar(start, 5, new ChartErrorBounds(start.AddDays(-2), start.AddDays(3)), new ChartErrorBounds(2, 8));
         var chart = ChartFor(source);
-        chart.Options.XAxis.WithTimeScale();
+        chart.Options.XAxis.TimeScale();
         chart.Options.XAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         chart.Options.YAxis.LabelFormatter = value => value.ToString("F2", CultureInfo.InvariantCulture) + " kg";
         var facts = Point(Prepare(chart)).Metadata;
@@ -114,8 +114,8 @@ public sealed class IndependentErrorBarTests {
     [Fact]
     public void SelectedLogarithmicDomainsValidateEveryUncertaintyEndpoint() {
         var chart = ChartFor(new ChartErrorBar(-4, -4, new ChartErrorBounds(-8, -2), new ChartErrorBounds(-8, -1)));
-        chart.Options.XAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative);
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative);
+        chart.Options.XAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative);
         Assert.NotEmpty(Prepare(chart).ToPng());
         chart.Series[0].UpdateErrorBar(0, new ChartErrorBar(-4, -4, new ChartErrorBounds(-8, 0), new ChartErrorBounds(-8, -1)));
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
@@ -124,7 +124,7 @@ public sealed class IndependentErrorBarTests {
     [Fact]
     public void SecondaryValueAxisFormatsOnlyTheVerticalInterval() {
         var chart = ChartFor(new ChartErrorBar(5, 100, new ChartErrorBounds(2, 8), new ChartErrorBounds(80, 140)));
-        chart.Series[0].UseSecondaryValueAxis();
+        chart.Series[0].SecondaryAxis();
         chart.Options.XAxis.LabelFormatter = value => "X=" + value.ToString(CultureInfo.InvariantCulture);
         chart.Options.YAxis.LabelFormatter = value => "Primary=" + value.ToString(CultureInfo.InvariantCulture);
         chart.Options.SecondaryYAxis.LabelFormatter = value => "Secondary=" + value.ToString(CultureInfo.InvariantCulture);
@@ -135,9 +135,9 @@ public sealed class IndependentErrorBarTests {
     }
 
     private static Chart ChartFor(ChartErrorBar source) => ChartFor(new[] { source });
-    private static Chart ChartFor(IEnumerable<ChartErrorBar> sources) => Chart.Create().WithSize(720, 420).WithLegend(false)
+    private static Chart ChartFor(IEnumerable<ChartErrorBar> sources) => Chart.Create().Size(720, 420).Legend(false)
         .AddSeries(ChartSeries.CreateErrorBar(new ChartSeriesId("measurements"), "Measurements", sources)
-            .WithObservationId(0, new ChartObservationId("sample")));
+            .ObservationId(0, new ChartObservationId("sample")));
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneGroup Point(PreparedVisual prepared) => Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "point");
 }

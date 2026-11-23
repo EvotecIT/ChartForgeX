@@ -12,7 +12,7 @@ public static partial class MermaidEventModelingRendering {
         if (block == null) throw new ArgumentNullException(nameof(block));
         using var scope = MermaidResourceGuard.BeginIfAbsent(block.CapturedResourceLimits);
         if (!MermaidEventModelingParser.Identifier(block.Id)) throw new ArgumentException("Event Modeling data blocks require a bounded identifier.", nameof(block));
-        return MermaidEventModelingData.Create("eventmodeling-data-" + block.Id, block.DataType, block.Content, block.Span).WithTitle(block.Id);
+        return MermaidEventModelingData.Create("eventmodeling-data-" + block.Id, block.DataType, block.Content, block.Span).Title(block.Id);
     }
 
     /// <summary>Converts a frame's inline and/or referenced data to one detached typed-fact table.</summary>
@@ -29,7 +29,7 @@ public static partial class MermaidEventModelingRendering {
     }
 
     private static TableArtifact FrameData(MermaidEventModelingDocument document, MermaidEventModelingFrame frame) {
-        var table = MermaidEventModelingData.NewTable("eventmodeling-data-frame-" + frame.Number).WithTitle(frame.EntityIdentifier);
+        var table = MermaidEventModelingData.NewTable("eventmodeling-data-frame-" + frame.Number).Title(frame.EntityIdentifier);
         table.Metadata["mermaid.frame"] = frame.Number;
         var both = frame.InlineData != null && frame.DataReference != null;
         if (frame.InlineData != null) Append(MermaidEventModelingData.Create(table.Id, frame.DataType, frame.InlineData, frame.Span), both ? "/inline" : "", "inline");

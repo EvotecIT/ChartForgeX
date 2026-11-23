@@ -22,7 +22,7 @@ public sealed partial class TerminalStory {
         foreach (var step in _steps) {
             TerminalTable? table = null;
             if (step.Table != null && !tables.TryGetValue(step.Table, out table)) {
-                table = TerminalTable.Create().WithColumns(step.Table.Columns.ToArray());
+                table = TerminalTable.Create().Columns(step.Table.Columns.ToArray());
                 for (var i = 0; i < step.Table.Alignments.Count; i++) table.AlignColumn(i, step.Table.Alignments[i]);
                 foreach (var row in step.Table.Rows) table.AddRow(row.Cast<object>().ToArray());
                 tables.Add(step.Table, table);

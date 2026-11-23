@@ -36,30 +36,6 @@ public sealed partial class Chart {
     }
 
     /// <summary>
-    /// Gets or sets the x-axis title.
-    /// </summary>
-    public string XAxisTitle {
-        get => _xAxisTitle;
-        set => _xAxisTitle = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    /// <summary>
-    /// Gets or sets the y-axis title.
-    /// </summary>
-    public string YAxisTitle {
-        get => _yAxisTitle;
-        set => _yAxisTitle = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    /// <summary>
-    /// Gets or sets the secondary y-axis title.
-    /// </summary>
-    public string SecondaryYAxisTitle {
-        get => _secondaryYAxisTitle;
-        set => _secondaryYAxisTitle = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    /// <summary>
     /// Gets the chart options.
     /// </summary>
     [FluentInline]
@@ -72,52 +48,12 @@ public sealed partial class Chart {
     public static Chart Create() => new();
 
     /// <summary>
-    /// Sets the chart title.
-    /// </summary>
-    /// <param name="title">The chart title.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>
-    /// Sets the chart subtitle.
-    /// </summary>
-    /// <param name="subtitle">The chart subtitle.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>
-    /// Sets the x-axis title.
-    /// </summary>
-    /// <param name="title">The x-axis title.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithXAxis(string title) { XAxisTitle = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>
-    /// Sets the y-axis title.
-    /// </summary>
-    /// <param name="title">The y-axis title.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithYAxis(string title) { YAxisTitle = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>
-    /// Sets the secondary y-axis title and optional tick formatter.
-    /// </summary>
-    /// <param name="title">The secondary y-axis title.</param>
-    /// <param name="formatter">An optional formatter for secondary y-axis ticks.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithSecondaryYAxis(string title, Func<double, string>? formatter = null) {
-        SecondaryYAxisTitle = title ?? throw new ArgumentNullException(nameof(title));
-        Options.SecondaryYAxisValueFormatter = formatter;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the rendered chart size.
     /// </summary>
     /// <param name="width">The width in pixels.</param>
     /// <param name="height">The height in pixels.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithSize(int width, int height) {
+    public Chart Size(int width, int height) {
         Options.Size = new ChartSize(width, height);
         return this;
     }
@@ -130,277 +66,38 @@ public sealed partial class Chart {
     /// <param name="right">The right padding in pixels.</param>
     /// <param name="bottom">The bottom padding in pixels.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithPadding(double left, double top, double right, double bottom) {
+    public Chart Padding(double left, double top, double right, double bottom) {
         Options.Padding = new ChartPadding(left, top, right, bottom);
         return this;
     }
-
-    /// <summary>
-    /// Sets the chart theme.
-    /// </summary>
-    /// <param name="theme">The theme to use.</param>
-    /// <param name="mode">Optional explicit palette mode; omitted keeps the current mode.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithTheme(VisualTheme theme, ThemeMode? mode = null) {
-        if (theme == null) throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue && !Enum.IsDefined(typeof(ThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
-        Options.Theme = theme; if (mode.HasValue) Options.ThemeMode = mode.Value; return this;
-    }
-    /// <summary>Sets the explicit palette mode without replacing the paired theme.</summary>
-    public Chart WithThemeMode(ThemeMode mode) { Options.ThemeMode = mode; return this; }
 
     /// <summary>
     /// Sets the CSS font-family used by vector and HTML renderers.
     /// </summary>
     /// <param name="fontFamily">The CSS font-family stack.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithFontFamily(string fontFamily) { Options.Theme = Options.Theme.WithFontFamily(fontFamily); return this; }
-
-    /// <summary>
-    /// Sets the preferred TrueType font file or TrueType collection used by the PNG renderer.
-    /// </summary>
-    /// <param name="fontPath">The path to a .ttf or .ttc font file. Pass null to use automatic PNG font discovery.</param>
-    /// <param name="collectionIndex">The optional zero-based face index for .ttc font collections.</param>
-    /// <param name="faceName">The optional family, subfamily, full, or PostScript face name to select.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPngFont(string? fontPath, int? collectionIndex = null, string? faceName = null) {
-        Options.PngFontPath = fontPath;
-        Options.PngFontCollectionIndex = collectionIndex;
-        Options.PngFontFaceName = faceName;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the preferred PNG font and selects a face by family, subfamily, full, or PostScript name.
-    /// </summary>
-    /// <param name="fontPath">The path to a .ttf or .ttc font file.</param>
-    /// <param name="faceName">The face name to select.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPngFont(string? fontPath, string? faceName) => WithPngFont(fontPath, null, faceName);
-
-    /// <summary>
-    /// Sets the internal supersampling scale used by the PNG renderer.
-    /// </summary>
-    /// <param name="scale">The supersampling scale from one to four. Higher values improve edges at the cost of render time and memory.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPngSupersampling(int scale) {
-        Options.PngSupersamplingScale = scale;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the output pixel multiplier used by the PNG renderer.
-    /// </summary>
-    /// <param name="scale">The output scale from one to four. Higher values emit larger PNG dimensions with the same logical chart layout.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPngOutputScale(int scale) {
-        Options.PngOutputScale = scale;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the output pixel multiplier used by the PNG renderer using a named density preset.
-    /// </summary>
-    /// <param name="scale">The output density preset.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPngOutputScale(ChartPngOutputScale scale) => WithPngOutputScale((int)scale);
-
-    /// <summary>
-    /// Sets explicit cartesian x-axis bounds.
-    /// </summary>
-    /// <param name="minimum">The minimum x-axis value.</param>
-    /// <param name="maximum">The maximum x-axis value.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithXAxisBounds(double minimum, double maximum) {
-        Options.SetXAxisBounds(minimum, maximum);
-        return this;
-    }
-
-    /// <summary>
-    /// Clears explicit cartesian x-axis bounds so renderers can infer them from data.
-    /// </summary>
-    /// <returns>The current chart.</returns>
-    public Chart WithAutomaticXAxisBounds() {
-        Options.ClearXAxisBounds();
-        return this;
-    }
-
-    /// <summary>
-    /// Sets explicit cartesian y-axis bounds.
-    /// </summary>
-    /// <param name="minimum">The minimum y-axis value.</param>
-    /// <param name="maximum">The maximum y-axis value.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithYAxisBounds(double minimum, double maximum) {
-        Options.SetYAxisBounds(minimum, maximum);
-        return this;
-    }
-
-    /// <summary>
-    /// Clears explicit cartesian y-axis bounds so renderers can infer them from data.
-    /// </summary>
-    /// <returns>The current chart.</returns>
-    public Chart WithAutomaticYAxisBounds() {
-        Options.ClearYAxisBounds();
-        return this;
-    }
-
-    /// <summary>
-    /// Sets explicit secondary cartesian y-axis bounds.
-    /// </summary>
-    /// <param name="minimum">The minimum secondary y-axis value.</param>
-    /// <param name="maximum">The maximum secondary y-axis value.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithSecondaryYAxisBounds(double minimum, double maximum) {
-        Options.SetSecondaryYAxisBounds(minimum, maximum);
-        return this;
-    }
-
-    /// <summary>
-    /// Clears explicit secondary cartesian y-axis bounds so renderers can infer them from data.
-    /// </summary>
-    /// <returns>The current chart.</returns>
-    public Chart WithAutomaticSecondaryYAxisBounds() {
-        Options.ClearSecondaryYAxisBounds();
-        return this;
-    }
-
-    /// <summary>
-    /// Sets whether the rendered background should be transparent.
-    /// </summary>
-    /// <param name="transparent">True to render a transparent background; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithTransparentBackground(bool transparent = true) { Options.TransparentBackground = transparent; return this; }
-
-    /// <summary>
-    /// Sets whether the legend should be rendered.
-    /// </summary>
-    /// <param name="visible">True to render the legend; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithLegend(bool visible = true) { Options.ShowLegend = visible; return this; }
-
-    /// <summary>
-    /// Sets whether capable legends should render one entry per visual point instead of one entry per series.
-    /// </summary>
-    /// <param name="visible">True to render point-level legend entries; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPointLegend(bool visible = true) { Options.ShowPointLegend = visible; return this; }
-
-    /// <summary>
-    /// Sets whether the chart title and subtitle should be rendered.
-    /// </summary>
-    /// <param name="visible">True to render the header; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithHeader(bool visible = true) { Options.ShowHeader = visible; return this; }
-
-    /// <summary>
-    /// Sets whether the outer card surface should be rendered.
-    /// </summary>
-    /// <param name="visible">True to render the card; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithCard(bool visible = true) { Options.ShowCard = visible; return this; }
-
-    /// <summary>
-    /// Sets whether the plot background surface should be rendered.
-    /// </summary>
-    /// <param name="visible">True to render the plot background; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithPlotBackground(bool visible = true) { Options.ShowPlotBackground = visible; return this; }
-
-    /// <summary>
-    /// Sets the preferred number of ticks per axis.
-    /// </summary>
-    /// <param name="count">The preferred tick count.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithTickCount(int count) {
-        if (count < 2) throw new ArgumentOutOfRangeException(nameof(count), count, "Tick count must be at least two.");
-        Options.TickCount = count;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets how aggressively explicit x-axis labels should be reduced when space is limited.
-    /// </summary>
-    /// <param name="density">The x-axis label density mode.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithXAxisLabelDensity(ChartLabelDensity density) { Options.XAxisLabelDensity = density; return this; }
-
-    /// <summary>
-    /// Sets how aggressively generated y-axis labels should be reduced when vertical space is limited.
-    /// </summary>
-    /// <param name="density">The y-axis label density mode.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithYAxisLabelDensity(ChartLabelDensity density) { Options.YAxisLabelDensity = density; return this; }
-
-    /// <summary>
-    /// Sets the x-axis label rotation angle in degrees for capable renderers.
-    /// </summary>
-    /// <param name="degrees">The label angle in degrees. Values are clamped by renderers when needed.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithXAxisLabelAngle(double degrees) { ChartGuards.Finite(degrees, nameof(degrees)); Options.XAxisLabelAngle = degrees; return this; }
+    public Chart FontFamily(string fontFamily) { Options.Theme = Options.Theme.WithFontFamily(fontFamily); return this; }
 
     /// <summary>
     /// Sets the optional Gantt current-date marker.
     /// </summary>
     /// <param name="today">The current date marker. Pass null to hide the marker.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithGanttToday(DateTime? today) { Options.GanttToday = today?.ToOADate(); return this; }
-
-    /// <summary>
-    /// Sets the optional Gantt current-position marker for numeric schedules.
-    /// </summary>
-    /// <param name="value">The current schedule value. Pass null to hide the marker.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithGanttToday(double? value) { Options.GanttToday = value; return this; }
-
-    /// <summary>
-    /// Sets chart-level data-label visibility. Explicit series overrides take precedence.
-    /// </summary>
-    /// <param name="visible">True to render data labels; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithDataLabels(bool visible = true) { Options.ShowDataLabels = visible; return this; }
-
-    /// <summary>
-    /// Sets the preferred data-label placement for capable renderers.
-    /// </summary>
-    /// <param name="placement">The preferred placement.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithDataLabelPlacement(ChartDataLabelPlacement placement) { Options.DataLabelPlacement = placement; return this; }
-
-    /// <summary>
-    /// Sets how heatmap values are converted into cell colors.
-    /// </summary>
-    /// <param name="scale">The heatmap color scale.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithHeatmapScale(ChartHeatmapScale scale) { Options.HeatmapScale = scale; return this; }
-
-    /// <summary>
-    /// Sets a formatter used for y-axis ticks, data labels, stack totals, and donut totals.
-    /// </summary>
-    /// <param name="formatter">The value formatter. Pass null to restore the default compact formatter.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithValueFormatter(Func<double, string>? formatter) { Options.ValueFormatter = formatter; return this; }
-
-    /// <summary>
-    /// Sets a formatter used for generated numeric x-axis tick labels.
-    /// </summary>
-    /// <param name="formatter">The x-axis value formatter. Pass null to restore the default compact formatter.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithXAxisValueFormatter(Func<double, string>? formatter) { Options.XAxisValueFormatter = formatter; return this; }
+    public Chart GanttToday(DateTime? today) { Options.Gantt.Today = today?.ToOADate(); return this; }
 
     /// <summary>
     /// Configures the chart as a compact sparkline for inline dashboard and table use.
     /// </summary>
     /// <param name="enabled">True to render as a sparkline; otherwise false.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithSparkline(bool enabled = true) {
+    public Chart Sparkline(bool enabled = true) {
         Options.IsSparkline = enabled;
         Options.ShowHeader = !enabled;
-        Options.ShowLegend = !enabled;
+        Options.Legend.Visible = !enabled;
         Options.ShowGrid = !enabled;
         Options.ShowAxes = !enabled;
-        Options.ShowXAxis = !enabled;
-        Options.ShowYAxis = !enabled;
+        Options.XAxis.Visible = !enabled;
+        Options.YAxis.Visible = !enabled;
         Options.ShowAxisLines = !enabled;
         Options.ShowCard = !enabled;
         Options.ShowPlotBackground = !enabled;
@@ -413,11 +110,11 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="labels">The labels to place at x values 1 through N.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithXLabels(params string[] labels) {
+    public Chart XLabels(params string[] labels) {
         if (labels == null) throw new ArgumentNullException(nameof(labels));
         var materialized = new ChartAxisLabel[labels.Length];
         for (var i = 0; i < labels.Length; i++) materialized[i] = new ChartAxisLabel(i + 1, labels[i] ?? throw new ArgumentNullException(nameof(labels)));
-        return WithXLabels(materialized);
+        return XLabels(materialized);
     }
 
     /// <summary>
@@ -425,7 +122,7 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="labels">The labels to render at numeric x values.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithXLabels(IEnumerable<ChartAxisLabel> labels) {
+    public Chart XLabels(IEnumerable<ChartAxisLabel> labels) {
         if (labels == null) throw new ArgumentNullException(nameof(labels));
         var materialized = labels.ToArray();
         foreach (var label in materialized) {
@@ -433,23 +130,23 @@ public sealed partial class Chart {
             if (label.Text == null) throw new ArgumentException("Axis label text must not be null.", nameof(labels));
         }
 
-        Options.XAxisLabels.Clear();
-        Options.XAxisLabels.AddRange(materialized);
+        Options.XAxis.Labels.Clear();
+        Options.XAxis.Labels.AddRange(materialized);
         return this;
     }
 
     /// <summary>
     /// Sets x-axis labels from date/time values. Positions follow the instant rule of <see cref="ChartPoint(DateTime, double)"/>
     /// (Local converted to UTC), so they line up with date/time points; for classic timeline and Gantt charts built from
-    /// Local dates, pass Unspecified dates or use <see cref="WithXLabels(IEnumerable{ChartAxisLabel})"/> with <c>ToOADate()</c> values.
+    /// Local dates, pass Unspecified dates or use <see cref="XLabels(IEnumerable{ChartAxisLabel})"/> with <c>ToOADate()</c> values.
     /// </summary>
     /// <param name="dates">The date/time values to label.</param>
     /// <param name="format">The date/time format string used for labels.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithXDateLabels(IEnumerable<DateTime> dates, string format = "MMM d") {
+    public Chart XDateLabels(IEnumerable<DateTime> dates, string format = "MMM d") {
         if (dates == null) throw new ArgumentNullException(nameof(dates));
         if (format == null) throw new ArgumentNullException(nameof(format));
-        return WithXLabels(dates.Select(date => new ChartAxisLabel(date, date.ToString(format, CultureInfo.InvariantCulture))));
+        return XLabels(dates.Select(date => new ChartAxisLabel(date, date.ToString(format, CultureInfo.InvariantCulture))));
     }
 
     /// <summary>

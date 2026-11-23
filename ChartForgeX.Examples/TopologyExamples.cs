@@ -45,7 +45,7 @@ internal static class TopologyExamples {
         foreach (var demo in demos) {
             var options = DemoRenderOptions(demo.Item1, iconCatalog);
             demo.Item2.SaveSvg(Path.Combine(target, demo.Item1 + ".svg"), options);
-            if (options?.EnableHtmlInteractions == true) demo.Item2.SaveInteractiveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
+            if (options?.Html.Interactions == true) demo.Item2.SaveInteractiveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
             else demo.Item2.SaveHtml(Path.Combine(target, demo.Item1 + ".html"), options);
             demo.Item2.SavePng(Path.Combine(target, demo.Item1 + ".png"), options);
         }
@@ -87,11 +87,7 @@ internal static class TopologyExamples {
     private static TopologyRenderOptions? DemoRenderOptions(string name, TopologyIconCatalog iconCatalog) {
         if (name == "service-dependency") return new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto };
         if (name == "icon-palette") {
-            return new TopologyRenderOptions {
-                IconCatalog = iconCatalog,
-                IncludeLegend = false,
-                EnableHtmlInteractions = true
-            };
+            return new TopologyRenderOptions { IconCatalog = iconCatalog, IncludeLegend = false, Html = { Interactions = true } };
         }
 
         return null;
@@ -100,29 +96,29 @@ internal static class TopologyExamples {
     private static TopologyIconCatalog BuildDemoIconCatalog() {
         return TopologyIconCatalog.Default()
             .AddPack(new TopologyIconPack("azure-example", "Azure Example Icons", vendor: "Microsoft", version: "sample")
-                .WithMetadata("licensing", "Sample artwork; hosts can replace these with approved official vendor assets.")
-                .WithTags("azure", "cloud", "vendor", "sample")
+                .Metadata("licensing", "Sample artwork; hosts can replace these with approved official vendor assets.")
+                .AddTags("azure", "cloud", "vendor", "sample")
                 .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
                     Symbol = "ADF",
                     Color = "#0078D4",
                     Category = "Azure",
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"6\" width=\"13\" height=\"32\" rx=\"2\" fill=\"#50E6FF\"/><path d=\"M20 17 H28 M20 31 H28\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"29\" r=\"2.6\" fill=\"#FFFFFF\"/>", "0 0 48 48")
-                }.WithTags("data-factory", "pipeline", "etl"))
+                }.AddTags("data-factory", "pipeline", "etl"))
                 .AddIcon(new TopologyIconDefinition("azure-example", "key-vault", "Key Vault", TopologyNodeKind.Certificate, TopologyIconShape.Certificate) {
                     Symbol = "KV",
                     Color = "#0078D4",
                     Category = "Security",
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Artwork = TopologyIconArtwork.InlineSvg("<circle cx=\"24\" cy=\"16\" r=\"9\" fill=\"#50E6FF\"/><rect x=\"13\" y=\"21\" width=\"22\" height=\"18\" rx=\"3\" fill=\"#0078D4\"/><path d=\"M20 21 v-5 a4 4 0 0 1 8 0 v5\" fill=\"none\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"24\" cy=\"30\" r=\"3\" fill=\"#FFFFFF\"/><path d=\"M24 33 v4\" stroke=\"#FFFFFF\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>", "0 0 48 48")
-                }.WithTags("key-vault", "secret", "certificate"))
+                }.AddTags("key-vault", "secret", "certificate"))
                 .AddIcon(new TopologyIconDefinition("azure-example", "resource-group", "Resource Group", TopologyNodeKind.Group, TopologyIconShape.Network) {
                     Symbol = "RG",
                     Color = "#0078D4",
                     Category = "Azure",
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#50E6FF\"/><rect x=\"17\" y=\"27\" width=\"14\" height=\"13\" rx=\"2\" fill=\"#7FBA00\"/><path d=\"M20 14.5 H28 M24 21 V27\" stroke=\"#243A5E\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>", "0 0 48 48")
-                }.WithTags("resource-group", "group", "azure")));
+                }.AddTags("resource-group", "group", "azure")));
     }
 
     private static void WriteView(TopologyChart chart, string pathWithoutExtension, TopologyView view) {
@@ -166,12 +162,12 @@ internal static class TopologyExamples {
 
     private static TopologyChart BuildSiteTopologyChart() {
         return TopologyChart.Create()
-            .WithId("site-topology")
-            .WithTitle("Site Topology")
-            .WithSubtitle("Sample regional site topology with hubs, branches, bridgeheads, and site-link health.")
-            .WithViewport(1200, 680, 28)
-            .WithTheme(VisualTheme.Graphite())
-            .WithLegend(TopologyLegend.Default()
+            .Id("site-topology")
+            .Title("Site Topology")
+            .Subtitle("Sample regional site topology with hubs, branches, bridgeheads, and site-link health.")
+            .Viewport(new TopologyViewport(1200, 680, 28))
+            .Theme(VisualTheme.Graphite())
+            .Legend(TopologyLegend.Default()
                 .AddNodeKind("Hub site", TopologyNodeKind.Hub, symbol: "H")
                 .AddNodeKind("Branch site", TopologyNodeKind.Branch, symbol: "B")
                 .AddNodeKind("Bridgehead", TopologyNodeKind.Server, symbol: "BH")
@@ -199,11 +195,11 @@ internal static class TopologyExamples {
 
     private static TopologyChart BuildReplicationMeshChart() {
         var chart = TopologyChart.Create()
-            .WithId("replication-mesh")
-            .WithTitle("Replication Mesh")
-            .WithSubtitle("Sample deterministic replication paths with lag, queue, and last-success labels.")
-            .WithViewport(1200, 680, 28)
-            .WithLegend(TopologyLegend.Default().AddNodeKind("Domain controller", TopologyNodeKind.Server, symbol: "DC").AddEdgeKind("Replication", TopologyEdgeKind.Replication))
+            .Id("replication-mesh")
+            .Title("Replication Mesh")
+            .Subtitle("Sample deterministic replication paths with lag, queue, and last-success labels.")
+            .Viewport(new TopologyViewport(1200, 680, 28))
+            .Legend(TopologyLegend.Default().AddNodeKind("Domain controller", TopologyNodeKind.Server, symbol: "DC").AddEdgeKind("Replication", TopologyEdgeKind.Replication))
             .AddGroup("HQ-NYC", "HQ-NYC", 55, 120, 205, 135, TopologyHealthStatus.Healthy, "2 DCs", "/replication/sites/hq-nyc")
             .AddGroup("LON-LON", "LON-LON", 350, 120, 205, 135, TopologyHealthStatus.Healthy, "2 DCs", "/replication/sites/lon-lon")
             .AddGroup("FRA-FRA", "FRA-FRA", 645, 120, 205, 135, TopologyHealthStatus.Warning, "2 DCs", "/replication/sites/fra-fra")
@@ -226,13 +222,13 @@ internal static class TopologyExamples {
             .AddEdge("lon-sfo", "lon-dc1", "sfo-dc1", "118 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal, "Q:301; 10m ago", "/replication/paths/lon-sfo");
         AddReplicationMetrics(chart);
         chart
-            .WithEdgePorts("nyc-lon", TopologyEdgePort.Right, TopologyEdgePort.Left)
-            .WithEdgePorts("lon-fra", TopologyEdgePort.Right, TopologyEdgePort.Left)
-            .WithEdgePorts("fra-sin", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
-            .WithEdgeRouteLane("fra-sin", 24)
-            .WithEdgePorts("sfo-sin", TopologyEdgePort.Right, TopologyEdgePort.Left)
-            .WithEdgePorts("lon-sfo", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
-            .WithEdgeRouteLane("lon-sfo", -24);
+            .UpdateEdge("nyc-lon", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
+            .UpdateEdge("lon-fra", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
+            .UpdateEdge("fra-sin", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
+            .EdgeRouteLane("fra-sin", 24)
+            .UpdateEdge("sfo-sin", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
+            .UpdateEdge("lon-sfo", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
+            .EdgeRouteLane("lon-sfo", -24);
         foreach (var node in chart.Nodes.Where(node => node.Kind == TopologyNodeKind.Server)) {
             node.DisplayMode = TopologyNodeDisplayMode.Icon;
             node.Badge = node.Id.EndsWith("dc1", StringComparison.Ordinal) ? "1" : "2";
@@ -243,11 +239,11 @@ internal static class TopologyExamples {
 
     private static TopologyChart BuildSubnetsSiteLinksChart() {
         return TopologyChart.Create()
-            .WithId("subnets-site-links")
-            .WithTitle("Subnets and Site Links")
-            .WithSubtitle("Sample mapping of sites, subnet groups, bridgeheads, costs, transport, and mapping issues.")
-            .WithViewport(1200, 680, 28)
-            .WithLegend(TopologyLegend.Default().AddNodeKind("Subnet", TopologyNodeKind.NetworkSegment, symbol: "NET").AddNodeKind("Subnet group", TopologyNodeKind.Network, symbol: "NW").AddEdgeKind("Subnet mapping", TopologyEdgeKind.Mapping))
+            .Id("subnets-site-links")
+            .Title("Subnets and Site Links")
+            .Subtitle("Sample mapping of sites, subnet groups, bridgeheads, costs, transport, and mapping issues.")
+            .Viewport(new TopologyViewport(1200, 680, 28))
+            .Legend(TopologyLegend.Default().AddNodeKind("Subnet", TopologyNodeKind.NetworkSegment, symbol: "NET").AddNodeKind("Subnet group", TopologyNodeKind.Network, symbol: "NW").AddEdgeKind("Subnet mapping", TopologyEdgeKind.Mapping))
             .AddGroup("AMER", "AMER", 55, 120, 315, 335, TopologyHealthStatus.Healthy, "47 sites", "/subnets/regions/amer")
             .AddGroup("EMEA", "EMEA", 435, 120, 315, 335, TopologyHealthStatus.Warning, "56 sites", "/subnets/regions/emea")
             .AddGroup("APAC", "APAC", 815, 120, 315, 335, TopologyHealthStatus.Critical, "39 sites", "/subnets/regions/apac")
@@ -263,21 +259,21 @@ internal static class TopologyExamples {
             .AddEdge("emea-apac", "emea-hub", "apac-hub", "MPLS $1.35", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Straight, "82 ms", "/subnets/links/emea-apac")
             .AddEdge("apac-anz", "apac-hub", "anz-subnet", "MPLS $1.10", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "62 ms", "/subnets/links/apac-anz")
             .AddEdge("orphan-bh", "orphan", "bridgehead", "unmapped", TopologyEdgeKind.Mapping, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.Straight, "needs owner", "/subnets/issues/orphan-bh")
-            .WithEdgePorts("amer-emea", TopologyEdgePort.Right, TopologyEdgePort.Left)
-            .WithEdgePorts("emea-apac", TopologyEdgePort.Right, TopologyEdgePort.Left)
-            .WithEdgePorts("apac-anz", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
-            .WithEdgeRouteLane("apac-anz", 18);
+            .UpdateEdge("amer-emea", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
+            .UpdateEdge("emea-apac", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
+            .UpdateEdge("apac-anz", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
+            .EdgeRouteLane("apac-anz", 18);
     }
 
     private static TopologyChart BuildGeographicTopologyChart() {
         var chart = TopologyChart.Create()
-            .WithId("geographic-topology")
-            .WithTitle("Geographic Topology")
-            .WithSubtitle("Abstract region placement with clustered child sites and WAN latency labels.")
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
-            .WithViewport(1200, 680, 28)
-            .WithLegend(TopologyLegend.Default().AddNodeKind("Region", TopologyNodeKind.Location, symbol: "R").AddEdgeKind("Connectivity", TopologyEdgeKind.Connectivity))
+            .Id("geographic-topology")
+            .Title("Geographic Topology")
+            .Subtitle("Abstract region placement with clustered child sites and WAN latency labels.")
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
+            .Viewport(new TopologyViewport(1200, 680, 28))
+            .Legend(TopologyLegend.Default().AddNodeKind("Region", TopologyNodeKind.Location, symbol: "R").AddEdgeKind("Connectivity", TopologyEdgeKind.Connectivity))
             .AddNode("amer", "AMER", 180, 270, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, null, "47 sites", "/geo/regions/amer", null, 128, 62)
             .AddNode("emea", "EMEA", 520, 210, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, null, "56 sites", "/geo/regions/emea", null, 128, 62)
             .AddNode("apac", "APAC", 860, 330, TopologyNodeKind.Location, TopologyHealthStatus.Critical, null, "39 sites", "/geo/regions/apac", null, 128, 62)
@@ -292,15 +288,15 @@ internal static class TopologyExamples {
             .AddEdge("amer-apac", "amer", "apac", "142 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved, "backup", "/geo/links/amer-apac")
             .AddEdge("amer-nva", "amer", "nva", "local", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, routing: TopologyEdgeRouting.Curved, href: "/geo/links/amer-nva")
             .AddEdge("apac-anz", "apac", "anz", "down", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, routing: TopologyEdgeRouting.Curved, href: "/geo/links/apac-anz")
-            .WithNodeCoordinates("amer", -98.5795, 39.8283)
-            .WithNodeCoordinates("emea", 12.4964, 41.9028)
-            .WithNodeCoordinates("apac", 105, 18)
-            .WithNodeCoordinates("nva", -74.006, 40.7128)
-            .WithNodeCoordinates("chi", -87.6298, 41.8781)
-            .WithNodeCoordinates("uk", -0.1276, 51.5072)
-            .WithNodeCoordinates("de", 8.6821, 50.1109)
-            .WithNodeCoordinates("sg", 103.8198, 1.3521)
-            .WithNodeCoordinates("anz", 151.2093, -33.8688);
+            .UpdateNode("amer", n => n.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateNode("emea", n => n.Longitude(12.4964).Latitude(41.9028))
+            .UpdateNode("apac", n => n.Longitude(105).Latitude(18))
+            .UpdateNode("nva", n => n.Longitude(-74.006).Latitude(40.7128))
+            .UpdateNode("chi", n => n.Longitude(-87.6298).Latitude(41.8781))
+            .UpdateNode("uk", n => n.Longitude(-0.1276).Latitude(51.5072))
+            .UpdateNode("de", n => n.Longitude(8.6821).Latitude(50.1109))
+            .UpdateNode("sg", n => n.Longitude(103.8198).Latitude(1.3521))
+            .UpdateNode("anz", n => n.Longitude(151.2093).Latitude(-33.8688));
         foreach (var node in chart.Nodes.Where(node => node.Kind is TopologyNodeKind.Branch or TopologyNodeKind.Server)) {
             node.DisplayMode = TopologyNodeDisplayMode.Dot;
             node.Badge = node.Symbol ?? node.Label.Split(' ')[0];
@@ -311,12 +307,12 @@ internal static class TopologyExamples {
 
     private static TopologyChart BuildDcConnectivityChart() {
         return TopologyChart.Create()
-            .WithId("dc-connectivity")
-            .WithTitle("Domain Controller Connectivity")
-            .WithSubtitle("Sample selected-domain-controller connectivity, connection objects, and service health.")
-            .WithLayout(TopologyLayoutMode.HubAndSpoke)
-            .WithViewport(1200, 620, 28)
-            .WithLegend(TopologyLegend.Default()
+            .Id("dc-connectivity")
+            .Title("Domain Controller Connectivity")
+            .Subtitle("Sample selected-domain-controller connectivity, connection objects, and service health.")
+            .LayoutMode(TopologyLayoutMode.HubAndSpoke)
+            .Viewport(new TopologyViewport(1200, 620, 28))
+            .Legend(TopologyLegend.Default()
                 .AddNodeKind("Domain controller", TopologyNodeKind.Server, symbol: "DC")
                 .AddNodeKind("Global catalog", TopologyNodeKind.Server, symbol: "GC")
                 .AddNodeKind("RODC", TopologyNodeKind.Server, symbol: "RO")
@@ -356,12 +352,12 @@ internal static class TopologyExamples {
 
     private static TopologyChart BuildServiceDependencyChart() {
         return TopologyChart.Create()
-            .WithId("service-dependency")
-            .WithTitle("Service Dependency")
-            .WithSubtitle("Generic service, database, queue, and team ownership topology using product-neutral node kinds.")
-            .WithLayout(TopologyLayoutMode.Layered)
-            .WithViewport(1200, 640, 28)
-            .WithLegend(null)
+            .Id("service-dependency")
+            .Title("Service Dependency")
+            .Subtitle("Generic service, database, queue, and team ownership topology using product-neutral node kinds.")
+            .LayoutMode(TopologyLayoutMode.Layered)
+            .Viewport(new TopologyViewport(1200, 640, 28))
+            .Legend((TopologyLegend?)null)
             .AddGroup("edge", "Edge Tier", 55, 120, 250, 300, TopologyHealthStatus.Healthy, "Gateways")
             .AddGroup("app", "Application Tier", 365, 120, 310, 300, TopologyHealthStatus.Warning, "Services")
             .AddGroup("data", "Data Tier", 735, 120, 330, 300, TopologyHealthStatus.Critical, "Stores")

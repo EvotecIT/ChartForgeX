@@ -38,11 +38,11 @@ public sealed class NativeFinancialComponentValueTests {
     public void ForeignTupleStructurePolicyOrUncapturedSourceRejectsBeforeNativePayload(string condition) {
         var renderer = new HtmlInteractiveChartRenderer(); var from = Section(renderer, false, true); var chart = NativeFinancialComponentBeforeControls.Model(condition == "kind", true, 60, 80, 10, 40);
         if (condition == "x") chart.Series[0].UpdateFinancialValue(0, new ChartCandlestick(1.25, 60, 80, 10, 40));
-        if (condition == "id") chart.Series[0].WithObservationId(0, new ChartObservationId("foreign"));
-        if (condition == "direction-style") chart.Series[0].ConfigureFinancial(options => options.Falling.StrokeWidth = 9);
-        if (condition == "datum-style") chart.Series[0].ConfigureFinancialValue(0, options => options.StrokeWidth = 9);
-        if (condition == "auto-axis") chart.ConfigureXAxis(axis => { axis.Minimum = null; axis.Maximum = null; });
-        if (condition == "callback") chart.WithValueFormat(ChartValueFormat.Custom(_ => "callback"));
+        if (condition == "id") chart.Series[0].ObservationId(0, new ChartObservationId("foreign"));
+        if (condition == "direction-style") chart.Series[0].Financial(options => options.Falling.StrokeWidth = 9);
+        if (condition == "datum-style") chart.Series[0].FinancialValue(0, options => options.StrokeWidth = 9);
+        if (condition == "auto-axis") chart.XAxis(axis => { axis.Min = null; axis.Max = null; });
+        if (condition == "callback") chart.ValueFormat(ChartValueFormat.Custom(_ => "callback"));
         HtmlChartSection? to = null; var error = Record.Exception(() => { to = NativeFinancialComponentBeforeControls.Section(renderer, chart); _ = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); });
         Capture(from, to ?? from, from, null, null, error, "financial-reject-" + condition); Assert.IsType<NotSupportedException>(error);
     }
@@ -50,7 +50,7 @@ public sealed class NativeFinancialComponentValueTests {
     public void CapturedBothDirectionAndDatumPoliciesAndFacesStayDetachedAfterCallerMutation(bool ohlc) {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeFinancialComponentBeforeControls.Model(ohlc, true); var ordinary = renderer.PrepareSection(chart); var from = NativeFinancialComponentBeforeControls.Section(renderer, chart); var to = Section(renderer, ohlc, true, true);
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); Capture(from, to, ordinary, frames, payload, null, "financial-detached-" + ohlc);
-        Assert.Equal(ordinary.PreparedVisual.ToSvg(), from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(), from.PreparedVisual.ToPng()); chart.Series[0].ConfigureFinancial(options => options.Falling.StrokeWidth = 20); chart.Series[0].ConfigureFinancialValue(0, options => options.Stroke = ChartColor.Black); chart.Series[0].ReplaceFinancialValues(Array.Empty<ChartCandlestick>()); chart.WithFontFamily("mutated caller");
+        Assert.Equal(ordinary.PreparedVisual.ToSvg(), from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(), from.PreparedVisual.ToPng()); chart.Series[0].Financial(options => options.Falling.StrokeWidth = 20); chart.Series[0].FinancialValue(0, options => options.Stroke = ChartColor.Black); chart.Series[0].ReplaceFinancialValues(Array.Empty<ChartCandlestick>()); chart.FontFamily("mutated caller");
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3))); for (var index = 0; index < frames.Count; index++) { Assert.Equal(frames[index].ToSvg(), repeated[index].ToSvg()); Assert.Equal(frames[index].ToPng(), repeated[index].ToPng()); } } finally { _ = BrowserProofFonts.Family; }
     }
     [Theory] [InlineData("high")] [InlineData("low")] [InlineData("nan")]
@@ -60,9 +60,9 @@ public sealed class NativeFinancialComponentValueTests {
     }
     [Fact]
     public void UnusedFinancialDirectionPolicyBindsSourceIdentityEvenWhenNativeSvgIsUnchanged() {
-        var renderer = new HtmlInteractiveChartRenderer(); var firstChart = NativeFinancialComponentBeforeControls.Model(false, false).WithLegend(false); var secondChart = NativeFinancialComponentBeforeControls.Model(false, false).WithLegend(false);
+        var renderer = new HtmlInteractiveChartRenderer(); var firstChart = NativeFinancialComponentBeforeControls.Model(false, false).Legend(false); var secondChart = NativeFinancialComponentBeforeControls.Model(false, false).Legend(false);
         foreach (var chart in new[] { firstChart, secondChart }) foreach (var series in chart.Series) series.UpdateFinancialValue(1, new ChartCandlestick(3, 40, 70, 20, 60));
-        secondChart.Series[0].ConfigureFinancial(options => options.Falling.StrokeWidth = 9);
+        secondChart.Series[0].Financial(options => options.Falling.StrokeWidth = 9);
         var first = NativeFinancialComponentBeforeControls.Section(renderer, firstChart); var second = NativeFinancialComponentBeforeControls.Section(renderer, secondChart);
         Capture(first, second, first, null, null, null, "financial-unused-direction"); Assert.Equal(first.PreparedVisual.ToSvg(), second.PreparedVisual.ToSvg()); Assert.Equal(first.PreparedVisual.ToPng(), second.PreparedVisual.ToPng());
         var firstSource = NativeRawValueSourceMotionTests.Metadata(first).GetProperty("nativeValueSource"); var secondSource = NativeRawValueSourceMotionTests.Metadata(second).GetProperty("nativeValueSource");

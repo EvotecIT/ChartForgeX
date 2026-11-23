@@ -18,22 +18,18 @@ internal static partial class SmokeTests {
         Assert(catalog.Search(new TopologyIconCatalogQuery { SearchText = "subnet" }).Any(icon => icon.QualifiedId == "microsoft-ad:ad-subnet"), "AD subnet should remain discoverable by subnet search.");
 
         var chart = TopologyChart.Create()
-            .WithId("icon-pack-demo")
-            .WithViewport(520, 280, 24)
-            .WithLegend(null)
+            .Id("icon-pack-demo")
+            .Viewport(new TopologyViewport(520, 280, 24))
+            .Legend((TopologyLegend?)null)
             .AddGroup("directory", "Directory", 24, 70, 250, 150, TopologyHealthStatus.Healthy, iconId: "microsoft-ad:site")
-            .WithGroupIcon("directory", "microsoft-ad:site", catalog)
+            .GroupIcon("directory", "microsoft-ad:site", catalog)
             .AddIconNode("dc1", "DC1", "microsoft-ad:domain-controller", 58, 120, TopologyHealthStatus.Healthy, "directory", catalog: catalog)
             .AddIconNode("switch1", "Core Switch", "network:switch", 178, 120, TopologyHealthStatus.Warning, "directory", catalog: catalog)
             .AddIconNode("backup1", "VBR01", "veeam:backup-server", 360, 120, TopologyHealthStatus.Healthy, groupId: null, catalog: catalog)
             .AddEdge("dc-switch", "dc1", "switch1", "LDAP", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy)
             .AddEdge("switch-backup", "switch1", "backup1", "backup", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
 
-        var options = new TopologyRenderOptions {
-            IncludeLegend = false,
-            IconCatalog = catalog,
-            EnableHtmlInteractions = true
-        };
+        var options = new TopologyRenderOptions { IncludeLegend = false, IconCatalog = catalog, Html = { Interactions = true } };
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-node-icon-id=\"microsoft-ad:domain-controller\"", StringComparison.Ordinal), "Topology SVG should expose built-in node icon ids.");
         Assert(svg.Contains("data-node-icon-pack=\"microsoft-ad\"", StringComparison.Ordinal), "Topology SVG should expose built-in node icon packs.");
@@ -61,11 +57,7 @@ internal static partial class SmokeTests {
             PacksPerRow = 3,
             ColumnsPerPack = 3
         });
-        var options = new TopologyRenderOptions {
-            IconCatalog = catalog,
-            IncludeLegend = false,
-            EnableHtmlInteractions = true
-        };
+        var options = new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false, Html = { Interactions = true } };
 
         Assert(palette.Groups.Count == catalog.Packs.Count, "The palette chart should create one group per registered icon pack.");
         Assert(palette.Nodes.Count == catalog.Packs.Sum(pack => pack.Icons.Count), "The palette chart should create one node per registered icon.");
@@ -91,14 +83,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconArtworkRendersVendorSvgAssets() {
         var pack = new TopologyIconPack("azure-example", "Azure Example Icons", vendor: "Microsoft", version: "sample")
-            .WithTags("azure", "cloud", "vendor", "sample")
+            .AddTags("azure", "cloud", "vendor", "sample")
             .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
                 Symbol = "ADF",
                 Color = "#0078D4",
                 Category = "Azure",
                 DisplayMode = TopologyNodeDisplayMode.Tile,
                 Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"6\" width=\"13\" height=\"32\" rx=\"2\" fill=\"#50E6FF\"/><path d=\"M20 17 H28 M20 31 H28\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"29\" r=\"2.6\" fill=\"#FFFFFF\"/>", "0 0 48 48")
-            }.WithTags("data-factory", "pipeline", "azure"));
+            }.AddTags("data-factory", "pipeline", "azure"));
         var catalog = TopologyIconCatalog.Default().AddPack(pack);
 
         var palette = catalog.ToPaletteChart(new TopologyIconPaletteOptions {
@@ -106,11 +98,7 @@ internal static partial class SmokeTests {
             Title = "Azure Example Icons",
             IncludeBuiltInPacks = false
         });
-        var renderOptions = new TopologyRenderOptions {
-            IconCatalog = catalog,
-            IncludeLegend = false,
-            EnableHtmlInteractions = true
-        };
+        var renderOptions = new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false, Html = { Interactions = true } };
 
         var svg = palette.ToSvg(renderOptions);
         Assert(svg.Contains("data-node-icon-artwork=\"svg\"", StringComparison.Ordinal), "SVG palette nodes should expose artwork type metadata.");
@@ -139,14 +127,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconStencilBrowserRendersSearchablePicker() {
         var pack = new TopologyIconPack("azure-example", "Azure Example Icons", vendor: "Microsoft", version: "sample")
-            .WithTags("azure", "cloud", "vendor", "sample")
+            .AddTags("azure", "cloud", "vendor", "sample")
             .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
                 Symbol = "ADF",
                 Color = "#0078D4",
                 Category = "Azure",
                 DisplayMode = TopologyNodeDisplayMode.Tile,
                 Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/>", "0 0 48 48")
-            }.WithTags("data-factory", "pipeline"));
+            }.AddTags("data-factory", "pipeline"));
         var catalog = TopologyIconCatalog.Default().AddPack(pack);
 
         var html = catalog.ToStencilBrowserHtmlPage(new TopologyIconStencilBrowserOptions {
@@ -394,18 +382,18 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconCatalogsExposePickerFacetsAndMetadata() {
         var vendorPack = new TopologyIconPack("veeam", "Veeam", vendor: "Veeam", version: "13")
-            .WithMetadata("website", "https://www.veeam.com")
-            .WithTags("backup", "vendor")
+            .Metadata("website", "https://www.veeam.com")
+            .AddTags("backup", "vendor")
             .AddIcon(new TopologyIconDefinition("veeam", "proxy", "Backup Proxy", TopologyNodeKind.Server, TopologyIconShape.Server) {
                 Symbol = "PRX",
                 Color = "#00B336",
                 Category = "Backup"
-            }.WithMetadata("product", "Backup and Replication").WithTags("proxy", "worker"))
+            }.Metadata("product", "Backup and Replication").AddTags("proxy", "worker"))
             .AddIcon(new TopologyIconDefinition("veeam", "repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
                 Symbol = "REPO",
                 Color = "#007A5A",
                 Category = "Storage"
-            }.WithMetadata("product", "Backup and Replication").WithTags("repository", "repo"));
+            }.Metadata("product", "Backup and Replication").AddTags("repository", "repo"));
         var catalog = TopologyIconCatalog.Default().AddPack(vendorPack);
 
         Assert(catalog.GetPackIds().Contains("veeam"), "Catalog facet helpers should include vendor pack ids.");
@@ -439,21 +427,21 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconPackManifestsRoundTripVendorPacks() {
         var sourcePack = new TopologyIconPack("veeam", "Veeam", vendor: "Veeam", version: "13")
-            .WithMetadata("website", "https://www.veeam.com")
-            .WithMetadata("source", "vendor-manifest")
-            .WithTags("backup", "vendor", "repository")
+            .Metadata("website", "https://www.veeam.com")
+            .Metadata("source", "vendor-manifest")
+            .AddTags("backup", "vendor", "repository")
             .AddIcon(new TopologyIconDefinition("veeam", "backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server) {
                 Symbol = "VBR",
                 Color = "#00B336",
                 Category = "Backup",
                 DisplayMode = TopologyNodeDisplayMode.Tile
-            }.WithMetadata("product", "Backup and Replication").WithTags("vbr", "backup-server"))
+            }.Metadata("product", "Backup and Replication").AddTags("vbr", "backup-server"))
             .AddIcon(new TopologyIconDefinition("veeam", "repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
                 Symbol = "REPO",
                 Color = "#007A5A",
                 Category = "Storage",
                 DisplayMode = TopologyNodeDisplayMode.Tile
-            }.WithMetadata("product", "Backup and Replication").WithTags("repo", "object-storage"));
+            }.Metadata("product", "Backup and Replication").AddTags("repo", "object-storage"));
 
         var json = sourcePack.ToJsonManifest();
         Assert(json.Contains("\"schema\": \"chartforgex.topology.iconPack\"", StringComparison.Ordinal), "Icon pack manifests should include a stable schema id.");
@@ -495,20 +483,20 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconPackManifestsLoadFromFilesAndStreams() {
         var sourcePack = new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
-            .WithMetadata("website", "https://www.fortinet.com")
-            .WithTags("network", "security", "vendor")
+            .Metadata("website", "https://www.fortinet.com")
+            .AddTags("network", "security", "vendor")
             .AddIcon(new TopologyIconDefinition("fortinet", "firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall) {
                 Symbol = "FG",
                 Color = "#DA291C",
                 Category = "Security",
                 DisplayMode = TopologyNodeDisplayMode.Tile
-            }.WithTags("fortigate", "firewall"))
+            }.AddTags("fortigate", "firewall"))
             .AddIcon(new TopologyIconDefinition("fortinet", "switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch) {
                 Symbol = "FSW",
                 Color = "#DA291C",
                 Category = "Network",
                 DisplayMode = TopologyNodeDisplayMode.Tile
-            }.WithTags("fortiswitch", "switch"));
+            }.AddTags("fortiswitch", "switch"));
 
         using var writer = new StringWriter();
         sourcePack.WriteJsonManifest(writer, indented: false);
@@ -545,12 +533,12 @@ internal static partial class SmokeTests {
         Directory.CreateDirectory(childDirectory);
         try {
             new TopologyIconPack("acme-backup", "Acme Backup", vendor: "Acme", version: "1")
-                .WithTags("backup", "vendor")
+                .AddTags("backup", "vendor")
                 .AddIcon("repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", "#007A5A", "Backup")
                 .SaveJsonManifest(Path.Combine(directory, "02-acme-backup.json"));
 
             new TopologyIconPack("acme-network", "Acme Network", vendor: "Acme", version: "1")
-                .WithTags("network", "vendor")
+                .AddTags("network", "vendor")
                 .AddIcon("firewall", "Security Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FW", "#DA291C", "Security")
                 .SaveJsonManifest(Path.Combine(childDirectory, "01-acme-network.json"));
 
@@ -577,7 +565,7 @@ internal static partial class SmokeTests {
         Directory.CreateDirectory(directory);
         try {
             new TopologyIconPack("valid-pack", "Valid Pack", vendor: "Acme", version: "1")
-                .WithTags("valid", "vendor")
+                .AddTags("valid", "vendor")
                 .AddIcon("server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server, "SRV", "#2563EB", "Compute")
                 .SaveJsonManifest(Path.Combine(directory, "01-valid.json"));
             File.WriteAllText(Path.Combine(directory, "02-broken.json"), "{\"schema\":\"chartforgex.topology.iconPack\",\"id\":\"broken\",\"label\":\"Broken\",\"icons\":[{\"id\":\"bad\",\"label\":\"Bad\",\"nodeKind\":\"NoSuchKind\"}]}");
@@ -606,7 +594,7 @@ internal static partial class SmokeTests {
         Directory.CreateDirectory(directory);
         try {
             new TopologyIconPack("acme-apps", "Acme Apps", vendor: "Acme", version: "1")
-                .WithTags("application", "vendor")
+                .AddTags("application", "vendor")
                 .AddIcon("portal", "Portal", TopologyNodeKind.Application, TopologyIconShape.Application, "APP", "#7C3AED", "Application")
                 .SaveJsonManifest(Path.Combine(directory, "01-acme-apps.json"));
             new TopologyIconPack("common", "Duplicate Common", vendor: "Acme", version: "1")
@@ -672,10 +660,10 @@ internal static partial class SmokeTests {
         try {
             var catalog = TopologyIconCatalog.Default()
                 .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam", version: "13")
-                    .WithTags("backup", "vendor")
+                    .AddTags("backup", "vendor")
                     .AddIcon("repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", "#007A5A", "Storage"))
                 .AddPack(new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
-                    .WithTags("security", "vendor")
+                    .AddTags("security", "vendor")
                     .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security"));
 
             var exported = catalog.SaveJsonManifestsToDirectory(directory);
@@ -712,7 +700,7 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconPackValidationReportsAuthoringIssues() {
         var pack = new TopologyIconPack("acme", "Acme")
-            .WithTags("network", "vendor");
+            .AddTags("network", "vendor");
         pack.Tags.Add("network");
         pack.AddIcon(new TopologyIconDefinition("acme", "server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server) {
             Symbol = "SERVER-LONG",
@@ -749,24 +737,24 @@ internal static partial class SmokeTests {
     private static void TopologyIconCatalogSummariesGroupPickerFolders() {
         var catalog = TopologyIconCatalog.Default()
             .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam", version: "13")
-                .WithTags("backup", "vendor")
+                .AddTags("backup", "vendor")
                 .AddIcon(new TopologyIconDefinition("veeam", "repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
                     Symbol = "REPO",
                     Color = "#007A5A",
                     Category = "Storage"
-                }.WithTags("repo", "repository"))
+                }.AddTags("repo", "repository"))
                 .AddIcon(new TopologyIconDefinition("veeam", "proxy", "Backup Proxy", TopologyNodeKind.Server, TopologyIconShape.Server) {
                     Symbol = "PRX",
                     Color = "#00B336",
                     Category = "Backup"
-                }.WithTags("proxy")))
+                }.AddTags("proxy")))
             .AddPack(new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
-                .WithTags("network", "security", "vendor")
+                .AddTags("network", "security", "vendor")
                 .AddIcon(new TopologyIconDefinition("fortinet", "firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall) {
                     Symbol = "FG",
                     Color = "#DA291C",
                     Category = "Security"
-                }.WithTags("firewall", "fortigate")));
+                }.AddTags("firewall", "fortigate")));
 
         var packSummaries = catalog.GetPackSummaries();
         var veeam = packSummaries.First(summary => summary.PackId == "veeam");

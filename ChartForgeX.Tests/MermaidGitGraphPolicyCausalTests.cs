@@ -56,7 +56,7 @@ public sealed class MermaidGitGraphPolicyCausalTests {
     public void OrdinaryUnconfiguredGitGraphKeepsItsActualDefaultNativeExports(bool mermaid) {
         const string source = "gitGraph\ncommit id:\"base\" tag:\"v1\"\nbranch work\ncommit id:\"work\"\ncheckout main\nmerge work id:\"joined\"";
         var graph = mermaid ? new MermaidParser().ParseGitGraph(source).Document!.ToGitGraphBlock()
-            : GitGraphBlock.Create().WithSize(960, 420).AddBranch("main", 0).AddBranch("work")
+            : GitGraphBlock.Create().Size(960, 420).AddBranch("main", 0).AddBranch("work")
                 .AddCommit("base", "main", tag: "v1").AddCommit("work", "work", new[] { "base" })
                 .AddCommit("joined", "main", new[] { "base", "work" }, GitGraphCommitType.Merge);
         var svg = graph.ToSvg(); var png = graph.ToPng();

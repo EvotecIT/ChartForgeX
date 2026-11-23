@@ -19,9 +19,9 @@ public sealed class PyramidCaptionLayoutTests {
     public void DenseStageCaptionsKeepCompleteNamesValuesSourceFactsAndOnlyUsefulLeaders(
         int width, int height, bool horizontal, bool reversed, ThemeMode mode) {
         var names = Enumerable.Range(1, 16).Select(index => "Regional service " + index).ToArray();
-        var chart = Chart.Create().WithSize(width, height).WithTitle("Allocation by service")
-            .WithXLabels(names).WithDataLabels().ConfigureDataLabelStyle(style => style.FontSize = 13.5)
-            .ConfigurePyramid(options => { options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical; options.Reversed = reversed; })
+        var chart = Chart.Create().Size(width, height).Title("Allocation by service")
+            .XLabels(names).DataLabels().DataLabelStyle(style => style.FontSize = 13.5)
+            .Pyramid(options => { options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical; options.Reversed = reversed; })
             .AddPyramid("Allocation", Enumerable.Range(1, 16).Select(index => new ChartPoint(index, 17 - index)));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode,
             frame: new VisualFrame(chart.Title));

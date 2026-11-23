@@ -27,13 +27,13 @@ public sealed class NativeRadialMotionBeforeControls {
     public void OrdinaryRadialDefaultsAggregationAndNoDataKeepExactNativeControls(bool donut, string state) {
         var chart = Model(donut, state == "other", "inside"); if (state == "zero") for (var index = 0; index < chart.Series[0].Points.Count; index++) chart.Series[0].Points[index] = new ChartPoint(index + 1, 0);
         if (state == "multi") {
-            var comparisonSeries = new ChartSeries(new ChartSeriesId("comparison"), "Comparison", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, chart.Series[0].Points.ToArray()).WithDataLabels(false);
-            comparisonSeries.WithObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("part-1"), new ChartObservationId("part-2") });
-            chart.WithAutomaticRadialBands(new ChartRadialBandAllocation(.15, .04)).AddSeries(comparisonSeries);
+            var comparisonSeries = new ChartSeries(new ChartSeriesId("comparison"), "Comparison", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, chart.Series[0].Points.ToArray()).ShowDataLabels(false);
+            comparisonSeries.ObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("part-1"), new ChartObservationId("part-2") });
+            chart.RadialBandAllocation(new ChartRadialBandAllocation(.15, .04)).AddSeries(comparisonSeries);
         }
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareSection(chart); var second = renderer.PrepareSection(chart);
         Capture(first, "radial-motion-before-ordinary-" + donut + "-" + state);
-        Save("radial-motion-before-ordinary-" + donut + "-" + state + ".source.json", JsonSerializer.Serialize(new { points = chart.Series[0].Points, ids = chart.Series[0].ObservationIds.Select(pair => new { pair.Key, id = pair.Value.Value }), chart.Options.MaximumPieSlices }));
+        Save("radial-motion-before-ordinary-" + donut + "-" + state + ".source.json", JsonSerializer.Serialize(new { points = chart.Series[0].Points, ids = chart.Series[0].ObservationIds.Select(pair => new { pair.Key, id = pair.Value.Value }), chart.Options.Pie.MaxSlices }));
         Assert.Equal(first.Html, second.Html); Assert.Equal(first.PreparedVisual.ToSvg(), second.PreparedVisual.ToSvg()); Assert.Equal(first.PreparedVisual.ToPng(), second.PreparedVisual.ToPng());
         if (state == "other") { var other = first.PreparedVisual.Scene.Nodes.OfType<VisualSceneGroup>().First(row => row.Role == "radial-point" && row.Metadata["data-cfx-point"] == "-1");
             Assert.Equal("2,3,4", other.Metadata["data-cfx-source-points"]); Assert.Equal("15", other.Metadata["data-cfx-value"]); }
@@ -43,11 +43,11 @@ public sealed class NativeRadialMotionBeforeControls {
         var points = other ? new[] { new ChartPoint(1, value), new ChartPoint(2, 25), new ChartPoint(3, 10), new ChartPoint(4, 4), new ChartPoint(5, 1) }
             : new[] { new ChartPoint(1, value), new ChartPoint(2, 25), new ChartPoint(3, 10) };
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, points);
-        series.WithObservationIds(Enumerable.Range(0, points.Length).Select(index => new ChartObservationId(index == 0 ? "primary" : "part-" + index)));
-        var chart = Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels != "hidden")
-            .WithDataLabelPlacement(labels == "outside" ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside).AddSeries(series);
-        chart.Options.MaximumPieSlices = other ? 3 : 8; chart.WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
-        chart.ConfigureXAxis(axis => { for (var index = 0; index < points.Length; index++) axis.Labels.Add(new ChartAxisLabel(index + 1, "Part " + (index + 1))); });
+        series.ObservationIds(Enumerable.Range(0, points.Length).Select(index => new ChartObservationId(index == 0 ? "primary" : "part-" + index)));
+        var chart = Chart.Create().Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(true).DataLabels(labels != "hidden")
+            .DataLabels(d => d.Placement(labels == "outside" ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside)).AddSeries(series);
+        chart.Options.Pie.MaxSlices = other ? 3 : 8; chart.Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent));
+        chart.XAxis(axis => { for (var index = 0; index < points.Length; index++) axis.Labels.Add(new ChartAxisLabel(index + 1, "Part " + (index + 1))); });
         return chart;
     }
     internal static void Capture(HtmlChartSection section, string name) {

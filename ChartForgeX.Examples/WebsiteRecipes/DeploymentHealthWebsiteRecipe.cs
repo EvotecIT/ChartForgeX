@@ -14,12 +14,12 @@ public static class DeploymentHealthWebsiteRecipe {
     public static Chart Create(ThemeMode mode = ThemeMode.Light) {
 #region chart
         var chart = Chart.Create()
-            .WithThemeMode(mode)
-            .WithTitle("Deployment health")
-            .WithXAxis("Run")
-            .WithYAxis("Checks")
-            .WithSize(800, 434)
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+            .ThemeMode(mode)
+            .Title("Deployment health")
+            .XAxis(x => x.Title("Run"))
+            .YAxis(y => y.Title("Checks"))
+            .Size(800, 434)
+            .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120))
             .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18),
                 ChartColor.FromRgb(248, 113, 113));

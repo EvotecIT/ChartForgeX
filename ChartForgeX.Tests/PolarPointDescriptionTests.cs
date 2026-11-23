@@ -13,19 +13,19 @@ public sealed class PolarPointDescriptionTests {
     [InlineData(ChartSeriesKind.Radar, true)]
     public void AuthoredDescriptionsKeepSeriesCategoryCapturedFormattingAndRawIdentity(ChartSeriesKind kind, bool mixed) {
         var calls = new Dictionary<double, int>();
-        var chart = Chart.Create().WithSize(500, 400).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithYAxisBounds(0, 100).WithXLabels("North", "East", "South")
-            .WithValueFormatter(value => {
+        var chart = Chart.Create().Size(500, 400).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).YAxis(y => y.Bounds(0, 100)).XLabels("North", "East", "South")
+            .FormatValuesBy(value => {
                 calls[value] = calls.GetValueOrDefault(value) + 1;
                 return value.ToString("0.0", CultureInfo.GetCultureInfo("pl-PL")) + " units";
             });
         if (mixed) chart.AddRadialColumn("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) });
         var points = new[] { new ChartPoint(1, 12.5), new ChartPoint(2, 0), new ChartPoint(3, 30) };
         var target = new ChartSeries(new ChartSeriesId("target-source"), "Target", kind, points);
-        if (kind == ChartSeriesKind.Radar) target.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
+        if (kind == ChartSeriesKind.Radar) target.Radar(options => options.Form = ChartLineAreaForm.Line);
         chart.AddSeries(target);
         var series = mixed ? 1 : 0;
-        target.WithPointLabel(2, "Authored caption");
+        target.PointLabel(2, "Authored caption");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         var document = XDocument.Parse(svg);
@@ -44,8 +44,8 @@ public sealed class PolarPointDescriptionTests {
         }
         Assert.Equal(1, calls[12.5]);
         var capturedCalls = calls.Values.Sum();
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("Prepared descriptions must not reformat."));
-        chart.WithXLabels("Changed", "Changed", "Changed");
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("Prepared descriptions must not reformat."));
+        chart.XLabels("Changed", "Changed", "Changed");
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(capturedCalls, calls.Values.Sum());
@@ -55,7 +55,7 @@ public sealed class PolarPointDescriptionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void MissingRadarGeometryKeepsDerivedIdentityWithoutAnAuthoredDescription(bool mixed) {
-        var chart = Chart.Create().WithSize(500, 400).WithXLabels("North", "East", "South").WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(500, 400).XLabels("North", "East", "South").YAxis(y => y.Bounds(0, 100));
         var observations = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) };
         if (mixed) chart.AddRadialColumn("Observed", observations); else chart.AddRadarArea("Observed", observations);
         chart.AddRadarLine("Target", new[] { new ChartPoint(1, 0), new ChartPoint(3, 80) });

@@ -18,7 +18,7 @@ public sealed class MermaidXYOrientationTests {
         var parsed = new MermaidParser().ParseXYChart("xychart-beta" + (horizontal ? " horizontal" : "")
             + "\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]");
         Assert.False(parsed.HasErrors);
-        var chart = parsed.Document!.ToChart().WithLegend().WithPointLegend();
+        var chart = parsed.Document!.ToChart().Legend().Legend(l => l.ShowPoints());
         if (legacy) {
             foreach (var label in chart.Options.YAxis.Labels) chart.Options.XAxis.Labels.Add(label);
             chart.Options.YAxis.Labels.Clear();
@@ -42,14 +42,14 @@ public sealed class MermaidXYOrientationTests {
         Assert.False(parsed.HasErrors);
         var document = Assert.IsType<MermaidXYChartDocument>(parsed.Document);
         var chart = document.ToChart();
-        chart.WithBarStyle(ChartBarStyle.Flat).WithLineMarkers(ChartLineMarkerMode.None);
+        chart.Bars(b => b.Style(ChartBarStyle.Flat)).Lines(l => l.MarkerMode(ChartLineMarkerMode.None));
         var barColor = ChartColor.FromHex("#1767CB");
         var lineColor = ChartColor.FromHex("#D017CB");
         foreach (var item in chart.Series) item.Color = item.Kind == ChartSeriesKind.HorizontalBar ? barColor : lineColor;
-        Assert.Equal("Count", chart.XAxisTitle);
-        Assert.Equal("Month", chart.YAxisTitle);
-        Assert.Equal(0, chart.Options.XAxis.Minimum);
-        Assert.Equal(100, chart.Options.XAxis.Maximum);
+        Assert.Equal("Count", chart.Options.XAxis.Title);
+        Assert.Equal("Month", chart.Options.YAxis.Title);
+        Assert.Equal(0, chart.Options.XAxis.Min);
+        Assert.Equal(100, chart.Options.XAxis.Max);
         Assert.Equal(new[] { "Jan", "Feb", "Mar" }, chart.Options.YAxis.Labels.Select(label => label.Text));
         Assert.Equal(new[] { 1d, 2d, 3d }, chart.Series[0].Points.Select(point => point.X));
         Assert.Equal(new[] { 20d, 50d, 80d }, chart.Series[0].Points.Select(point => point.Y));
@@ -80,7 +80,7 @@ public sealed class MermaidXYOrientationTests {
         Assert.False(fenced.HasErrors);
         var artifact = Assert.Single(fenced.Artifacts);
         Assert.Equal("Horizontal", artifact.Metadata["mermaid.orientation"]);
-        Assert.Equal("Count", Assert.IsType<Chart>(artifact.Model).XAxisTitle);
+        Assert.Equal("Count", Assert.IsType<Chart>(artifact.Model).Options.XAxis.Title);
         Assert.True(artifact.ToPng().Length > 64);
     }
 
@@ -96,8 +96,8 @@ public sealed class MermaidXYOrientationTests {
         var chart = parsed.Document!.ToChart();
         var category = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var value = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        Assert.Equal(2, category.Minimum); Assert.Equal(8, category.Maximum);
-        Assert.Equal(-10, value.Minimum); Assert.Equal(100, value.Maximum);
+        Assert.Equal(2, category.Min); Assert.Equal(8, category.Max);
+        Assert.Equal(-10, value.Min); Assert.Equal(100, value.Max);
         Assert.Equal(single ? new[] { 2d } : new[] { 2d, 5d, 8d }, chart.Series[0].Points.Select(point => point.X));
         Assert.True(chart.ToPng().Length > 64);
     }

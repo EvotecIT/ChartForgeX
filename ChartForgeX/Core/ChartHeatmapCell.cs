@@ -3,7 +3,7 @@ using System;
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Represents one categorical heatmap cell: a state key resolved through <see cref="ChartOptions.StateCategories"/>,
+/// Represents one categorical heatmap cell: a state key resolved through <see cref="ChartStateTimelineOptions.Categories"/>,
 /// optional short text drawn in the cell, an optional tooltip, and an optional link.
 /// </summary>
 public readonly struct ChartHeatmapCell {

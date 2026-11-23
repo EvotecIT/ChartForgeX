@@ -62,7 +62,7 @@ public sealed class BulletNumericCaptionTests {
 
     [Fact]
     public void HeightConstrainedBulletOmitsWholeNumbersInsteadOfPaintingMicroscopicFacts() {
-        var chart = Create().WithAxes(false);
+        var chart = Create().Axes(false);
         var prepared = chart.Prepare(Context(390, 80, ThemeMode.Light, frame: false));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node is VisualSceneText && NumericRole(node.Role));
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
@@ -72,7 +72,7 @@ public sealed class BulletNumericCaptionTests {
 
     [Fact]
     public void AuthoredBulletNumberSizeRemainsIntactWhenCompleteCaptionsFit() {
-        var chart = Create().ConfigureDataLabelStyle(style => style.WithFontSize(22));
+        var chart = Create().DataLabelStyle(style => style.FontSize(22));
         var prepared = chart.Prepare(Context(760, 440, ThemeMode.Light));
         var values = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "bullet-value-label").ToArray();
         Assert.NotEmpty(values);
@@ -84,7 +84,7 @@ public sealed class BulletNumericCaptionTests {
     private static string Format(double value) => value.ToString("0.0000", CultureInfo.InvariantCulture);
 
     private static Chart Create() {
-        var chart = Chart.Create().WithDataLabels().WithValueFormat(ChartValueFormat.Number("0.0000", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().DataLabels().ValueFormat(ChartValueFormat.Number("0.0000", CultureInfo.InvariantCulture));
         for (var index = 0; index < Values.Length; index++)
             chart.AddBullet("Regional service " + (index + 1), Values[index], 9500.125, 0, 10000, new[] { 4000d, 8000 });
         return chart;

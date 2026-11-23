@@ -9,9 +9,8 @@ internal static class NativeFallbackRadialExamples {
         const string family = "Example Primary, Example Fallback"; Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var donut in new[] { false, true }) foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             Chart Model(double reading) {
-                var model = NativeRadialMotionRecipe.Create(donut, false, reading, width, mode).WithFontFamily(family).WithXLabels("Asia 世界", "Europe", "Americas");
-                return numericValueText ? model.WithTitle(string.Empty).WithSubtitle(string.Empty).WithHeader(false).WithLegend(false).WithDonutCenterLabel(false)
-                    .WithPieSliceLabelContent(ChartPieSliceLabelContent.Value).WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithValueFormat(ChartValueFormat.Compact()) : model;
+                var model = NativeRadialMotionRecipe.Create(donut, false, reading, width, mode).FontFamily(family).XLabels("Asia 世界", "Europe", "Americas");
+                return numericValueText ? model.Title(string.Empty).Subtitle(string.Empty).ShowHeader(false).Legend(false).Pie(p => p.ShowCenterLabel(false).SliceLabelContent(ChartPieSliceLabelContent.Value)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside)).ValueFormat(ChartValueFormat.Compact()) : model;
             }
             var from = renderer.PrepareSection(Model(numericValueText ? 900 : 60)); var to = renderer.PrepareSection(Model(numericValueText ? 1100 : 80)); var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3);
             var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);

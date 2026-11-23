@@ -108,7 +108,7 @@ public sealed class GanttLaneLabelPlacementTests {
     public void PackedCaptionVisibilityHonorsChartDefaultsAndSeriesOverridesWithoutHiddenBandGrowth(
         bool? chartVisible, bool? firstSeriesVisible, bool? secondSeriesVisible, int expectedCaptions) {
         var chart = DenseChart(390, 10, ThemeMode.Light);
-        chart.Options.ShowDataLabels = chartVisible;
+        chart.Options.DataLabels.Visible = chartVisible;
         chart.Series[0].ShowDataLabels = firstSeriesVisible; chart.Series[1].ShowDataLabels = secondSeriesVisible;
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
@@ -147,12 +147,12 @@ public sealed class GanttLaneLabelPlacementTests {
     [InlineData(ChartDataLabelPlacement.Above)]
     [InlineData(ChartDataLabelPlacement.Inside)]
     public void ExplicitPlacementKeepsItsLocalSideAndAuthoredSmallFontAndColor(ChartDataLabelPlacement placement) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(760, 400).WithHeader(false).WithLegend(false)
-            .WithDataLabels().WithStateCategories(States()).AddGanttLane("Delivery", new[] {
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(760, 400).ShowHeader(false).Legend(false)
+            .DataLabels().StateCategories(States()).AddGanttLane("Delivery", new[] {
                 new ChartGanttLaneItem(Start.AddHours(1), Start.AddHours(3), "up", "Batch 01", "Complete original detail")
             });
-        chart.Options.XAxis.WithBounds(Start.AddHours(-1).ToOADate(), Start.AddHours(10).ToOADate());
-        chart.Series[0].WithDataLabelPlacement(placement).ConfigurePointDataLabelStyle(0, style => style.WithFontSize(10).WithColor("#6a1b9a"));
+        chart.Options.XAxis.Bounds(Start.AddHours(-1).ToOADate(), Start.AddHours(10).ToOADate());
+        chart.Series[0].DataLabelPlacement(placement).PointDataLabelStyle(0, style => style.FontSize(10).Color(ChartColor.FromHex("#6a1b9a")));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = Prepare(chart);
         var caption = Assert.Single(NumericRadialAxisTextTests.Footprints(prepared.Scene), item => item.Text.Role == "data-label");
@@ -167,16 +167,16 @@ public sealed class GanttLaneLabelPlacementTests {
     }
 
     private static Chart DenseChart(int width, double fontSize, ThemeMode mode) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(width, width == 390 ? 360 : 440)
-            .WithTitle("Overlapping operating batches").WithDataLabels().WithStateCategories(States());
-        chart.Options.DataLabelStyle.WithFontSize(fontSize);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(width, width == 390 ? 360 : 440)
+            .Title("Overlapping operating batches").DataLabels().StateCategories(States());
+        chart.Options.DataLabelStyle.FontSize(fontSize);
         for (var lane = 0; lane < 2; lane++) {
             var items = Enumerable.Range(0, 8).Select(index => new ChartGanttLaneItem(Start.AddMinutes(index * 30 + lane * 15),
                 Start.AddMinutes(index * 30 + lane * 15 + 90), new[] { "up", "degraded", "down" }[index % 3],
                 "Regional processing batch " + (index + 1).ToString("00", CultureInfo.InvariantCulture), "Complete authored batch detail " + index)).ToArray();
             chart.AddGanttLane(lane == 0 ? "Primary delivery and recovery operations" : "Secondary delivery and validation operations",
                 items, group: "Production workflow window", summary: "8 authored batches", id: new ChartSeriesId("gantt-" + lane));
-            chart.Series[lane].WithObservationIds(Enumerable.Range(0, 8).Select(index => new ChartObservationId($"lane-{lane}-batch-{index}")));
+            chart.Series[lane].ObservationIds(Enumerable.Range(0, 8).Select(index => new ChartObservationId($"lane-{lane}-batch-{index}")));
         }
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         return chart;

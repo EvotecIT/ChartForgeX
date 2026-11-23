@@ -13,10 +13,10 @@ public static class MermaidAgentflowRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
         var padding=!options.HasExplicitPadding&&document.Configuration.Graph?.Padding is double sourcePadding?sourcePadding:options.Padding;
-        var chart = TopologyChart.Create().WithId(options.Id ?? "mermaid-agentflow")
-            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Agent workflow"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle)).WithViewport(options.Width, options.Height, padding)
-            .WithLayout(TopologyLayoutMode.Layered, Direction(document.Direction));
+        var chart = TopologyChart.Create().Id(options.Id ?? "mermaid-agentflow")
+            .Title(MermaidHeading.Title(document, options.Title, null, "Agent workflow"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle)).Viewport(new TopologyViewport(options.Width, options.Height, padding))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(Direction(document.Direction));
         var flows = new Dictionary<string, MermaidAgentflowFlow>(StringComparer.Ordinal);
         foreach (var flow in document.Flows) flows.Add(flow.Id, flow);
         var parents = new Dictionary<string, string?>(StringComparer.Ordinal);

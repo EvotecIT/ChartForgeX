@@ -12,11 +12,4 @@ public sealed partial class Chart {
         AppendSeries(ChartSeries.CreateChord(name, nodes, links, color));
         return this;
     }
-
-    /// <summary>Configures the circular allocation, ribbons, and labels used by native chord exports.</summary>
-    public Chart ConfigureChord(Action<ChartChordOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Options.Chord = ChartOptionConfiguration.Configure(Options.Chord, configure, options => options.Clone());
-        return this;
-    }
 }

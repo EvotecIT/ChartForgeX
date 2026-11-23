@@ -80,7 +80,7 @@ public sealed partial class HtmlChartRenderer {
             && ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis).LabelFormatter is { } formatter ? formatter(value)
             : ChartNumericFormatter.FormatValue(chart.Options, value));
         string? Label(int index) => index < series.PointLabels.Count ? series.PointLabels[index] : null;
-        string State(string key) => chart.Options.StateCategories.FirstOrDefault(category => category.Key == key)?.Label ?? key;
+        string State(string key) => chart.Options.StateTimeline.Categories.FirstOrDefault(category => category.Key == key)?.Label ?? key;
 
         switch (series.Kind) {
             case ChartSeriesKind.Gantt:
@@ -159,14 +159,14 @@ public sealed partial class HtmlChartRenderer {
     }
 
     private static string CoordinateHeader(Chart chart, ChartSeries series) {
-        var title = ChartCartesianOrientation.IsHorizontal(chart) ? chart.YAxisTitle : chart.XAxisTitle;
+        var title = ChartCartesianOrientation.IsHorizontal(chart) ? chart.Options.YAxis.Title : chart.Options.XAxis.Title;
         return !string.IsNullOrWhiteSpace(title) ? title : series.Kind == ChartSeriesKind.Scatter ? "X" : chart.Options.Labels.Category;
     }
 
     private static string ValueHeader(Chart chart, ChartSeries series) {
         var title = series.AdditionalValueAxis != null ? series.AdditionalValueAxis.Title
-            : series.ValueAxis == ChartAxisSide.Secondary ? chart.SecondaryYAxisTitle
-            : ChartCartesianOrientation.IsHorizontal(chart) ? chart.XAxisTitle : chart.YAxisTitle;
+            : series.ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis.Title
+            : ChartCartesianOrientation.IsHorizontal(chart) ? chart.Options.XAxis.Title : chart.Options.YAxis.Title;
         return !string.IsNullOrWhiteSpace(title) ? title : chart.Options.Labels.Value;
     }
 }

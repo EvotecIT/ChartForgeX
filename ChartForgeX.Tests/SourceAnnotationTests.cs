@@ -46,9 +46,9 @@ public sealed class SourceAnnotationTests {
     [Fact]
     public void SourceDrawingsClipToNativeWindowsWithoutClampingAuthoredEndpointsAndUseTheDeclaredValueAxis() {
         var chart = Fixture().AddLine("Ratio", new[] { new ChartPoint(0, .2), new ChartPoint(3, .5), new ChartPoint(10, .8) });
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.Series[1].ConfigureMarkers(options => options.Enabled = true);
-        chart.Options.SecondaryYAxis.WithBounds(0, 1);
+        chart.Series[1].SecondaryAxis();
+        chart.Series[1].Markers(options => options.Enabled = true);
+        chart.Options.SecondaryYAxis.Bounds(0, 1);
         chart.AddNote(new ChartPoint(3, .5), "Ratio review", id: new ChartAnnotationId("ratio"), yAxis: ChartAxisSide.Secondary)
             .AddLineSegment(new ChartPoint(-10, 50), new ChartPoint(20, 50), id: new ChartAnnotationId("crossing"))
             .AddParallelChannel(new ChartPoint(-10, 0), new ChartPoint(20, 600), 10, id: new ChartAnnotationId("outside"));
@@ -79,7 +79,7 @@ public sealed class SourceAnnotationTests {
         var noSecondary = Fixture().AddNote(new ChartPoint(1, 2), "", yAxis: ChartAxisSide.Secondary);
         Assert.Throws<InvalidOperationException>(() => noSecondary.Prepare(Context(390, ThemeMode.Light)));
         var logarithmic = Fixture().AddParallelChannel(new ChartPoint(1, 2), new ChartPoint(2, 3), -3);
-        logarithmic.Options.YAxis.WithBounds(1, 100);
+        logarithmic.Options.YAxis.Bounds(1, 100);
         logarithmic.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
         Assert.Throws<InvalidOperationException>(() => logarithmic.Prepare(Context(390, ThemeMode.Light)));
         var horizontal = Chart.Create().AddHorizontalBar("Values", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 3) }).AddNote(new ChartPoint(1, 2), "");
@@ -88,8 +88,8 @@ public sealed class SourceAnnotationTests {
 
     private static Chart Fixture() {
         var chart = Chart.Create().AddLine("Values", new[] { new ChartPoint(0, 10), new ChartPoint(3, 40), new ChartPoint(10, 70) });
-        chart.Series[0].ConfigureMarkers(options => options.Enabled = true);
-        chart.Options.XAxis.WithBounds(0, 10); chart.Options.YAxis.WithBounds(0, 100); return chart;
+        chart.Series[0].Markers(options => options.Enabled = true);
+        chart.Options.XAxis.Bounds(0, 10); chart.Options.YAxis.Bounds(0, 100); return chart;
     }
     private static VisualRenderContext Context(int width, ThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(width, 420), 14),
         VisualTheme.Graphite(), mode, new VisualFrame("Source drawings", "", showLegend: true),

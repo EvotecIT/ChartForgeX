@@ -29,8 +29,8 @@ public static class ChartBenchmarkCases {
 
     private static Chart Report(int width, int height) {
         var tokens = VisualDesignTokens.GraphiteLight();
-        return Chart.Create().WithSize(width, height).WithTheme(new VisualTheme(tokens, VisualDesignTokens.GraphiteDark()))
-            .WithSvgColorVariables(tokens.ToSvgColorVariables(path => "--bench-" + path.Replace('.', '-')));
+        return Chart.Create().Size(width, height).Theme(new VisualTheme(tokens, VisualDesignTokens.GraphiteDark()))
+            .SvgColorVariables(tokens.ToSvgColorVariables(path => "--bench-" + path.Replace('.', '-')));
     }
 
     private static Chart Timeline(int lanes, int periods, bool grouped) {
@@ -42,8 +42,8 @@ public static class ChartBenchmarkCases {
             new("unknown", "Unknown", ChartColor.FromHex("#868E96"))
         };
         for (var share = 1; share <= 6; share++) categories.Add(new("down-" + share, "Down", ChartColor.FromHex("#D6336C")));
-        chart.WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true).WithStateCategories(categories).WithPadding(0, 10, 16, 0).WithLegend(false);
-        chart.Options.LaneSummaryHeader = "Up";
+        chart.XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true)).StateCategories(categories).Padding(0, 10, 16, 0).Legend(false);
+        chart.Options.StateTimeline.SummaryHeader = "Up";
         var random = new Random(20261007);
         string[] groups = { "AMER", "APAC", "EMEA" };
         for (var lane = 0; lane < lanes; lane++) {
@@ -69,7 +69,7 @@ public static class ChartBenchmarkCases {
     }
 
     private static Chart Latency() {
-        var chart = Report(1100, 360).WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true).WithLegend();
+        var chart = Report(1100, 360).XAxis(xAxis => xAxis.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true)).Legend();
         var median = new ChartPoint[96];
         var p95 = new ChartPoint[96];
         for (var i = 0; i < median.Length; i++) {
@@ -87,14 +87,14 @@ public static class ChartBenchmarkCases {
         return Report(1100, 260).AddCalendarHeatmap("Changes", items);
     }
 
-    private static Chart Cartesian() => Report(800, 440).WithTitle("Checks over the reporting period").WithLegend()
-        .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    private static Chart Cartesian() => Report(800, 440).Title("Checks over the reporting period").Legend()
+        .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         .AddLine("Observed", Values(20, 23, 26, 29, 32, 35, 38))
         .AddArea("Expected", Values(34, 38, 42, 46, 50, 54, 35))
         .AddBar("Capacity", Values(48, 53, 58, 63, 68, 50, 55));
 
-    private static Chart Donut() => Report(800, 440).WithTitle("Findings by category").WithLegend()
-        .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    private static Chart Donut() => Report(800, 440).Title("Findings by category").Legend()
+        .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         .AddDonut("Findings", Values(20, 23, 26, 29, 32, 35, 38));
 
     private static ChartPoint[] Values(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

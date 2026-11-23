@@ -13,16 +13,16 @@ public sealed class RangeBarNativeTests {
     [InlineData(false)]
     [InlineData(true)]
     public void GroupedBodiesCapsAndPointPaintRemainDistinctInNativeExports(bool horizontal) {
-        var chart = Chart.Create().WithSize(horizontal ? 360 : 800, 440).WithTitle("Delivery time ranges")
-            .WithSubtitle("Expected and observed intervals by service").WithXLabels("Standard", "Express")
-            .WithTheme(VisualTheme.Graphite(), horizontal ? ThemeMode.Dark : ThemeMode.Light).WithDataLabels().WithFontFamily("Carlito")
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .WithBarStyle(horizontal ? ChartBarStyle.SegmentedCapsule : ChartBarStyle.Flat)
-            .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+        var chart = Chart.Create().Size(horizontal ? 360 : 800, 440).Title("Delivery time ranges")
+            .Subtitle("Expected and observed intervals by service").XLabels("Standard", "Express")
+            .Theme(VisualTheme.Graphite()).ThemeMode(horizontal ? ThemeMode.Dark : ThemeMode.Light).DataLabels().FontFamily("Carlito")
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Bars(b => b.Style(horizontal ? ChartBarStyle.SegmentedCapsule : ChartBarStyle.Flat))
+            .RangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
             .AddRangeBar("Expected", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 3, 9) }, ChartColor.FromRgb(11, 100, 190))
             .AddRangeBar("Observed", new[] { new ChartInterval(1, 4, 10), new ChartInterval(2, 11, 5) }, ChartColor.FromRgb(220, 90, 35));
-        if (horizontal) chart.Options.XAxis.WithBounds(0, 12);
-        chart.Series[1].WithPointColor(1, "#A5358A").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        if (horizontal) chart.Options.XAxis.Bounds(0, 12);
+        chart.Series[1].PointColor(1, "#A5358A").PointFillPattern(1, ChartFillPattern.Crosshatch);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var bodies = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "range-bar").ToArray();
         var caps = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "range-bar-cap").ToArray();

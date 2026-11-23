@@ -51,12 +51,12 @@ public sealed class NativeCartesianValueBeforeControls {
         var first = scale == "elapsed-time" ? new DateTime(2026, 1, 1).ToOADate() : 0;
         var points = new[] { new ChartPoint(first, scale == "log-negative" ? -30 : 30), new ChartPoint(first + 1, value), new ChartPoint(first + 2, scale == "log-negative" ? -60 : 60) };
         var series = bar ? ChartSeries.CreateBar(new ChartSeriesId("delivery"), "Delivery", points) : ChartSeries.CreateLine(new ChartSeriesId("delivery"), "Delivery", points);
-        series.WithObservationId(0, new ChartObservationId("earlier")).WithObservationId(1, new ChartObservationId("current")).WithObservationId(2, new ChartObservationId("later"));
-        var chart = Chart.Create().WithSize(760, 400).WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false).WithLineMarkers(ChartLineMarkerMode.None).AddSeries(series);
-        chart.ConfigureXAxis(axis => { axis.Minimum = first - .5; axis.Maximum = first + 2.5; if (scale == "elapsed-time") axis.Scale = ChartScaleKind.Time; });
-        chart.ConfigureYAxis(axis => {
+        series.ObservationId(0, new ChartObservationId("earlier")).ObservationId(1, new ChartObservationId("current")).ObservationId(2, new ChartObservationId("later"));
+        var chart = Chart.Create().Size(760, 400).Theme(VisualTheme.Graphite()).Legend(false).DataLabels(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None)).AddSeries(series);
+        chart.XAxis(axis => { axis.Min = first - .5; axis.Max = first + 2.5; if (scale == "elapsed-time") axis.Scale = ChartScaleKind.Time; });
+        chart.YAxis(axis => {
             if (scale.StartsWith("log-", StringComparison.Ordinal)) { axis.LogarithmicDomain = scale == "log-negative" ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive; axis.Scale = ChartScaleKind.Logarithmic; }
-            axis.Minimum = scale == "log-negative" ? -100 : scale == "log-positive" ? 1 : 0; axis.Maximum = scale == "log-negative" ? -1 : 100;
+            axis.Min = scale == "log-negative" ? -100 : scale == "log-positive" ? 1 : 0; axis.Max = scale == "log-negative" ? -1 : 100;
         }); return chart;
     }
     private static void Capture(HtmlChartSection section, string name) {

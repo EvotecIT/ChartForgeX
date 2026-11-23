@@ -17,7 +17,7 @@ public sealed class SupportedCombinationLifecycleTests {
     [InlineData("mixed-radial", ThemeMode.Light, 800)]
     [InlineData("mixed-radial", ThemeMode.Dark, 390)]
     public void RetainedHandlesKeepMissingZeroAndIndependentAxesThroughConfigurationAndExport(string layout, ThemeMode mode, int width) {
-        var chart = Assert.IsType<Chart>(ExampleRecipes.Named("supported-combinations").Create(layout, mode)).WithSize(width, 460);
+        var chart = Assert.IsType<Chart>(ExampleRecipes.Named("supported-combinations").Create(layout, mode)).Size(width, 460);
         var observed = chart.Series.Single(series => series.Id.Value == "observed");
         var reference = chart.Series.Single(series => series.Id.Value == "reference");
         var before = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -50,9 +50,9 @@ public sealed class SupportedCombinationLifecycleTests {
         if (layout == "vertical-secondary") {
             reference.ReplaceBubbles(new[] { new ChartBubble(3, .83, 11), new ChartBubble(1, .94, 16), new ChartBubble(4, .88, 13) });
             Assert.Empty(reference.ObservationIds);
-            reference.WithObservationIds(new[] { "south-central", "north-central", "south-remote" }.Select(id => new ChartObservationId(id)));
+            reference.ObservationIds(new[] { "south-central", "north-central", "south-remote" }.Select(id => new ChartObservationId(id)));
         } else reference.Points[0] = new ChartPoint(1, 48);
-        chart.MoveSeries(reference, 0).WithTheme(VisualTheme.Graphite(), mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
+        chart.MoveSeries(reference, 0).Theme(VisualTheme.Graphite()).ThemeMode(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
         Assert.Equal(beforeSvg, before.ToSvg()); Assert.Equal(beforePng, before.ToPng());
         var after = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var changed = Assert.Single(Targets(after), point => Fact(point, "series-key") == "reference" && Fact(point, "observation-id") == "north-central");

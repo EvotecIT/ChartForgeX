@@ -69,7 +69,7 @@ public sealed class MermaidTopologyPaletteRoleTests {
     }
     [Fact]
     public void NativeAndUnthemedSourceShareGraphiteColorsAndDiagramTypography() {
-        var chart = TopologyChart.Create().WithId("palette-native-control").WithTitle("").WithViewport(300, 250, 24).WithLegend(null).AddNode("node", "Work", 60, 60, width: 140, height: 70);
+        var chart = TopologyChart.Create().Id("palette-native-control").Title("").Viewport(new TopologyViewport(300, 250, 24)).Legend((TopologyLegend?)null).AddNode("node", "Work", 60, 60, width: 140, height: 70);
         var artifact = chart.ToVisualArtifact(); CaptureArtifact("ordinary-native-graphite", artifact);
         Assert.Equal(ChartForgeX.Themes.VisualTheme.Graphite().Resolve(chart.ThemeMode).Background, chart.Theme.Resolve(chart.ThemeMode).Background);
         Assert.Equal(ChartForgeX.Themes.VisualTheme.Graphite().ToJson(), chart.Theme.ToJson());

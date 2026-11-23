@@ -17,11 +17,11 @@ public sealed class NumericRadialSeriesTests {
 
     [Fact]
     public void ColumnValueTicksLeaveAFittingFirstCategoryCaptionReadable() {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.RadialColumn).WithSize(800, 440)
-            .WithTitle(V2GalleryModels.Title(ChartSeriesKind.RadialColumn)).WithSubtitle("Grouped source counts by region");
+        var chart = V2GalleryModels.Create(ChartSeriesKind.RadialColumn).Size(800, 440)
+            .Title(V2GalleryModels.Title(ChartSeriesKind.RadialColumn)).Subtitle("Grouped source counts by region");
         // A single series gives the full caption angular room; crowded inside
         // captions have their own curved-mark containment regression.
-        chart.RemoveSeries(chart.Series[1]); chart.WithLegend();
+        chart.RemoveSeries(chart.Series[1]); chart.Legend();
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "radial-data-label" && element.Value == "1,200");
     }
@@ -31,7 +31,7 @@ public sealed class NumericRadialSeriesTests {
     [InlineData(true)]
     public void RotatedHalfTurnRegionsContainThePaintedSector(bool bars) {
         var chart = Add(Chart.Create(), bars, "Observed", new ChartPoint(1, 1200))
-            .WithYAxisBounds(0, 1200).WithRadialGeometry(new(-180, 0, .2, 0, 0));
+            .YAxis(y => y.Bounds(0, 1200)).RadialGeometry(new(-180, 0, .2, 0, 0));
         var scene = Compile(chart); var mark = Assert.Single(Marks(scene));
         var bounds = Assert.Single(scene.Regions, region => region.Id == "series-0-point-0").Bounds;
         Assert.True(bounds.Top <= mark.Cy - mark.Outer + 1e-9);
@@ -46,7 +46,7 @@ public sealed class NumericRadialSeriesTests {
     public void GroupedSignedSourceValuesUseNumericDomainsAndSeparatePhysicalSlots(bool bars) {
         var chart = Add(Chart.Create(), bars, "Observed", new(1, 1200), new(2, -400));
         Add(chart, bars, "Expected", new(1, 800), new(2, -200));
-        chart.WithYAxisBounds(-500, 1500).WithRadialGeometry(new(-60, 240, .25, .2, .1));
+        chart.YAxis(y => y.Bounds(-500, 1500)).RadialGeometry(new(-60, 240, .25, .2, .1));
         var scene = Compile(chart); var marks = Marks(scene);
         Assert.Equal(4, marks.Length);
         var first = marks[0]; var peer = marks[2];
@@ -68,10 +68,10 @@ public sealed class NumericRadialSeriesTests {
         var chart = Add(Chart.Create(), bars, "First", new(1, 200), new(2, -150));
         Add(chart, bars, "Second", new(1, 300), new(2, -50));
         Add(chart, bars, "Other", new ChartPoint(1, 700));
-        chart.Series[0].WithStackGroup("work").WithNormalization(100);
-        chart.Series[1].WithStackGroup("work").WithNormalization(100);
-        chart.Series[2].WithStackGroup("other").WithNormalization(100);
-        chart.WithYAxisBounds(-100, 100); chart.Options.ShowStackTotals = true;
+        chart.Series[0].StackGroup("work").NormalizedTo(100);
+        chart.Series[1].StackGroup("work").NormalizedTo(100);
+        chart.Series[2].StackGroup("other").NormalizedTo(100);
+        chart.YAxis(y => y.Bounds(-100, 100)); chart.Options.Bars.ShowTotals = true;
         var scene = Compile(chart); var marks = Marks(scene);
         var first = marks[0]; var second = marks[2];
         if (bars) { Assert.Equal(first.Inner, second.Inner); Assert.Equal(first.Outer, second.Outer); Assert.Equal(first.Start + first.Sweep, second.Start, 10); }
@@ -93,11 +93,11 @@ public sealed class NumericRadialSeriesTests {
     [InlineData(true)]
     public void FixedNonzeroDomainsClipBaselineAndReversePositionsWithoutChangingSourceFacts(bool bars) {
         var chart = Add(Chart.Create(), bars, "Requests", new(1, 500), new(2, 1000));
-        chart.WithYAxisBounds(100, 1100).WithRadialGeometry(new(0, 180, .2, 0, 0));
+        chart.YAxis(y => y.Bounds(100, 1100)).RadialGeometry(new(0, 180, .2, 0, 0));
         var normal = Marks(Compile(chart)); var first = normal[0];
         if (bars) Assert.Equal(.4 * Math.PI, first.Sweep, 10);
         else Assert.Equal(4d / 9, (first.Outer - first.Inner) / (normal[1].Outer - normal[1].Inner), 10);
-        chart.Options.YAxis.WithReversal(); chart.Options.XAxis.WithReversal();
+        chart.Options.YAxis.Reversed(); chart.Options.XAxis.Reversed();
         var scene = Compile(chart); var reversed = Marks(scene)[0];
         Assert.Equal(first.Sweep, reversed.Sweep, 10); Assert.Equal(first.Outer - first.Inner, reversed.Outer - reversed.Inner, 10);
         if (bars) { Assert.True(reversed.Start > first.Start); Assert.True(reversed.Inner > first.Inner); }
@@ -116,7 +116,7 @@ public sealed class NumericRadialSeriesTests {
         Assert.Equal("0", Point(scene, 0, 0)["data-cfx-y"]);
         Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Id == "series-1-point-1");
         var zeros = Add(Chart.Create(), bars, "Empty contribution", new ChartPoint(1, 0));
-        zeros.Series[0].WithStackGroup("zero").WithNormalization(100);
+        zeros.Series[0].StackGroup("zero").NormalizedTo(100);
         var zeroScene = Compile(zeros);
         Assert.Empty(Marks(zeroScene)); Assert.Contains(zeroScene.Diagnostics, item => item.Code == "numeric-radial.stack-zero-total");
         Assert.Equal("0", Point(zeroScene, 0, 0)["data-cfx-stack-end"]);
@@ -130,7 +130,7 @@ public sealed class NumericRadialSeriesTests {
     public void NativePixelsMatchSvgPaintAndPreparedObservationsRemainDetached(bool bars) {
         var color = ChartColor.FromHex("#2468AC");
         var chart = Add(Chart.Create(), bars, new ChartSeriesId("requests"), "Authored", new(1, 600), new(2, 900));
-        chart.Series[0].WithState(ChartSeriesState.Danger).WithPointColor(0, color);
+        chart.Series[0].StateRole(ChartSeriesState.Danger).PointColor(0, color);
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var scene = Compile(chart); var mark = Marks(scene)[0]; var image = VisualSceneRasterRenderer.Render(scene);
         var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;
@@ -144,7 +144,7 @@ public sealed class NumericRadialSeriesTests {
         var doc = XDocument.Parse(svg); var fills = doc.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == (bars ? "radial-bar" : "radial-column")).Select(element => (string)element.Attribute("fill")!).ToArray();
         Assert.Contains("var(--point,", fills[0]); Assert.Contains("var(--danger,", fills[1]);
         Assert.Equal("requests", Point(scene, 0, 0)["data-cfx-series-key"]);
-        chart.Series[0].Points.Clear(); chart.Options.YAxis.WithReversal();
+        chart.Series[0].Points.Clear(); chart.Options.YAxis.Reversed();
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene, options: new VisualSvgOptions(colorVariables: variables)));
         Assert.Equal(image.Pixels, VisualSceneRasterRenderer.Render(scene).Pixels);
     }
@@ -153,17 +153,17 @@ public sealed class NumericRadialSeriesTests {
     public void StackAxesAndTickFormattersRemainIndependentWhileSourceLabelsRetainUnits() {
         var chart = Chart.Create().AddRadialBar("First", new[] { new ChartPoint(1, 200) })
             .AddRadialBar("Second", new[] { new ChartPoint(1, 300) }).AddRadialBar("Independent", new[] { new ChartPoint(1, 250) });
-        chart.Series[0].WithStackGroup("work").WithNormalization(100);
-        chart.Series[1].WithStackGroup("work").WithNormalization(100);
-        chart.Series[2].UseSecondaryValueAxis().WithStackGroup("work").WithNormalization(10);
-        chart.WithYAxisBounds(0, 100); chart.Options.SecondaryYAxis.WithBounds(0, 10);
+        chart.Series[0].StackGroup("work").NormalizedTo(100);
+        chart.Series[1].StackGroup("work").NormalizedTo(100);
+        chart.Series[2].SecondaryAxis().StackGroup("work").NormalizedTo(10);
+        chart.YAxis(y => y.Bounds(0, 100)); chart.Options.SecondaryYAxis.Bounds(0, 10);
         var calls = new Dictionary<double, int>();
-        chart.Options.YAxis.WithLabelFormatter(value => { calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1; return value + " percent"; });
+        chart.Options.YAxis.LabelBy(value => { calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1; return value + " percent"; });
         var scene = Compile(chart);
         Assert.Equal("100", Point(scene, 1, 0)["data-cfx-stack-end"]); Assert.Equal("10", Point(scene, 2, 0)["data-cfx-stack-end"]);
         Assert.Equal("300", Point(scene, 1, 0)["data-cfx-y"]); Assert.All(calls.Values, count => Assert.Equal(1, count));
         Assert.Contains(scene.Regions, region => region.Role == "radial-value-label" && region.Label!.EndsWith(" percent", StringComparison.Ordinal));
-        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed formatter"));
+        chart.Options.YAxis.LabelBy(_ => throw new InvalidOperationException("Changed formatter"));
         Assert.NotEmpty(VisualSceneSvgRenderer.Render(scene)); Assert.NotEmpty(VisualSceneRasterRenderer.Render(scene).Pixels);
     }
 
@@ -175,9 +175,9 @@ public sealed class NumericRadialSeriesTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRadialGeometryOptions(categorySpacing: double.NaN));
         var options = new ChartRadialGeometryOptions(-60, 240, .3, .2, .1);
         Assert.Equal(-60, options.StartAngleDegrees); Assert.Equal(.3, options.InnerRadiusRatio);
-        var chart = Chart.Create().AddRadialBar("Numeric", new[] { new ChartPoint(1, 500) }).WithRadialGeometry(options);
-        chart.Options.XAxis.Minimum = 0;
-        Assert.Throws<NotSupportedException>(() => Compile(chart)); chart.Options.XAxis.Minimum = null;
+        var chart = Chart.Create().AddRadialBar("Numeric", new[] { new ChartPoint(1, 500) }).RadialGeometry(options);
+        chart.Options.XAxis.Min = 0;
+        Assert.Throws<NotSupportedException>(() => Compile(chart)); chart.Options.XAxis.Min = null;
         chart.Options.YAxis.Scale = ChartScaleKind.Time;
         Assert.Throws<NotSupportedException>(() => Compile(chart)); chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
         chart.Series[0].Points[0] = new ChartPoint(1, 0);
@@ -190,8 +190,8 @@ public sealed class NumericRadialSeriesTests {
     [InlineData(ChartScaleKind.Logarithmic, 20, 800)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic, -250, 800)]
     public void FixedNonlinearDomainsKeepEveryValueTickWithinItsDeclaredBounds(ChartScaleKind kind, double minimum, double maximum) {
-        var chart = Chart.Create().AddRadialColumn("Observed", new[] { new ChartPoint(1, 100), new ChartPoint(2, 700) }).WithYAxisBounds(minimum, maximum);
-        chart.Options.YAxis.WithScale(kind).WithReversal();
+        var chart = Chart.Create().AddRadialColumn("Observed", new[] { new ChartPoint(1, 100), new ChartPoint(2, 700) }).YAxis(y => y.Bounds(minimum, maximum));
+        chart.Options.YAxis.Scale(kind).Reversed();
         var scale = RadialValueScale.Create(chart.Options.YAxis, new[] { 100d, 700d }, "Numeric radial", true);
         Assert.NotEmpty(scale.Ticks);
         Assert.All(scale.Ticks, value => Assert.InRange(value, minimum, maximum));

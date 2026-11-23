@@ -23,11 +23,11 @@ public sealed class VisualTokenContractTests {
     public void UnsupportedVariationDoesNotDiscardTheRequestedBundledWeight() {
         var request = new FontSpec { Family = ChartFontStacks.ProductSans, Weight = 650 };
         var expected = TextLayoutEngine.Measure("Hamburgefonts", new TextStyle { Font = request, FontSize = 32 });
-        request.WithVariation("opsz", 16);
+        request.Variation("opsz", 16);
         var resolved = TypographyFontResolver.ResolveFace(request);
         Assert.Equal(650, resolved.Font!.Variations["wght"]);
         Assert.Equal(expected.Width, TextLayoutEngine.Measure("Hamburgefonts", new TextStyle { Font = request, FontSize = 32 }).Width, 6);
-        request.WithVariation("wght", 400);
+        request.Variation("wght", 400);
         Assert.Equal(400, TypographyFontResolver.ResolveFace(request).Font!.Variations["wght"]);
     }
 
@@ -85,7 +85,7 @@ public sealed class VisualTokenContractTests {
 
     [Fact]
     public void InteractiveOutputRetainsExplicitChartOverridesAndUsesLiveHostRolesBeforeLiteralDefaults() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(400, 260)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(400, 260)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3) }));
         var html = new HtmlInteractiveChartRenderer().RenderPage(chart);
         Assert.Contains("--cfx-tooltip-surface:var(--cfx-surface-card,var(--hfx-color-surface,", html);

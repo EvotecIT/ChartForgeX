@@ -34,7 +34,7 @@ public sealed class NativeDiagramExportTests {
     [Fact]
     public void ForceGraphPresentationUsesCanonicalLowInkAndExplicitOpacityWins() {
         var chart = Sample();
-        var options = chart.DefaultRenderOptions!.Clone().WithForceGraphStyle();
+        var options = chart.DefaultRenderOptions!.Clone().ForceGraphStyle();
         var svg = XDocument.Parse(chart.ToSvg(options));
         static XElement Line(XDocument document) => document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
         Assert.Equal((byte)Math.Round(255 * .26), Line(svg).RenderedColor("stroke").A);
@@ -110,11 +110,11 @@ public sealed class NativeDiagramExportTests {
     }
 
     private static TopologyChart Sample() {
-        var chart = TopologyChart.Create().WithId("native").WithViewport(560, 310).WithTitle("Network");
+        var chart = TopologyChart.Create().Id("native").Viewport(new TopologyViewport(560, 310)).Title("Network");
         chart.Nodes.Add(new TopologyNode { Id = "first", Label = "First", X = 24, Y = 70, Width = 140, Height = 70, Href = "/first" });
         chart.Nodes.Add(new TopologyNode { Id = "second", Label = "Second", X = 300, Y = 70, Width = 140, Height = 70 });
         chart.Edges.Add(new TopologyEdge { Id = "link", SourceNodeId = "first", TargetNodeId = "second", Label = "Connected" });
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true });
         return chart;
     }
 }

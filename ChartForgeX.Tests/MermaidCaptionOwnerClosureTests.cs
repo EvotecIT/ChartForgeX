@@ -20,14 +20,14 @@ public sealed class MermaidCaptionOwnerClosureTests {
     [InlineData(80, 108, false)]
     [InlineData(80, 108, true)]
     public async Task ActorPaintRetainsTheCanonicalAttachmentAndCaptionGeometry(int width, int height, bool compact) {
-        var chart = TopologyChart.Create().WithId("actor-canonical-geometry").WithViewport(420, 280, 16)
+        var chart = TopologyChart.Create().Id("actor-canonical-geometry").Viewport(new TopologyViewport(420, 280, 16))
             .AddNode("actor", "API", 80, 70, width: width, height: height)
             .AddNode("target", "UI", 280, 90, width: 80, height: 48)
             .AddEdge("association", "actor", "target");
         var actor = chart.Nodes[0]; actor.Shape = TopologyNodeShape.Actor;
-        chart.WithNodeDisplay("target", TopologyNodeDisplayMode.Tile);
+        chart.UpdateNode("target", n => n.DisplayMode(TopologyNodeDisplayMode.Tile).Badge(null));
         actor.PreserveDisplayModeSize = !compact;
-        if (compact) chart.WithNodeDisplay("actor", TopologyNodeDisplayMode.CompactCard);
+        if (compact) chart.UpdateNode("actor", n => n.DisplayMode(TopologyNodeDisplayMode.CompactCard).Badge(null));
         foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
         chart.Edges[0].SourcePort = TopologyEdgePort.Right;
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
@@ -80,7 +80,7 @@ public sealed class MermaidCaptionOwnerClosureTests {
     [InlineData(true, true, 960)]
     public async Task MaximumFontKeepsLabelFreeEndpointMarkersInsideContent(bool graphite, bool branches, int width) {
         var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var block = GitGraphBlock.Create().WithSize(width, 460).WithTheme(theme).WithCard(false).WithCommitLabels(false)
+        var block = GitGraphBlock.Create().Size(width, 460).Theme(theme).ShowCard(false).ShowCommitLabels(false)
             .AddBranch("main").AddCommit("base", "main")
             .AddCommit("pick", "main", new[] { "base" }, GitGraphCommitType.CherryPick, sourceCommitId: "base");
         block.ShowBranchLabels = branches;
@@ -108,7 +108,7 @@ public sealed class MermaidCaptionOwnerClosureTests {
         Assert.Empty(result.Diagnostics);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         chart.Title = ""; chart.Subtitle = ""; chart.LayoutMode = TopologyLayoutMode.Manual;
-        chart.WithViewport(width, 360, 16);
+        chart.Viewport(new TopologyViewport(width, 360, 16));
         for (var i = 0; i < chart.Nodes.Count; i++) {
             var node = chart.Nodes[i];
             node.X = 32 + i * (width - 144); node.Y = 90; node.Width = 80; node.Height = tile ? 48 : 108;

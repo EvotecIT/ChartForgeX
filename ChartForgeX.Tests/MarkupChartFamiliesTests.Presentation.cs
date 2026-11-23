@@ -18,7 +18,7 @@ public sealed partial class MarkupChartFamiliesTests {
             var chart = ParseChart("type " + family + "\nseries Price\n" + body);
             Assert.Equal(ChartScaleKind.Time, chart.Options.XAxis.Scale);
             Assert.Equal(dates.Select(date => date.ToOADate()), Assert.Single(chart.Series).FinancialValues.Select(value => value.X));
-            var expected = Chart.Create().WithXAxisTimeScale();
+            var expected = Chart.Create().XAxis(x => x.TimeScale());
             if (family == "ohlc") expected.AddOhlc("Price", candles);
             else expected.AddCandlestick("Price", candles);
             AssertNativeArtifacts(expected, chart, 920, ThemeMode.Light, "dated-" + family);
@@ -29,9 +29,9 @@ public sealed partial class MarkupChartFamiliesTests {
     public void AuthoredHeatmapMeasurementNameReachesTheNativeKeyWithoutChangingDefaultTheme() {
         foreach (var option in new[] { "option heatmapValueName \"Coverage %\"", "options:\n| key | value |\n| heatmapValueName | Coverage % |\nend" }) {
             var chart = ParseChart("type heatmap\nlabels Build Test\nseries Windows values 96 88\n" + option);
-            var expected = Chart.Create().WithXLabels("Build", "Test").AddHeatmapRow("Windows", new[] { new ChartPoint(1, 96), new ChartPoint(2, 88) });
-            expected.Options.HeatmapColorDimension.Name = "Coverage %";
-            Assert.Equal("Coverage %", chart.Options.HeatmapColorDimension.Name);
+            var expected = Chart.Create().XLabels("Build", "Test").AddHeatmapRow("Windows", new[] { new ChartPoint(1, 96), new ChartPoint(2, 88) });
+            expected.Options.Heatmap.ColorDimension.Name = "Coverage %";
+            Assert.Equal("Coverage %", chart.Options.Heatmap.ColorDimension.Name);
             Assert.Equal(expected.Options.Theme.ToJson(), chart.Options.Theme.ToJson());
             AssertNativeArtifacts(expected, chart, 920, ThemeMode.Light, "named-heatmap");
         }

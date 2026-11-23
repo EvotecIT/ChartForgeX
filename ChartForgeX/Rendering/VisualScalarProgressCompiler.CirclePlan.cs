@@ -34,10 +34,10 @@ internal static partial class VisualScalarProgressCompiler {
             _observationId = series.ObservationIds.TryGetValue(0, out var id) ? id.Value : null;
             _authoredLabel = series.PreparedLabels.Count > 0 ? series.PreparedLabels[0] : null;
             _pointColor = series.PointColors.Count > 0 ? series.PointColors[0] : null; _seriesColor = series.Color; _stateRole = series.StateRole;
-            _showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true); _showStatus = chart.Options.ShowCircleStatusLabel;
+            _showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true); _showStatus = chart.Options.Circle.ShowStatusLabel;
             _statusHeight = _showLabels && _showStatus ? Math.Min(plot.Height * .2, context.Theme.Typography.DataLabelSize * 1.5 + context.Theme.Spacing) : 0;
             var radius = Math.Max(0, Math.Min(plot.Width / 2 - context.Theme.Spacing, (plot.Height - _statusHeight) / 2 - context.Theme.Spacing));
-            _radiusScale = chart.Options.CircleRadiusScale; _strokeScale = chart.Options.CircleStrokeScale;
+            _radiusScale = chart.Options.Circle.RadiusScale; _strokeScale = chart.Options.Circle.StrokeScale;
             var requested = Math.Min(plot.Width, plot.Height) * .28 * _radiusScale;
             var halfStrokeFactor = .08 * _strokeScale;
             _radius = Math.Min(requested, radius / (1 + halfStrokeFactor)); _stroke = _radius * .16 * _strokeScale;

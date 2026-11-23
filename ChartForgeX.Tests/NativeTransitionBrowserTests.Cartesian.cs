@@ -19,7 +19,7 @@ public sealed partial class NativeTransitionBrowserTests {
         if (!Enabled) return;
         var renderer = new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value) { var chart = NativeCartesianValueTransitionTests.Styled(bar ? "bar-gradient" : "line-pattern-markers", value)
-                .WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+                .Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
             return renderer.PrepareSection(chart, configure: options => { options.Interaction.ChartId = "native-cartesian"; options.Interaction.Enable(ChartInteractionFeatures.Export);
                 options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 350; options.Adaptive.NarrowHeight = 420; }); }
         var from = Section(20); var to = Section(80); var options = new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 3);

@@ -17,7 +17,7 @@ public sealed class HierarchyCompleteCaptionBrowserTests {
     public async Task CompleteCaptionsStayInsideTheirMarksWithTheNativeFont(bool treemap, ThemeMode mode) {
         if (!Enabled) return;
         var chart = treemap ? HierarchyCompleteCaptionTests.Treemap() : HierarchyCompleteCaptionTests.Tree(true);
-        if (!treemap) chart.Series[0].WithPointLabel(0, "Authored operations");
+        if (!treemap) chart.Series[0].PointLabel(0, "Authored operations");
         int width = treemap ? 390 : 760;
         var family = BrowserProofFonts.Family;
         var prepared = chart.Prepare(HierarchyCompleteCaptionTests.Context(width, 420, mode, FontSpec.FromFamily(family)));

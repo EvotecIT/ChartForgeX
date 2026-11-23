@@ -10,10 +10,10 @@ internal static partial class SmokeTests {
         string Formatter(double value) => "Checkpoint " + value.ToString("00", CultureInfo.InvariantCulture);
 
         var automatic = Chart.Create()
-            .WithSize(360, 260)
-            .WithXAxisBounds(0, 12)
-            .WithTickCount(13)
-            .WithXAxisValueFormatter(Formatter)
+            .Size(360, 260)
+            .XAxis(x => x.Bounds(0, 12))
+            .TickCount(13)
+            .XAxis(x => x.LabelBy(Formatter))
             .AddLine("Values", new[] {
                 new ChartPoint(0, 10),
                 new ChartPoint(6, 20),
@@ -37,11 +37,10 @@ internal static partial class SmokeTests {
         }
 
         var all = Chart.Create()
-            .WithSize(360, 260)
-            .WithXAxisBounds(0, 12)
-            .WithTickCount(13)
-            .WithXAxisLabelDensity(ChartLabelDensity.All)
-            .WithXAxisValueFormatter(Formatter)
+            .Size(360, 260)
+            .XAxis(x => x.Bounds(0, 12))
+            .TickCount(13)
+            .XAxis(x => x.LabelDensity(ChartLabelDensity.All).LabelBy(Formatter))
             .AddLine("Values", new[] {
                 new ChartPoint(0, 10),
                 new ChartPoint(6, 20),
@@ -49,13 +48,13 @@ internal static partial class SmokeTests {
             })
             .ToSvg();
         Assert(all.Contains(">Checkpoint 01</text>", System.StringComparison.Ordinal), "All label density should preserve every generated formatted x-axis tick.");
-        Assert(Chart.Create().WithSize(360, 260).WithXAxisBounds(0, 12).WithTickCount(13).WithXAxisValueFormatter(Formatter).AddLine("Values", new[] { new ChartPoint(0, 10), new ChartPoint(6, 20), new ChartPoint(12, 15) }).ToPng().Length > 64, "PNG should render formatted generated ticks with density-aware layout.");
+        Assert(Chart.Create().Size(360, 260).XAxis(x => x.Bounds(0, 12)).TickCount(13).XAxis(x => x.LabelBy(Formatter)).AddLine("Values", new[] { new ChartPoint(0, 10), new ChartPoint(6, 20), new ChartPoint(12, 15) }).ToPng().Length > 64, "PNG should render formatted generated ticks with density-aware layout.");
     }
 
     private static void HorizontalCategoryLabelsWrapInSvg() {
         var chart = Chart.Create()
-            .WithSize(360, 260)
-            .WithXLabels("Mail auth enforcement", "DNSSEC")
+            .Size(360, 260)
+            .XLabels("Mail auth enforcement", "DNSSEC")
             .AddHorizontalBar("Coverage", Points(82, 74));
         var prepared = PreparedFamily(chart);
         var svg = chart.ToSvg();
@@ -73,9 +72,9 @@ internal static partial class SmokeTests {
 
     private static void NumericYAxisTicksThinWhenCrowded() {
         var automatic = Chart.Create()
-            .WithSize(360, 150)
-            .WithYAxisBounds(0, 100)
-            .WithTickCount(11)
+            .Size(360, 150)
+            .YAxis(y => y.Bounds(0, 100))
+            .TickCount(11)
             .AddLine("Values", Points(10, 50, 90));
         var automaticSvg = automatic.ToSvg();
         var automaticLabels = CountOccurrences(automaticSvg, "data-cfx-role=\"axis-y-label\"");
@@ -83,20 +82,19 @@ internal static partial class SmokeTests {
         Assert(automatic.ToPng().Length > 64, "PNG should use the same y-axis density policy.");
 
         var allSvg = Chart.Create()
-            .WithSize(360, 150)
-            .WithYAxisBounds(0, 100)
-            .WithTickCount(11)
-            .WithYAxisLabelDensity(ChartLabelDensity.All)
+            .Size(360, 150)
+            .YAxis(y => y.Bounds(0, 100))
+            .TickCount(11)
+            .YAxis(y => y.LabelDensity(ChartLabelDensity.All))
             .AddLine("Values", Points(10, 50, 90))
             .ToSvg();
         Assert(CountOccurrences(allSvg, "data-cfx-role=\"axis-y-label\"") == 11, "All y-axis density should preserve every generated label.");
 
         var secondary = Chart.Create()
-            .WithSize(360, 150)
-            .WithSecondaryYAxis("Rate")
-            .WithSecondaryYAxisBounds(0, 100)
+            .Size(360, 150)
+            .SecondaryYAxis(s => s.Title("Rate").Bounds(0, 100))
             .AddLine("Rate", Points(10, 50, 90));
-        secondary.Series[0].UseSecondaryValueAxis();
+        secondary.Series[0].SecondaryAxis();
         secondary.Options.YAxis.LabelDensity = ChartLabelDensity.Relaxed;
         secondary.Options.SecondaryYAxis.TickCount = 11;
         secondary.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.All;

@@ -28,15 +28,15 @@ internal static class LegendRowBudget {
     }
 
     internal static int MaximumRows(Chart chart, double? availableHeight = null, ChartLegendPosition? position = null) {
-        var height = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
+        var height = chart.Options.Size.Height * chart.Options.Legend.MaxHeightFraction;
         if (availableHeight.HasValue) height = Math.Min(height, Math.Max(0, availableHeight.Value));
         var rowHeight = RowHeight(chart);
         if (height < rowHeight) return 0;
-        var fixedSpacing = IsHorizontal(position ?? chart.Options.LegendPosition)
+        var fixedSpacing = IsHorizontal(position ?? chart.Options.Legend.Position)
             ? Math.Min(6, Math.Max(0, height - rowHeight))
             : Math.Min(18, Math.Max(0, height - rowHeight));
         var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - fixedSpacing) / rowHeight));
-        if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);
+        if (chart.Options.Legend.MaxRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.Legend.MaxRows.Value);
         return maximumRows;
     }
 
@@ -48,7 +48,7 @@ internal static class LegendRowBudget {
 
     internal static double HorizontalReserve(Chart chart, int rowCount, double? availableHeight = null) {
         if (rowCount <= 0) return 0;
-        var maximumHeight = chart.Options.Size.Height * chart.Options.LegendMaximumHeightFraction;
+        var maximumHeight = chart.Options.Size.Height * chart.Options.Legend.MaxHeightFraction;
         if (availableHeight.HasValue) maximumHeight = Math.Min(maximumHeight, Math.Max(0, availableHeight.Value));
         var rowHeight = RowHeight(chart);
         var fixedSpacing = Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, maximumHeight - rowHeight));

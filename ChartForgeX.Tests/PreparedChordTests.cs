@@ -96,9 +96,9 @@ public sealed class PreparedChordTests {
 
     [Fact]
     public void ChordOptionsAndStylingAreAppliedBeforeThePreparedSnapshotIsDetached() {
-        var chart = Independent(3, 7).ConfigureChord(options => { options.LabelContent = ChartChordLabelContent.None; options.DirectionCue = ChartChordDirectionCue.None; options.RibbonOpacity = .2; });
+        var chart = Independent(3, 7).Chord(options => { options.LabelContent = ChartChordLabelContent.None; options.DirectionCue = ChartChordDirectionCue.None; options.RibbonOpacity = .2; });
         var color = ChartColor.FromHex("#243B53");
-        chart.Series[0].WithNodeState("a", ChartSeriesState.Warning).WithPointColor(2, color).WithPointFillPattern(2, ChartFillPattern.Crosshatch);
+        chart.Series[0].NodeState("a", ChartSeriesState.Warning).PointColor(2, color).PointFillPattern(2, ChartFillPattern.Crosshatch);
         var context = Context(); var prepared = chart.Prepare(context);
         var fills = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "chord-node-mark").Select(node => node.Fill).ToArray();
         Assert.Equal(context.Theme.Resolve(context.ThemeMode).Status.Medium.Fill, fills[0]); Assert.Equal(color, fills[2]);
@@ -108,7 +108,7 @@ public sealed class PreparedChordTests {
         Assert.Equal(ChartColorMath.WithOpacity(fills[0]!.Value, .2), ribbon.Fill);
         var svg = prepared.ToSvg("stable"); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         chart.Options.Chord.StartAngleDegrees = 30; chart.Options.Chord.RibbonOpacity = .9;
-        chart.Series[0].WithNodeState("a", ChartSeriesState.Danger); chart.Series[0].Color = ChartColor.Black;
+        chart.Series[0].NodeState("a", ChartSeriesState.Danger); chart.Series[0].Color = ChartColor.Black;
         chart.Options.ValueFormatter = _ => "changed"; chart.Series[0].DataLabelStyle.FontSize = 30;
         Assert.Equal(svg, prepared.ToSvg("stable")); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
@@ -127,14 +127,14 @@ public sealed class PreparedChordTests {
 
     [Fact]
     public void GapsThatConsumeTheCircularSpanFailBeforeReturningAFalseScene() {
-        var chart = Independent(1, 1).ConfigureChord(options => { options.SweepAngleDegrees = 20; options.NodeGapDegrees = 5; });
+        var chart = Independent(1, 1).Chord(options => { options.SweepAngleDegrees = 20; options.NodeGapDegrees = 5; });
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
     }
 
     [Fact]
     public void DistinctAnglesWithCollapsedNativeEndpointsAndThicknessAreDiagnosed() {
         var chart = Chart.Create().AddChord("Precision", new[] { new ChartNode("a", "Tiny"), new ChartNode("b", "B"), new ChartNode("c", "C") },
-            new[] { new ChartFlowLink("tiny-self", "a", "a", 1e-20), new ChartFlowLink("large", "b", "c", 1) }).ConfigureChord(options => options.StartAngleDegrees = 0);
+            new[] { new ChartFlowLink("tiny-self", "a", "a", 1e-20), new ChartFlowLink("large", "b", "c", 1) }).Chord(options => options.StartAngleDegrees = 0);
         var prepared = chart.Prepare(Context()); var tiny = Role(prepared, "chord-link")[0];
         Assert.True(Number(tiny, "source-sweep") > 0);
         Assert.Equal("precision-collapse", (string?)tiny.Attribute("data-cfx-geometry-status"));

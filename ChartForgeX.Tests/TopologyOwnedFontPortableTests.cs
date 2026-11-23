@@ -82,9 +82,9 @@ public sealed class TopologyOwnedFontPortableTests : IDisposable {
         changed.FilePath="/absent/cfx-font.otf";Assert.Null(changed.OwnedFileFont);Assert.Null(changed.NativeTextCapture);Assert.Equal(0,first.CollectionIndex);
     }
     internal static TopologyChart Source(string label="HO") {
-        var chart=TopologyChart.Create().WithId("owned-font-diagram").WithTitle("").WithViewport(760,520,24).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart=TopologyChart.Create().Id("owned-font-diagram").Title("").Viewport(new TopologyViewport(760, 520, 24)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("node",label,180,160,width:180,height:90);
-        var node=chart.Nodes[0];node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;chart.WithRenderOptions(Options());return chart;
+        var node=chart.Nodes[0];node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;chart.DefaultRenderOptions(Options());return chart;
     }
     internal static TopologyRenderOptions Options()=>new(){IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false};
     internal static VisualRenderContext Context(TopologyChart chart,FontSpec font)=>new(new VisualLayoutOptions(new VisualSize(760,520),24),chart.Theme,chart.ThemeMode,new VisualFrame(showLegend:false),font);

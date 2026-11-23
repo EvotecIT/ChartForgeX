@@ -36,7 +36,7 @@ public sealed class CartesianPlotRegionDepthTests {
     [InlineData(ChartPlotRegionLabelPosition.Left, 0, .5)] [InlineData(ChartPlotRegionLabelPosition.Right, 1, .5)]
     [InlineData(ChartPlotRegionLabelPosition.BottomLeft, 0, 1)] [InlineData(ChartPlotRegionLabelPosition.Bottom, .5, 1)] [InlineData(ChartPlotRegionLabelPosition.BottomRight, 1, 1)]
     public void ExplicitScreenAnchorsStayDeliberateAfterClippingAndReversal(ChartPlotRegionLabelPosition position, double x, double y) {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithAxes(false); chart.ClearSeries();
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).Axes(false); chart.ClearSeries();
         chart.Options.XAxis.Reversed = true; chart.Options.YAxis.Reversed = true;
         chart.AddPlotRegion(new ChartPlotRegion(1, xMinimum: -10, xMaximum: 6, yMinimum: 2, yMaximum: 30, label: "Zone")
             .WithBorder(new ChartStrokeStyle(width: 3)).WithLabelPosition(position));
@@ -53,9 +53,9 @@ public sealed class CartesianPlotRegionDepthTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void BorderedSecondaryRegionRetainsItsSelectedLogarithmicYDomainAndReversal(bool reversed) {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithAxes(false);
-        chart.AddLine("Secondary", new[] { new ChartPoint(2, 200), new ChartPoint(8, 8000) }); chart.Series[1].UseSecondaryValueAxis();
-        chart.Options.SecondaryYAxis.WithLogarithmicScale().WithBounds(100, 10000).WithReversal(reversed);
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).Axes(false);
+        chart.AddLine("Secondary", new[] { new ChartPoint(2, 200), new ChartPoint(8, 8000) }); chart.Series[1].SecondaryAxis();
+        chart.Options.SecondaryYAxis.LogarithmicScale().Bounds(100, 10000).Reversed(reversed);
         chart.AddPlotRegion(new ChartPlotRegion(1, xMinimum: 2, xMaximum: 8, yMinimum: 1000, yMaximum: 10000,
             yAxis: ChartAxisSide.Secondary, showLabel: false).WithBorder(new ChartStrokeStyle(width: 4)));
         var prepared = CartesianAxisRuleCrossingTests.Prepare(chart);
@@ -75,7 +75,7 @@ public sealed class CartesianPlotRegionDepthTests {
         dash[0] = 100;
         Assert.Null(plain.Border); Assert.Equal(ChartPlotRegionLabelPosition.Auto, plain.LabelPosition);
         Assert.Equal(5, styled.Border!.Dash![0]); Assert.Equal(ChartPlotRegionLabelPosition.Center, styled.LabelPosition);
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithAxes(false); chart.ClearSeries(); chart.AddPlotRegion(styled);
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).Axes(false); chart.ClearSeries(); chart.AddPlotRegion(styled);
         var prepared = CartesianAxisRuleCrossingTests.Prepare(chart); var border = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "plot-region-border");
         Assert.Equal(4, border.StrokeWidth); Assert.Equal(new[] { 5d, 2d }, border.Dash); Assert.Equal(128, border.Stroke!.Value.A);
         Assert.Equal(ChartColor.FromRgb(220, 20, 30).R, border.Stroke.Value.R);
@@ -92,7 +92,7 @@ public sealed class CartesianPlotRegionDepthTests {
 
     [Fact]
     public void SolidBorderChangesNativeBoundaryPixelsWithoutSpillingOutsideTheVisibleIntersection() {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithAxes(false); chart.ClearSeries();
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).Axes(false); chart.ClearSeries();
         var source = new ChartPlotRegion(0, xMinimum: -2, xMaximum: 5, yMinimum: 2, yMaximum: 8, opacity: 0, showLabel: false);
         chart.AddPlotRegion(source);
         var plain = CartesianAxisRuleCrossingTests.Prepare(chart); var bounds = Assert.Single(plain.Regions, item => item.Role == "plot-region").Bounds;
@@ -109,7 +109,7 @@ public sealed class CartesianPlotRegionDepthTests {
 
     [Fact]
     public void EmptyRegionsRetainDescriptionsWithoutPaintingAClampedBorder() {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithAxes(false); chart.ClearSeries();
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).Axes(false); chart.ClearSeries();
         chart.AddPlotRegion(new ChartPlotRegion(0, xMinimum: 20, xMaximum: 30, label: "Outside").WithBorder(new ChartStrokeStyle(width: 4)));
         var empty = CartesianAxisRuleCrossingTests.Prepare(chart);
         Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role is "plot-region-border" or "plot-region-fill" or "plot-region-label");
@@ -118,8 +118,8 @@ public sealed class CartesianPlotRegionDepthTests {
 
     [Fact]
     public void ExplicitAnchorDoesNotRelocateAcrossAConflictingMarkWhileAutoCanUseAnotherCandidate() {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithAxes(false); chart.ClearSeries();
-        chart.AddScatter("Corner", new[] { new ChartPoint(0, 10) }); chart.Series[0].WithMarkerRadius(40);
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).Axes(false); chart.ClearSeries();
+        chart.AddScatter("Corner", new[] { new ChartPoint(0, 10) }); chart.Series[0].MarkerRadius(40);
         var region = new ChartPlotRegion(1, label: "Caption");
         chart.AddPlotRegion(region.WithLabelPosition(ChartPlotRegionLabelPosition.TopLeft));
         var explicitAnchor = CartesianAxisRuleCrossingTests.Prepare(chart);

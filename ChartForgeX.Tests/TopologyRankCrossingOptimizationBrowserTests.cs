@@ -12,7 +12,7 @@ public sealed class TopologyRankCrossingOptimizationBrowserTests {
     [InlineData(false,390)] [InlineData(true,1100)]
     public async Task RepairedRankSceneRetainsNativeActualGeometryAcrossBrowserSvgPngAndTypedRestoration(bool dark,int width) {
         var rendered=MermaidRenderer.Render(TopologyRankOptimizationCausalTests.Source("LR"),MermaidSwimlaneLayoutDepthTests.Options(dark,width));Assert.Empty(rendered.Diagnostics);
-        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model).WithId("rank-crossing-optimized");TopologyRankOptimizationCausalTests.SetMinima(chart);var prepared=chart.Prepare();
+        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Id("rank-crossing-optimized");TopologyRankOptimizationCausalTests.SetMinima(chart);var prepared=chart.Prepare();
         Assert.Equal(0,TopologyRankOptimizationCausalTests.Crossings(prepared.ToInterchangeEnvelope()));var artifact=chart.ToVisualArtifact();
         MermaidNestedSwimlaneTests.Capture(artifact,"rank-crossing-browser-"+width+"-"+dark);
         await using var session=await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions {HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}),width,950);

@@ -27,12 +27,6 @@ public sealed partial class ChartSeries {
     [PowerForge.Fluent.Fluent("TooltipBy")]
     public Func<ChartValueContext, string?>? TooltipFormatter { get => _tooltipFormatter; set => _tooltipFormatter = value; }
 
-    /// <summary>Migration shim removed by the fluent rewrite.</summary>
-    public ChartSeries WithDataLabelFormatter(Func<ChartValueContext, string?>? formatter) { DataLabelFormatter = formatter; return this; }
-
-    /// <summary>Migration shim removed by the fluent rewrite.</summary>
-    public ChartSeries WithTooltipFormatter(Func<ChartValueContext, string?>? formatter) { TooltipFormatter = formatter; return this; }
-
     internal bool HasFormatters => _dataLabelFormatter != null || _tooltipFormatter != null;
     internal IReadOnlyList<string?> PreparedLabels => _preparedLabels ?? PointLabels;
     internal IReadOnlyList<string?> CapturedLabels => _preparedLabels ?? Array.Empty<string?>();

@@ -10,7 +10,7 @@ public static class GraphSceneSuperTopologyExtensions {
     /// <param name="options">The graph scene options to configure.</param>
     /// <param name="enableManipulation">Whether opt-in editing/manipulation capabilities should be advertised.</param>
     /// <returns>The current options instance.</returns>
-    public static GraphSceneOptions UseSuperTopologyDefaults(this GraphSceneOptions options, bool enableManipulation = false) {
+    public static GraphSceneOptions SuperTopologyDefaults(this GraphSceneOptions options, bool enableManipulation = false) {
         if (options == null) throw new System.ArgumentNullException(nameof(options));
         options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.DragNodes | GraphSceneFeatures.Export | GraphSceneFeatures.PerformanceTelemetry | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.HierarchyNavigation);
         if (enableManipulation) {

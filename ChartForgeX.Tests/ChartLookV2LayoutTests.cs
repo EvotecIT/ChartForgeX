@@ -52,7 +52,7 @@ public sealed class ChartLookV2LayoutTests {
     [InlineData("bullet", 390, ThemeMode.Dark)]
     [InlineData("timeline", 960, ThemeMode.Light)]
     public void RowContextsFitTheirContentWhileFixedHostsKeepTheirViewport(string family, int width, ThemeMode mode) {
-        var chart = Chart.Create().WithTitle("Quarterly delivery").WithLegend(false).WithSize(width, 560).WithTheme(VisualTheme.Graphite(), mode);
+        var chart = Chart.Create().Title("Quarterly delivery").Legend(false).Size(width, 560).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         if (family == "progress") chart.AddProgressBars("Delivery", new[] { new ChartProgressItem("North", 72), new ChartProgressItem("South", 58) });
         else if (family == "bullet") chart.AddBullet("North", 72, 80).AddBullet("South", 58, 65);
         else chart.AddTimelineRange("North", 0, 10).AddTimelineRange("South", 2, 8);
@@ -79,14 +79,14 @@ public sealed class ChartLookV2LayoutTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void FinancialValueAxesFitPricesWhileStackedColumnsKeepTheirBandWidth(ThemeMode mode) {
-        var candles = Chart.Create().WithSize(920, 520).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
+        var candles = Chart.Create().Size(920, 520).Legend(false).Theme(VisualTheme.Graphite()).ThemeMode(mode)
             .AddCandlestick("Price", new[] { new ChartCandlestick(1, 102, 110, 98, 108), new ChartCandlestick(2, 108, 114, 104, 106), new ChartCandlestick(3, 112, 120, 108, 118) });
         var prices = candles.Prepare(VisualExportRequest.ForChart(candles).Context);
         var ticks = prices.Regions.Where(region => region.Role == "axis-y-label").Select(region => double.Parse(region.Label!.Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture)).ToArray();
         Assert.NotEmpty(ticks);
         Assert.InRange(ticks.Min(), 80, 98);
 
-        var stacked = Chart.Create().WithSize(920, 520).WithTheme(VisualTheme.Graphite(), mode).WithStackedBars()
+        var stacked = Chart.Create().Size(920, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode).Bars(b => b.Stacked())
             .AddBar("Ready", new[] { new ChartPoint(1, 42), new ChartPoint(2, 58), new ChartPoint(3, 72), new ChartPoint(4, 86) })
             .AddBar("In review", new[] { new ChartPoint(1, 18), new ChartPoint(2, 22), new ChartPoint(3, 16), new ChartPoint(4, 10) });
         var columns = stacked.Prepare(VisualExportRequest.ForChart(stacked).Context);
@@ -100,7 +100,7 @@ public sealed class ChartLookV2LayoutTests {
     [InlineData(360, ThemeMode.Dark)]
     [InlineData(800, ThemeMode.Light)]
     public void GaugeTargetCaptionSitsOnItsRayClearOfTheTick(int width, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
+        var chart = Chart.Create().Size(width, width == 360 ? 360 : 440).Legend(false).Theme(VisualTheme.Graphite()).ThemeMode(mode)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Available capacity",
                 new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(85) })));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

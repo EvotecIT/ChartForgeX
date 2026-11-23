@@ -12,7 +12,7 @@ public sealed class InteractiveStableSeriesIdentityBrowserTests {
         if (!Enabled) return;
         var numeric = ChartSeries.CreateLine(new ChartSeriesId("0"), "Reading", new[] { new ChartPoint(1, 5), new ChartPoint(2, 8) });
         var other = ChartSeries.CreateLine(new ChartSeriesId("other"), "0", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
-        var chart = Chart.Create().WithSize(600, 360).AddSeries(numeric).AddSeries(other).MoveSeries(numeric, 1);
+        var chart = Chart.Create().Size(600, 360).AddSeries(numeric).AddSeries(other).MoveSeries(numeric, 1);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.AddScenario("numeric-id", "Numeric ID", scenario => scenario
                 .AddSeriesStep(numeric.Id, "Typed ID")
@@ -37,8 +37,8 @@ public sealed class InteractiveStableSeriesIdentityBrowserTests {
     [InlineData(false)]
     public async Task ExplicitSourceIdsSynchronizeAcrossNamesAndOrderingWhileAutomaticIdsStayLocal(bool explicitIds) {
         if (!Enabled) return;
-        var first = Chart.Create().WithSize(500, 300).WithTitle("Source").WithPointLegend();
-        var second = Chart.Create().WithSize(500, 300).WithTitle("Peer").WithPointLegend();
+        var first = Chart.Create().Size(500, 300).Title("Source").Legend(l => l.ShowPoints());
+        var second = Chart.Create().Size(500, 300).Title("Peer").Legend(l => l.ShowPoints());
         var points = new[] { new ChartPoint(1, 5), new ChartPoint(2, 8) };
         if (explicitIds) {
             first.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("readings"), "Reading", points));
@@ -47,8 +47,8 @@ public sealed class InteractiveStableSeriesIdentityBrowserTests {
             first.AddScatter("Reading", points);
             second.AddScatter("Localized reading", System.Linq.Enumerable.Reverse(points));
         }
-        first.Series[0].WithObservationId(0, new ChartObservationId("north")).WithObservationId(1, new ChartObservationId("south"));
-        second.Series[0].WithObservationId(0, new ChartObservationId("south")).WithObservationId(1, new ChartObservationId("north"));
+        first.Series[0].ObservationId(0, new ChartObservationId("north")).ObservationId(1, new ChartObservationId("south"));
+        second.Series[0].ObservationId(0, new ChartObservationId("south")).ObservationId(1, new ChartObservationId("north"));
         var html = new[] { first, second }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection

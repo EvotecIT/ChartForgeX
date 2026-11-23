@@ -11,19 +11,19 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void ChartGridsSupportPanelSpans() {
         var wide = Chart.Create()
-            .WithTitle("Wide panel")
-            .WithSize(620, 200)
+            .Title("Wide panel")
+            .Size(620, 200)
             .AddLine("Trend", Points(10, 24, 18, 35));
         var compact = Chart.Create()
-            .WithTitle("Compact panel")
-            .WithSize(300, 200)
+            .Title("Compact panel")
+            .Size(300, 200)
             .AddBar("Values", Points(22, 31, 27));
         var grid = ChartGrid.Create()
-            .WithTheme(VisualTheme.Graphite())
-            .WithColumns(3)
-            .WithGap(10)
-            .WithPadding(10)
-            .WithPanelSize(300, 200).WithPanelFit(ChartForgeX.Primitives.VisualPanelFit.Stretch)
+            .Theme(VisualTheme.Graphite())
+            .Columns(3)
+            .Gap(10)
+            .Padding(10)
+            .PanelSize(300, 200).PanelFit(ChartForgeX.Primitives.VisualPanelFit.Stretch)
             .Add(wide, 2)
             .Add(compact)
             .Add(compact);
@@ -41,21 +41,21 @@ internal static partial class SmokeTests {
         Assert(ReadBigEndianInt32(png, 16) == 940, "Spanned PNG grids should preserve composed grid width.");
         Assert(ReadBigEndianInt32(png, 20) == 430, "Spanned PNG grids should preserve composed grid height.");
 
-        var mutable = ChartGrid.Create().Add(compact).WithPanelSpan(0, 2);
+        var mutable = ChartGrid.Create().Add(compact).PanelSpan(0, 2);
         Assert(mutable.PanelSpans[0].ColumnSpan == 2, "Existing grid panels should support span updates.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().Add(compact, 0), "Grid chart adds should reject zero column spans.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().Add(compact, 1, 0), "Grid chart adds should reject zero row spans.");
-        AssertThrows<ArgumentOutOfRangeException>(() => mutable.WithPanelSpan(1, 1), "Grid panel span updates should reject missing chart indexes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => mutable.PanelSpan(1, 1), "Grid panel span updates should reject missing chart indexes.");
     }
 
     private static void ChartGridHeadersSupportTextStyles() {
         var grid = ChartGrid.Create()
-            .WithTitle("styled grid header")
-            .WithSubtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
-            .ConfigureTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
-            .ConfigureSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(16).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
-            .WithPanelSize(260, 160)
-            .Add(Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3)));
+            .Title("styled grid header")
+            .Subtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontSize(32).FontFamily("Georgia, serif").FontWeight("900").Italic().UnderlineStyle(TextDecorationStyle.Dotted).StrikethroughStyle(TextDecorationStyle.Wavy).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase))
+            .SubtitleStyle(style => style.Color(ChartColor.FromHex("#0e7490")).FontSize(16).Italic().UnderlineStyle(TextDecorationStyle.Dotted).Baseline(TextBaseline.Subscript).TextCase(TextCaseTransform.Lowercase))
+            .PanelSize(260, 160)
+            .Add(Chart.Create().Title("Panel").Size(260, 160).AddLine("Values", Points(1, 2, 3)));
         var svg = grid.ToSvg();
         var headings = XDocument.Parse(svg).Descendants().Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("frame-heading", StringComparison.Ordinal) == true).ToArray();
         Assert(headings.SelectMany(element => element.Descendants()).Any(element => (string?)element.Attribute("fill") == "#BE123C" && (string?)element.Attribute("font-family") == "Georgia, serif"),
@@ -78,14 +78,14 @@ internal static partial class SmokeTests {
         var inlineSvg = prepared.ToSvg(new VisualSvgOptions(colorVariables: grid.SvgColorVariables, responsive: true));
         Assert(html.Contains(inlineSvg, StringComparison.Ordinal), "Static HTML should retain the exact prepared typography and layout with responsive export policy.");
         Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render native PNG output.");
-        var panel = Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3));
-        var regularRaster = ChartGrid.Create().WithTitle("Italic Grid Header").WithSubtitle("Italic Grid Subtitle").WithPanelSize(260, 160).Add(panel).ToPng();
+        var panel = Chart.Create().Title("Panel").Size(260, 160).AddLine("Values", Points(1, 2, 3));
+        var regularRaster = ChartGrid.Create().Title("Italic Grid Header").Subtitle("Italic Grid Subtitle").PanelSize(260, 160).Add(panel).ToPng();
         var italicRaster = ChartGrid.Create()
-            .WithTitle("Italic Grid Header")
-            .WithSubtitle("Italic Grid Subtitle")
-            .ConfigureTitleStyle(style => style.WithItalic())
-            .ConfigureSubtitleStyle(style => style.WithItalic())
-            .WithPanelSize(260, 160)
+            .Title("Italic Grid Header")
+            .Subtitle("Italic Grid Subtitle")
+            .TitleStyle(style => style.Italic())
+            .SubtitleStyle(style => style.Italic())
+            .PanelSize(260, 160)
             .Add(panel)
             .ToPng();
         Assert(!regularRaster.SequenceEqual(italicRaster), "PNG grid headers should render italic pixels instead of silently using regular text.");
@@ -93,23 +93,23 @@ internal static partial class SmokeTests {
         var themedFont = VisualTheme.Graphite();
         themedFont = themedFont.WithFontFamily("Georgia, serif");
         var inheritedFontRaster = ChartGrid.Create()
-            .WithTheme(themedFont)
-            .WithTitle("Inherited Grid Header")
-            .WithSubtitle("Theme font inheritance")
-            .WithPanelSize(260, 160)
+            .Theme(themedFont)
+            .Title("Inherited Grid Header")
+            .Subtitle("Theme font inheritance")
+            .PanelSize(260, 160)
             .Add(panel)
             .ToPng();
         var explicitFontRaster = ChartGrid.Create()
-            .WithTheme(themedFont)
-            .WithTitle("Inherited Grid Header")
-            .WithSubtitle("Theme font inheritance")
-            .ConfigureTitleStyle(style => style.WithFontFamily("Georgia, serif"))
-            .ConfigureSubtitleStyle(style => style.WithFontFamily("Georgia, serif"))
-            .WithPanelSize(260, 160)
+            .Theme(themedFont)
+            .Title("Inherited Grid Header")
+            .Subtitle("Theme font inheritance")
+            .TitleStyle(style => style.FontFamily("Georgia, serif"))
+            .SubtitleStyle(style => style.FontFamily("Georgia, serif"))
+            .PanelSize(260, 160)
             .Add(panel)
             .ToPng();
         Assert(inheritedFontRaster.SequenceEqual(explicitFontRaster), "PNG grid headers without a role font override should draw with the grid theme font used for measurement.");
-        AssertThrows<ArgumentNullException>(() => ChartGrid.Create().ConfigureTitleStyle(null!), "Grid title styles should reject null callbacks.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().ConfigureSubtitleStyle(style => style.WithFontSize(0)), "Grid subtitle styles should reject invalid font sizes.");
+        AssertThrows<ArgumentNullException>(() => ChartGrid.Create().TitleStyle((Action<TextStyleOverride>)null!), "Grid title styles should reject null callbacks.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().SubtitleStyle(style => style.FontSize(0)), "Grid subtitle styles should reject invalid font sizes.");
     }
 }

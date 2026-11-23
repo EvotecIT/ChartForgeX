@@ -28,11 +28,11 @@ public sealed class QuantitativeMarkerOutlineBrowserTests {
             builder.Light.Foreground = shared; builder.Light.Surface = shared;
             builder.Dark.Foreground = shared; builder.Dark.Surface = shared;
         });
-        var chart = QuantitativeMarkerOutlineTests.Create(kind, dark, width).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = QuantitativeMarkerOutlineTests.Create(kind, dark, width).Theme(theme).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Options.ShowPlotBackground = true; chart.Options.TransparentBackground = false;
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(shared, shared).WithValueRange(0, 20));
-        chart.Series[0].WithObservationId(0, new ChartObservationId("color-low")).WithObservationId(1, new ChartObservationId("color-high"));
-        chart.WithSvgColorVariables(new SvgColorVariables()
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(shared, shared).WithValueRange(0, 20));
+        chart.Series[0].ObservationId(0, new ChartObservationId("color-low")).ObservationId(1, new ChartObservationId("color-high"));
+        chart.SvgColorVariables(new SvgColorVariables()
             .Add("--quant-surface", shared, SvgColorRole.Surface)
             .Add("--quant-ramp", shared, SvgColorRole.Ramp)
             .AddThemeToken(VisualThemeColorToken.Foreground, "--quant-foreground"));
@@ -107,7 +107,7 @@ public sealed class QuantitativeMarkerOutlineBrowserTests {
 
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var recipe = (kind == ChartSeriesKind.Bubble ? BubbleColorScaleRecipe.Create(mode: mode) : ScatterColorScaleRecipe.Create(mode: mode))
-            .WithSize(width, 400).WithTheme(VisualTheme.Graphite(), mode).WithTitle(V2GalleryModels.Title(kind));
+            .Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(V2GalleryModels.Title(kind));
         await using var recipeSession = await OpenAsync(recipe.ToInteractiveHtmlPage(), width + 24, 560);
         var recipePage = recipeSession.Page; var missing = recipePage.Locator(Point(0, 2));
         Assert.Equal("true", await missing.GetAttributeAsync("data-cfx-color-missing"));

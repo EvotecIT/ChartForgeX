@@ -29,9 +29,9 @@ public sealed class TopologyAnnotationCandidateUnitTests {
     [InlineData(false, false)] [InlineData(false, true)]
     [InlineData(true, false)] [InlineData(true, true)]
     public void AlignedNoteCandidatesProjectTheSameGapAndInsetForEnlargementAndShrink(bool left, bool shrink) {
-        var chart = TopologyChart.Create().WithId("aligned-note-candidate").WithTitle("")
-            .WithViewport(shrink ? 240 : 800, shrink ? 180 : 500, 24).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+        var chart = TopologyChart.Create().Id("aligned-note-candidate").Title("")
+            .Viewport(new TopologyViewport(shrink ? 240 : 800, shrink ? 180 : 500, 24)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Layered)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
             .AddNode("node", "Node", 220, 100, width: 160, height: 40);
         // The existing automatic layout admits both enlargement and shrink. A shaped Manual graph
         // that already fits deliberately retains unit scale and cannot prove an enlargement contract.
@@ -39,7 +39,7 @@ public sealed class TopologyAnnotationCandidateUnitTests {
         node.ShowLabel = false; node.ShowStatusBadge = false;
         chart.Annotations.Add(new TopologyAnnotation("note", "Aligned note", node.Id,
             left ? TopologyAnnotationSide.Left : TopologyAnnotationSide.Right));
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = true });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = true });
         var direct = chart.Prepare(); var saved = direct.ToInterchangeEnvelope(); Capture("aligned-" + left + "-" + shrink + "-direct", direct);
         var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart().Prepare();
         Capture("aligned-" + left + "-" + shrink + "-restored", restored);

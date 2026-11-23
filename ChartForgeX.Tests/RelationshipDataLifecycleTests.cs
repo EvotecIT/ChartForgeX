@@ -15,8 +15,8 @@ public sealed class RelationshipDataLifecycleTests {
     public void ATreeWithOneRootNeedsNoBranchesAndCanClearAndRefillWithoutInventedLinks(ThemeMode mode) {
         var nodes = new[] { new ChartNode("only", "Only node") };
         var series = ChartSeries.CreateTree(new ChartSeriesId("one-root"), "Tree", nodes, Array.Empty<ChartTreeLink>());
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false).AddSeries(series);
-        var color = ChartColor.FromHex("#A42B71"); series.WithColor(color);
+        var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels(false).AddSeries(series);
+        var color = ChartColor.FromHex("#A42B71"); series.Color(color);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, 320)), VisualTheme.Graphite(), mode,
             frame: new VisualFrame(showLegend: false));
         var single = chart.Prepare(context); var svg = single.ToSvg(); var png = single.ToPng(Raster());
@@ -53,15 +53,15 @@ public sealed class RelationshipDataLifecycleTests {
     [InlineData(ChartSeriesKind.Sunburst)]
     [InlineData(ChartSeriesKind.Treemap)]
     public void ReplacementSnapshotsTheGraphClearsItemOverridesAndKeepsTheSeriesHandle(ChartSeriesKind kind) {
-        var series = Create(kind).WithName("Localized requests").WithState(ChartSeriesState.Warning)
-            .WithColor(ChartColor.FromHex("#123456")).WithFillPattern(ChartFillPattern.DiagonalForward)
-            .WithLegendEntry(false).WithDataLabels(false).WithSemanticRole("requests")
-            .WithObservationId(0, new ChartObservationId("ordinal-key"))
-            .WithPointColor(0, "#B34C89").WithPointFillPattern(0, ChartFillPattern.Crosshatch).WithPointLabel(0, "Old caption")
-            .ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFFFF"))
-            .WithNodeState("input", ChartSeriesState.Danger);
-        if (IsFlow(kind)) series.WithFlowState("received", ChartSeriesState.Danger).WithFlowStyle("received", new ChartFlowStyle(fill: ChartColor.FromHex("#FF0000")));
-        var chart = Chart.Create().AddSeries(series).WithLegend(false);
+        var series = Create(kind).Name("Localized requests").StateRole(ChartSeriesState.Warning)
+            .Color(ChartColor.FromHex("#123456")).FillPattern(ChartFillPattern.DiagonalForward)
+            .ShowInLegend(false).ShowDataLabels(false).SemanticRole("requests")
+            .ObservationId(0, new ChartObservationId("ordinal-key"))
+            .PointColor(0, "#B34C89").PointFillPattern(0, ChartFillPattern.Crosshatch).PointLabel(0, "Old caption")
+            .PointDataLabelStyle(0, style => style.Color(ChartColor.FromHex("#FFFFFF")))
+            .NodeState("input", ChartSeriesState.Danger);
+        if (IsFlow(kind)) series.FlowState("received", ChartSeriesState.Danger).FlowStyle("received", new ChartFlowStyle(fill: ChartColor.FromHex("#FF0000")));
+        var chart = Chart.Create().AddSeries(series).Legend(false);
         var before = chart.Prepare(Context()); var svg = before.ToSvg(); var png = before.ToPng(Raster());
         var oldNodes = series.Nodes;
         var nodes = Nodes(reversed: true); var flows = Flows(9); var branches = Branches(9); var items = Items(9, reversed: true);
@@ -73,7 +73,7 @@ public sealed class RelationshipDataLifecycleTests {
         Assert.Equal("Localized requests", series.Name); Assert.Equal(ChartSeriesState.Warning, series.StateRole);
         Assert.Equal(ChartColor.FromHex("#123456"), series.Color); Assert.Equal(ChartFillPattern.DiagonalForward, series.FillPattern);
         Assert.False(series.ShowInLegend); Assert.False(series.ShowDataLabels); Assert.Equal("requests", series.SemanticRole);
-        Assert.False(chart.Options.ShowLegend);
+        Assert.False(chart.Options.Legend.Visible);
         Assert.Empty(series.ObservationIds); Assert.Empty(series.PointColors); Assert.Empty(series.PointFillPatterns);
         Assert.Empty(series.PointLabels); Assert.Empty(series.PointDataLabelStyles); Assert.Empty(series.NodeStates);
         Assert.Empty(series.FlowStates); Assert.Empty(series.FlowStyles);
@@ -100,9 +100,9 @@ public sealed class RelationshipDataLifecycleTests {
     [InlineData(ChartSeriesKind.Sunburst)]
     [InlineData(ChartSeriesKind.Treemap)]
     public void InvalidOrInterruptedInputsLeaveFactsIdentitiesAndStylesIntact(ChartSeriesKind kind) {
-        var series = Create(kind).WithObservationId(0, new ChartObservationId("retained"))
-            .WithPointColor(0, "#B34C89").WithNodeState("input", ChartSeriesState.Warning);
-        if (IsFlow(kind)) series.WithFlowState("received", ChartSeriesState.Danger).WithFlowStyle("received", new ChartFlowStyle(fillOpacity: .4));
+        var series = Create(kind).ObservationId(0, new ChartObservationId("retained"))
+            .PointColor(0, "#B34C89").NodeState("input", ChartSeriesState.Warning);
+        if (IsFlow(kind)) series.FlowState("received", ChartSeriesState.Danger).FlowStyle("received", new ChartFlowStyle(fillOpacity: .4));
         var chart = Chart.Create().AddSeries(series); var before = chart.Prepare(Context()).ToSvg();
         var oldNodes = series.Nodes; var oldFlows = series.FlowLinks; var oldBranches = series.TreeLinks; var oldItems = series.HierarchyItems;
         if (IsFlow(kind)) {
@@ -143,7 +143,7 @@ public sealed class RelationshipDataLifecycleTests {
         AssertEmpty();
         Replace(series, Nodes(), Flows(5), Branches(5), Items(5));
         Assert.Equal(2, Targets(chart.Prepare(Context()).ToSvg()).Count(IsNode));
-        series.WithObservationId(0, new ChartObservationId("cleared"));
+        series.ObservationId(0, new ChartObservationId("cleared"));
         Replace(series, Array.Empty<ChartNode>(), Array.Empty<ChartFlowLink>(), Array.Empty<ChartTreeLink>(), Array.Empty<ChartHierarchyItem>());
         Assert.Empty(series.ObservationIds); AssertEmpty();
         Replace(series, Nodes(), Flows(7), Branches(7), Items(7));

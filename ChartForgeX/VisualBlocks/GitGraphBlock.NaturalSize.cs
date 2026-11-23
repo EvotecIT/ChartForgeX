@@ -6,7 +6,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class GitGraphBlock {
     /// <summary>Fits commit columns and branch lanes at the current typography within the configured width.</summary>
     /// <remarks>Call again after changing content, direction or typography. A later WithSize call selects an explicit frame.</remarks>
-    public GitGraphBlock WithNaturalSize() {
+    public GitGraphBlock NaturalSize() {
         VisualBlockRendering.ValidateGitGraph(this);
         var heading = VisualBlockRendering.Headings(this);
         var padding = Options.Padding;

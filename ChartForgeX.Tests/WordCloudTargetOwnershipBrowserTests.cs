@@ -60,7 +60,7 @@ public sealed partial class WordCloudTargetOwnershipBrowserTests {
     [BrowserFact]
     public async Task LimitedAndZeroWeightTermsRetainExactInventoryWithoutBecomingInteractiveDuplicates() {
         if (!Enabled) return;
-        var chart = Frame().WithWordCloudMaximumTerms(1).AddWordCloud("Topics", new[] {
+        var chart = Frame().WordCloud(w => w.MaxTerms(1)).AddWordCloud("Topics", new[] {
             new ChartWordCloudItem("Visible", 100), new ChartWordCloudItem("Limited", 50), new ChartWordCloudItem("Zero", 0)
         });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => Options(options, false)), 800, 600);
@@ -95,8 +95,8 @@ public sealed partial class WordCloudTargetOwnershipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Frame() => Chart.Create().WithSize(640, 360).WithTitle("Word-cloud target ownership")
-        .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+    private static Chart Frame() => Chart.Create().Size(640, 360).Title("Word-cloud target ownership")
+        .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
 
     private static void Options(HtmlChartInteractionOptions options, bool single) {
         options.Interaction.Features = ChartInteractionFeatures.Selection | ChartInteractionFeatures.KeyboardNavigation;

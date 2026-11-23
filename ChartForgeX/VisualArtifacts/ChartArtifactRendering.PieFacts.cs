@@ -9,14 +9,14 @@ public static partial class ChartArtifactRendering {
     /// <summary>Describes optional native radial policies beside rendered Chart fallback; these facts are not an editable Chart schema.</summary>
     private static void WritePiePresentationFacts(Chart chart, IDictionary<string, string> target) {
         if (!chart.Series.Any(series => ChartSeriesKindTraits.IsPieLikeKind(series.Kind))) return;
-        if (chart.Options.PieSliceOpacity.HasValue)
-            target["chart.radial.pie.sliceOpacity"] = chart.Options.PieSliceOpacity.Value.ToString("R", CultureInfo.InvariantCulture);
-        if (chart.Options.PieInsideLabelRadiusRatio.HasValue)
-            target["chart.radial.pie.labelRadiusRatio"] = chart.Options.PieInsideLabelRadiusRatio.Value.ToString("R", CultureInfo.InvariantCulture);
-        if (chart.Options.PiePreserveSourceOrder) target["chart.radial.pie.sliceOrder"] = "source";
-        if (chart.Options.PieLegendContent.HasValue) target["chart.radial.pie.legendContent"] = chart.Options.PieLegendContent.Value.ToString();
-        if (chart.Options.PieSliceOutline != null) target["chart.radial.pie.sliceOutline"] = StrokeFact(chart.Options.PieSliceOutline);
-        if (chart.Options.PieOuterOutline != null) target["chart.radial.pie.outerOutline"] = StrokeFact(chart.Options.PieOuterOutline);
+        if (chart.Options.Pie.SliceOpacity.HasValue)
+            target["chart.radial.pie.sliceOpacity"] = chart.Options.Pie.SliceOpacity.Value.ToString("R", CultureInfo.InvariantCulture);
+        if (chart.Options.Pie.InsideLabelRadiusRatio.HasValue)
+            target["chart.radial.pie.labelRadiusRatio"] = chart.Options.Pie.InsideLabelRadiusRatio.Value.ToString("R", CultureInfo.InvariantCulture);
+        if (chart.Options.Pie.PreserveSourceOrder) target["chart.radial.pie.sliceOrder"] = "source";
+        if (chart.Options.Pie.LegendContent.HasValue) target["chart.radial.pie.legendContent"] = chart.Options.Pie.LegendContent.Value.ToString();
+        if (chart.Options.Pie.SliceOutline != null) target["chart.radial.pie.sliceOutline"] = StrokeFact(chart.Options.Pie.SliceOutline);
+        if (chart.Options.Pie.OuterOutline != null) target["chart.radial.pie.outerOutline"] = StrokeFact(chart.Options.Pie.OuterOutline);
     }
 
     private static string StrokeFact(ChartStrokeStyle style) {

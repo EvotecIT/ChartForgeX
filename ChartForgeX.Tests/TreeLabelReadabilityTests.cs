@@ -48,9 +48,9 @@ public sealed class TreeLabelReadabilityTests {
     public void CaptionSizingPreservesAuthoredTypePaintAndRecursiveCenters() {
         var chart = Fixture(false); var context = Context(760, 420);
         var ink = ChartColor.FromHex("#9B164B"); var fill = ChartColor.FromHex("#27A5B1");
-        chart.Series[0].WithPointColor(0, fill)
-            .ConfigurePointDataLabelStyle(0, style => style.WithFontSize(14).WithColor(ink))
-            .ConfigurePointDataLabelStyle(1, style => style.WithFontSize(10));
+        chart.Series[0].PointColor(0, fill)
+            .PointDataLabelStyle(0, style => style.FontSize(14).Color(ink))
+            .PointDataLabelStyle(1, style => style.FontSize(10));
         var prepared = chart.Prepare(context); var document = XDocument.Parse(prepared.ToSvg());
         var targets = Targets(document); var root = targets.Single(element => (string?)element.Attribute("data-cfx-node") == "root");
         var group = targets.Single(element => (string?)element.Attribute("data-cfx-node") == "G0");
@@ -60,7 +60,7 @@ public sealed class TreeLabelReadabilityTests {
         Assert.Equal(10, groupText.Text.Size);
         Assert.Equal(fill.ToCss(), (string?)root.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "tree-node-mark").Attribute("fill"));
 
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         var withoutCaptions = chart.Prepare(context);
         foreach (var node in prepared.Regions.Where(region => region.Role == "tree-node")) {
             var baseline = withoutCaptions.Regions.Single(region => region.Id == node.Id);
@@ -139,6 +139,6 @@ public sealed class TreeLabelReadabilityTests {
                 links.Add(new(groupId, id));
             }
         }
-        return Chart.Create().WithLegend(false).WithDataLabels().AddSeries(ChartSeries.CreateTree(new ChartSeriesId("tree-source"), "Processing structure", nodes, links));
+        return Chart.Create().Legend(false).DataLabels().AddSeries(ChartSeries.CreateTree(new ChartSeriesId("tree-source"), "Processing structure", nodes, links));
     }
 }

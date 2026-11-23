@@ -10,11 +10,11 @@ public sealed class BoxPlotStatisticLabelTests {
     [Fact]
     public void DefaultMedianOutputAndLazyCustomHeadingRemainByteIdenticalWhenStatisticControlsAreUnused() {
         var chart = Fixture(); chart.Options.BoxPlot.LabelContent = ChartBoxPlotLabelContent.Median;
-        chart.Series[0].WithPointLabel(0, "Authored heading"); chart.WithValueFormatter(_ => throw new InvalidOperationException("Lazy custom heading"));
+        chart.Series[0].PointLabel(0, "Authored heading"); chart.FormatValuesBy(_ => throw new InvalidOperationException("Lazy custom heading"));
         var original = Prepare(chart); var svg = original.ToSvg(); var png = original.ToPng();
-        chart.ConfigureBoxPlot(options => {
+        chart.BoxPlot(options => {
             options.StatisticLabelFormatter = _ => throw new InvalidOperationException("Median mode ignores statistic formatting");
-            options.MedianLabel.Visible = false; options.MedianLabel.Style.WithFontSize(42);
+            options.MedianLabel.Visible = false; options.MedianLabel.Style.FontSize(42);
         });
         var configured = Prepare(chart); Assert.Equal(svg, configured.ToSvg()); Assert.Equal(png, configured.ToPng());
         Assert.Equal("Authored heading", Assert.Single(Labels(configured)).Text.Lines[0].Text);
@@ -28,16 +28,16 @@ public sealed class BoxPlotStatisticLabelTests {
     [InlineData(true, true, false)]
     public void IndependentStatisticsFollowPhysicalValueAxesWithoutChangingRawFacts(bool horizontal, bool reversed, bool secondary) {
         var chart = Fixture(horizontal); var series = chart.Series[0];
-        if (secondary) series.UseSecondaryValueAxis();
+        if (secondary) series.SecondaryAxis();
         var axis = horizontal ? secondary ? chart.Options.SecondaryXAxis : chart.Options.XAxis
             : secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-        axis.WithBounds(-50, 70).WithReversal(reversed);
-        chart.ConfigureBoxPlot(options => {
+        axis.Bounds(-50, 70).Reversed(reversed);
+        chart.BoxPlot(options => {
             options.LabelContent = ChartBoxPlotLabelContent.Statistics;
             options.StatisticLabelFormatter = context => context.Statistic.ToString();
             foreach (var component in Components(options)) component.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
-            options.MinimumLabel.Style.WithColor("#aa2200").WithFontSize(10);
-            options.MedianLabel.Style.WithColor("#0044bb").WithFontSize(13);
+            options.MinimumLabel.Style.Color(ChartColor.FromHex("#aa2200")).FontSize(10);
+            options.MedianLabel.Style.Color(ChartColor.FromHex("#0044bb")).FontSize(13);
         });
         var prepared = Prepare(chart); Capture(prepared, "stat-axis-" + horizontal + "-" + reversed + "-" + secondary);
         var labels = Labels(prepared); Assert.Equal(5, labels.Length);
@@ -60,11 +60,11 @@ public sealed class BoxPlotStatisticLabelTests {
     [Fact]
     public void IqrFormatterCapturesRenderedWhiskersOnceAndPreservesSourceExtremaHeadingsAndDetachedExports() {
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("latency"), "Latency", 1, new[] { 0d, 100, 101, 102 })
-            .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr).WithPointLabel(0, "Raw measurements");
-        var chart = Chart.Create().WithSize(850, 480).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels()
-            .WithXLabels("Service A").WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture)).AddSeries(series);
+            .BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr).PointLabel(0, "Raw measurements");
+        var chart = Chart.Create().Size(850, 480).ShowHeader(false).Legend(false).Axes(false).DataLabels()
+            .XLabels("Service A").ValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture)).AddSeries(series);
         var calls = new List<ChartBoxPlotStatisticLabelContext>();
-        chart.ConfigureBoxPlot(options => {
+        chart.BoxPlot(options => {
             options.LabelContent = ChartBoxPlotLabelContent.Statistics; options.MinimumLabel.Visible = false;
             options.StatisticLabelFormatter = context => { calls.Add(context); return context.Statistic == ChartBoxPlotStatistic.Q1 ? null : context.Statistic + ": " + context.FormattedValue; };
         });
@@ -80,7 +80,7 @@ public sealed class BoxPlotStatisticLabelTests {
             group => Assert.Equal(point.Id, group.Metadata["data-cfx-label-for"]));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.BoxPlot.StatisticLabelFormatter = _ => throw new InvalidOperationException("Detached formatter");
-        chart.Options.BoxPlot.MaximumLabel.Style.WithFontSize(90); chart.ClearSeries();
+        chart.Options.BoxPlot.MaximumLabel.Style.FontSize(90); chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(5, calls.Count);
     }
 
@@ -89,8 +89,8 @@ public sealed class BoxPlotStatisticLabelTests {
     [InlineData(true)]
     public void StatisticAnchorsUseTheExistingLogarithmicProjectionInsteadOfLinearValueSpacing(bool horizontal) {
         var chart = Fixture(horizontal); chart.Series[0].ReplaceBoxPlots(new[] { new ChartBoxPlot(1, 1, 10, 100, 1000, 10000) });
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(.1, 100000).WithScale(ChartScaleKind.Logarithmic);
-        chart.ConfigureBoxPlot(options => {
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(.1, 100000).Scale(ChartScaleKind.Logarithmic);
+        chart.BoxPlot(options => {
             options.LabelContent = ChartBoxPlotLabelContent.Statistics;
             foreach (var label in Components(options)) label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
         });
@@ -107,10 +107,10 @@ public sealed class BoxPlotStatisticLabelTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CrowdedClippedAndEqualStatisticsKeepFullFactsAndOnlyCompleteNumericCaptions(bool horizontal) {
-        var chart = Fixture(horizontal).WithSize(240, 180);
+        var chart = Fixture(horizontal).Size(240, 180);
         chart.Series[0].ReplaceBoxPlots(new[] { new ChartBoxPlot(1, 4, 4, 4, 4, 4) });
         const string completeNumber = "123456789012345678901234567890";
-        chart.WithValueFormatter(_ => completeNumber).ConfigureBoxPlot(options => options.LabelContent = ChartBoxPlotLabelContent.Statistics);
+        chart.FormatValuesBy(_ => completeNumber).BoxPlot(options => options.LabelContent = ChartBoxPlotLabelContent.Statistics);
         var context = VisualExportRequest.ForChart(chart).Context;
         var viewport = horizontal ? new ChartCartesianViewport(x: new ChartAxisWindow(0, 5))
             : new ChartCartesianViewport(y: new ChartAxisWindow(0, 5));
@@ -118,7 +118,7 @@ public sealed class BoxPlotStatisticLabelTests {
         Assert.Equal(new[] { "4", "4", "4", "4", "4" }, new[] { "minimum", "q1", "median", "q3", "maximum" }.Select(name => point.Metadata["data-cfx-" + name]));
         Assert.All(Labels(prepared), label => Assert.Equal(completeNumber, Assert.Single(label.Text.Lines).Text));
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
-        Assert.Equal(-50, (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Minimum);
+        Assert.Equal(-50, (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Min);
         Assert.All(Labels(prepared), label => Assert.True(LabelPlacementService.Contains(new ChartRect(0, 0, 240, 180), RangeBarEndpointLabelTests.Bounds(label))));
         Assert.NotEmpty(prepared.ToPng());
     }
@@ -126,26 +126,26 @@ public sealed class BoxPlotStatisticLabelTests {
     [Fact]
     public void NestedConfigurationAndPreparationSnapshotsDoNotLeakStylesOrSuppressions() {
         var chart = Fixture(); ChartBoxPlotOptions? leaked = null;
-        chart.ConfigureBoxPlot(options => {
-            leaked = options; options.LabelContent = ChartBoxPlotLabelContent.Statistics; options.MinimumLabel.Style.WithColor("#aa2200");
+        chart.BoxPlot(options => {
+            leaked = options; options.LabelContent = ChartBoxPlotLabelContent.Statistics; options.MinimumLabel.Style.Color(ChartColor.FromHex("#aa2200"));
             options.StatisticLabelFormatter = context => {
-                chart.Options.BoxPlot.MinimumLabel.Style.WithColor("#00ff00"); chart.Options.BoxPlot.MaximumLabel.Visible = false;
+                chart.Options.BoxPlot.MinimumLabel.Style.Color(ChartColor.FromHex("#00ff00")); chart.Options.BoxPlot.MaximumLabel.Visible = false;
                 return context.Statistic.ToString();
             };
         });
-        leaked!.MinimumLabel.Style.WithColor("#ff0000"); leaked.MaximumLabel.Visible = false;
+        leaked!.MinimumLabel.Style.Color(ChartColor.FromHex("#ff0000")); leaked.MaximumLabel.Visible = false;
         var prepared = Prepare(chart); var labels = Labels(prepared);
         Assert.Equal(5, labels.Length); Assert.Equal(ChartColor.FromHex("#aa2200"), labels.Single(label => label.Id!.Contains("-minimum-")).Text.Style.Color);
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureBoxPlot(options => {
-            options.MedianLabel.Style.WithFontSize(99); throw new InvalidOperationException("Reject nested changes");
+        Assert.Throws<InvalidOperationException>(() => chart.BoxPlot(options => {
+            options.MedianLabel.Style.FontSize(99); throw new InvalidOperationException("Reject nested changes");
         }));
         Assert.Null(chart.Options.BoxPlot.MedianLabel.Style.FontSize);
     }
 
     [Fact]
     public void HiddenStatisticCaptionsStillCaptureEveryMemberAndFormatterFailuresRemainVisible() {
-        var chart = Fixture().WithDataLabels(false); var calls = new List<ChartBoxPlotStatistic>();
-        chart.ConfigureBoxPlot(options => {
+        var chart = Fixture().DataLabels(false); var calls = new List<ChartBoxPlotStatistic>();
+        chart.BoxPlot(options => {
             options.LabelContent = ChartBoxPlotLabelContent.Statistics;
             options.StatisticLabelFormatter = context => { calls.Add(context.Statistic); return context.FormattedValue; };
         });
@@ -157,12 +157,12 @@ public sealed class BoxPlotStatisticLabelTests {
     }
 
     internal static Chart Fixture(bool horizontal = false) {
-        var chart = Chart.Create().WithSize(850, 480).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels()
-            .WithXLabels("Service A").WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture))
-            .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+        var chart = Chart.Create().Size(850, 480).ShowHeader(false).Legend(false).Axes(false).DataLabels()
+            .XLabels("Service A").ValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture))
+            .BoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("summary"), "Delivery", new[] { new ChartBoxPlot(1, -30, -10, 10, 30, 50) }));
-        chart.Options.ShowGrid = false; (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(-50, 70);
-        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 2); RoundedRadialSeriesTests.UseFixtureFont(chart); return chart;
+        chart.Options.ShowGrid = false; (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(-50, 70);
+        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Bounds(0, 2); RoundedRadialSeriesTests.UseFixtureFont(chart); return chart;
     }
 
     private static ChartValueLabelOptions[] Components(ChartBoxPlotOptions options) => new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel };

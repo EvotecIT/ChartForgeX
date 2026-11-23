@@ -32,7 +32,7 @@ public sealed class TopologyDensePlanCacheTests {
     public void Plan_ChangedTerminalOrTrunkInput_PlansAfresh() {
         TopologyDenseRoutePlanner.ClearPlanCache();
         Routes(DenseReplicationFixture.Sites60(), DenseReplicationFixture.Options());
-        var moved = DenseReplicationFixture.Sites60().WithEdgePorts("link-0", TopologyEdgePort.Top, TopologyEdgePort.Auto);
+        var moved = DenseReplicationFixture.Sites60().UpdateEdge("link-0", e => e.SourcePort(TopologyEdgePort.Top).TargetPort(TopologyEdgePort.Auto));
         var movedRoutes = Routes(moved, DenseReplicationFixture.Options());
         Assert.Equal(2, TopologyDenseRoutePlanner.CachedPlanCount);
 
@@ -46,7 +46,7 @@ public sealed class TopologyDensePlanCacheTests {
         Assert.Equal(4, TopologyDenseRoutePlanner.CachedPlanCount);
 
         TopologyDenseRoutePlanner.ClearPlanCache();
-        AssertSame(Routes(DenseReplicationFixture.Sites60().WithEdgePorts("link-0", TopologyEdgePort.Top, TopologyEdgePort.Auto), DenseReplicationFixture.Options()), movedRoutes);
+        AssertSame(Routes(DenseReplicationFixture.Sites60().UpdateEdge("link-0", e => e.SourcePort(TopologyEdgePort.Top).TargetPort(TopologyEdgePort.Auto)), DenseReplicationFixture.Options()), movedRoutes);
         AssertSame(Routes(DenseReplicationFixture.Sites60(), trunks), trunkRoutes);
         var again = DenseReplicationFixture.Sites60();
         again.Edges[3].Color = "#123456";

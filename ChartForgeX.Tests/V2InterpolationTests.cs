@@ -18,7 +18,7 @@ public sealed class V2InterpolationTests {
     [InlineData(ChartSeriesKind.StackedArea, ChartStepPosition.Middle)]
     public void StepTransitionsUseTheirDeclaredPositionForLineAndFill(ChartSeriesKind kind, ChartStepPosition position) {
         var chart = Model(kind, new[] { new ChartPoint(0, 2), new ChartPoint(2, 8) });
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, position);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, position);
         var prepared = chart.Prepare(Context());
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line");
         var start = line.Commands[0]; var end = line.Commands[^1];
@@ -43,8 +43,8 @@ public sealed class V2InterpolationTests {
     [InlineData(ChartStepPosition.End)]
     public void RangeBoundariesAndMidlineShareStepPlacement(ChartStepPosition position) {
         var chart = Chart.Create().AddRangeArea("Range", new[] { new ChartRangeBand(0, 1, 3), new ChartRangeBand(2, 5, 9) })
-            .WithAxes(false).WithGrid(false).WithLegend(false);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, position);
+            .Axes(false).ShowGrid(false).Legend(false);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, position);
         var prepared = chart.Prepare(Context());
         foreach (var role in new[] { "range-upper", "range-lower", "range-midline" }) {
             var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == role);
@@ -66,14 +66,14 @@ public sealed class V2InterpolationTests {
             new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3),
             new ChartPoint(4, 4, true), new ChartPoint(5, 7), new ChartPoint(6, 6)
         });
-        chart.Series[0].WithInterpolation(interpolation, interpolation == ChartInterpolation.Step ? ChartStepPosition.Middle : ChartStepPosition.End);
+        chart.Series[0].Interpolation(interpolation, interpolation == ChartInterpolation.Step ? ChartStepPosition.Middle : ChartStepPosition.End);
         var prepared = chart.Prepare(Context());
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line");
         Assert.Equal(2, line.Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "area"));
         Assert.Equal(interpolation == ChartInterpolation.Smooth, line.Commands.Any(command => command.Kind == ChartPathCommandKind.CubicTo));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         chart.Series[0].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "point"));
@@ -82,7 +82,7 @@ public sealed class V2InterpolationTests {
     [Fact]
     public void NativeRasterPaintsTheSelectedMiddleTransitionAndLeavesOtherPositionsClear() {
         var chart = Model(ChartSeriesKind.Line, new[] { new ChartPoint(0, 2), new ChartPoint(2, 8) });
-        chart.Series[0].WithColor(ChartColor.FromHex("#E45236")).ConfigureMarkers(markers => markers.Radius = 0).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        chart.Series[0].Color(ChartColor.FromHex("#E45236")).Markers(markers => markers.Radius = 0).Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         var prepared = chart.Prepare(Context());
         var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
         var first = path.Commands[0]; var last = path.Commands[^1];
@@ -107,9 +107,9 @@ public sealed class V2InterpolationTests {
         Assert.Equal(ChartInterpolation.Step, chart.Series[0].Interpolation);
         Assert.Equal(ChartStepPosition.End, chart.Series[0].StepPosition);
         Assert.Equal(ChartInterpolation.Smooth, chart.Series[1].Interpolation);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         Assert.Equal(ChartInterpolation.Linear, chart.Series[0].Interpolation);
-        chart.Series[1].WithSmooth(false);
+        chart.Series[1].Smooth(false);
         Assert.Equal(ChartInterpolation.Linear, chart.Series[1].Interpolation);
     }
 
@@ -118,9 +118,9 @@ public sealed class V2InterpolationTests {
         var series = new ChartSeries(new ChartSeriesId("fixture-series"), "Data", ChartSeriesKind.Line, new[] { new ChartPoint(0, 1) });
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Interpolation = (ChartInterpolation)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.StepPosition = (ChartStepPosition)99);
-        Assert.Throws<ArgumentException>(() => series.WithInterpolation(ChartInterpolation.Linear, ChartStepPosition.Middle));
+        Assert.Throws<ArgumentException>(() => series.Interpolation(ChartInterpolation.Linear, ChartStepPosition.Middle));
         var bar = Chart.Create().AddBar("Data", new[] { new ChartPoint(0, 1) });
-        bar.Series[0].WithInterpolation(ChartInterpolation.Step);
+        bar.Series[0].Interpolation(ChartInterpolation.Step);
         Assert.Throws<InvalidOperationException>(() => bar.Prepare(Context()));
         var line = Model(ChartSeriesKind.Line, new[] { new ChartPoint(0, 1) });
         line.Series[0].StepPosition = ChartStepPosition.Middle;
@@ -132,9 +132,9 @@ public sealed class V2InterpolationTests {
     [InlineData(ChartInterpolation.Step)]
     public void RegressionLinesRejectNonlinearInterpolationRatherThanIgnoringIt(ChartInterpolation interpolation) {
         var chart = Chart.Create().AddTrendLine("Regression", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 8) });
-        chart.Series[0].WithInterpolation(interpolation);
+        chart.Series[0].Interpolation(interpolation);
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         var prepared = chart.Prepare(Context());
         var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "trend-line");
         Assert.Equal(2, path.Commands.Count);
@@ -145,9 +145,9 @@ public sealed class V2InterpolationTests {
     }
 
     private static Chart Model(ChartSeriesKind kind, IEnumerable<ChartPoint> points) {
-        var chart = Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Axes(false).ShowGrid(false).Legend(false).DataLabels(false);
         chart.AddSeries(new ChartSeries(new ChartSeriesId("fixture-series"), "Observations", kind, points));
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         return chart;
     }
 

@@ -61,7 +61,7 @@ public sealed class NativeTopologyGeometryTests {
 
     [Fact]
     public void GeographicCalloutRetainsSelectableGroupCountsAndExactNativeAnchor() {
-        var chart = TopologyChart.Create().WithId("regions").WithViewport(900, 560).WithLegend(null);
+        var chart = TopologyChart.Create().Id("regions").Viewport(new TopologyViewport(900, 560)).Legend((TopologyLegend?)null);
         chart.LayoutMode = TopologyLayoutMode.Geographic;
         chart.Groups.Add(new TopologyGroup { Id = "region", Label = "Region", Longitude = 20, Latitude = 50, Href = "/region", Tooltip = "Regional state" });
         var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled };
@@ -69,8 +69,7 @@ public sealed class NativeTopologyGeometryTests {
             Id = "node-" + index, Label = "Site " + index, GroupId = "region", Longitude = 18 + index, Latitude = 48 + index,
             Width = 70, Height = 40, Status = statuses[index]
         });
-        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeGroups = false,
-            IncludeGeographicCallouts = true, FitContentToViewport = true };
+        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true }, FitContentToViewport = true };
         var prepared = chart.Prepare(options);
         var document = XDocument.Parse(prepared.ToSvg());
         var callout = Assert.Single(document.Descendants(), element => (string?)element.Attribute("data-cfx-visual-role") == "topology-geographic-callout");
@@ -145,7 +144,7 @@ public sealed class NativeTopologyGeometryTests {
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
         var chart = Assert.IsType<TopologyChart>(factory.Invoke(null, null));
         var options = new TopologyRenderOptions { IncludeIconLabels = true, LegendMode = TopologyLegendMode.Merge }
-            .WithMonitoringDashboardStyle().WithActiveScenario("client-request-europe");
+            .MonitoringDashboardStyle().ActiveScenarioId("client-request-europe");
         var prepared = chart.Prepare(options);
         var edge = Assert.Single(prepared.ToInterchangeEnvelope().Edges, item => item.Id == "lon-sfo");
         var document = XDocument.Parse(prepared.ToSvg());
@@ -178,11 +177,11 @@ public sealed class NativeTopologyGeometryTests {
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
             chart = Assert.IsType<TopologyChart>(factory.Invoke(null, null));
         } else {
-            chart = TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
+            chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 300, 16)).Legend((TopologyLegend?)null)
                 .AddNode("a", "A", 130, 70, width: 80, height: 40)
                 .AddNode("b", "B", 136, 171, width: 80, height: 40)
                 .AddEdge("stair", "a", "b", "LDAP fail", routing: TopologyEdgeRouting.Orthogonal, secondaryLabel: "DNS OK")
-                .WithEdgePorts("stair", TopologyEdgePort.Bottom, TopologyEdgePort.Top);
+                .UpdateEdge("stair", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top));
         }
         var edgeId = example ? "na-dc01-na-dc04" : "stair";
         var prepared = chart.Prepare();
@@ -207,7 +206,7 @@ public sealed class NativeTopologyGeometryTests {
     [Fact]
     public void AuthoredDisplacedLabelKeepsItsRouteAnchorAndNativeLeader() {
         var chart = InterGroup(TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        chart.WithEdgeLabelOffset("request", 0, 125).WithEdgeLabelAnchor("request", 355, 107.5);
+        chart.UpdateEdge("request", e => e.LabelOffsetX(0).LabelOffsetY(125)).EdgeLabelAnchor("request", 355, 107.5);
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, IncludeEdgeLabelLeaders = true, FitContentToViewport = true };
         var prepared = chart.Prepare(options);
         var document = XDocument.Parse(prepared.ToSvg());
@@ -237,7 +236,7 @@ public sealed class NativeTopologyGeometryTests {
     }
 
     private static TopologyChart InterGroup(TopologyEdgeRouting routing) {
-        var chart = TopologyChart.Create().WithId("inter-group").WithViewport(960, 600).WithLegend(null);
+        var chart = TopologyChart.Create().Id("inter-group").Viewport(new TopologyViewport(960, 600)).Legend((TopologyLegend?)null);
         chart.Groups.Add(new TopologyGroup { Id = "primary", Label = "Primary", X = 0, Y = 0, Width = 340, Height = 300 });
         chart.Groups.Add(new TopologyGroup { Id = "secondary", Label = "Secondary", X = 440, Y = 0, Width = 340, Height = 300 });
         chart.Nodes.Add(new TopologyNode { Id = "client", Label = "Client", GroupId = "primary", X = 30, Y = 65, Width = 240, Height = 85 });

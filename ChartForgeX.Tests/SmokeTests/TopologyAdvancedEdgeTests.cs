@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyAdvancedEdgesPreserveSvgPngAndDiagnosticParity() {
         var chart = TopologyChart.Create()
-            .WithId("advanced-edge-contract")
-            .WithViewport(720, 360, 24)
-            .WithLegend(null)
+            .Id("advanced-edge-contract")
+            .Viewport(new TopologyViewport(720, 360, 24))
+            .Legend((TopologyLegend?)null)
             .AddNode("api", "API", 70, 120, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 170, height: 96, subtitle: "Public endpoint")
             .AddNode("db", "Database", 470, 120, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 170, height: 96, subtitle: "Primary")
             .AddNodePort("api", "grpc", TopologyEdgePort.Right, 0.3, "gRPC")
@@ -19,13 +19,13 @@ internal static partial class SmokeTests {
             .AddNodeDetail("api", "Region", "EU", TopologyHealthStatus.Healthy)
             .AddNodeDetail("api", "Latency", "24 ms", TopologyHealthStatus.Warning, color: "red")
             .AddEdge("api-db", "api", "db", "Queries", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeNamedPorts("api-db", "grpc", "writer")
-            .WithEdgeStroke("api-db", width: 4, opacity: 0.58, dashPattern: new[] { 11.0, 3.0, 2.0, 3.0 })
-            .WithEdgeMarkers("api-db", TopologyMarkerKind.Circle, TopologyMarkerKind.Diamond)
-            .WithEdgeEndpointLabels("api-db", "gRPC", "5432")
-            .WithEdgeLayoutHints("api-db", preferredLength: 260, minimumRankSpan: 2, routingPriority: 25);
+            .UpdateEdge("api-db", e => e.SourcePortId("grpc").TargetPortId("writer"))
+            .EdgeStroke("api-db", width: 4, opacity: 0.58, dashPattern: new[] { 11.0, 3.0, 2.0, 3.0 })
+            .UpdateEdge("api-db", e => e.SourceMarker(TopologyMarkerKind.Circle).TargetMarker(TopologyMarkerKind.Diamond))
+            .UpdateEdge("api-db", e => e.SourceLabel("gRPC").TargetLabel("5432"))
+            .UpdateEdge("api-db", e => e.PreferredLength(260).MinimumRankSpan(2).RoutingPriority(25));
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeLayoutDiagnosticOverlay = true };
-        chart.ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("API to database topology", "Shows the public query path.", "en"));
+        chart.Accessibility(accessibility => accessibility.TextAlternative("API to database topology", "Shows the public query path.", "en"));
 
         var svg = chart.ToSvg(options);
         var png = chart.ToPng(options);
@@ -51,10 +51,10 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(artifactApiBounds.Left - source.Bounds.Left) < 0.001 && Math.Abs(artifactApiBounds.Top - source.Bounds.Top) < 0.001 && Math.Abs(artifactApiBounds.Width - source.Bounds.Width) < 0.001 && Math.Abs(artifactApiBounds.Height - source.Bounds.Height) < 0.001, "Topology artifact regions should use the same default prepared geometry as static renderers.");
 
         var autoChart = TopologyChart.Create()
-            .WithId("auto-regions")
-            .WithViewport(600, 300, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered)
+            .Id("auto-regions")
+            .Viewport(new TopologyViewport(600, 300, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoNode("left", "Left")
             .AddAutoNode("right", "Right")
             .AddEdge("left-right", "left", "right");
@@ -80,17 +80,17 @@ internal static partial class SmokeTests {
         Assert(autoChart.ToVisualArtifact().Regions.Single(region => region.Id == "left").Href == null, "Topology artifact regions should reject control-character-obfuscated script schemes.");
 
         var orderingChart = TopologyChart.Create()
-            .WithViewport(420, 220)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(420, 220))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 30, 70)
             .AddNode("b", "B", 260, 70)
             .AddEdge("high", "a", "b", "High priority", TopologyEdgeKind.Dependency)
             .AddEdge("low", "a", "b", kind: TopologyEdgeKind.Connectivity)
-            .WithEdgeEndpointLabels("high", "high-source", "high-target")
-            .WithEdgeEndpointLabels("low", "low-source", "low-target")
-            .WithEdgeLayoutHints("high", routingPriority: 50)
-            .WithEdgeLayoutHints("low", routingPriority: -50)
-            .WithEdgeStroke("high", opacity: 0.25);
+            .UpdateEdge("high", e => e.SourceLabel("high-source").TargetLabel("high-target"))
+            .UpdateEdge("low", e => e.SourceLabel("low-source").TargetLabel("low-target"))
+            .UpdateEdge("high", e => e.PreferredLength(null).MinimumRankSpan(1).RoutingPriority(50))
+            .UpdateEdge("low", e => e.PreferredLength(null).MinimumRankSpan(1).RoutingPriority(-50))
+            .EdgeStroke("high", opacity: 0.25);
         var orderingOptions = new TopologyRenderOptions { IncludeLegend = false };
         orderingOptions.SelectedEdgeIds.Add("high");
         orderingOptions.HighlightEdgeIds.Add("high");
@@ -121,12 +121,12 @@ internal static partial class SmokeTests {
         Assert(!mutedCustomDashPng.SequenceEqual(mutedInferredDashPng), "Muted PNG edges should preserve explicit dash patterns while suppressing only inferred status dashes.");
 
         var explicitMarkerChart = TopologyChart.Create()
-            .WithViewport(360, 180)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(360, 180))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 30, 55, width: 90, height: 54)
             .AddNode("right", "Right", 240, 55, width: 90, height: 54)
             .AddEdge("explicit", "left", "right", direction: VisualLinkDirection.None)
-            .WithEdgeMarkers("explicit", TopologyMarkerKind.Circle, TopologyMarkerKind.Diamond);
+            .UpdateEdge("explicit", e => e.SourceMarker(TopologyMarkerKind.Circle).TargetMarker(TopologyMarkerKind.Diamond));
         var markersHidden = new TopologyRenderOptions { IncludeLegend = false, IncludeDirectionMarkers = false };
         var explicitMarkerSvg = explicitMarkerChart.ToSvg(markersHidden);
         var explicitMarkerPng = explicitMarkerChart.ToPng(markersHidden);
@@ -135,7 +135,7 @@ internal static partial class SmokeTests {
         Assert(explicitMarkers.Length == 2 && explicitMarkers.Any(element => element.Name.LocalName == "ellipse")
             && explicitMarkers.Any(element => element.Name.LocalName == "path" && element.Attribute("d") != null),
             "Explicit circle and diamond endpoint markers should remain visible when inferred direction markers are disabled.");
-        explicitMarkerChart.WithEdgeMarkers("explicit", null, null);
+        explicitMarkerChart.UpdateEdge("explicit", e => e.SourceMarker(null).TargetMarker(null));
         explicitMarkerChart.Edges.Single().Direction = VisualLinkDirection.Forward;
         var inferredMarkerSvg = explicitMarkerChart.ToSvg(markersHidden);
         var inferredMarkerPng = explicitMarkerChart.ToPng(markersHidden);
@@ -144,8 +144,8 @@ internal static partial class SmokeTests {
         Assert(!explicitMarkerPng.SequenceEqual(inferredMarkerPng), "PNG output should preserve explicit endpoint markers independently of direction-marker visibility.");
 
         var wrapped = TopologyChart.Create()
-            .WithViewport(360, 260)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(360, 260))
+            .Legend((TopologyLegend?)null)
             .AddNode("wrapped", "Primary service\nwith a wrapped title\nthird line", 40, 40, width: 184, height: 80, subtitle: "First subtitle\nsecond subtitle")
             .AddNodeDetail("wrapped", "Status", "Ready");
         var wrappedOptions = new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, MaxNodeLabelLines = 3, MaxNodeSubtitleLines = 3 };
@@ -165,16 +165,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyLayoutHintsAndPresetsAffectPreparedGeometry() {
         var chart = TopologyChart.Create()
-            .WithId("layout-hints")
-            .WithViewport(700, 300, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered)
+            .Id("layout-hints")
+            .Viewport(new TopologyViewport(700, 300, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoNode("source", "Source", TopologyNodeKind.Service)
             .AddAutoNode("middle", "Middle", TopologyNodeKind.Service)
             .AddAutoNode("target", "Target", TopologyNodeKind.Database)
             .AddEdge("source-middle", "source", "middle")
             .AddEdge("middle-target", "middle", "target")
-            .WithEdgeLayoutHints("source-middle", minimumRankSpan: 2);
+            .UpdateEdge("source-middle", e => e.PreferredLength(null).MinimumRankSpan(2).RoutingPriority(0));
 
         var dense = TopologyLayoutDiagnostics.Analyze(chart, new TopologyRenderOptions { IncludeLegend = false }.ApplyLayoutPreset(TopologyLayoutPreset.Dense));
         var presentation = TopologyLayoutDiagnostics.Analyze(chart, new TopologyRenderOptions { IncludeLegend = false }.ApplyLayoutPreset(TopologyLayoutPreset.Presentation));
@@ -193,24 +193,24 @@ internal static partial class SmokeTests {
         Assert(wideMiddle.Top - wideSource.Bottom > denseMiddle.Top - denseSource.Bottom + 100, "Larger minimum-rank hints should preserve empty physical ranks instead of compacting them.");
 
         var cyclic = TopologyChart.Create()
-            .WithViewport(640, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered)
+            .Viewport(new TopologyViewport(640, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoNode("a", "A")
             .AddAutoNode("b", "B")
             .AddAutoNode("c", "C")
             .AddEdge("a-b", "a", "b")
             .AddEdge("b-a", "b", "a")
             .AddEdge("b-c", "b", "c")
-            .WithEdgeLayoutHints("b-c", minimumRankSpan: 3);
+            .UpdateEdge("b-c", e => e.PreferredLength(null).MinimumRankSpan(3).RoutingPriority(0));
         var preparedCycle = TopologyLayoutEngine.Prepare(cyclic, options: new TopologyRenderOptions { IncludeLegend = false });
         var bRank = int.Parse(preparedCycle.Nodes.Single(node => node.Id == "b").Metadata["layer"], System.Globalization.CultureInfo.InvariantCulture);
         var cRank = int.Parse(preparedCycle.Nodes.Single(node => node.Id == "c").Metadata["layer"], System.Globalization.CultureInfo.InvariantCulture);
         Assert(cRank >= bRank + 3, "Rank hints should propagate from cyclic components into their acyclic descendants.");
 
         var detailed = TopologyChart.Create()
-            .WithViewport(360, 220)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(360, 220))
+            .Legend((TopologyLegend?)null)
             .AddNode("detail", "Detailed", 60, 60, width: 120, height: 60)
             .AddNodeDetail("detail", "Region", "EU")
             .AddNodeDetail("detail", "State", "Ready");
@@ -236,13 +236,13 @@ internal static partial class SmokeTests {
 
     private static void TopologyAdvancedEdgeContractsRejectInvalidValues() {
         var chart = TopologyChart.Create()
-            .WithId("invalid-advanced-edge")
-            .WithViewport(500, 280)
-            .WithLegend(null)
+            .Id("invalid-advanced-edge")
+            .Viewport(new TopologyViewport(500, 280))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 300, 80)
             .AddEdge("a-b", "a", "b")
-            .WithEdgeStroke("a-b", dashPattern: new[] { 6.0, 3.0, 2.0 });
+            .EdgeStroke("a-b", dashPattern: new[] { 6.0, 3.0, 2.0 });
 
         AssertThrows<TopologyValidationException>(() => chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }), "Odd custom dash patterns should fail topology validation.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Edges[0].PreferredLength = 0, "Preferred length hints should reject non-positive values.");

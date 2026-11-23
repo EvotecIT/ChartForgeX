@@ -14,8 +14,8 @@ public sealed class GraphiteValueFormattingTests {
     public void AggregatedOtherShareChoosesPrecisionForLabelsLegendAndFormatterContext(bool donut) {
         var points = new[] { new ChartPoint(1, 99) }.Concat(Enumerable.Range(2, 25).Select(index => new ChartPoint(index, .04))).ToArray();
         var contexts = new List<ChartPieSliceLabelContext>();
-        var chart = Chart.Create().WithSize(800, 440).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Outside).WithLegend(false)
-            .WithPieSliceLabelFormatter(context => { contexts.Add(context); return context.FormattedPercent; });
+        var chart = Chart.Create().Size(800, 440).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Outside)).Legend(false)
+            .Pie(p => p.SliceLabelBy(context => { contexts.Add(context); return context.FormattedPercent; }));
         if (donut) chart.AddDonut("Share", points); else chart.AddPie("Share", points);
         var svg = XDocument.Parse(chart.ToSvg());
         var other = Assert.Single(contexts, context => context.PointIndex == -1);
@@ -27,19 +27,19 @@ public sealed class GraphiteValueFormattingTests {
 
     [Fact]
     public void RadialSharesUseOnePrecisionAndPreserveAuthoredPercentageCulture() {
-        var chart = Chart.Create().WithSize(800, 440).WithDataLabels().WithLegend(false)
+        var chart = Chart.Create().Size(800, 440).DataLabels().Legend(false)
             .AddDonut("Share", new[] { 48d, 41, 34, 33, 27, 26 }.Select((value, index) => new ChartPoint(index + 1, value)));
         string[] Captions() => XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(node => (string?)node.Attribute("data-cfx-role") == "data-label").Select(node => node.Value).ToArray();
         Assert.Equal(new[] { "23.0%", "19.6%", "16.3%", "15.8%", "12.9%", "12.4%" }, Captions());
-        chart.WithValueFormat(ChartValueFormat.Number("0.00%", CultureInfo.GetCultureInfo("de-DE")));
+        chart.ValueFormat(ChartValueFormat.Number("0.00%", CultureInfo.GetCultureInfo("de-DE")));
         Assert.Equal(new[] { "22,97%", "19,62%", "16,27%", "15,79%", "12,92%", "12,44%" }, Captions());
     }
 
     [Fact]
     public void FunnelRatiosUseOnePrecisionAcrossStages() {
-        var chart = Chart.Create().WithSize(800, 440).WithDataLabels().WithLegend(false)
-            .ConfigureFunnel(options => options.LabelContent = ChartStageLabelContent.Separate)
+        var chart = Chart.Create().Size(800, 440).DataLabels().Legend(false)
+            .Funnel(options => options.LabelContent = ChartStageLabelContent.Separate)
             .AddFunnel("Requests", new[] { 1000d, 410, 162.36 }.Select((value, index) => new ChartPoint(index + 1, value)));
         var captions = XDocument.Parse(chart.ToSvg()).Descendants().Where(node =>
             (string?)node.Attribute("data-cfx-role") == "funnel-dropoff-label").Select(node => node.Value).ToArray();
@@ -48,7 +48,7 @@ public sealed class GraphiteValueFormattingTests {
 
     [Fact]
     public void FiniteFunnelStagesRetainOverflowingRatioDescriptions() {
-        var chart = Chart.Create().WithDataLabels().AddFunnel("Finite stages", new[] { new ChartPoint(1, 1e-308), new ChartPoint(2, 1e308) });
+        var chart = Chart.Create().DataLabels().AddFunnel("Finite stages", new[] { new ChartPoint(1, 1e-308), new ChartPoint(2, 1e308) });
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(svg.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "funnel-stage"
             && node.Attribute("aria-label")!.Value.Contains("retained Infinity", StringComparison.Ordinal));
@@ -59,7 +59,7 @@ public sealed class GraphiteValueFormattingTests {
     [InlineData("0 '%' ")]
     [InlineData("0\\%")]
     public void RawValueUnitFormatsDoNotReplaceDerivedPercentageUnits(string format) {
-        var chart = Chart.Create().WithDataLabels().WithLegend(false).WithValueFormat(ChartValueFormat.Number(format))
+        var chart = Chart.Create().DataLabels().Legend(false).ValueFormat(ChartValueFormat.Number(format))
             .AddDonut("Share", new[] { new ChartPoint(1, 48), new ChartPoint(2, 161) });
         Assert.Equal(new[] { "23%", "77%" }, XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(node => (string?)node.Attribute("data-cfx-role") == "data-label").Select(node => node.Value).OrderBy(value => value, StringComparer.Ordinal));
@@ -76,15 +76,15 @@ public sealed class GraphiteValueFormattingTests {
     [InlineData(-1284, "-1,284")]
     [InlineData(-12400, "-12.4k")]
     public void ValuesUseGroupedNumbersBelowTenThousand(double value, string expected) {
-        var chart = Chart.Create().WithDataLabels().WithLegend(false)
+        var chart = Chart.Create().DataLabels().Legend(false)
             .AddBar("Count", new[] { new ChartPoint(1, value) });
         // This fixture checks formatting rather than the optional outside-label placement at an axis edge.
-        if (value < 0) chart.WithDataLabelPlacement(ChartDataLabelPlacement.Center);
+        if (value < 0) chart.DataLabels(d => d.Placement(ChartDataLabelPlacement.Center));
         Assert.Equal(expected, Role(chart, "data-label").Value);
         if (value <= 0) return;
         var donut = Chart.Create().AddDonut("Total", new[] { new ChartPoint(1, value) });
         Assert.Equal(expected, Role(donut, "donut-total-label").Value);
-        var funnel = Chart.Create().WithDataLabels().WithXLabels("Detected").AddFunnel("Stages", new[] { new ChartPoint(1, value) });
+        var funnel = Chart.Create().DataLabels().XLabels("Detected").AddFunnel("Stages", new[] { new ChartPoint(1, value) });
         Assert.Equal("Detected: " + expected, Role(funnel, "funnel-label").Value);
         Assert.Contains(expected, (string?)Role(funnel, "funnel-stage").Attribute("aria-label"));
     }
@@ -95,9 +95,9 @@ public sealed class GraphiteValueFormattingTests {
     public void ChartValueFormatterRetainsCultureAndUnits(string culture, string expected) {
         string Format(double value) => value.ToString("#,0.##", CultureInfo.GetCultureInfo(culture)) + " items";
         var points = new[] { new ChartPoint(1, 1284) };
-        var bar = Chart.Create().WithValueFormatter(Format).WithDataLabels().WithLegend(false).AddBar("Count", points);
-        var donut = Chart.Create().WithValueFormatter(Format).WithSize(900, 500).AddDonut("Total", points);
-        var funnel = Chart.Create().WithDataLabels().WithValueFormatter(Format).WithSize(900, 500).WithXLabels("Detected").AddFunnel("Stages", points);
+        var bar = Chart.Create().FormatValuesBy(Format).DataLabels().Legend(false).AddBar("Count", points);
+        var donut = Chart.Create().FormatValuesBy(Format).Size(900, 500).AddDonut("Total", points);
+        var funnel = Chart.Create().DataLabels().FormatValuesBy(Format).Size(900, 500).XLabels("Detected").AddFunnel("Stages", points);
         Assert.Equal(expected + " items", Role(bar, "data-label").Value);
         Assert.Equal(expected + " items", Role(donut, "donut-total-label").Value);
         Assert.Equal("Detected: " + expected + " items", Role(funnel, "funnel-label").Value);
@@ -105,9 +105,9 @@ public sealed class GraphiteValueFormattingTests {
 
     [Fact]
     public void AxisTicksKeepTheirExistingCompactFormatting() {
-        var chart = Chart.Create().WithDataLabels().AddBar("Count", new[] { new ChartPoint(1, 1284) });
-        chart.Options.YAxis.Minimum = 0;
-        chart.Options.YAxis.Maximum = 2000;
+        var chart = Chart.Create().DataLabels().AddBar("Count", new[] { new ChartPoint(1, 1284) });
+        chart.Options.YAxis.Min = 0;
+        chart.Options.YAxis.Max = 2000;
         chart.Options.YAxis.TickCount = 3;
         var ticks = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "axis-y-label");
         Assert.Equal(new[] { "0", "1k", "2k" }, ticks.Select(e => e.Value));

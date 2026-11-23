@@ -72,7 +72,7 @@ public sealed class MapPeriodicRouteCopyTests {
         var sources = MapLabelClusterDepthTests.Groups(prepared, "dotted-map-point-source");
         Assert.Equal(new[] { "start", "start-peer", "end", "end-peer" }, sources.Select(group => group.Metadata["data-cfx-observation-id"]));
         Assert.Equal(4, chart.Series[1].MapPoints.Count); Assert.Empty(chart.Series[0].MapPoints);
-        var retained = prepared.ToSvg(); chart.Series[1].WithMapClustering(null); Assert.Equal(retained, prepared.ToSvg());
+        var retained = prepared.ToSvg(); chart.Series[1].MapClustering(null); Assert.Equal(retained, prepared.ToSvg());
     }
 
     [Theory]
@@ -81,8 +81,8 @@ public sealed class MapPeriodicRouteCopyTests {
         var raw = Enumerable.Range(0, 49).Select(index => new ChartMapPoint("Stop " + index,
             (165 + index * 150 + 180) % 360 - 180, index % 2 == 0 ? -2 : 2)).ToArray();
         var route = new ChartMapConnector("Many turns", raw).WithFeature(new ChartMapFeature("winding", "{\"kind\":\"route\"}"));
-        var chart = Chart.Create().WithSize(800, 360).WithLegend(false).WithMapViewport(ChartMapViewport.AcrossAntimeridian("Winding", -170, -180, -30, 30,
-            mercator ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular))
+        var chart = Chart.Create().Size(800, 360).Legend(false).Map(m => m.Viewport(ChartMapViewport.AcrossAntimeridian("Winding", -170, -180, -30, 30,
+            mercator ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular)))
             .AddDottedMap("Source", new[] { raw[0], raw[raw.Length - 1] });
         chart.Series[0].ReplaceMapConnectors(new[] { route });
         var prepared = MapLabelClusterDepthTests.Prepare(chart);
@@ -101,10 +101,10 @@ public sealed class MapPeriodicRouteCopyTests {
     [InlineData(false)] [InlineData(true)]
     public void VisibleLabelsKeepOneStableCaptionFactForDefaultAndPeriodicRoutePaint(bool periodic) {
         var chart = periodic ? Clustered(800, ThemeMode.Light)
-            : Chart.Create().WithSize(800, 360).WithLegend(false).WithMapViewport(ChartMapViewport.Europe())
+            : Chart.Create().Size(800, 360).Legend(false).Map(m => m.Viewport(ChartMapViewport.Europe()))
                 .AddDottedMap("Default source", new[] { new ChartMapPoint("Start", -5, 45), new ChartMapPoint("End", 25, 55) });
         if (!periodic) chart.Series[0].ReplaceMapConnectors(new[] { new ChartMapConnector("Default route", -5, 45, 25, 55) });
-        chart.WithDataLabels(); chart.Options.MapCallouts = new ChartMapCallouts();
+        chart.DataLabels(); chart.Options.Map.Callouts = new ChartMapCallouts();
         var prepared = MapLabelClusterDepthTests.Prepare(chart);
         MapLabelClusterDepthTests.Capture(prepared, "single-periodic-route-caption-" + periodic);
         var region = Assert.Single(prepared.Regions, item => item.Role == "dotted-map-connector-label");
@@ -126,7 +126,7 @@ public sealed class MapPeriodicRouteCopyTests {
         var x = double.Parse(caption.Metadata["data-cfx-anchor-x"], CultureInfo.InvariantCulture);
         var y = double.Parse(caption.Metadata["data-cfx-anchor-y"], CultureInfo.InvariantCulture);
         Assert.InRange(x, bounds.Left - 1e-7, bounds.Right + 1e-7); Assert.InRange(y, bounds.Top - 1e-7, bounds.Bottom + 1e-7);
-        var retainedSvg = prepared.ToSvg(); var retainedPng = prepared.ToPng(); chart.WithDataLabels(false);
+        var retainedSvg = prepared.ToSvg(); var retainedPng = prepared.ToPng(); chart.DataLabels(false);
         Assert.Equal(retainedSvg, prepared.ToSvg()); Assert.Equal(retainedPng, prepared.ToPng());
     }
 
@@ -137,11 +137,11 @@ public sealed class MapPeriodicRouteCopyTests {
         var points = ChartSeries.CreateDottedMap(new ChartSeriesId("marks"), "Endpoint marks", new[] {
             new ChartMapPoint("Start", 140, 0), new ChartMapPoint("Start peer", 140.05, 0),
             new ChartMapPoint("End", -130, 0), new ChartMapPoint("End peer", -129.95, 0)
-        }).WithObservationIds(new[] { "start", "start-peer", "end", "end-peer" }.Select(value => new ChartObservationId(value)))
-            .WithMapClustering(new ChartMapClustering(80, 2, 12));
-        return Chart.Create().WithSize(width, 360).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode).WithLegend(false)
-            .WithMapViewport(ChartMapViewport.AcrossAntimeridian("Peer endpoints", -170, -180, -30, 30,
-                mercator ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular)).AddSeries(owner).AddSeries(points);
+        }).ObservationIds(new[] { "start", "start-peer", "end", "end-peer" }.Select(value => new ChartObservationId(value)))
+            .MapClustering(new ChartMapClustering(80, 2, 12));
+        return Chart.Create().Size(width, 360).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode).Legend(false)
+            .Map(m => m.Viewport(ChartMapViewport.AcrossAntimeridian("Peer endpoints", -170, -180, -30, 30,
+                mercator ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular))).AddSeries(owner).AddSeries(points);
     }
     private static double Distance(ChartPoint a, ChartPoint b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
 }

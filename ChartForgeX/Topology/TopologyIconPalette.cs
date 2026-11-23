@@ -93,11 +93,11 @@ public static class TopologyIconPaletteExtensions {
         const double groupHeader = 58;
 
         var chart = TopologyChart.Create()
-            .WithId(RequiredText(options.Id, nameof(options.Id)))
-            .WithTitle(RequiredText(options.Title, nameof(options.Title)))
-            .WithLegend(null)
-            .WithTheme(VisualTheme.Graphite());
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) chart.WithSubtitle(options.Subtitle!);
+            .Id(RequiredText(options.Id, nameof(options.Id)))
+            .Title(RequiredText(options.Title, nameof(options.Title)))
+            .Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite());
+        if (!string.IsNullOrWhiteSpace(options.Subtitle)) chart.Subtitle(options.Subtitle!);
 
         var x = outerPadding;
         var y = topPadding;
@@ -158,7 +158,7 @@ public static class TopologyIconPaletteExtensions {
         var actualPackColumns = Math.Max(1, Math.Min(packsPerRow, Math.Max(1, packs.Count)));
         var width = outerPadding * 2 + actualPackColumns * packWidth + Math.Max(0, actualPackColumns - 1) * packGap;
         var height = Math.Max(320, y + rowHeight + outerPadding);
-        chart.WithViewport(width, height, 24);
+        chart.Viewport(new TopologyViewport(width, height, 24));
         return chart;
     }
 

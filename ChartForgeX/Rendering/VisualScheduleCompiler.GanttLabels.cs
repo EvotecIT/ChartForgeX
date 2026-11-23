@@ -20,7 +20,7 @@ internal static partial class VisualScheduleCompiler {
         foreach (var row in model.Rows.Where(row => !row.IsGroup)) {
             var series = chart.Series[row.SeriesIndex];
             if (!series.ResolveDataLabels(chart.Options, defaultVisible: true)) continue;
-            var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+            var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside)) continue;
             foreach (var placed in row.Items) {
                 var text = series.PreparedLabel(placed.PointIndex) ?? placed.Item.Label;
@@ -64,7 +64,7 @@ internal static partial class VisualScheduleCompiler {
                 if (!series.ResolveDataLabels(chart.Options, defaultVisible: true) || string.IsNullOrWhiteSpace(text)) continue;
                 var style = VisualStateSceneTools.DataStyle(chart, context, series, placed.PointIndex,
                     ChartColorMath.AccessibleTextOnBackground(colors.Surface));
-                item.Placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+                item.Placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
                 // A thin task needs an outside lane. Give it first use before a caption
                 // that fits across its own bar takes the only clear neighboring space.
                 item.Priority = builder.MeasureText(text!, style).Width + PackedGanttCaptionPadding * 2 > item.CaptionBounds.Width ? 1 : 0;
@@ -151,7 +151,7 @@ internal static partial class VisualScheduleCompiler {
 
     /// <summary>The part of an item a contained caption may use: an open item's end arrow keeps its own room.</summary>
     private static ChartRect CaptionBounds(Chart chart, bool open, ChartRect bounds) {
-        if (!open || chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade) return bounds;
+        if (!open || chart.Options.Gantt.OpenEndStyle == ChartGanttOpenEndStyle.Fade) return bounds;
         var reserve = Math.Min(bounds.Height / 3, bounds.Width / 2) + GanttLaneOpenEndStrokeWidth + 1;
         var width = Math.Max(0, bounds.Width - reserve);
         return new ChartRect(chart.Options.XAxis.Reversed ? bounds.Right - width : bounds.Left, bounds.Top, width, bounds.Height);

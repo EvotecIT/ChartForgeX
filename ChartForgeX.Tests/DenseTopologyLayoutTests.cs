@@ -11,7 +11,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void OrthogonalRerouteDoesNotTreatItsOwnLabelAsAnObstacle() {
-        var chart = TopologyChart.Create().WithViewport(560, 300, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(560, 300, 0)).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 30, 118, width: 72, height: 44)
             .AddNode("blocker", "Blocker", 250, 90, width: 70, height: 100)
             .AddNode("target", "Target", 460, 118, width: 72, height: 44)
@@ -80,8 +80,8 @@ public sealed class DenseTopologyLayoutTests {
     public void FewSites_OneRowOfCards_SizePanelsAndCanvasToTheirContent(TopologyLayoutDirection direction, int height) {
         // Two and one controllers per site in a viewport much taller than the content: the panels take the height of
         // their cards and captions, share one height per row, and the legend follows them instead of the viewport bottom.
-        var chart = TopologyChart.Create().WithId("small").WithTitle("Replication").WithViewport(1180, height, 24)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, direction).WithLegend(TopologyLegend.Default());
+        var chart = TopologyChart.Create().Id("small").Title("Replication").Viewport(new TopologyViewport(1180, height, 24))
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(direction).Legend(TopologyLegend.Default());
         var counts = new[] { 2, 1, 2 };
         for (var site = 0; site < counts.Length; site++) {
             chart.AddAutoGroup("s" + site, "Site " + site);
@@ -123,7 +123,7 @@ public sealed class DenseTopologyLayoutTests {
     [InlineData(12, 4)]
     [InlineData(20, 6)]
     public void WrappedRows_LegendStaysBelowContent(int sites, int controllers) {
-        var chart = Sites(sites, controllers).WithLegend(TopologyLegend.Default());
+        var chart = Sites(sites, controllers).Legend(TopologyLegend.Default());
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
         var legendTop = prepared.Viewport.Height - prepared.Viewport.Padding - (TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport) - 24);
         Assert.True(prepared.Groups.Max(group => group.Y + group.Height) + 20 <= legendTop, "The legend must not overlap wrapped site rows.");
@@ -154,7 +154,7 @@ public sealed class DenseTopologyLayoutTests {
     [Fact]
     public void ObstacleAvoidingRoute_ReachesCardEnclosedOnThreeSides() {
         // B is boxed in on the left, top, and bottom, so only a route that wraps around to its right side is clear.
-        var chart = TopologyChart.Create().WithId("cup").WithViewport(860, 440, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("cup").Viewport(new TopologyViewport(860, 440, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20, 200, width: 60, height: 40)
             .AddNode("b", "B", 640, 200, width: 60, height: 40)
             .AddNode("left", "L", 560, 130, width: 40, height: 180)
@@ -172,7 +172,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void RightToLeft_ManySites_WrapWithinViewportWidth() {
-        var chart = Sites(12, 3).WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft);
+        var chart = Sites(12, 3).LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.RightToLeft);
         var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
         Assert.True(prepared.Groups.Max(group => group.X + group.Width) - prepared.Groups.Min(group => group.X) <= chart.Viewport.Width);
         Assert.True(prepared.Groups.Select(group => group.Y).Distinct().Count() > 1);
@@ -180,7 +180,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void PlannedRoute_FractionalCoordinates_StayStrictlyOrthogonal() {
-        var chart = TopologyChart.Create().WithId("cup-fraction").WithViewport(860, 440, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("cup-fraction").Viewport(new TopologyViewport(860, 440, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20.37, 200.21, width: 60.3, height: 40.1)
             .AddNode("b", "B", 640.13, 200.77, width: 60.3, height: 40.1)
             .AddNode("left", "L", 560, 130, width: 40, height: 180)
@@ -200,8 +200,7 @@ public sealed class DenseTopologyLayoutTests {
     [InlineData(true)]
     [InlineData(false)]
     public void PlannedRoute_BottomPort_DoesNotCrossItsTileCaption(bool sourceBottom) {
-        var chart = CupChart().WithEdgePorts("a-b", sourceBottom ? TopologyEdgePort.Bottom : TopologyEdgePort.Right,
-            sourceBottom ? TopologyEdgePort.Left : TopologyEdgePort.Bottom);
+        var chart = CupChart().UpdateEdge("a-b", e => e.SourcePort(sourceBottom ? TopologyEdgePort.Bottom : TopologyEdgePort.Right).TargetPort(sourceBottom ? TopologyEdgePort.Left : TopologyEdgePort.Bottom));
         var layout = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
         var report = chart.Prepare(TileOptions).Analyze();
         var edge = report.Edges.Single();
@@ -216,7 +215,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void PlannedRoute_StaysWithinRenderedViewport() {
-        var chart = TopologyChart.Create().WithId("viewport-maze").WithViewport(360, 240, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("viewport-maze").Viewport(new TopologyViewport(360, 240, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20, 100, width: 50, height: 40)
             .AddNode("b", "B", 290, 100, width: 50, height: 40)
             .AddNode("barrier", "Barrier", 145, 10, width: 50, height: 220)
@@ -231,12 +230,12 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void PlannedRoute_InferredBlockedPort_UsesClearAlternateSide() {
-        var chart = TopologyChart.Create().WithId("blocked-inferred-port").WithViewport(860, 440, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("blocked-inferred-port").Viewport(new TopologyViewport(860, 440, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "Source", 20, 200, width: 60, height: 40)
             .AddNode("b", "Target", 640, 200, width: 60, height: 40)
             .AddNode("block", "Block", 570, 190, width: 50, height: 46)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .WithEdgePorts("a-b", TopologyEdgePort.Right, TopologyEdgePort.Left);
+            .UpdateEdge("a-b", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         chart.Edges.Single().LayoutInference = TopologyEdgeLayoutInference.TargetPort;
         var report = chart.Prepare(TileOptions).Analyze();
         Assert.Equal("maze", report.Edges.Single().Corridor);
@@ -245,7 +244,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void AutomaticVerticalRoute_DoesNotLeaveThroughTileCaption() {
-        var chart = TopologyChart.Create().WithId("automatic-caption").WithViewport(400, 480, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("automatic-caption").Viewport(new TopologyViewport(400, 480, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "Source", 160, 80, width: 70, height: 40)
             .AddNode("b", "Target", 160, 320, width: 70, height: 40)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
@@ -259,11 +258,11 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void OrthogonalRoute_AvoidsSourceCaptionBeyondItsFirstLeg() {
-        var chart = TopologyChart.Create().WithId("wide-endpoint-caption").WithViewport(600, 440, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("wide-endpoint-caption").Viewport(new TopologyViewport(600, 440, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "Source caption extends far beyond its narrow card", 80, 100, width: 60, height: 40)
             .AddNode("b", "Target", 145, 160, width: 60, height: 40)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .WithEdgePorts("a-b", TopologyEdgePort.Right, TopologyEdgePort.Left);
+            .UpdateEdge("a-b", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
         var source = prepared.Nodes.Single(node => node.Id == "a");
         var caption = TopologyNodeFootprint.Caption(prepared, source);
@@ -282,7 +281,7 @@ public sealed class DenseTopologyLayoutTests {
     [Fact]
     public void NamedBottomPort_BeneathReadableTileCaption_IsRejected() {
         var chart = CupChart().AddNodePort("a", "underside", TopologyEdgePort.Bottom)
-            .WithEdgeNamedPorts("a-b", "underside", null);
+            .UpdateEdge("a-b", e => e.SourcePortId("underside").TargetPortId(null));
         var error = Assert.Throws<InvalidOperationException>(() => chart.Prepare(TileOptions).Analyze());
         Assert.Contains("named Bottom port", error.Message, StringComparison.Ordinal);
     }
@@ -292,9 +291,9 @@ public sealed class DenseTopologyLayoutTests {
     [InlineData(TopologyEdgeRouting.Orthogonal, true)]
     public void NamedBottomPort_OnAuthoredRoute_RemainsAvailable(TopologyEdgeRouting routing, bool manual) {
         var chart = CupChart().AddNodePort("a", "underside", TopologyEdgePort.Bottom)
-            .WithEdgeNamedPorts("a-b", "underside", null);
+            .UpdateEdge("a-b", e => e.SourcePortId("underside").TargetPortId(null));
         chart.Edges.Single().Routing = routing;
-        if (manual) chart.WithEdgeWaypoints("a-b", new ChartForgeX.Primitives.ChartPoint(330, 360));
+        if (manual) chart.EdgeWaypoints("a-b", new ChartForgeX.Primitives.ChartPoint(330, 360));
         var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
         var points = chart.Prepare(TileOptions).Analyze().Edges.Single().Points;
         Assert.True(points.Count >= 2);
@@ -303,7 +302,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void HiddenEdgeLabels_DoNotPenalizeRoutes() {
-        var chart = TopologyChart.Create().WithId("hidden-label-route").WithViewport(450, 260, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("hidden-label-route").Viewport(new TopologyViewport(450, 260, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "Source", 20, 100, width: 60, height: 40)
             .AddNode("b", "Target", 350, 100, width: 60, height: 40)
             .AddNode("obstacle", "Obstacle", 180, 90, width: 50, height: 60)
@@ -316,7 +315,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void WrappedGroups_DeclaredSmallSizes_AreRaisedBeforeRowPlacement() {
-        var chart = Sites(7, 5).WithViewport(900, 1200, 24);
+        var chart = Sites(7, 5).Viewport(new TopologyViewport(900, 1200, 24));
         foreach (var group in chart.Groups) { group.Width = 190; group.Height = 170; }
         var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);
         Assert.All(prepared.Groups, group => {
@@ -350,7 +349,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void WrappedGroups_ReservePanelSurfaceInsetWithinViewport() {
-        var chart = Sites(7, 1).WithViewport(490, 1800, 24);
+        var chart = Sites(7, 1).Viewport(new TopologyViewport(490, 1800, 24));
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Panel };
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
@@ -361,9 +360,9 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void RoutePlan_RecomputesAfterViewportExpands() {
-        var chart = CupChart().WithId("viewport-cache")
+        var chart = CupChart().Id("viewport-cache")
             .AddNode("roof", "Roof", 560, 0, width: 40, height: 100)
-            .WithEdgePorts("a-b", TopologyEdgePort.Bottom, TopologyEdgePort.Left);
+            .UpdateEdge("a-b", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Left));
         chart.RenderOptions = TileOptions;
         var edge = chart.Edges.Single();
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -391,7 +390,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void DuplicateEdgeIds_StillCountSiblingLabelsAndRouteCrossings() {
-        var chart = TopologyChart.Create().WithId("duplicate-edge-obstacles").WithViewport(400, 260, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("duplicate-edge-obstacles").Viewport(new TopologyViewport(400, 260, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20, 100, width: 40, height: 40)
             .AddNode("b", "B", 320, 100, width: 40, height: 40)
             .AddEdge("link", "a", "b", routing: TopologyEdgeRouting.Straight)
@@ -407,7 +406,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void PlannedRoute_NamedOffset_AvoidsCardAfterEndpointPlacement() {
-        var chart = TopologyChart.Create().WithId("named-maze").WithViewport(860, 440, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("named-maze").Viewport(new TopologyViewport(860, 440, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20, 200, width: 60, height: 40)
             .AddNode("b", "B", 640, 200, width: 60, height: 40)
             .AddNode("left", "L", 560, 130, width: 40, height: 180)
@@ -415,7 +414,7 @@ public sealed class DenseTopologyLayoutTests {
             .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .AddNodePort("a", "upper", TopologyEdgePort.Right, 0.15)
-            .WithEdgeNamedPorts("a-b", "upper", null);
+            .UpdateEdge("a-b", e => e.SourcePortId("upper").TargetPortId(null));
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false };
         var preparedChart = TopologyLayoutEngine.Prepare(chart, options: options);
         var routed = TopologyEdgeRouter.Route(preparedChart, preparedChart.Edges.Single(),
@@ -437,7 +436,7 @@ public sealed class DenseTopologyLayoutTests {
     public void PlannedRoute_FanSpreading_DoesNotIntroduceCardCrossing() {
         const double blockerX = 85;
         const double blockerY = 195;
-        var chart = TopologyChart.Create().WithId("fan-obstacle").WithViewport(860, 440, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("fan-obstacle").Viewport(new TopologyViewport(860, 440, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20, 200, width: 60, height: 60)
             .AddNode("b", "B", 640, 220, width: 60, height: 40)
             .AddNode("block", "Block", blockerX, blockerY, width: 25, height: 20)
@@ -445,10 +444,10 @@ public sealed class DenseTopologyLayoutTests {
             .AddNode("top", "T", 560, 90, width: 190, height: 30)
             .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .WithEdgePorts("a-b", TopologyEdgePort.Right, TopologyEdgePort.Left);
+            .UpdateEdge("a-b", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         for (var i = 0; i < 7; i++)
             chart.AddEdge("peer" + i, "a", "b", routing: TopologyEdgeRouting.Straight)
-                .WithEdgePorts("peer" + i, TopologyEdgePort.Right, TopologyEdgePort.Left);
+                .UpdateEdge("peer" + i, e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         chart.RenderOptions = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -465,13 +464,13 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void NamedPortPlacement_NearCard_IsRejectedInsteadOfResetToSideMidpoint() {
-        var chart = TopologyChart.Create().WithId("named-near-card").WithViewport(500, 300, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("named-near-card").Viewport(new TopologyViewport(500, 300, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 80, 100, width: 60, height: 40)
             .AddNode("b", "B", 330, 100, width: 60, height: 40)
             .AddNode("block", "Block", 150, 125, width: 10, height: 20)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .AddNodePort("a", "lower", TopologyEdgePort.Right, 0.8)
-            .WithEdgeNamedPorts("a-b", "lower", null);
+            .UpdateEdge("a-b", e => e.SourcePortId("lower").TargetPortId(null));
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
         chart.RenderOptions = options;
@@ -484,13 +483,13 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void AlignedRoute_TwoNamedPorts_RetainIndependentOffsets() {
-        var chart = TopologyChart.Create().WithId("two-named-ports").WithViewport(500, 300, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("two-named-ports").Viewport(new TopologyViewport(500, 300, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 80, 100, width: 60, height: 40)
             .AddNode("b", "B", 330, 100, width: 60, height: 40)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .AddNodePort("a", "lower", TopologyEdgePort.Right, 0.8)
             .AddNodePort("b", "upper", TopologyEdgePort.Left, 0.2)
-            .WithEdgeNamedPorts("a-b", "lower", "upper");
+            .UpdateEdge("a-b", e => e.SourcePortId("lower").TargetPortId("upper"));
         chart.RenderOptions = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeNodeLabels = false };
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -508,9 +507,9 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void PlannedRoute_RespectsTitleAndLegendContentBounds() {
-        var chart = TopologyChart.Create().WithId("header-footer-maze").WithViewport(860, 440, 0)
-            .WithTitle("Replication topology")
-            .WithLegend(TopologyLegend.Default().AddNodeKind("Server", TopologyNodeKind.Server, symbol: "S"))
+        var chart = TopologyChart.Create().Id("header-footer-maze").Viewport(new TopologyViewport(860, 440, 0))
+            .Title("Replication topology")
+            .Legend(TopologyLegend.Default().AddNodeKind("Server", TopologyNodeKind.Server, symbol: "S"))
             .AddNode("a", "A", 20, 200, width: 60, height: 40)
             .AddNode("b", "B", 640, 200, width: 60, height: 40)
             .AddNode("left", "L", 560, 130, width: 40, height: 180)
@@ -559,8 +558,8 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void PlannedRoute_HiddenTitle_UsesTheAvailableTopCorridor() {
-        var chart = TopologyChart.Create().WithId("hidden-title-corridor").WithViewport(500, 220, 0)
-            .WithTitle("This title is not rendered").WithLegend(null)
+        var chart = TopologyChart.Create().Id("hidden-title-corridor").Viewport(new TopologyViewport(500, 220, 0))
+            .Title("This title is not rendered").Legend((TopologyLegend?)null)
             .AddNode("a", "A", 30, 80, width: 60, height: 30)
             .AddNode("b", "B", 350, 80, width: 60, height: 30)
             .AddNode("wall", "Wall", 175, 36, width: 80, height: 184)
@@ -594,7 +593,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void TileCaption_RespectsNodeCharacterLimitUsedByRenderers() {
-        var chart = TopologyChart.Create().WithId("long-tile-label").WithViewport(420, 280, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("long-tile-label").Viewport(new TopologyViewport(420, 280, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "Alpha Bravo Charlie Delta Echo Foxtrot Golf", 360, 70, width: 54, height: 36);
         chart.Nodes.Single().MaximumLabelCharacters = 64;
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
@@ -613,9 +612,9 @@ public sealed class DenseTopologyLayoutTests {
     [InlineData(TopologyGroupLayoutPolicy.HubAndBranch)]
     [InlineData(TopologyGroupLayoutPolicy.MiniMesh)]
     public void DenseMixedPolicies_ReserveWrappedTileCaptions(TopologyGroupLayoutPolicy policy) {
-        var chart = TopologyChart.Create().WithId("caption-policy").WithViewport(520, 360, 0)
-            .WithLegend(null).WithLayout(TopologyLayoutMode.DenseGrouped)
-            .AddAutoGroup("site", "Site").WithGroupLayout("site", policy)
+        var chart = TopologyChart.Create().Id("caption-policy").Viewport(new TopologyViewport(520, 360, 0))
+            .Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.DenseGrouped)
+            .AddAutoGroup("site", "Site").UpdateGroup("site", g => g.LayoutPolicy(policy))
             .AddAutoNode("hub", "Alpha Bravo Charlie Delta Echo Foxtrot Golf", TopologyNodeKind.Hub,
                 TopologyHealthStatus.Healthy, "site", width: 64, height: 40);
         for (var i = 0; i < 5; i++) chart.AddAutoNode("branch-" + i, "Long branch caption for node " + i,
@@ -642,7 +641,7 @@ public sealed class DenseTopologyLayoutTests {
         }
     }
 
-    private static TopologyChart CupChart() => TopologyChart.Create().WithId("cup-caption").WithViewport(860, 440, 0).WithLegend(null)
+    private static TopologyChart CupChart() => TopologyChart.Create().Id("cup-caption").Viewport(new TopologyViewport(860, 440, 0)).Legend((TopologyLegend?)null)
         .AddNode("a", "Source", 20, 200, width: 60, height: 40)
         .AddNode("b", "Target", 640, 200, width: 60, height: 40)
         .AddNode("left", "L", 560, 130, width: 40, height: 180)
@@ -658,8 +657,8 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     private static TopologyChart Sites(int sites, int controllers) {
-        var chart = TopologyChart.Create().WithId("sites").WithViewport(1400, 900, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Id("sites").Viewport(new TopologyViewport(1400, 900, 24)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         for (var site = 0; site < sites; site++) {
             var id = "s" + site.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoGroup(id, "Site " + site.ToString(CultureInfo.InvariantCulture));

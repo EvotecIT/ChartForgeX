@@ -18,7 +18,7 @@ public sealed class GanttMarkerPaintTests {
     public void ExplicitStateUsesCanonicalStatusInk(ChartSeriesState state) {
         var marker = ChartSeries.CreateGanttMarker(new ChartSeriesId("deadline"), "Deadline", 4);
         marker.StateRole = state;
-        var chart = Chart.Create().WithLegend(false).AddGanttTask("Work", 1, 9).AddSeries(marker);
+        var chart = Chart.Create().Legend(false).AddGanttTask("Work", 1, 9).AddSeries(marker);
         var context = new VisualRenderContext();
         var prepared = chart.Prepare(context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line");
@@ -44,13 +44,13 @@ public sealed class GanttMarkerPaintTests {
         var tokens = new VisualDesignTokens { MutedForeground = shared };
         tokens.Status.Critical = new VisualTokenColor(shared, ChartColor.White);
         var context = new VisualRenderContext(theme: new VisualTheme(tokens, tokens));
-        var chart = Chart.Create().WithSize(640, 320).AddGanttTask("Work", 1, 9).AddGanttMarker("Deadline", 4)
+        var chart = Chart.Create().Size(640, 320).AddGanttTask("Work", 1, 9).AddGanttMarker("Deadline", 4)
             .AddVerticalLine(7, "Reference", shared);
         var marker = chart.Series[1];
-        marker.WithLegendEntry();
+        marker.ShowInLegend();
         if (source != "neutral") marker.StateRole = ChartSeriesState.Danger;
         if (source is "series" or "point") marker.Color = source == "point" ? ChartColor.FromHex("#ff0000") : shared;
-        if (source == "point") marker.WithPointColor(0, shared);
+        if (source == "point") marker.PointColor(0, shared);
         var variables = new SvgColorVariables().Add("--axis", shared, SvgColorRole.Axis)
             .Add("--series", shared, SvgColorRole.Series).Add("--status", shared, SvgColorRole.Status).Add("--text", shared, SvgColorRole.Text);
         chart.Options.SvgColorVariables = variables;

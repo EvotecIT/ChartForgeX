@@ -13,11 +13,11 @@ public sealed class HorizontalCategoryCaptionTests {
     public void CompactLongCategoriesKeepReadableCaptionsAndCompleteFacts(double fontSize) {
         var xs = new[] { 1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23 };
         var names = Enumerable.Range(1, 24).Select(x => $"Region {x}: international distribution").ToArray();
-        var chart = Chart.Create().WithSize(390, 420).WithTheme(VisualTheme.Graphite()).WithTitle("Regional net orders").WithLegend(false)
-            .ConfigureTickLabelStyle(style => style.WithFontSize(fontSize)).WithXLabels(names)
+        var chart = Chart.Create().Size(390, 420).Theme(VisualTheme.Graphite()).Title("Regional net orders").Legend(false)
+            .TickLabelStyle(style => style.FontSize(fontSize)).XLabels(names)
             .AddHorizontalBar("Observed net orders", xs.Select((x, i) => new ChartPoint(x,
                 i is 3 or 11 ? 0 : (i % 3 == 0 ? -1 : 1) * (7 + i % 7 * 4))));
-        chart.Series[0].WithObservationIds(xs.Select(x => new ChartObservationId("region-" + x)));
+        chart.Series[0].ObservationIds(xs.Select(x => new ChartObservationId("region-" + x)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-y-label").ToArray();
         Assert.NotEmpty(captions);

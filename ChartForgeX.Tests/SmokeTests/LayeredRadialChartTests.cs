@@ -11,18 +11,18 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void LayeredRadialSeriesRenderIndependentArcLayers() {
         var chart = Chart.Create()
-            .WithSize(560, 560)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " kcal")
+            .Size(560, 560)
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + " kcal")
             .AddLayeredRadial("Calories left", layers => layers
                 .Add("Available area", 100, color: ChartColor.FromHex("#F1F2F6"), configure: layer => layer
-                    .WithGeometry(1, 0.18)
-                    .WithLineCap(ChartRadialLayerCap.Butt))
+                    .RadiusRatio(1).StrokeRatio(0.18)
+                    .LineCap(ChartRadialLayerCap.Butt))
                 .Add("Target ring", 100, color: ChartColor.FromHex("#FFCD62"), configure: layer => layer
-                    .WithGeometry(0.93, 0.035)
-                    .WithLineCap(ChartRadialLayerCap.Butt))
+                    .RadiusRatio(0.93).StrokeRatio(0.035)
+                    .LineCap(ChartRadialLayerCap.Butt))
                 .Add("Current", 1240, maximum: 2700, color: ChartColor.FromHex("#FF9F4A"), configure: layer => layer
-                    .WithGeometry(0.93, 0.14)
-                    .WithSeparators(3, ChartColor.White, 2)));
+                    .RadiusRatio(0.93).StrokeRatio(0.14)
+                    .SeparatorCount(3).SeparatorColor(ChartColor.White).SeparatorStrokeWidth(2).SeparatorInsetRatio(0.06)));
 
         var svg = chart.ToSvg();
         var prepared = PreparedFamily(chart);

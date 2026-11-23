@@ -11,13 +11,13 @@ public static partial class PolarViewportRecipe {
     public static Chart Create(int width = 800, ThemeMode mode = ThemeMode.Light) {
         var primary = new ChartSeries(new ChartSeriesId("primary"), "Observed strength", ChartSeriesKind.Polar,
             new[] { new ChartPoint(-.25, 5), new ChartPoint(.1, 60), new ChartPoint(.4, 95), new ChartPoint(3, 50, true), new ChartPoint(6.1, 90) });
-        primary.ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = .2; options.CurveTension = .35; });
-        for (var index = 0; index < primary.Points.Count; index++) primary.WithObservationId(index, new ChartObservationId("reading-" + index));
+        primary.Polar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = .2; options.CurveTension = .35; });
+        for (var index = 0; index < primary.Points.Count; index++) primary.ObservationId(index, new ChartObservationId("reading-" + index));
         var secondary = new ChartSeries(new ChartSeriesId("secondary"), "Response ratio", ChartSeriesKind.Polar,
             new[] { new ChartPoint(-.25, 1), new ChartPoint(.1, 30), new ChartPoint(.4, 300), new ChartPoint(3, 100, true), new ChartPoint(6.1, 1000) });
-        secondary.UseSecondaryValueAxis();
-        var chart = Chart.Create().WithSize(width, 440).WithTitle("Directional response").WithSubtitle("Sector clipping · independent radius domains")
-            .WithTheme(VisualTheme.Graphite(), mode).WithLegend().WithDataLabels(false).WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(1, 1000)
+        secondary.SecondaryAxis();
+        var chart = Chart.Create().Size(width, 440).Title("Directional response").Subtitle("Sector clipping · independent radius domains")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend().DataLabels(false).YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(1, 1000))
             .AddSeries(primary).AddSeries(secondary);
         chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; chart.Options.ShowPlotBackground = true;
         return chart;

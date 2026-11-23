@@ -61,8 +61,8 @@ public sealed class HighlightObservationOwnershipBrowserTests {
         }
 
         Chart Model(bool full, bool local, bool referenceArrived) {
-            var chart = Chart.Create().WithSize(900, 390).WithLegend().WithDataLabels(false)
-                .WithTitle("Source identity through decimation").WithTheme(VisualTheme.Graphite(), local ? ThemeMode.Dark : ThemeMode.Light);
+            var chart = Chart.Create().Size(900, 390).Legend().DataLabels(false)
+                .Title("Source identity through decimation").Theme(VisualTheme.Graphite()).ThemeMode(local ? ThemeMode.Dark : ThemeMode.Light);
             if (local) {
                 if (full) chart.AddLine("Measured", source);
                 else chart.AddDecimatedLine("Measured", source, 6);
@@ -70,9 +70,9 @@ public sealed class HighlightObservationOwnershipBrowserTests {
                 chart.AddSeries(full ? ChartSeries.CreateLine(new ChartSeriesId("primary"), "Measured", source)
                     : ChartSeries.CreateDecimated(new ChartSeriesId("primary"), "Measured", ChartSeriesKind.Line, source, 6));
             }
-            chart.Series[0].WithObservationIds(Enumerable.Range(0, source.Length).Select(index => new ChartObservationId("reading-" + index)));
+            chart.Series[0].ObservationIds(Enumerable.Range(0, source.Length).Select(index => new ChartObservationId("reading-" + index)));
             return chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("reference"), "Independent reference",
-                new[] { new ChartPoint(omittedIndex, 55) }).WithObservationId(0, new ChartObservationId(referenceArrived ? id : "reference-only")));
+                new[] { new ChartPoint(omittedIndex, 55) }).ObservationId(0, new ChartObservationId(referenceArrived ? id : "reference-only")));
         }
         static void Options(HtmlChartInteractionOptions options) { options.IdScope = "catalog-owner"; }
     }

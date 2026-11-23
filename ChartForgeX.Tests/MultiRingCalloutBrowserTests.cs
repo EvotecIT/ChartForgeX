@@ -21,7 +21,7 @@ public sealed class MultiRingCalloutBrowserTests {
     public async Task InnerCalloutsAndExplosionKeepRingSelectionThroughResponsiveUpdateAndNativeExports(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = MultiRingDepthTests.Fixture(mode == ThemeMode.Dark, width, false);
-        chart.Series[0].WithPointSliceOffset(0, .16); chart.Series[1].WithPointSliceOffset(1, .1);
+        chart.Series[0].PointSliceOffset(0, .16); chart.Series[1].PointSliceOffset(1, .1);
         var prepared = MultiRingDepthTests.Prepare(chart); MultiRingDepthTests.AssertCalloutAssociations(prepared);
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(Options), width + 24, 800);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
@@ -44,7 +44,7 @@ public sealed class MultiRingCalloutBrowserTests {
         await FocusWithKeyboardAsync(page, page.Locator(target)); await page.Keyboard.PressAsync("Space");
         var selected = Assert.Single((await page.EvaluateAsync<JsonElement>("() => ringDepth.getSelection()")).EnumerateArray());
         Assert.Equal("ring-0", selected.GetProperty("seriesKey").GetString()); Assert.Equal("alpha", selected.GetProperty("observationId").GetString());
-        chart.Series[0].WithPointSliceOffset(0, .25);
+        chart.Series[0].PointSliceOffset(0, .25);
         await page.EvaluateAsync("html => ringDepth.update(html)", chart.ToInteractiveHtmlFragmentWithoutAssets(Options));
         Assert.Contains((await page.EvaluateAsync<JsonElement>("() => ringDepth.getSelection()")).EnumerateArray(), item => item.GetProperty("observationId").GetString() == "alpha"
             && item.GetProperty("seriesKey").GetString() == "ring-0");

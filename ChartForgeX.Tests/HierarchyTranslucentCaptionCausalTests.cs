@@ -23,9 +23,9 @@ public sealed class HierarchyTranslucentCaptionCausalTests {
         ChartSeriesKind kind, bool dark, bool translucent, bool explicitInk) {
         var chart = Single(kind); var series = chart.Series[0];
         var raw = dark ? ChartColor.White : ChartColor.Black;
-        series.WithPointColor(0, raw.WithAlpha(translucent ? (byte)24 : (byte)255));
+        series.PointColor(0, raw.WithAlpha(translucent ? (byte)24 : (byte)255));
         var authoredInk = ChartColor.FromHex("#7C3AED");
-        if (explicitInk) series.ConfigurePointDataLabelStyle(0, style => style.Color = authoredInk);
+        if (explicitInk) series.PointDataLabelStyle(0, style => style.Color = authoredInk);
         var context = Context(dark, 620); var prepared = chart.Prepare(context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Capture("hierarchy-ink-" + kind + "-" + dark + "-" + translucent + "-" + explicitInk, svg, png);
@@ -44,14 +44,14 @@ public sealed class HierarchyTranslucentCaptionCausalTests {
     [InlineData(false)]
     [InlineData(true)]
     public void NestedTreemapInkIncludesAllActuallyPaintedAncestorSurfaces(bool dark) {
-        var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
+        var chart = Chart.Create().DataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("section", "Section", "root"),
             new ChartHierarchyItem("target", "Target", "section", 4)
         });
         var series = chart.Series[0];
-        series.WithPointColor(0, dark ? ChartColor.White : ChartColor.FromHex("#111827"));
-        series.WithPointColor(1, (dark ? ChartColor.White : ChartColor.Black).WithAlpha(24));
-        series.WithPointColor(2, (dark ? ChartColor.Black : ChartColor.White).WithAlpha(24));
+        series.PointColor(0, dark ? ChartColor.White : ChartColor.FromHex("#111827"));
+        series.PointColor(1, (dark ? ChartColor.White : ChartColor.Black).WithAlpha(24));
+        series.PointColor(2, (dark ? ChartColor.Black : ChartColor.White).WithAlpha(24));
         var context = Context(dark, 620); var prepared = chart.Prepare(context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); Capture("treemap-nested-ink-" + dark, svg, png);
         var marks = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(item => item.Role is "treemap-group-mark" or "treemap-tile-mark").ToArray();
@@ -65,7 +65,7 @@ public sealed class HierarchyTranslucentCaptionCausalTests {
     }
 
     internal static Chart Single(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithDataLabels();
+        var chart = Chart.Create().DataLabels();
         if (kind == ChartSeriesKind.Tree) return chart.AddTree("One", new[] { new ChartNode("target", "Target") }, Array.Empty<ChartTreeLink>());
         var items = new[] { new ChartHierarchyItem("target", "Target", value: 4) };
         return kind == ChartSeriesKind.Treemap ? chart.AddTreemap("One", items) : chart.AddSunburst("One", items);

@@ -17,15 +17,15 @@ public static class MermaidGitGraphRendering {
         options ??= new MermaidGitGraphRenderOptions();
         var source = document.Configuration.GitGraph;
         var block = GitGraphBlock.Create()
-            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid git graph"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
-            .WithPadding(options.Padding)
-            .WithBranchLabels(options.ShowBranchLabels ?? source?.ShowBranches ?? true)
-            .WithCommitLabels(options.ShowCommitLabels ?? source?.ShowCommitLabels ?? true)
-            .WithDirection(options.Direction ?? GitGraphDirectionFromSource(document.Direction))
-            .WithParallelCommits(options.ParallelCommits ?? source?.ParallelCommits ?? false)
-            .WithRotatedCommitLabels(options.RotateCommitLabels ?? source?.RotateCommitLabels ?? false);
+            .Title(MermaidHeading.Title(document, options.Title, null, "Mermaid git graph"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height)
+            .Padding(options.Padding)
+            .ShowBranchLabels(options.ShowBranchLabels ?? source?.ShowBranches ?? true)
+            .ShowCommitLabels(options.ShowCommitLabels ?? source?.ShowCommitLabels ?? true)
+            .Direction(options.Direction ?? GitGraphDirectionFromSource(document.Direction))
+            .ParallelCommits(options.ParallelCommits ?? source?.ParallelCommits ?? false)
+            .RotateCommitLabels(options.RotateCommitLabels ?? source?.RotateCommitLabels ?? false);
 
         var ordered = new System.Collections.Generic.List<(MermaidGitGraphBranch Branch, int Index, double Order)>();
         for (var index = 0; index < document.Branches.Count; index++) {
@@ -38,7 +38,7 @@ public static class MermaidGitGraphRendering {
         for (var index = 0; index < ordered.Count; index++) ranks[ordered[index].Branch.Name] = index;
         foreach (var branch in document.Branches) block.AddBranch(branch.Name, ranks[branch.Name]);
         foreach (var commit in document.Commits) block.AddCommit(commit.Id, commit.BranchName, commit.ParentIds, commit.Type, commit.Label, commit.Tag, commit.SourceCommitId);
-        return MermaidPresentation.Apply(block, document, options.Presentation).WithNaturalSize();
+        return MermaidPresentation.Apply(block, document, options.Presentation).NaturalSize();
     }
 
     /// <summary>

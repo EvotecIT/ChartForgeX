@@ -135,9 +135,9 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         .AddLine("Target", ChartPoints.FromValues(4, 6, 8))
         .AddHorizontalLine(6, "Warning threshold").AddVerticalLine(2, "Review window");
 
-    private static Chart Frame(bool dark) => Chart.Create().WithSize(596, 420).WithTitle("Observed values with reference guides")
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-        .WithXLabels("A", "B", "C").WithXAxisBounds(1, 3).WithYAxisBounds(0, 10);
+    private static Chart Frame(bool dark) => Chart.Create().Size(596, 420).Title("Observed values with reference guides")
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+        .XLabels("A", "B", "C").XAxis(x => x.Bounds(1, 3)).YAxis(y => y.Bounds(0, 10));
 
     private static string Annotation(int index) => "[data-cfx-role='annotation'][data-cfx-source-id='annotation-" + index + "']";
     private static async Task AssertFocusedAsync(ILocator target) => Assert.True(await target.EvaluateAsync<bool>("node => node === document.activeElement"));

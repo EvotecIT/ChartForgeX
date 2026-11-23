@@ -13,6 +13,4 @@ public sealed partial class ChartSeries {
             _radialBand = value;
         }
     }
-    /// <summary>Sets an immutable explicit pie/donut band; null restores the single-series default.</summary>
-    public ChartSeries WithRadialBand(ChartRadialBand? band) { RadialBand = band; return this; }
 }

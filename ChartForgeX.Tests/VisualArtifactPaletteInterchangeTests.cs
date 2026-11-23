@@ -97,7 +97,7 @@ public sealed class VisualArtifactPaletteInterchangeTests {
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json));
     }
 
-    private static TopologyChart Diagram() => TopologyChart.Create().WithViewport(600, 320).WithLegend(null)
+    private static TopologyChart Diagram() => TopologyChart.Create().Viewport(new TopologyViewport(600, 320)).Legend((TopologyLegend?)null)
         .AddNode("source", "Source", 70, 100)
         .AddNode("target", "Target", 340, 100)
         .AddEdge("connection", "source", "target");

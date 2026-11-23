@@ -15,9 +15,9 @@ public sealed class ColorDimensionApiTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => options.LegendStyle = (ChartColorLegendStyle)999);
         Assert.Equal(ChartColorLegendStyle.Gradient, options.LegendStyle);
         var chart = Chart.Create().AddHeatmapRow("Values", new[] { 1d, 2 });
-        chart.Options.HeatmapColorDimension.LegendStyle = ChartColorLegendStyle.Swatches;
+        chart.Options.Heatmap.ColorDimension.LegendStyle = ChartColorLegendStyle.Swatches;
         Assert.Contains("resolved ChartColorScale", Assert.Throws<InvalidOperationException>(() => Prepare(chart)).Message);
-        chart.Options.HeatmapColorDimension.LegendStyle = ChartColorLegendStyle.Auto;
+        chart.Options.Heatmap.ColorDimension.LegendStyle = ChartColorLegendStyle.Auto;
         Assert.NotNull(Prepare(chart));
     }
 
@@ -25,27 +25,27 @@ public sealed class ColorDimensionApiTests {
     public void ConfigurationOwnsDetachedSnapshotsAndResetsEachPolicyIndependently() {
         var chart = Chart.Create().AddScatter("Samples", new[] { new ChartPoint(1, 2) });
         var series = chart.Series[0];
-        var options = new[] { series.ColorDimension, chart.Options.MapColorDimension, chart.Options.HeatmapColorDimension,
+        var options = new[] { series.ColorDimension, chart.Options.Map.ColorDimension, chart.Options.Heatmap.ColorDimension,
             chart.Options.Treemap.ColorDimension, chart.Options.Sunburst.ColorDimension };
         Assert.Equal(options.Length, options.Distinct().Count());
         var format = ChartValueFormat.Number("0.0");
-        Assert.Same(series, series.ConfigureColorDimension(value => { value.Name = "Temperature"; value.ValueFormat = format; }));
-        Assert.Same(chart, chart.ConfigureMapColorDimension(value => value.Name = "Rainfall"));
-        Assert.Same(chart, chart.ConfigureHeatmapColorDimension(value => value.ValueFormat = format));
-        Assert.Same(chart, chart.ConfigureTreemap(value => value.ColorDimension.Name = "Margin"));
-        Assert.Same(chart, chart.ConfigureSunburst(value => value.ColorDimension.Name = "Risk"));
+        Assert.Same(series, series.ColorDimension(value => { value.Name = "Temperature"; value.ValueFormat = format; }));
+        Assert.Same(chart, chart.Map(map => map.ColorDimension(value => value.Name = "Rainfall")));
+        Assert.Same(chart, chart.Heatmap(heatmap => heatmap.ColorDimension(value => value.ValueFormat = format)));
+        Assert.Same(chart, chart.Treemap(value => value.ColorDimension.Name = "Margin"));
+        Assert.Same(chart, chart.Sunburst(value => value.ColorDimension.Name = "Risk"));
         Assert.All(options, original => { Assert.Null(original.Name); Assert.Null(original.ValueFormat); });
-        Assert.Equal("Rainfall", chart.Options.MapColorDimension.Name);
-        Assert.Same(format, chart.Options.HeatmapColorDimension.ValueFormat);
+        Assert.Equal("Rainfall", chart.Options.Map.ColorDimension.Name);
+        Assert.Same(format, chart.Options.Heatmap.ColorDimension.ValueFormat);
         Assert.Equal("Margin", chart.Options.Treemap.ColorDimension.Name);
         Assert.Equal("Risk", chart.Options.Sunburst.ColorDimension.Name);
-        series.ConfigureColorDimension(value => value.Name = null);
+        series.ColorDimension(value => value.Name = null);
         Assert.Null(series.ColorDimension.Name); Assert.Same(format, series.ColorDimension.ValueFormat);
-        series.ConfigureColorDimension(value => { value.Name = "Temperature"; value.ValueFormat = null; });
+        series.ColorDimension(value => { value.Name = "Temperature"; value.ValueFormat = null; });
         Assert.Equal("Temperature", series.ColorDimension.Name); Assert.Null(series.ColorDimension.ValueFormat);
-        Assert.Throws<ArgumentNullException>(() => series.ConfigureColorDimension(null!));
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureMapColorDimension(null!));
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureHeatmapColorDimension(null!));
+        Assert.Throws<ArgumentNullException>(() => series.ColorDimension(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Map(map => map.ColorDimension((Action<ChartColorDimensionOptions>)null!)));
+        Assert.Throws<ArgumentNullException>(() => chart.Heatmap(heatmap => heatmap.ColorDimension((Action<ChartColorDimensionOptions>)null!)));
     }
 
     [Theory]
@@ -68,12 +68,12 @@ public sealed class ColorDimensionApiTests {
         var chart = Chart.Create().AddLine("Line", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         if (owner == "series") {
             var invoked = false;
-            Assert.Throws<InvalidOperationException>(() => chart.Series[0].ConfigureColorDimension(_ => invoked = true));
+            Assert.Throws<InvalidOperationException>(() => chart.Series[0].ColorDimension(_ => invoked = true));
             Assert.False(invoked);
         }
         var options = owner switch {
-            "series" => chart.Series[0].ColorDimension, "map" => chart.Options.MapColorDimension,
-            "heatmap" => chart.Options.HeatmapColorDimension, "treemap" => chart.Options.Treemap.ColorDimension,
+            "series" => chart.Series[0].ColorDimension, "map" => chart.Options.Map.ColorDimension,
+            "heatmap" => chart.Options.Heatmap.ColorDimension, "treemap" => chart.Options.Treemap.ColorDimension,
             _ => chart.Options.Sunburst.ColorDimension
         };
         options.Name = "Measurement";
@@ -86,10 +86,10 @@ public sealed class ColorDimensionApiTests {
     [Fact]
     public void CategoricalHeatmapCannotAcquireNumericColorPresentation() {
         var chart = Chart.Create().AddHeatmapCategoryRow("State", new ChartHeatmapCell("pass"));
-        chart.Options.StateCategories.Add(new ChartStateCategory("pass", "Passed", ChartColor.Black));
-        chart.ConfigureHeatmapColorDimension(options => options.ValueFormat = ChartValueFormat.Number());
+        chart.Options.StateTimeline.Categories.Add(new ChartStateCategory("pass", "Passed", ChartColor.Black));
+        chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.ValueFormat = ChartValueFormat.Number()));
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
-        chart.Options.HeatmapColorDimension.ValueFormat = null;
+        chart.Options.Heatmap.ColorDimension.ValueFormat = null;
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
     }
 }

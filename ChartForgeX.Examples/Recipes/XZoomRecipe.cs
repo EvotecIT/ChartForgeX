@@ -24,8 +24,8 @@ public static class XZoomRecipe {
         var steps = kind == ChartSeriesKind.StepLine;
         var x = new[] { 0d, .86, 1, 2, 3, 4, 5, 5.87, 8, 10 };
         ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(x[index], value, x[index] == 4)).ToArray();
-        var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels()
-            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XAxis(xAxis => xAxis.Title("Sample")).YAxis(y => y.Title("Requests")).XAxis(xAxis => xAxis.Bounds(0, 10)).DataLabels()
+            .ValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
         var observed = Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 82);
         if (steps) chart.AddStepLine("Observed", observed);
         else chart.AddLine("Observed", observed);
@@ -33,15 +33,15 @@ public static class XZoomRecipe {
             var utilization = Points(96, 72, 48, 61, 55, 76, 49, 67, 84, 100);
             if (steps) chart.AddStepLine("Utilization", utilization);
             else chart.AddLine("Utilization", utilization);
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.WithSecondaryYAxis("Utilization (%)");
+            chart.Series[1].SecondaryAxis();
+            chart.SecondaryYAxis(s => s.Title("Utilization (%)"));
             chart.Options.SecondaryYAxis.TickCount = 4;
         }
-        chart.Options.XAxis.WithReversal(steps);
+        chart.Options.XAxis.Reversed(steps);
         chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
         foreach (var series in chart.Series) {
-            series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 3; });
-            if (steps) series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            series.Markers(markers => { markers.Enabled = true; markers.Radius = 3; });
+            if (steps) series.Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         }
         return chart.AddVerticalLine(2, "Deployment").AddHorizontalLine(60, "Target")
             .AddPlotRegion(new(ChartColor.FromHex("#5487b8"), xMinimum: 2.5, xMaximum: 6.5,

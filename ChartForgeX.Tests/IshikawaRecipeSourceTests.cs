@@ -13,7 +13,7 @@ public sealed class IshikawaRecipeSourceTests {
         Assert.Contains("File.WriteAllText(\"fishbone.svg\", model.ToSvg());", program); Assert.Contains("File.WriteAllBytes(\"fishbone.png\", model.ToPng());", program);
         Assert.Contains("File.WriteAllText(\"fishbone.html\", artifact.ToHtmlPage());", program); Assert.Contains("public static class IshikawaDepthRecipe", program);
         Assert.Contains("artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;", program); Assert.DoesNotContain("{{", program); Assert.DoesNotContain("ChartForgeX.Mermaid", program); Assert.DoesNotContain("FontRegistry.Register", program);
-        Assert.Equal(28, FishboneNaturalLayoutTests.Facts(block).Count); Assert.Contains(".WithNaturalSize(", program); Assert.NotEmpty(block.ToPng());
+        Assert.Equal(28, FishboneNaturalLayoutTests.Facts(block).Count); Assert.Contains(".NaturalSize(", program); Assert.NotEmpty(block.ToPng());
         var exact = ExampleRecipeSource.EmitIshikawa(variant, mode, galleryTypography: true);
         Assert.DoesNotContain("FontRegistry.Register", exact);
         Assert.Contains(".WithFontFamily(ChartFontStacks.ProductSans)", exact);

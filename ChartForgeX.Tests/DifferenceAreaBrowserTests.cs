@@ -26,8 +26,8 @@ public sealed class DifferenceAreaBrowserTests {
     public async Task NamedPairsKeepBothReadoutsAndOneSelectionIdentity(bool compact, bool dark, HtmlChartTooltipMode mode, bool stepped) {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.DifferenceArea, stepped ? "step-middle" : "wide")
-            .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend().WithTitle("Actual and forecast")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Size(compact ? 360 : 800, compact ? 360 : 440).Legend().Title("Actual and forecast")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddLine("Reference", new[] { new ChartPoint(3, 55) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode),
             compact ? 390 : 880, compact ? 560 : 600);
@@ -74,11 +74,11 @@ public sealed class DifferenceAreaBrowserTests {
     [BrowserFact]
     public async Task TransparentDirectionDoesNotBorrowTheOtherDirectionsPaint() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 380).AddDifferenceArea("Pair", new[] {
+        var chart = Chart.Create().Size(600, 380).AddDifferenceArea("Pair", new[] {
             new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 8)
-        }).WithLineVisualStyle(ChartLineVisualStyle.Plain());
-        chart.Series[0].WithColor(ChartColor.Transparent).WithStrokeWidth(1).ConfigureMarkers(markers => markers.Enabled = false)
-            .ConfigureDifferenceArea(options => {
+        }).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
+        chart.Series[0].Color(ChartColor.Transparent).StrokeWidth(1).Markers(markers => markers.Enabled = false)
+            .DifferenceArea(options => {
                 options.PositiveFill = ChartColor.FromHex("#DF3040"); options.NegativeFill = ChartColor.FromHex("#305CDF");
                 options.PositiveFillOpacity = 0; options.NegativeFillOpacity = .8;
             });

@@ -106,7 +106,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(true)]
     public async Task ToolbarDensityUsesTheChartContainerInsteadOfTheWindow(bool dark) {
         if (!Enabled) return;
-        var chart = Readings(dark).WithTransparentBackground(false);
+        var chart = Readings(dark).TransparentBackground(false);
         await using var session = await OpenAsync(RuntimePage(), 1440, 800);
         var page = session.Page;
         string Section(HtmlChartToolbarLayout toolbar) => chart.ToInteractiveHtmlFragmentWithoutAssets(options => {
@@ -130,12 +130,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var surface = chart.Options.ResolvedTheme.CardBackground;
         Assert.Equal($"rgb({surface.R}, {surface.G}, {surface.B})", await page.Locator(".cfx-toolbar").EvaluateAsync<string>("toolbar=>getComputedStyle(toolbar).backgroundColor"));
         await CaptureAsync(page, "hosting-compact-toolbar-" + (dark ? "dark" : "light"));
-        chart.WithTransparentBackground();
+        chart.TransparentBackground();
         await UpdateAsync(page, Section(HtmlChartToolbarLayout.Compact));
         Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator(Root).EvaluateAsync<string>("root=>getComputedStyle(root).backgroundColor"));
         Assert.Equal($"rgb({surface.R}, {surface.G}, {surface.B})", await page.Locator(".cfx-toolbar .cfx-tool").First.EvaluateAsync<string>("button=>getComputedStyle(button).backgroundColor"));
         await CaptureAsync(page, "hosting-compact-transparent-" + (dark ? "dark" : "light"));
-        chart.WithTransparentBackground(false);
+        chart.TransparentBackground(false);
         chart.Options.HostOwnsFrame = true;
         await UpdateAsync(page, Section(HtmlChartToolbarLayout.Compact));
         Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator(Root).EvaluateAsync<string>("root=>getComputedStyle(root).backgroundColor"));
@@ -169,8 +169,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserFact]
     public async Task AdaptiveNativeXRequestsUseTheCapturedDrawingAndCarryItsImmutableBasisAcrossTransitions() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Native adaptive window")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 12)
+        var chart = Chart.Create().Size(640, 360).Title("Native adaptive window")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 12))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("measurements"), "Measurements",
                 Enumerable.Range(0, 6).Select(index => new ChartPoint(index * 2, index + 2))));
         void Configure(HtmlChartInteractionOptions options) {
@@ -252,8 +252,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task AdaptiveLegendBudgetsRetainCanonicalMuteAndIsolationWhenControlsAreOmitted(string family, bool isolated) {
         if (!Enabled) return;
         var labels = new[] { "Service request measures North", "Service request measures South", "Service request measures West" };
-        var chart = Chart.Create().WithSize(1100, 360).WithTitle("Adaptive legend state").WithLegend().WithLegendBudget(maximumRows: 1)
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = Chart.Create().Size(1100, 360).Title("Adaptive legend state").Legend().Legend(l => l.MaxRows(1))
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         string legend, mark;
         if (family is "series" or "local-series") {
             for (var index = 0; index < labels.Length; index++) {
@@ -268,8 +268,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 ? ChartSeries.CreateTreemap(new ChartSeriesId("areas"), "Areas", labels.Select((label, index) => new ChartHierarchyItem("area-" + index, label, value: 4 - index)))
                 : new ChartSeries(new ChartSeriesId("areas"), "Areas", ChartSeriesKind.Pie,
                     Enumerable.Range(0, 3).Select(index => new ChartPoint(index + 1, 4 - index)));
-            for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("area-" + index));
-            chart.WithXLabels(labels).WithPointLegend().WithDataLabels(false).AddSeries(series);
+            for (var index = 0; index < 3; index++) series.ObservationId(index, new ChartObservationId("area-" + index));
+            chart.XLabels(labels).Legend(l => l.ShowPoints()).DataLabels(false).AddSeries(series);
             legend = family == "hierarchy" ? "[data-cfx-role=legend-item][data-cfx-legend-target-id=area-2]"
                 : "[data-cfx-role=legend-item][data-cfx-observation-id=area-2]";
             mark = family == "hierarchy" ? "[data-cfx-target-kind=node][data-cfx-target-id=area-2]"
@@ -292,7 +292,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             else Assert.Equal("true", await page.Locator(legend).GetAttributeAsync(isolated ? "data-cfx-isolated" : "data-cfx-muted"));
         }
         if (family == "local-series") {
-            var replacement = Chart.Create().WithSize(900, 360).WithLegend().AddLine("Unrelated measurements", new[] { new ChartPoint(0, 5), new ChartPoint(1, 7) });
+            var replacement = Chart.Create().Size(900, 360).Legend().AddLine("Unrelated measurements", new[] { new ChartPoint(0, 5), new ChartPoint(1, 7) });
             await UpdateAsync(page, replacement.ToInteractiveHtmlFragmentWithoutAssets(Configure));
             Assert.Equal(0, await page.Locator(".cfx-series-muted,.cfx-series-isolated-in,.cfx-series-isolated-out").CountAsync());
         }

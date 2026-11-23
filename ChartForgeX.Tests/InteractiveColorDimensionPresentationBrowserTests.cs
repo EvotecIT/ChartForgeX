@@ -31,14 +31,14 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
     public async Task CapturedPresentationSurvivesPointerFocusPinAndLegendSummaryWithRawIdentities(ChartSeriesKind kind, int width, bool dark, bool shared) {
         if (!Enabled) return;
         var chart = ColorDimensionPresentationFixtures.Create(kind, width == 800 ? "discrete" : "positioned", width, dark);
-        if (kind == ChartSeriesKind.Bubble) chart.ConfigureBubble(options =>
+        if (kind == ChartSeriesKind.Bubble) chart.Bubble(options =>
             options.SizeDimension.ValueFormat = ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
         var sameValue = kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap;
         const string name = "Temperature (°C)";
         var format = width == 800 ? ChartValueFormat.Number("0.00 '°C'", CultureInfo.GetCultureInfo("pl-PL"))
             : ChartValueFormat.Custom(value => value == 0 ? "" : "t<" + value.ToString(CultureInfo.InvariantCulture) + "> °C");
         var options = ColorDimensionPresentationFixtures.Options(chart, kind); options.Name = name; options.ValueFormat = format;
-        if (kind == ChartSeriesKind.Treemap) chart.WithPointLegend().ConfigureTreemap(treemap => treemap.ColorDimension.ShowLegend = false);
+        if (kind == ChartSeriesKind.Treemap) chart.Legend(l => l.ShowPoints()).Treemap(treemap => treemap.ColorDimension.ShowLegend = false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = shared ? HtmlChartTooltipMode.SharedX : HtmlChartTooltipMode.Single);
         options.Name = "Changed"; options.ValueFormat = ChartValueFormat.Custom(_ => throw new InvalidOperationException("Detached HTML must not rerun source formatting."));

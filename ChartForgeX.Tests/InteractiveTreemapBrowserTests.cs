@@ -23,14 +23,14 @@ public sealed class InteractiveTreemapBrowserTests {
     public async Task ConfiguredHierarchyKeepsContainmentColorsAndKeyboardSelection(string variant, bool dark, int width) {
         if (!Enabled) return;
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap, variant, mode).WithSize(width, width < 500 ? 340 : 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Allocated work by team")
-            .WithSubtitle("Area: allocated work · Color: change (%)");
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap, variant, mode).Size(width, width < 500 ? 340 : 460)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Allocated work by team")
+            .Subtitle("Area: allocated work · Color: change (%)");
         // Keep the zero-value interaction case explicit when showcase data changes.
         chart.Series[0].ReplaceHierarchyItems(chart.Series[0].HierarchyItems.Concat(new[] {
             new ChartHierarchyItem("reserve", "Reserve", parentId: "south-services", value: 0)
         }));
-        if (variant == "options") chart.Series[0].WithNodeState("south-support", ChartSeriesState.Warning);
+        if (variant == "options") chart.Series[0].NodeState("south-support", ChartSeriesState.Warning);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 490 : 610);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
@@ -84,7 +84,7 @@ public sealed class InteractiveTreemapBrowserTests {
         if (!Enabled) return;
         var items = TreemapHierarchyTests.ForestItems().AsEnumerable().Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == "south-support" ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
-        var chart = Chart.Create().WithSize(640, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Allocation", items);
+        var chart = Chart.Create().Size(640, 400).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Allocation", items);
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, 680, 520);
         await session.Page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selection = event.detail.target)");
         var target = session.Page.Locator("[data-cfx-node=south-support]"); await target.FocusAsync(); await session.Page.Keyboard.PressAsync("Space");
@@ -101,9 +101,9 @@ public sealed class InteractiveTreemapBrowserTests {
     public async Task MissingColorSingletonUsesNoDataPaintWithoutZeroScaleReadout(bool dark) {
         if (!Enabled) return;
         var missing = ChartColor.FromRgb(81, 124, 148);
-        var chart = Chart.Create().WithSize(360, 320).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("One independent team").AddTreemap("Team", new[] { new ChartHierarchyItem("support", "Support", value: 8) })
-            .ConfigureTreemap(options => options.ColorScale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithNoDataColor(missing));
+        var chart = Chart.Create().Size(360, 320).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("One independent team").AddTreemap("Team", new[] { new ChartHierarchyItem("support", "Support", value: 8) })
+            .Treemap(options => options.ColorScale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithNoDataColor(missing));
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, 400, 440);
         Assert.Equal(0, await session.Page.Locator("[data-cfx-role=treemap-color-scale-step]").CountAsync());
         Assert.Null(await session.Page.Locator("[data-cfx-role=treemap-color-scale]").GetAttributeAsync("data-cfx-min-value"));

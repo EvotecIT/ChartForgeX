@@ -19,8 +19,8 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         var source = new[] { new ChartPoint(.2, 5), new ChartPoint(1.2, 8), new ChartPoint(2, 3) };
         Chart Histogram(string title, double[] boundaries, ChartHistogramAggregation aggregation = ChartHistogramAggregation.Count,
             ChartHistogramEncoding encoding = ChartHistogramEncoding.Value) {
-            var chart = Chart.Create().WithSize(640, 360).WithTitle(title).WithPointLegend()
-                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            var chart = Chart.Create().Size(640, 360).Title(title).Legend(l => l.ShowPoints())
+                .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("shared-observations"), "Observations", source, ChartHistogramBinLayout.FromBoundaries(boundaries), aggregation, encoding));
             return chart;
         }
@@ -67,12 +67,12 @@ public sealed class InteractiveDerivedLegendBrowserTests {
     public async Task ZeroRadialLegendRetainsDerivedIdentityAndCannotToggleRawRows(bool donut, bool isolate) {
         if (!Enabled) return;
         Chart Radial(double value) {
-            var chart = Chart.Create().WithSize(640, 360).WithTitle(value == 0 ? "Zero radial source" : "Nonzero radial peer").WithXLabels("A", "B");
+            var chart = Chart.Create().Size(640, 360).Title(value == 0 ? "Zero radial source" : "Nonzero radial peer").XLabels("A", "B");
             var points = new[] { new ChartPoint(1, value), new ChartPoint(2, 4) };
             if (donut) chart.AddSeries(new ChartSeries(new ChartSeriesId("radial-raw-sibling"), "Radial values", ChartSeriesKind.Donut, points)); else chart.AddSeries(new ChartSeries(new ChartSeriesId("radial-raw-sibling"), "Radial values", ChartSeriesKind.Pie, points));
             return chart;
         }
-        var raw = Chart.Create().WithSize(640, 360).WithTitle("Raw peer").WithPointLegend()
+        var raw = Chart.Create().Size(640, 360).Title("Raw peer").Legend(l => l.ShowPoints())
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("radial-raw-sibling"), "Raw values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 4) }));
         await using var session = await OpenAsync(Dashboard(new[] { Radial(0), raw, Radial(2) }), 700, 1000);
         var roots = session.Page.Locator(".cfx-interactive-chart");
@@ -92,9 +92,9 @@ public sealed class InteractiveDerivedLegendBrowserTests {
     public async Task OtherLegendControlsMatchContributorSetsAcrossGroupingPolicies() {
         if (!Enabled) return;
         Chart Pie(int maximum) {
-            var chart = Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C", "D")
+            var chart = Chart.Create().Size(640, 360).XLabels("A", "B", "C", "D")
                 .AddSeries(new ChartSeries(new ChartSeriesId("shared-parts"), "Parts", ChartSeriesKind.Pie, new[] { new ChartPoint(1, 8), new ChartPoint(2, 4), new ChartPoint(3, 2), new ChartPoint(4, 1) }));
-            chart.Options.MaximumPieSlices = maximum;
+            chart.Options.Pie.MaxSlices = maximum;
             return chart;
         }
         await using var session = await OpenAsync(Dashboard(new[] { Pie(2), Pie(3), Pie(2) }), 700, 1000);

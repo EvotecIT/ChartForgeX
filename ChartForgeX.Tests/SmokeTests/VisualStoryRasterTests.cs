@@ -15,8 +15,8 @@ internal static partial class SmokeTests {
         var theme = VisualStoryThemes.Premium();
         theme = theme.Configure(builder => builder.Dark.MutedForeground = ChartColor.FromRgb(255, 0, 128));
         var split = VisualStory.Create("Bounded panel titles")
-            .WithSize(480, 320)
-            .WithTheme(theme);
+            .Size(480, 320)
+            .Theme(theme);
         var splitScene = split.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Split);
         splitScene.Panel("left", new VisualStoryTextSurface("left"), new string('W', 80));
         splitScene.Panel("right", new VisualStoryTextSurface("right"), "Right panel");
@@ -39,8 +39,8 @@ internal static partial class SmokeTests {
         Assert(titleGapInk == 0, "Raster visual-story panel titles should not bleed into the adjacent panel gap.");
 
         var stacked = VisualStory.Create("Bounded wrapped text")
-            .WithSize(480, 320)
-            .WithTheme(theme);
+            .Size(480, 320)
+            .Theme(theme);
         var stackedScene = stacked.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
         stackedScene.Panel("first", new VisualStoryTextSurface(string.Join(" ", Enumerable.Repeat("overflow", 80))));
         stackedScene.Panel("second", new VisualStoryTextSurface("ready"));
@@ -63,18 +63,18 @@ internal static partial class SmokeTests {
         Assert(textGapInk == 0, "Wrapped raster story text should remain inside the available panel height.");
 
         var normalOptions = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(2);
+            .FramesPerSecond(4)
+            .TransitionSeconds(0)
+            .EndHoldSeconds(0)
+            .Loop(false)
+            .MaximumFrames(2);
         var highDensityOptions = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithOutputScale(2)
-            .WithMaximumFrames(2);
+            .FramesPerSecond(4)
+            .TransitionSeconds(0)
+            .EndHoldSeconds(0)
+            .Loop(false)
+            .OutputScale(2)
+            .MaximumFrames(2);
         var normal = GifReader.Decode(split.ToGif(normalOptions));
         var highDensity = GifReader.Decode(split.ToGif(highDensityOptions));
         var stretched = ImageComposition.Create(highDensity.Width, highDensity.Height, ChartColor.Transparent)
@@ -86,10 +86,10 @@ internal static partial class SmokeTests {
             "Animated visual-story output scale should render at the requested density instead of stretching one-times frames.");
 
         var terminal = TerminalStory.Create()
-            .WithWidth(480)
-            .WithPngOutputScale(1)
-            .WithTiming(0, 200, 0)
-            .WithFinalPrompt(false)
+            .Width(480)
+            .PngOutputScale(1)
+            .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
+            .ShowFinalPrompt(false)
             .Command("Get-Process | Sort-Object CPU", 0.05)
             .Output("ready", TerminalTextTone.Success);
         var terminalRenderer = new PngTerminalStoryRenderer();
@@ -111,33 +111,33 @@ internal static partial class SmokeTests {
             "Terminal panels should support native story output density instead of stretched terminal text.");
 
         var terminalStory = VisualStory.Create("Terminal density")
-            .WithSize(480, 320);
+            .Size(480, 320);
         terminalStory.Scene("result", "Completed", 0.25)
             .Panel("terminal", new VisualStoryTerminalSurface(terminal, "A completed terminal command"));
         terminalStory.Outcome("visible", "The terminal is visible", "terminal");
-        var terminalStoryFrame = GifReader.Decode(terminalStory.ToGif(highDensityOptions.WithOutputScale(4)));
+        var terminalStoryFrame = GifReader.Decode(terminalStory.ToGif(highDensityOptions.OutputScale(4)));
         Assert(terminalStoryFrame.Width == terminalStory.Width * 4 &&
                terminalStoryFrame.Height == terminalStory.Height * 4,
             "Animated visual stories should propagate their requested density through terminal panels.");
 
         var longTerminal = TerminalStory.Create()
-            .WithWidth(960)
-            .WithPngOutputScale(4)
-            .WithTiming(0, 200, 0)
-            .WithFinalPrompt(false)
+            .Width(960)
+            .PngOutputScale(4)
+            .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
+            .ShowFinalPrompt(false)
             .Output(string.Join(Environment.NewLine, Enumerable.Repeat("completed line", 105)));
         var fittedTerminalStory = VisualStory.Create("Fitted terminal density")
-            .WithSize(480, 320);
+            .Size(480, 320);
         fittedTerminalStory.Scene("result", "Completed", 0.25)
             .Panel("terminal", new VisualStoryTerminalSurface(longTerminal, "A long completed transcript"));
         fittedTerminalStory.Outcome("visible", "The terminal is visible", "terminal");
         var fittedTerminalGif = fittedTerminalStory.ToGif(
             VisualStoryAnimationOptions.Create()
-                .WithFramesPerSecond(4)
-                .WithTransition(0)
-                .WithEndHold(0)
-                .WithOutputScale(4)
-                .WithMaximumFrames(2));
+                .FramesPerSecond(4)
+                .TransitionSeconds(0)
+                .EndHoldSeconds(0)
+                .OutputScale(4)
+                .MaximumFrames(2));
         Assert(fittedTerminalGif.Length > 8,
             "Nested terminal canvases should render only at the density needed by their fitted story panel.");
 

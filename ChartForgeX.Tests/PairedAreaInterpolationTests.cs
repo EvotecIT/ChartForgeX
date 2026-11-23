@@ -15,9 +15,9 @@ public sealed class PairedAreaInterpolationTests {
         var pairs = ChartRangeBands.FromXY(new[] { 0d, 1, 2, 3, 4, 5 }, new double?[] { 1, null, 2, 3, 1, 2 }, new double?[] { 5, 7, null, 8, 9, 6 });
         var series = kind == ChartSeriesKind.RangeArea ? ChartSeries.CreateRangeArea(new ChartSeriesId("range"), "Range", pairs, smooth: false)
             : ChartSeries.CreateRangeBand(new ChartSeriesId("range"), "Range", pairs);
-        series.WithBoundaryInterpolation(new(ChartInterpolation.Linear), new(ChartInterpolation.Step, ChartStepPosition.Start))
-            .WithObservationId(1, new ChartObservationId("resumed"));
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).AddSeries(series);
+        series.BoundaryInterpolation(new(ChartInterpolation.Linear), new(ChartInterpolation.Step, ChartStepPosition.Start))
+            .ObservationId(1, new ChartObservationId("resumed"));
+        var chart = Chart.Create().Axes(false).Legend(false).AddSeries(series);
         var prepared = Prepare(chart);
         var paths = prepared.Scene.Nodes.OfType<VisualScenePath>().ToArray();
         var lower = paths.Where(path => path.Role == "range-lower").ToArray();
@@ -36,7 +36,7 @@ public sealed class PairedAreaInterpolationTests {
         Assert.Equal("3", (string?)points[1].Attribute("data-cfx-lower")); Assert.Equal("8", (string?)points[1].Attribute("data-cfx-upper"));
         Assert.Equal("resumed", (string?)points[1].Attribute("data-cfx-observation-id"));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        series.WithBoundaryInterpolation(new(ChartInterpolation.Smooth), null).ReplaceRanges(Array.Empty<ChartRangeBand>());
+        series.BoundaryInterpolation(new(ChartInterpolation.Smooth), null).ReplaceRanges(Array.Empty<ChartRangeBand>());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -79,8 +79,8 @@ public sealed class PairedAreaInterpolationTests {
         var series = kind == ChartSeriesKind.RangeArea
             ? ChartSeries.CreateRangeArea(new ChartSeriesId("pair"), "Pair", new[] { new ChartRangeBand(0, 10, 30), new ChartRangeBand(10, 110, 130) }, smooth: false)
             : ChartSeries.CreateDifferenceArea(new ChartSeriesId("pair"), "Pair", new[] { new ChartDifferencePoint(0, 10, 30), new ChartDifferencePoint(10, 110, 130) });
-        series.UseSecondaryValueAxis().WithBoundaryInterpolation(null, new(ChartInterpolation.Step, ChartStepPosition.End));
-        var chart = Chart.Create().WithLegend(false).AddSeries(series)
+        series.SecondaryAxis().BoundaryInterpolation(null, new(ChartInterpolation.Step, ChartStepPosition.End));
+        var chart = Chart.Create().Legend(false).AddSeries(series)
             .AddLine("Primary reference", new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context,
             new ChartCartesianViewport(x: new ChartAxisWindow(4, 6), valueDomain: ChartValueDomain.VisibleCategories));

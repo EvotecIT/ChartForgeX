@@ -268,24 +268,6 @@ public sealed partial class VisualCanvas {
     /// <summary>Creates a 1920 by 1080 desktop wallpaper canvas.</summary>
     public static VisualCanvas CreateDesktopWallpaper() => new(1920, 1080);
 
-    /// <summary>Sets the accessibility title used by SVG output.</summary>
-    public VisualCanvas WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets a solid background color.</summary>
-    public VisualCanvas WithBackground(ChartColor color) { BackgroundTop = color; BackgroundBottom = color; return this; }
-
-    /// <summary>Sets a vertical background gradient.</summary>
-    public VisualCanvas WithBackground(ChartColor top, ChartColor bottom) { BackgroundTop = top; BackgroundBottom = bottom; return this; }
-
-    /// <summary>Sets the built-in backdrop decoration style.</summary>
-    public VisualCanvas WithBackdrop(VisualCanvasBackdropStyle style) { BackdropStyle = style; return this; }
-
-    /// <summary>Sets the theme used by built-in visual canvas layers.</summary>
-    public VisualCanvas WithTheme(VisualTheme theme, ThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
-
-    /// <summary>Sets the PNG output pixel multiplier.</summary>
-    public VisualCanvas WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
-
     /// <summary>Adds a layer to the canvas.</summary>
     public VisualCanvas AddLayer(VisualCanvasLayer layer) {
         if (layer == null) throw new ArgumentNullException(nameof(layer));
@@ -398,7 +380,7 @@ public sealed partial class VisualCanvas {
             LabelFontSize = textOptions?.LabelFontSize,
             ValueFontSize = textOptions?.ValueFontSize,
             DetailFontSize = textOptions?.DetailFontSize
-        }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
+        }.MiniChart(miniChartKind, miniChartValues, miniChartMaximum));
     }
 
     /// <summary>Adds a central icon or logo badge.</summary>
@@ -660,7 +642,7 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     }
 
     /// <summary>Sets the compact chart rendered inside the tile.</summary>
-    public VisualCanvasInfoTileLayer WithMiniChart(VisualCanvasInfoTileMiniChartKind kind, IEnumerable<double>? values, double? maximum = null) {
+    public VisualCanvasInfoTileLayer MiniChart(VisualCanvasInfoTileMiniChartKind kind, IEnumerable<double>? values, double? maximum = null) {
         SparklineData = null;
         VisualCanvas.ValidateEnum(kind, nameof(kind));
         _miniChartValues.Clear();
@@ -673,12 +655,6 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
 
         MiniChartKind = _miniChartValues.Count == 0 ? VisualCanvasInfoTileMiniChartKind.None : kind;
         MiniChartMaximum = maximum;
-        return this;
-    }
-
-    /// <summary>Sets the text fit policy used by renderers for this information tile.</summary>
-    public VisualCanvasInfoTileLayer WithTextFitPolicy(VisualCanvasTextFitPolicy policy) {
-        TextFitPolicy = policy;
         return this;
     }
 

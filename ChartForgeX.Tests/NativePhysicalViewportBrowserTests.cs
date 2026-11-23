@@ -144,14 +144,14 @@ public sealed partial class NativePhysicalViewportBrowserTests {
             var primary = new ChartSeries(new ChartSeriesId("primary"), "Counts", _horizontal ? ChartSeriesKind.HorizontalBar : ChartSeriesKind.Line,
                 new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 80) });
             var secondary = new ChartSeries(new ChartSeriesId("secondary"), "Duration", ChartSeriesKind.Line,
-                new[] { new ChartPoint(1, 100), new ChartPoint(2, 500), new ChartPoint(3, 900) }).UseSecondaryValueAxis();
-            for (var item = 0; item < 3; item++) secondary.WithObservationId(item, new ChartObservationId("secondary-" + item));
-            var chart = Chart.Create().WithSize(_width, 440).WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), _mode)
-                .WithLegend(false);
+                new[] { new ChartPoint(1, 100), new ChartPoint(2, 500), new ChartPoint(3, 900) }).SecondaryAxis();
+            for (var item = 0; item < 3; item++) secondary.ObservationId(item, new ChartObservationId("secondary-" + item));
+            var chart = Chart.Create().Size(_width, 440).FontFamily(BrowserProofFonts.Family).Theme(VisualTheme.Graphite()).ThemeMode(_mode)
+                .Legend(false);
             if (!_secondaryOnly) chart.AddSeries(primary);
             chart.AddSeries(secondary);
-            if (_horizontal) { chart.Options.LineOrientation = ChartOrientation.Horizontal; chart.WithXAxisBounds(0,100).WithYAxisBounds(0,4).WithSecondaryXAxisBounds(0,1000); }
-            else chart.WithXAxisBounds(0,4).WithYAxisBounds(0,100).WithSecondaryYAxisBounds(0,1000);
+            if (_horizontal) { chart.Options.Lines.Orientation = ChartOrientation.Horizontal; chart.XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 4)).SecondaryXAxis(s => s.Bounds(0, 1000)); }
+            else chart.XAxis(x => x.Bounds(0, 4)).YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(0, 1000));
             return chart;
         }
         private void Configure(HtmlChartInteractionOptions options) {

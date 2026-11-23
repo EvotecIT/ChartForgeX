@@ -22,21 +22,21 @@ public sealed partial class StandaloneViewportBrowserTests {
     // optionally without one series and inside fixed native windows.
     private static Chart StackedChart(string family, string? omit = null, (double, double)? category = null, (double, double)? value = null) {
         var kind = family switch { "horizontal" => ChartSeriesKind.HorizontalBar, "area" => ChartSeriesKind.StackedArea, _ => ChartSeriesKind.Bar };
-        var chart = Chart.Create().WithSize(800, 440).WithTitle("Saved " + family + " stack").WithLegend().WithDataLabels(family == "column");
-        if (kind != ChartSeriesKind.StackedArea) chart.WithStackedBars();
+        var chart = Chart.Create().Size(800, 440).Title("Saved " + family + " stack").Legend().DataLabels(family == "column");
+        if (kind != ChartSeriesKind.StackedArea) chart.Bars(b => b.Stacked());
         // Columns also caption their segments and stack totals.
-        if (family == "column") chart.WithStackTotals();
+        if (family == "column") chart.Bars(b => b.ShowTotals());
         for (var index = 0; index < StackValues.Length; index++) {
             if ("s" + index == omit) continue;
             var values = family == "column" ? StackValues[index] : StackValues[index].Select(Math.Abs).ToArray();
             var series = new ChartSeries(new ChartSeriesId("s" + index), "S" + index, kind, values.Select((y, x) => new ChartPoint(x, y)));
-            if (family == "percent") series.WithNormalization();
+            if (family == "percent") series.NormalizedTo(100);
             chart.AddSeries(series);
         }
         // Axis bounds name the physical axes, so a horizontal chart's categories run on Y.
         var horizontal = kind == ChartSeriesKind.HorizontalBar;
-        if (category is var (cMin, cMax)) { if (horizontal) chart.WithYAxisBounds(cMin, cMax); else chart.WithXAxisBounds(cMin, cMax); }
-        if (value is var (vMin, vMax)) { if (horizontal) chart.WithXAxisBounds(vMin, vMax); else chart.WithYAxisBounds(vMin, vMax); }
+        if (category is var (cMin, cMax)) { if (horizontal) chart.YAxis(yAxis => yAxis.Bounds(cMin, cMax)); else chart.XAxis(xAxis => xAxis.Bounds(cMin, cMax)); }
+        if (value is var (vMin, vMax)) { if (horizontal) chart.XAxis(xAxis => xAxis.Bounds(vMin, vMax)); else chart.YAxis(yAxis => yAxis.Bounds(vMin, vMax)); }
         return chart;
     }
 

@@ -4,12 +4,12 @@ using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
     private static TopologyChart BuildReadableDenseReplication() {
-        var chart = TopologyChart.Create().WithId("visual-readable-dense-replication")
-            .WithTitle("Regional replication")
-            .WithSubtitle("Site panels wrap within the viewport; routes share corridors on separate lanes and carry their labels.")
-            .WithViewport(1400, 760, 24)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-            .WithLegend(TopologyLegend.Default());
+        var chart = TopologyChart.Create().Id("visual-readable-dense-replication")
+            .Title("Regional replication")
+            .Subtitle("Site panels wrap within the viewport; routes share corridors on separate lanes and carry their labels.")
+            .Viewport(new TopologyViewport(1400, 760, 24))
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .Legend(TopologyLegend.Default());
 
         for (var site = 0; site < 8; site++) {
             var groupId = "site-" + (site + 1).ToString("00", CultureInfo.InvariantCulture);

@@ -65,8 +65,8 @@ public sealed class GanttDependencyArrowTests {
     }
 
     private static Chart Create(bool dark, bool milestone, int width, bool endpoint) {
-        var chart = Chart.Create().WithSize(width, 360).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().Size(width, 360).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGanttTask("First", 1, 4);
         if (milestone) chart.AddGanttMilestone("Gate", endpoint ? 9 : 4);
         else chart.AddGanttTask("Next", endpoint ? 9 : 4, endpoint ? 9 : 8);

@@ -15,7 +15,7 @@ public sealed class V2GaugeTests {
     [InlineData(ChartGaugeForm.Linear)]
     public void Forms_RetainRawOutOfRangeValuesAndClampDrawnMarks(ChartGaugeForm form) {
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
-            new ChartGaugeValue(140, 0, 100, new[] { new ChartGaugeTarget(75) }))).ConfigureGauge(options => {
+            new ChartGaugeValue(140, 0, 100, new[] { new ChartGaugeTarget(75) }))).Gauge(options => {
             options.Form = form; options.Caption = "Available capacity";
             options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Warning));
             options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Success));
@@ -51,7 +51,7 @@ public sealed class V2GaugeTests {
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Long caption that will not fit a compact surface",
             new ChartGaugeValue(42, targets: new[] { new ChartGaugeTarget(110) })));
         var explicitColor = ChartColor.FromHex("#123456");
-        chart.Series[0].WithPointColor(0, explicitColor).WithPointLabel(0, full);
+        chart.Series[0].PointColor(0, explicitColor).PointLabel(0, full);
         var scene = Compile(chart, new ChartRect(0, 0, 160, 130));
         var value = Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "gauge-value");
         Assert.Equal(explicitColor, value.Fill);
@@ -66,7 +66,7 @@ public sealed class V2GaugeTests {
 
     [Fact]
     public void OverlappingBandsAndInvalidTypedRangesFailBeforePainting() {
-        var chart = Chart.Create().AddGauge("Load", 40).ConfigureGauge(options => {
+        var chart = Chart.Create().AddGauge("Load", 40).Gauge(options => {
             options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Success));
             options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Warning));
         });
@@ -79,7 +79,7 @@ public sealed class V2GaugeTests {
 
     [Fact]
     public void LabelSuppressionAndAxisVisibilityAreIndependent() {
-        var chart = Chart.Create().AddGauge("Load", -20).WithAxes(false);
+        var chart = Chart.Create().AddGauge("Load", -20).Axes(false);
         chart.Series[0].ShowDataLabels = false;
         var scene = Compile(chart);
         Assert.DoesNotContain(scene.Nodes, node => node.Role is "gauge-label" or "gauge-title" or "gauge-min-label" or "gauge-max-label");
@@ -89,7 +89,7 @@ public sealed class V2GaugeTests {
 
     [Fact]
     public void LinearAxesUseFiveResolvedValuesAndBandsKeepUnclampedSourceRanges() {
-        var chart = Chart.Create().AddLinearGauge("Range", 50, 0, 100).ConfigureGauge(options => options.Bands.Add(new ChartGaugeBand(-20, 120, ChartSeriesState.Info)));
+        var chart = Chart.Create().AddLinearGauge("Range", 50, 0, 100).Gauge(options => options.Bands.Add(new ChartGaugeBand(-20, 120, ChartSeriesState.Info)));
         var seen = new List<double>(); chart.Options.ValueFormatter = number => { seen.Add(number); return "V=" + number; };
         var scene = Compile(chart);
         Assert.Equal(5, scene.Nodes.Count(node => node.Role == "gauge-tick"));

@@ -14,7 +14,7 @@ public sealed class GallerySvgReadabilityTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-svg-readability-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var chart = Chart.Create().WithSize(320, 180)
+            var chart = Chart.Create().Size(320, 180)
                 .AddLine("Values", Enumerable.Range(1, 3).Select(i => new ChartForgeX.Primitives.ChartPoint(i, i)));
             const string svg = """
                 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">

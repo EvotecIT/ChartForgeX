@@ -16,18 +16,18 @@ public sealed class BoxPlotBrowserTests {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, "compact-horizontal")
-            .WithSize(360, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithDataLabels(false).WithFontFamily("Carlito")
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        chart.Options.XAxis.WithBounds(0, 60);
-        chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne"; labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum"; });
-        chart.Series[0].WithPointLabel(1, "Promised distribution"); chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
+            .Size(360, 440).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).DataLabels(false).FontFamily("Carlito")
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        chart.Options.XAxis.Bounds(0, 60);
+        chart.Labels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne"; labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum"; });
+        chart.Series[0].PointLabel(1, "Promised distribution"); chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
             label.Value == 2 ? "Express delivery" : label.Text)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         }), 384, 600);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
-        var fontDirectory = Path.GetDirectoryName(chart.Options.PngFontPath)!;
+        var fontDirectory = Path.GetDirectoryName(chart.Options.Png.FontPath)!;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content =
             "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Regular.ttf"))) + ") format('truetype');font-weight:400}"
             + "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Bold.ttf"))) + ") format('truetype');font-weight:700}" });
@@ -83,9 +83,9 @@ public sealed class BoxPlotBrowserTests {
     [BrowserFact]
     public async Task RawSampleSummaryKeepsInterpolatedFactsAndDerivedSelectionIdentity() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 400).WithXLabels("Raw input").WithPointLegend().WithLegend()
+        var chart = Chart.Create().Size(640, 400).XLabels("Raw input").Legend(l => l.ShowPoints()).Legend()
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("raw-distribution"), "Distribution", 1, new[] { 30d, 0, 20, 10 }));
-        chart.Series[0].WithObservationId(0, new ChartObservationId("authored-source"));
+        chart.Series[0].ObservationId(0, new ChartObservationId("authored-source"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX));
         var page = session.Page;
         await page.EvaluateAsync("() => { window.rawSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.rawSelections.push(event.detail.target)); }");

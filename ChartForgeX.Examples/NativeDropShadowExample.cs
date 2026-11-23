@@ -15,10 +15,10 @@ public static class NativeDropShadowExample {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var series = new ChartSeries(new ChartSeriesId("finished"), "Finished", ChartSeriesKind.Line,
             new[] { new ChartPoint(1, 9), new ChartPoint(2, 24), new ChartPoint(3, 17), new ChartPoint(4, 31) })
-            .WithObservationId(1, new ChartObservationId("second-cycle"));
-        return Chart.Create().WithSize(variant == "compact" ? 320 : 740, 240).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Finished service requests").WithSubtitle("A native chart and its caption form one captured unit")
-            .WithXAxis("Cycle").WithYAxis("Finished").WithDataLabels(false).AddSeries(series);
+            .ObservationId(1, new ChartObservationId("second-cycle"));
+        return Chart.Create().Size(variant == "compact" ? 320 : 740, 240).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Finished service requests").Subtitle("A native chart and its caption form one captured unit")
+            .XAxis(x => x.Title("Cycle")).YAxis(y => y.Title("Finished")).DataLabels(false).AddSeries(series);
     }
     /// <summary>Returns the finite source filter used by the ordinary opt-in SVG importer example.</summary>
     public static string FilterSource() => "<svg xmlns='http://www.w3.org/2000/svg' width='64' height='48'><defs>"

@@ -10,7 +10,7 @@ public static class LegendControlRecipe {
         // Twelve months of revenue and cost, in dollars, against a 1.2M monthly target and a tolerance band.
         var months = Enumerable.Range(1, 12).ToArray();
         var target = ChartColor.FromHex("#D97706");
-        var chart = Chart.Create().WithXAxis("Month").WithYAxis("USD").WithValueFormat(ChartValueFormat.Compact())
+        var chart = Chart.Create().XAxis(x => x.Title("Month")).YAxis(y => y.Title("USD")).ValueFormat(ChartValueFormat.Compact())
             .AddLine("Revenue", months.Select(month => new ChartPoint(month, 940_000 + month * 31_000 + month % 3 * 42_000)).ToArray())
             .AddLine("Cost", months.Select(month => new ChartPoint(month, 610_000 + month * 18_000 + month % 4 * 25_000)).ToArray());
         switch (option) {
@@ -22,13 +22,13 @@ public static class LegendControlRecipe {
                 break;
             case "legend-values":
                 // Each series entry carries its annual total, formatted like the value axis.
-                chart.WithLegendFormatter(item => item.Series == null ? null : item.Label + " — " + item.FormatValue(item.Total) + " total");
+                chart.Legend(l => l.LabelBy(item => item.Series == null ? null : item.Label + " — " + item.FormatValue(item.Total) + " total"));
                 break;
             case "legend-keys":
                 // Diamond and square markers on every point, larger legend keys that draw them, and an entry for the review lines.
-                chart.Series[0].ConfigureMarkers(markers => { markers.Enabled = true; markers.Shape = ChartMarkerShape.Diamond; });
-                chart.Series[1].ConfigureMarkers(markers => { markers.Enabled = true; markers.Shape = ChartMarkerShape.Square; });
-                chart.WithLegendKey(ChartLegendKeyShape.Marker, 12).AddVerticalLine(6, "H1 review", target).AddVerticalLine(12, "Year end", target)
+                chart.Series[0].Markers(markers => { markers.Enabled = true; markers.Shape = ChartMarkerShape.Diamond; });
+                chart.Series[1].Markers(markers => { markers.Enabled = true; markers.Shape = ChartMarkerShape.Square; });
+                chart.Legend(l => l.KeyShape(ChartLegendKeyShape.Marker).KeySize(12)).AddVerticalLine(6, "H1 review", target).AddVerticalLine(12, "Year end", target)
                     .AddLegendItem(ChartLegendItem.Line("Review month", target, ChartLegendItem.ReferenceDash, 1.6));
                 break;
         }

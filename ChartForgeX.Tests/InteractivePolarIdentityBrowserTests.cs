@@ -89,10 +89,10 @@ public sealed class InteractivePolarIdentityBrowserTests {
     }
 
     private static Chart CreateChart(bool radar, bool dark) {
-        var chart = Chart.Create().WithSize(596, 420).WithLegend()
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle(radar ? "Radar series identities" : "Polar series identities")
-            .WithSubtitle("Actual and Target have distinct source identities");
+        var chart = Chart.Create().Size(596, 420).Legend()
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title(radar ? "Radar series identities" : "Polar series identities")
+            .Subtitle("Actual and Target have distinct source identities");
         var coordinates = radar ? new[] { 1d, 2, 3, 4 } : new[] { 0d, Math.PI / 2, Math.PI, 3 * Math.PI / 2 };
         var actual = coordinates.Zip(new[] { 3d, 4, 5, 4 }, (x, value) => new ChartPoint(x, value));
         var target = coordinates.Zip(new[] { 8d, 7, 6, 8 }, (x, value) => new ChartPoint(x, value));
@@ -100,8 +100,8 @@ public sealed class InteractivePolarIdentityBrowserTests {
         var actualSeries = new ChartSeries(new ChartSeriesId("actual-source"), "Actual", kind, actual) { Color = ChartColor.FromHex("#16a34a") };
         var targetSeries = new ChartSeries(new ChartSeriesId("target-source"), "Target", kind, target) { Color = ChartColor.FromHex("#2563eb") };
         if (radar) {
-            chart.WithXLabels("Availability", "Latency", "Capacity", "Recovery");
-            targetSeries.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
+            chart.XLabels("Availability", "Latency", "Capacity", "Recovery");
+            targetSeries.Radar(options => options.Form = ChartLineAreaForm.Line);
         }
         chart.AddSeries(actualSeries).AddSeries(targetSeries);
         return chart;

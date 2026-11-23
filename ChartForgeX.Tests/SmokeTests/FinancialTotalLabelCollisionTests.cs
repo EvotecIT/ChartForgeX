@@ -14,17 +14,17 @@ internal static partial class SmokeTests {
             .ToArray();
 
         var candlestick = Chart.Create()
-            .WithSize(300, 220)
-            .WithDataLabels()
-            .WithValueFormatter(CloseFormatter)
+            .Size(300, 220)
+            .DataLabels()
+            .FormatValuesBy(CloseFormatter)
             .AddCandlestick("Windows", candles);
         AssertUsefulSubset(candlestick.ToSvg(), candles.Length, "Dense candlestick labels should avoid collisions.");
         Assert(candlestick.ToPng().Length > 64, "PNG candlestick label collision avoidance should render valid output.");
 
         var ohlc = Chart.Create()
-            .WithSize(300, 220)
-            .WithDataLabels()
-            .WithValueFormatter(CloseFormatter)
+            .Size(300, 220)
+            .DataLabels()
+            .FormatValuesBy(CloseFormatter)
             .AddOhlc("Windows", candles);
         AssertUsefulSubset(ohlc.ToSvg(), candles.Length, "Dense OHLC labels should avoid collisions.");
         Assert(ohlc.ToPng().Length > 64, "PNG OHLC label collision avoidance should render valid output.");
@@ -33,28 +33,26 @@ internal static partial class SmokeTests {
             .Select(value => new ChartPoint(value, value % 3 == 0 ? -3 : 5))
             .ToArray();
         var waterfall = Chart.Create()
-            .WithSize(300, 220)
-            .WithDataLabels()
-            .WithValueFormatter(value => "Delta " + value.ToString("0", CultureInfo.InvariantCulture))
+            .Size(300, 220)
+            .DataLabels()
+            .FormatValuesBy(value => "Delta " + value.ToString("0", CultureInfo.InvariantCulture))
             .AddWaterfall("Delta", deltas);
         AssertUsefulSubset(waterfall.ToSvg(), deltas.Length + 1, "Dense waterfall labels should avoid collisions.");
         Assert(waterfall.ToPng().Length > 64, "PNG waterfall label collision avoidance should render valid output.");
 
         var stacked = Chart.Create()
-            .WithSize(300, 220)
-            .WithStackedBars()
-            .WithStackTotals()
-            .WithValueFormatter(value => "Total " + value.ToString("0", CultureInfo.InvariantCulture))
+            .Size(300, 220)
+            .Bars(b => b.Stacked().ShowTotals())
+            .FormatValuesBy(value => "Total " + value.ToString("0", CultureInfo.InvariantCulture))
             .AddBar("Passed", Points(10, 12, 11, 13, 12, 11, 10, 12, 11, 13, 12, 11, 10, 12, 11, 13))
             .AddBar("Warnings", Points(2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3));
         AssertUsefulStackTotalSubset(stacked.ToSvg(), 16, "Dense stacked total labels should avoid collisions.");
         Assert(stacked.ToPng().Length > 64, "PNG stacked total label collision avoidance should render valid output.");
 
         var horizontalStacked = Chart.Create()
-            .WithSize(300, 220)
-            .WithStackedHorizontalBars()
-            .WithStackTotals()
-            .WithValueFormatter(value => "Total " + value.ToString("0", CultureInfo.InvariantCulture))
+            .Size(300, 220)
+            .Bars(b => b.Stacked().ShowTotals())
+            .FormatValuesBy(value => "Total " + value.ToString("0", CultureInfo.InvariantCulture))
             .AddHorizontalBar("Passed", Points(10, 12, 11, 13, 12, 11, 10, 12, 11, 13, 12, 11, 10, 12, 11, 13))
             .AddHorizontalBar("Warnings", Points(2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3));
         AssertUsefulStackTotalSubset(horizontalStacked.ToSvg(), 16, "Dense horizontal stack total labels should avoid collisions.");

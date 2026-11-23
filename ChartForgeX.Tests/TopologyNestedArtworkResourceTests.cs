@@ -13,7 +13,7 @@ public sealed class TopologyNestedArtworkResourceTests {
     public void ExactRepeatedSvgCapturesShareImmutablePixelsWhileSamplingAspectAndViewBoxRemainInputs(bool dataSvg) {
         const string body = "<rect width='16' height='32' fill='#DC1E28'/><rect x='16' width='16' height='32' fill='#1E28DC'/>";
         TopologyIconArtwork Artwork(string aspect = "xMidYMid meet", string viewBox = "0 0 32 32") =>
-            (dataSvg ? TopologyIconArtwork.Image(Svg(body, viewBox)) : TopologyIconArtwork.InlineSvg(body, viewBox)).WithPreserveAspectRatio(aspect);
+            (dataSvg ? TopologyIconArtwork.Image(Svg(body, viewBox)) : TopologyIconArtwork.InlineSvg(body, viewBox)).PreserveAspectRatio(aspect);
         var chart = Chart(Artwork(), Artwork(), Artwork("none"), Artwork(viewBox: "0 0 64 32"), Artwork());
         chart.Nodes[4].Width = 48;
         var prepared = chart.Prepare(Options());
@@ -116,7 +116,7 @@ public sealed class TopologyNestedArtworkResourceTests {
     private static string Document(string body, string viewBox = "0 0 32 32") => "<svg xmlns='http://www.w3.org/2000/svg' viewBox='" + viewBox + "'>" + body + "</svg>";
     private static string Svg(string body, string viewBox = "0 0 32 32") => "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(Document(body, viewBox)));
     private static TopologyChart Chart(params TopologyIconArtwork[] artwork) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(400, 180, 8).WithLegend(null); chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(400, 180, 8)).Legend((TopologyLegend?)null); chart.LayoutMode = TopologyLayoutMode.Manual;
         for (var index = 0; index < artwork.Length; index++) chart.Nodes.Add(new TopologyNode {
             Id = "image-" + index, Label = "Image", X = 16 + index * 60, Y = 30, Width = 32, Height = 32,
             DisplayMode = TopologyNodeDisplayMode.Artwork, Artwork = artwork[index], ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true

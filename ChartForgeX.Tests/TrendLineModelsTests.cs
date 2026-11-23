@@ -13,7 +13,7 @@ public sealed class TrendLineModelsTests {
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("scaled"), "Small predictor units",
             new[] { new ChartPoint(0, 1e9), new ChartPoint(1e-300, 2e9), new ChartPoint(2e-300, 4e9) }, null,
             options => options.Interval = ChartTrendLineIntervalKind.Confidence);
-        var chart = Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false).AddSeries(series);
+        var chart = Chart.Create().Axes(false).ShowGrid(false).Legend(false).AddSeries(series);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var regression = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Role == "regression");
         Assert.Equal("not-representable", regression.Metadata["data-cfx-source-coefficients"]);
@@ -59,13 +59,13 @@ public sealed class TrendLineModelsTests {
         };
         var source = Enumerable.Range(1, 7).Select(x => new ChartPoint(x, Expected(x)).WithColorValue(-x)).ToArray();
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("known-fit"), "Known model", source)
-            .ConfigureTrendLine(options => { options.Model = model; options.PolynomialDegree = degree; });
+            .TrendLine(options => { options.Model = model; options.PolynomialDegree = degree; });
         Assert.Equal(source, series.TrendLineSourcePoints); Assert.Equal(source.Length, series.SourcePointCount); Assert.Equal(2, series.Points.Count);
         Assert.All(series.TrendLineSamples, sample => Assert.InRange(Math.Abs(sample.Value - Expected(sample.X)), 0, Math.Max(1e-11, Math.Abs(Expected(sample.X)) * 1e-11)));
         Assert.Equal(model, series.TrendLineConfiguration!.Model);
         var detachedOptions = series.TrendLineConfiguration!; detachedOptions.Model = ChartTrendLineModel.Power;
         Assert.Equal(model, series.TrendLineConfiguration!.Model);
-        var chart = Chart.Create().WithLegend(false).AddSeries(series); var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var chart = Chart.Create().Legend(false).AddSeries(series); var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "point"));
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "point"), node => {
             Assert.Equal("regression-endpoint", node.Metadata["data-cfx-derived"]); Assert.False(node.Metadata.ContainsKey("data-cfx-source-point"));
@@ -78,7 +78,7 @@ public sealed class TrendLineModelsTests {
         var source = new[] { new ChartPoint(1e12, 2), new ChartPoint(1e12 + .125, 5), new ChartPoint(1e12 + .25, 7) };
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("legacy"), "Linear", source);
         var chart = Chart.Create().AddSeries(series); var before = chart.ToSvg();
-        series.ConfigureTrendLine(options => { options.Model = ChartTrendLineModel.Linear; options.SampleCount = 17; });
+        series.TrendLine(options => { options.Model = ChartTrendLineModel.Linear; options.SampleCount = 17; });
         Assert.Equal(13d / 6, series.Points[0].Y, 10); Assert.Equal(43d / 6, series.Points[1].Y, 10);
         Assert.Equal(2, series.TrendLineSamples.Count); Assert.Equal(before, chart.ToSvg());
     }
@@ -89,15 +89,15 @@ public sealed class TrendLineModelsTests {
     public void PolynomialCenteringRetainsInteriorExtremaInPrimarySecondaryAndVisibleDomains(double origin, double unit) {
         var source = Enumerable.Range(-2, 5).Select(index => new ChartPoint(origin + index * unit, 4 - index * index)).ToArray();
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("hill"), "Interior maximum", source)
-            .ConfigureTrendLine(options => { options.Model = ChartTrendLineModel.Polynomial; options.SampleCount = 18; });
+            .TrendLine(options => { options.Model = ChartTrendLineModel.Polynomial; options.SampleCount = 18; });
         var maximum = series.TrendLineSamples.Max(sample => sample.Value);
         Assert.Equal(4, maximum, 10); Assert.Equal(2, series.Points.Count);
         Assert.Contains(series.TrendLineSamples, sample => Math.Abs(sample.X - origin) < unit * 1e-6 && Math.Abs(sample.Value - 4) < 1e-10);
-        var chart = Chart.Create().WithLegend(false).AddSeries(series); var context = VisualExportRequest.ForChart(chart).Context;
+        var chart = Chart.Create().Legend(false).AddSeries(series); var context = VisualExportRequest.ForChart(chart).Context;
         var full = chart.Prepare(context); Assert.True(full.YProjection!.Maximum >= maximum);
         var visible = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(origin - unit, origin + unit), valueDomain: ChartValueDomain.VisibleCategories));
         Assert.True(visible.YProjection!.Maximum >= maximum);
-        series.UseSecondaryValueAxis(); var secondary = chart.Prepare(context);
+        series.SecondaryAxis(); var secondary = chart.Prepare(context);
         Assert.True(secondary.SecondaryYProjection!.Maximum >= maximum);
         Assert.NotEmpty(visible.ToPng());
     }
@@ -108,15 +108,15 @@ public sealed class TrendLineModelsTests {
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("valid"), "Existing", source);
         var chart = Chart.Create().AddSeries(series); var before = chart.ToSvg();
         foreach (var model in new[] { ChartTrendLineModel.Logarithmic, ChartTrendLineModel.Exponential, ChartTrendLineModel.Power }) {
-            Assert.Throws<ArgumentException>(() => series.ConfigureTrendLine(options => options.Model = model));
+            Assert.Throws<ArgumentException>(() => series.TrendLine(options => options.Model = model));
             Assert.Equal(before, chart.ToSvg()); Assert.Equal(source, series.TrendLineSourcePoints);
             Assert.Equal(ChartTrendLineModel.Linear, series.TrendLineConfiguration!.Model);
         }
         var repeated = ChartSeries.CreateTrendLine(new ChartSeriesId("rank"), "Two distinct predictors",
             new[] { new ChartPoint(0, 1), new ChartPoint(0, 2), new ChartPoint(1, 4) });
-        Assert.Throws<ArgumentException>(() => repeated.ConfigureTrendLine(options => options.Model = ChartTrendLineModel.Polynomial));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.ConfigureTrendLine(options => options.PolynomialDegree = 4));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.ConfigureTrendLine(options => options.SampleCount = 100000));
+        Assert.Throws<ArgumentException>(() => repeated.TrendLine(options => options.Model = ChartTrendLineModel.Polynomial));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.TrendLine(options => options.PolynomialDegree = 4));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.TrendLine(options => options.SampleCount = 100000));
         Assert.Equal(before, chart.ToSvg());
     }
 }

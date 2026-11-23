@@ -12,8 +12,8 @@ public static class MermaidTreeViewRendering {
     public static TreeViewBlock ToTreeViewBlock(this MermaidTreeViewDocument document, MermaidTreeViewRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document)); options ??= new MermaidTreeViewRenderOptions();
         var fallback = document.Roots.Count == 1 ? document.Roots[0].Label : "Mermaid tree view";
-        var block = TreeViewBlock.Create().WithTitle(MermaidHeading.Title(document, options.Title, null, fallback))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle));
+        var block = TreeViewBlock.Create().Title(MermaidHeading.Title(document, options.Title, null, fallback))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle));
         block.ShowIcons = options.ShowIcons ?? document.Configuration.TreeView?.ShowIcons ?? false;
         var seen = new HashSet<MermaidTreeViewNode>();
         foreach (var node in document.Nodes) {
@@ -27,7 +27,7 @@ public static class MermaidTreeViewRendering {
         }
         MermaidPresentation.Apply(block, document, options.Presentation);
         // Without a host width the frame trims to its widest row, wrapping no wider than the default.
-        return block.WithNaturalSize(options.Width ?? VisualBlockRendering.TreeViewContentWidth(block, MermaidTreeViewRenderOptions.MaximumNaturalWidth), options.Height ?? 0);
+        return block.NaturalSize(options.Width ?? VisualBlockRendering.TreeViewContentWidth(block, MermaidTreeViewRenderOptions.MaximumNaturalWidth), options.Height ?? 0);
     }
     /// <summary>Wraps native rows in the existing bounded Mermaid export policy.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidTreeViewDocument document, MermaidTreeViewRenderOptions? options = null) {

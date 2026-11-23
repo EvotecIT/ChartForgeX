@@ -69,9 +69,9 @@ public sealed partial class MarkupChartFamiliesTests {
     public void AuthoredThemeAndModeReachConvenienceSvgAndDecodedPng(string preset, int width, ThemeMode mode) {
         var actual = ParseChart(Fence("type lineargauge\nseries \"Reading\"\nvalues 42\nsize " + width + "x420",
             " theme=" + preset + " themeMode=" + mode));
-        actual.WithFontFamily(BrowserProofFonts.Family);
-        var expected = Chart.Create().WithSize(width, 420).WithTheme(ThemePresets[preset](), mode)
-            .WithFontFamily(BrowserProofFonts.Family).AddLinearGauge("Reading", 42);
+        actual.FontFamily(BrowserProofFonts.Family);
+        var expected = Chart.Create().Size(width, 420).Theme(ThemePresets[preset]()).ThemeMode(mode)
+            .FontFamily(BrowserProofFonts.Family).AddLinearGauge("Reading", 42);
         var svg = actual.ToSvg("authored-theme");
         var png = actual.ToPng();
         Assert.Equal(expected.ToSvg("authored-theme"), svg);

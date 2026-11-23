@@ -21,8 +21,8 @@ public sealed class SvgColorVariablesTests {
             .WithCaptions(new[] { new ChartColorScaleCaption(0, "Midpoint") });
         var themed = Configure(ramp.ToColorScale(0));
         var authored = Configure(ChartColorScale.Diverging(ramp.Negative.Reverse(), ramp.Neutral, ramp.Positive, 0));
-        Chart Cells(ChartColorScale scale) => Chart.Create().WithSize(600, 200).WithTheme(theme).WithDataLabels()
-            .WithHeatmapColorScale(scale).AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
+        Chart Cells(ChartColorScale scale) => Chart.Create().Size(600, 200).Theme(theme).DataLabels()
+            .Heatmap(h => h.ColorScale(scale)).AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
         string Fill(ChartColorScale scale, SvgColorVariables variables, string value = "2", bool ink = false) {
             var svg = Cells(scale).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions(colorVariables: variables), "ramp-compat");
             var cell = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(element =>
@@ -67,7 +67,7 @@ public sealed class SvgColorVariablesTests {
     [Fact]
     public void Chart_WritesTokenColoursAsVariablesAndFallsBackToTheSameLiterals() {
         var literal = Lines().ToSvg();
-        var themed = Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
+        var themed = Lines().SvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
 
         Assert.DoesNotContain("var(--cfx-series", literal, StringComparison.Ordinal);
         Assert.Contains("stroke=\"var(--cfx-series-1, #2A78D6)\"", themed, StringComparison.Ordinal);
@@ -80,7 +80,7 @@ public sealed class SvgColorVariablesTests {
         Assert.Contains("fill=\"var(--cfx-text-secondary, #4D525B)\"", themed, StringComparison.Ordinal);
         Assert.Contains("stroke=\"" + Lines().Options.Theme.Resolve(ThemeMode.Light).Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
         Assert.Equal(NormalizeIdentity(literal), NormalizeIdentity(Strip(themed)));
-        Assert.Equal(Lines().ToPng(), Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToPng());
+        Assert.Equal(Lines().ToPng(), Lines().SvgColorVariables(Graphite.ToSvgColorVariables()).ToPng());
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class SvgColorVariablesTests {
         Assert.DoesNotContain("--host-color-surface-card", names);
         Assert.Contains("--host-color-surface-cardAlt", names);
 
-        var svg = Lines().WithSvgColorVariables(variables).ToSvg();
+        var svg = Lines().SvgColorVariables(variables).ToSvg();
         Assert.Contains("var(--host-color-series-1, #2A78D6)", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("--host-color-surface-card,", svg, StringComparison.Ordinal);
         Assert.Contains("--cfx-surface-card-alt", Graphite.ToSvgColorVariables().Variables.Select(variable => variable.Name));
@@ -154,11 +154,11 @@ public sealed class SvgColorVariablesTests {
         Assert.Equal("<rect fill=\"var(--card, #FFFFFF)\"/><text fill=\"#FFFFFF\" stroke=\"var(--card, #FFFFFF)\">a</text><tspan style=\"fill:#FFFFFF;stroke:var(--card, #FFFFFF)\"/><text fill=\"var(--ink, #112233)\">b</text>", result);
 
         // A caller's white text and the white card share RGB values but have different paint roles.
-        var bars = Chart.Create().WithSize(640, 360).WithTheme(new VisualTheme(Graphite, Graphite))
+        var bars = Chart.Create().Size(640, 360).Theme(new VisualTheme(Graphite, Graphite))
             .AddTileMap("Sites", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 10), new ChartRegionMapItem("NY", 0) })
-            .WithMapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E")))
-            .ConfigureTickLabelStyle(style => style.WithColor("#FFFFFF"));
-        var svg = bars.WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
+            .Map(m => m.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E"))))
+            .TickLabelStyle(style => style.Color(ChartColor.FromHex("#FFFFFF")));
+        var svg = bars.SvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
         Assert.Matches("<text[^>]*fill=\"#FFFFFF\"", svg);
         Assert.DoesNotMatch("<text[^>]*fill=\"var\\(--cfx-surface", svg);
         Assert.Contains("var(--cfx-surface-card, #FFFFFF)", svg, StringComparison.Ordinal);
@@ -175,7 +175,7 @@ public sealed class SvgColorVariablesTests {
 
     [Fact]
     public void GridAndPreparedTopology_ApplyTheirVariables() {
-        var grid = new ChartGrid().WithTheme(new VisualTheme(Graphite, Graphite)).Add(Lines().WithLuminousLineStyle()).Add(Lines().WithLuminousLineStyle()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
+        var grid = new ChartGrid().Theme(new VisualTheme(Graphite, Graphite)).Add(Lines().Lines(l => l.LuminousStyle())).Add(Lines().Lines(l => l.LuminousStyle())).Title("Two").SvgColorVariables(Graphite.ToSvgColorVariables());
         var svg = grid.ToSvg();
         Assert.Contains("var(--cfx-series-1, #2A78D6)", svg, StringComparison.Ordinal);
         // Panels without variables of their own resolve their typed paints with the grid's: the white sheen stays literal.
@@ -184,7 +184,7 @@ public sealed class SvgColorVariablesTests {
         Assert.All(highlights, element => Assert.StartsWith("rgba(255,255,255,", (string)element.Attribute("stroke")!));
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
 
-        var chart = TopologyChart.Create().WithId("sites").AddAutoNode("dc1", "DC1");
+        var chart = TopologyChart.Create().Id("sites").AddAutoNode("dc1", "DC1");
         chart.Theme = new VisualTheme(Graphite, Graphite);
         var prepared = chart.Prepare(new TopologyRenderOptions { SvgColorVariables = Graphite.ToSvgColorVariables() }).ToSvg();
         Assert.Contains("var(--cfx-surface-card-alt, #F8F9FA)", prepared, StringComparison.Ordinal);
@@ -204,7 +204,7 @@ public sealed class SvgColorVariablesTests {
     [Fact]
     public void Topology_WritesTokenColoursAsVariablesAndKeepsPngLiteral() {
         TopologyChart Map() {
-            var chart = TopologyChart.Create().WithId("sites").AddAutoNode("dc1", "DC1").AddAutoNode("dc2", "DC2").AddEdge("a", "dc1", "dc2");
+            var chart = TopologyChart.Create().Id("sites").AddAutoNode("dc1", "DC1").AddAutoNode("dc2", "DC2").AddEdge("a", "dc1", "dc2");
             chart.Theme = new VisualTheme(Graphite, Graphite);
             return chart;
         }
@@ -217,7 +217,7 @@ public sealed class SvgColorVariablesTests {
         Assert.Equal(Map().ToPng(), Map().ToPng(options));
     }
 
-    private static Chart Lines() => Chart.Create().WithTitle("Traffic").WithSize(640, 320).WithTheme(new VisualTheme(Graphite, Graphite))
+    private static Chart Lines() => Chart.Create().Title("Traffic").Size(640, 320).Theme(new VisualTheme(Graphite, Graphite))
         .AddLine("Inbound", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(2, 2) })
         .AddLine("Outbound", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1), new ChartPoint(2, 3) });
 

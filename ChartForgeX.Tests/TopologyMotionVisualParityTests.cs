@@ -45,7 +45,7 @@ public sealed class TopologyMotionVisualParityTests {
     public void ScenarioAndExplicitMarkerPaintRemainAuthoritativeAcrossEveryRoute(string? markerOverride, string expected) {
         var chart = Diagram(620).AddScenario("tour", "Tour", scenario => scenario.AddEdgeStep("first").AddEdgeStep("second"));
         chart.Scenarios[0].Color = "#2563eb";
-        var motion = TopologyMotionOptions.RoutePulseForScenario("tour").WithMarkerColor(markerOverride);
+        var motion = TopologyMotionOptions.RoutePulseForScenario("tour").MarkerColor(markerOverride);
         motion.Loop = false;
         var presentation = chart.WithMotion(motion, Options());
         Assert.Equal(expected, (string?)Role(XDocument.Parse(presentation.ToSvg()), "topology-motion-marker").Attribute("fill"));
@@ -58,7 +58,7 @@ public sealed class TopologyMotionVisualParityTests {
     [InlineData(false)]
     [InlineData(true)]
     public void EndpointPulsesArePresentOnlyWhenEnabledAndShareTheSvgPhase(bool enabled) {
-        var presentation = Diagram(620).WithMotion(Motion(loop: false).WithEndpointPulses(enabled), Options());
+        var presentation = Diagram(620).WithMotion(Motion(loop: false).PulseRouteEndpoints(enabled), Options());
         var animated = XDocument.Parse(presentation.ToSvg());
         var svgNodes = animated.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "topology-motion-node").ToArray();
         Assert.Equal(enabled ? 3 : 0, svgNodes.Length);
@@ -77,7 +77,7 @@ public sealed class TopologyMotionVisualParityTests {
                 Assert.Equal((string?)svgNodes[i].Attribute("data-node-id"), (string?)nativeNodes[i].Parent!.Attribute("data-node-id"));
             }
         }
-        var other = Diagram(620).WithMotion(Motion(loop: false).WithEndpointPulses(!enabled), Options());
+        var other = Diagram(620).WithMotion(Motion(loop: false).PulseRouteEndpoints(!enabled), Options());
         Assert.NotEqual(presentation.Sample(.5).ToPng(), other.Sample(.5).ToPng());
     }
 
@@ -118,7 +118,7 @@ public sealed class TopologyMotionVisualParityTests {
     [InlineData(false)]
     [InlineData(true)]
     public void LongAuthoredRoutesRejectExcessiveNativeDashGeometryBeforeProducingCommands(bool fit) {
-        var chart = TopologyChart.Create().WithViewport(640, 240, 20).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 240, 20)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("a", "Near", 20, 80, width: 100, height: 60)
             .AddNode("b", "Far", 400, 80, width: 100, height: 60)
             .AddEdge("long", "a", "b", routing: TopologyEdgeRouting.Straight, color: "#EF4444");
@@ -130,13 +130,13 @@ public sealed class TopologyMotionVisualParityTests {
             Assert.True(prepared.Width > 1e12, "Natural preparation reserves the complete authored route.");
             Assert.ThrowsAny<ArgumentException>(() => prepared.ToPng());
         }
-        var presentation = prepared.WithMotion(TopologyMotionOptions.RoutePulseForEdges("long").WithEndpointPulses(false));
+        var presentation = prepared.WithMotion(TopologyMotionOptions.RoutePulseForEdges("long").PulseRouteEndpoints(false));
         var error = Assert.Throws<InvalidOperationException>(() => presentation.Sample(.25));
         Assert.Contains("visible route geometry budget", error.Message);
     }
 
-    private static TopologyChart Diagram(double lastX) => TopologyChart.Create().WithViewport(800, 240, 20)
-        .WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+    private static TopologyChart Diagram(double lastX) => TopologyChart.Create().Viewport(new TopologyViewport(800, 240, 20))
+        .LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
         .AddNode("a", "API", 20, 80, width: 100, height: 60)
         .AddNode("b", "Worker", 220, 80, width: 100, height: 60)
         .AddNode("c", "Data", lastX, 80, width: 100, height: 60)
@@ -144,7 +144,7 @@ public sealed class TopologyMotionVisualParityTests {
         .AddEdge("second", "b", "c", routing: TopologyEdgeRouting.Straight, color: "#22C55E");
     private static TopologyRenderOptions Options() => new() { IncludeLegend = false, PngSupersamplingScale = 1 };
     private static TopologyMotionOptions Motion(bool loop) {
-        var motion = TopologyMotionOptions.RoutePulseForEdges("first", "second").WithDuration(2).WithFrameRate(10);
+        var motion = TopologyMotionOptions.RoutePulseForEdges("first", "second").DurationSeconds(2).FramesPerSecond(10);
         motion.Loop = loop;
         return motion;
     }

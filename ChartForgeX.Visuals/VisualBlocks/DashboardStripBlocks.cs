@@ -27,9 +27,6 @@ public sealed class DateStripBlock : FactualVisualBlock<DateStripBlock> {
     /// <summary>Creates a new date strip block.</summary>
     public static DateStripBlock Create() => new();
 
-    /// <summary>Sets the header text rendered above the strip.</summary>
-    public DateStripBlock WithHeader(string header) { Header = header ?? throw new ArgumentNullException(nameof(header)); return this; }
-
 
 
     /// <summary>Adds a date item.</summary>

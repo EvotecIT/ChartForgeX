@@ -18,7 +18,7 @@ public sealed class NativeRasterResourceCaptureTests {
     public void RepeatedExactRasterUrisReuseCapturedPixelsAndKeepCanonicalCrop(string aspect) {
         var pixels = new byte[] { 220,30,40,255, 30,40,220,128, 0,0,0,0, 30,180,40,255 };
         var caller = new RgbaImage(2, 2, pixels);
-        var artwork = TopologyIconArtwork.Portrait(caller).WithPreserveAspectRatio(aspect);
+        var artwork = TopologyIconArtwork.Portrait(caller).PreserveAspectRatio(aspect);
         var chart = Chart(artwork, artwork);
         var prepared = chart.Prepare(Options());
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
@@ -111,7 +111,7 @@ public sealed class NativeRasterResourceCaptureTests {
     private static TopologyIconArtwork Header(int width, int height, string comment) => TopologyIconArtwork.Image(
         "data:image/x-portable-pixmap;base64," + Convert.ToBase64String(Encoding.ASCII.GetBytes("P6\n# " + comment + "\n" + width + " " + height + "\n255\n")));
     private static TopologyChart Chart(params TopologyIconArtwork[] images) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(400, 180, 8).WithLegend(null); chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(400, 180, 8)).Legend((TopologyLegend?)null); chart.LayoutMode = TopologyLayoutMode.Manual;
         for (var index = 0; index < images.Length; index++) chart.Nodes.Add(new TopologyNode { Id = "image-" + index, Label = "Image", X = 16 + index * 80, Y = 30,
             Width = 60, Height = 40, DisplayMode = TopologyNodeDisplayMode.Artwork, Artwork = images[index], ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true });
         return chart;

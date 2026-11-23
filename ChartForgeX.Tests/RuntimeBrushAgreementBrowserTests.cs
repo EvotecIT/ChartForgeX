@@ -26,14 +26,14 @@ public sealed class RuntimeBrushAgreementBrowserTests {
             "box" => new[] { 0d, 1, 2 },
             _ => new[] { 10d, 20, 22, 40, 60, 68, 70, 80, 90 }
         };
-        var chart = Chart.Create().WithSize(760, 390).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithXAxisBounds(minimum, minimum + span).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(760, 390).ShowHeader(false).Legend(false).DataLabels(false)
+            .XAxis(x => x.Bounds(minimum, minimum + span)).YAxis(y => y.Bounds(0, 10));
         if (family == "box") chart.AddBoxPlot("Services", values.Select(value => new ChartBoxPlot(value, 2, 3, 4, 5, 6)).ToArray());
         else if (family == "category") chart.AddBar("Regions", values.Select(value => new ChartPoint(value, 5)).ToArray());
         else chart.AddLine("Readings", values.Select(value => new ChartPoint(value, 5)).ToArray());
-        chart.Series[0].WithObservationIds(values.Select((_, index) => new ChartObservationId("row-" + index)).ToArray());
+        chart.Series[0].ObservationIds(values.Select((_, index) => new ChartObservationId("row-" + index)).ToArray());
         if (time) { chart.Options.XAxis.Scale = ChartScaleKind.Time; chart.Options.XAxis.TickCount = 5; }
-        if (categorical) chart.WithXLabels((family == "box" ? new[] { "API", "Worker", "Queue" } : new[] { "North", "South", "East", "West", "Central" })
+        if (categorical) chart.XLabels((family == "box" ? new[] { "API", "Worker", "Queue" } : new[] { "North", "South", "East", "West", "Central" })
             .Select((text, index) => new ChartAxisLabel(index, text)).ToArray());
         var from = time ? (5 + 18d / 1440) / span : family == "category" ? .2 : family == "box" ? .3 : .22;
         var to = time ? (14 + (8 * 60 + 57d) / 1440) / span : family == "category" ? .8 : family == "box" ? .7 : .68;

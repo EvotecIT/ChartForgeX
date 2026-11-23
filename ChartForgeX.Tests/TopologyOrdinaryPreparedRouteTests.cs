@@ -41,11 +41,11 @@ public sealed class TopologyOrdinaryPreparedRouteTests {
     }
     [Fact]
     public void OrdinaryManualUnitAndAuthoredWaypointsDoNotAcquireANumericCapture() {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(760,520,24).WithLegend(null).WithLayout(TopologyLayoutMode.Manual)
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(760, 520, 24)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("from","From",80,120,width:100,height:60).AddNode("to","To",400,120,width:100,height:60)
             .AddEdge("route","from","to",routing:TopologyEdgeRouting.Orthogonal);
         foreach(var node in chart.Nodes){node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;}
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false});
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false});
         var ordinary=chart.Prepare();Capture("raw-unit-control",ordinary);Assert.Null(ordinary.ToInterchangeEnvelope().Edges[0].Topology!.PreparedEdgePlan);Assert.Equal(1,ordinary.ToInterchangeEnvelope().Version);
         var authored=new ChartPoint(300,100);chart.Edges[0].Waypoints.Add(authored);var waypoints=chart.Prepare();Capture("authored-waypoint-control",waypoints);
         Assert.Null(waypoints.ToInterchangeEnvelope().Edges[0].Topology!.PreparedEdgePlan?.Geometry);Assert.Equal(authored,Assert.Single(chart.Edges[0].Waypoints));
@@ -65,12 +65,12 @@ public sealed class TopologyOrdinaryPreparedRouteTests {
         Assert.ThrowsAny<ArgumentException>(()=>VisualArtifactInterchangeEnvelope.FromJson(malformed));
     }
     private static TopologyChart Source() {
-        var chart=TopologyChart.Create().WithId("ordinary-captured-routes").WithTitle("").WithViewport(960,640,24).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+        var chart=TopologyChart.Create().Id("ordinary-captured-routes").Title("").Viewport(new TopologyViewport(960, 640, 24)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Layered)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
         for(var index=0;index<3;index++)chart.AddAutoNode("source_"+index,"Source "+index,width:160,height:70);
         chart.AddAutoNode("target","Target",width:160,height:70);foreach(var node in chart.Nodes){node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;}
         for(var index=0;index<3;index++)chart.AddEdge("route_"+index,"source_"+index,"target","Relationship "+index,routing:TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true,ShareIncomingTrunks=true,EdgeCornerRadius=11});return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true,ShareIncomingTrunks=true,EdgeCornerRadius=11});return chart;
     }
     private static (double X1,double Y1,double X2,double Y2) Endpoints(VisualArtifactInterchangeEdge edge){var a=edge.ResolvedRoute[0];var b=edge.ResolvedRoute[edge.ResolvedRoute.Count-1];return(a.X,a.Y,b.X,b.Y);}
     private static void Capture(string name,PreparedTopology value)=>Capture(name,value.Visual);

@@ -18,15 +18,15 @@ public sealed class BubbleSizeScaleBrowserTests {
     [InlineData(true, true)]
     public async Task SharedAndCappedRadiiRetainSourceReadoutsInBothThemesAndSizes(bool dark, bool compact) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithTitle("Workload and request volume")
-            .WithSubtitle("One radius scale for both services")
-            .WithSize(compact ? 316 : 700, compact ? 400 : 430)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxis("Workload batches").WithYAxis("Time (minutes)")
-            .WithXAxisBounds(0, 5).WithYAxisBounds(0, 50).WithDataLabels(false)
+        var chart = Chart.Create().Title("Workload and request volume")
+            .Subtitle("One radius scale for both services")
+            .Size(compact ? 316 : 700, compact ? 400 : 430)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Title("Workload batches")).YAxis(y => y.Title("Time (minutes)"))
+            .XAxis(x => x.Bounds(0, 5)).YAxis(y => y.Bounds(0, 50)).DataLabels(false)
             .AddBubble("Standard", new[] { new ChartBubble(.8, 18, 9), new ChartBubble(1.8, 30, 36), new ChartBubble(2.8, 24, 81) })
             .AddBubble("Priority", new[] { new ChartBubble(2.5, 38, 16), new ChartBubble(3.25, 20, 36), new ChartBubble(4.25, 35, 200) })
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
+            .Bubble(bubble => { bubble.SizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);
         await using var session = await OpenAsync(html, compact ? 340 : 740, 640);

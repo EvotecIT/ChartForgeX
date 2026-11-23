@@ -24,11 +24,11 @@ internal static class MapExamples {
 
     private static Chart CreateCalendarHeatmap() {
         return Chart.Create()
-            .WithTitle("Developer Consistency Calendar")
-            .WithSubtitle("Contribution-style day grid with named SVG regions and native hover titles")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 270)
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
+            .Title("Developer Consistency Calendar")
+            .Subtitle("Contribution-style day grid with named SVG regions and native hover titles")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 270)
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
             .AddCalendarHeatmap("Commits", CalendarActivity(), ChartColor.FromRgb(34, 197, 94));
     }
 
@@ -50,13 +50,13 @@ internal static class MapExamples {
 
     private static Chart CreateSeaRouteMap() {
         return Chart.Create()
-            .WithTitle("Sea Route Alternatives")
-            .WithSubtitle("Ordered waypoint routes compare Suez Canal and Cape of Good Hope paths")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 457)
-            .WithLegend(false)
-            .WithDataLabels()
-            .WithMapViewport(ChartMapViewport.World())
+            .Title("Sea Route Alternatives")
+            .Subtitle("Ordered waypoint routes compare Suez Canal and Cape of Good Hope paths")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 457)
+            .Legend(false)
+            .DataLabels()
+            .Map(m => m.Viewport(ChartMapViewport.World()))
             .AddDottedMap("Ports", new[] {
                 new ChartMapPoint("Rotterdam", 4.4792, 51.9244, ChartColor.FromRgb(37, 99, 235)),
                 new ChartMapPoint("Singapore", 103.8198, 1.3521, ChartColor.FromRgb(14, 165, 233))
@@ -87,13 +87,13 @@ internal static class MapExamples {
 
     private static ChartGrid CreateMapViewportShowcaseGrid() {
         var grid = ChartGrid.Create()
-            .WithTitle("Map Viewport Showcase")
-            .WithSubtitle("The same dotted map layer can focus on continents, Europe, Poland, or custom longitude/latitude windows")
-            .WithTheme(VisualTheme.Graphite())
-            .WithColumns(2)
-            .WithPadding(30)
-            .WithGap(18)
-            .WithPanelSize(600, 392);
+            .Title("Map Viewport Showcase")
+            .Subtitle("The same dotted map layer can focus on continents, Europe, Poland, or custom longitude/latitude windows")
+            .Theme(VisualTheme.Graphite())
+            .Columns(2)
+            .Padding(30)
+            .Gap(18)
+            .PanelSize(600, 392);
 
         foreach (var example in MapViewportExamples()) {
             grid.Add(CreateViewportMap(example.Title, example.Viewport, example.Points, example.Route, 520, 340, example.Viewport.Name + " viewport"));
@@ -189,28 +189,28 @@ internal static class MapExamples {
 
     private static Chart CreateViewportMap(string title, ChartMapViewport viewport, IEnumerable<ChartMapPoint> points, MapRouteSpec route, int width, int height, string subtitle) {
         return Chart.Create()
-            .WithTitle(title)
-            .WithSubtitle(subtitle)
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(width, height)
-            .WithLegend(false)
-            .WithMapViewport(viewport)
-            .WithDataLabels()
+            .Title(title)
+            .Subtitle(subtitle)
+            .Theme(VisualTheme.Graphite())
+            .Size(width, height)
+            .Legend(false)
+            .Map(m => m.Viewport(viewport))
+            .DataLabels()
             .AddDottedMap("Cities", points, ChartColor.FromRgb(37, 99, 235))
             .AddMapRouteBetweenPoints(route.Label, route.FromPointLabel, route.ToPointLabel, ChartColor.FromRgb(37, 99, 235));
     }
 
     private static Chart CreateEuropeRevenueDottedMap() {
         return Chart.Create()
-            .WithTitle("Revenue by European Market")
-            .WithSubtitle("Weighted country markers with route overlays for regional revenue")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 457)
-            .WithLegend(false)
-            .WithMapViewport(ChartMapViewport.Europe())
-            .WithDataLabels()
-            .ConfigureDataLabelStyle(style => style.WithFontSize(11.5))
-            .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
+            .Title("Revenue by European Market")
+            .Subtitle("Weighted country markers with route overlays for regional revenue")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 457)
+            .Legend(false)
+            .Map(m => m.Viewport(ChartMapViewport.Europe()))
+            .DataLabels()
+            .DataLabelStyle(style => style.FontSize(11.5))
+            .FormatValuesBy(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddDottedMap("Revenue", new[] {
                 new ChartMapPoint("United Kingdom", -1.1743, 52.3555, 188, ChartColor.FromRgb(37, 99, 235)),
                 new ChartMapPoint("Poland", 19.1451, 51.9194, 142, ChartColor.FromRgb(220, 38, 38)),
@@ -224,12 +224,12 @@ internal static class MapExamples {
 
     private static Chart CreateTileMap() {
         return Chart.Create()
-            .WithTitle("Revenue Tile Map")
-            .WithSubtitle("Catalog-backed tile geography for compact regional comparison")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 408)
-            .WithLegend(false)
-            .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
+            .Title("Revenue Tile Map")
+            .Subtitle("Catalog-backed tile geography for compact regional comparison")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 408)
+            .Legend(false)
+            .FormatValuesBy(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
     }
 
@@ -246,13 +246,13 @@ internal static class MapExamples {
         var states = StateRevenue().Select(item => new ChartRegionMapItem(item.Region, 70 + (item.Value * 7 % 61))).ToArray();
 
         return Chart.Create()
-            .WithTitle("Attainment Against Target")
-            .WithSubtitle("Every step of a seven-colour diverging ramp, on the map and in the legend")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 408)
-            .WithLegend(false)
-            .WithMapColorScale(scale)
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .Title("Attainment Against Target")
+            .Subtitle("Every step of a seven-colour diverging ramp, on the map and in the legend")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 408)
+            .Legend(false)
+            .Map(m => m.ColorScale(scale))
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddTileMap("Attainment", ChartTileMapCatalog.Get("us-states"), states);
     }
 
@@ -263,26 +263,25 @@ internal static class MapExamples {
             new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "100k and above")
         }).WithNoDataColor(ChartColor.FromHex("#E2E4E7"));
         return Chart.Create()
-            .WithTitle("Revenue Bands by State")
-            .WithSubtitle("Fixed exclusive thresholds keep the same bands across reporting periods")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 408)
-            .WithLegend(false)
-            .WithMapColorScale(scale)
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
+            .Title("Revenue Bands by State")
+            .Subtitle("Fixed exclusive thresholds keep the same bands across reporting periods")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 408)
+            .Legend(false)
+            .Map(m => m.ColorScale(scale).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
+            .FormatValuesBy(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), StateRevenue());
     }
 
     private static Chart CreateRegionMap() {
         return Chart.Create()
-            .WithTitle("Revenue Region Map")
-            .WithSubtitle("Catalog-backed SVG geometry with named regions")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 457)
-            .WithLegend(false)
-            .WithMapLabels(false)
-            .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
+            .Title("Revenue Region Map")
+            .Subtitle("Catalog-backed SVG geometry with named regions")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 457)
+            .Legend(false)
+            .Map(m => m.ShowLabels(false))
+            .FormatValuesBy(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), StateRevenue(), ChartColor.FromRgb(37, 99, 235));
     }
 
@@ -294,14 +293,13 @@ internal static class MapExamples {
             .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
 
         return Chart.Create()
-            .WithTitle("Where Industrial Firms Are Being Born")
-            .WithSubtitle("Births per 10,000 residents with a diverging choropleth scale")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 457)
-            .WithLegend(false)
-            .WithMapLabels(false)
-            .WithMapColorScale(colorScale)
-            .WithValueFormatter(value => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture))
+            .Title("Where Industrial Firms Are Being Born")
+            .Subtitle("Births per 10,000 residents with a diverging choropleth scale")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 457)
+            .Legend(false)
+            .Map(m => m.ShowLabels(false).ColorScale(colorScale))
+            .FormatValuesBy(value => value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture))
             .AddRegionHeatmap("Births", ChartMapCatalog.Get("us-states"), StateIndustrialBirths());
     }
 
@@ -356,25 +354,23 @@ internal static class MapExamples {
     private static Chart CreateNuts3EuropeIndustrialBirthsMap(string assets) {
         var euCodes = new[] { "AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "EL", "ES", "FI", "FR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "NL", "PL", "PT", "RO", "SE", "SI", "SK" };
         var nuts3 = ChartMapCatalog.Load("eu-nuts3-2021", assets, options => {
-            options.WithCoordinateBounds(-12, 42, 34, 72);
+            options.MinimumLongitude(-12).MaximumLongitude(42).MinimumLatitude(34).MaximumLatitude(72).IncludeFeaturesIntersectingCoordinateBounds();
             options.IncludeFeaturePropertyValues("CNTR_CODE", euCodes);
         });
-        var countries = ChartMapCatalog.Load("eu-nuts0-2021", assets, options => options.WithCoordinateBounds(-12, 42, 34, 72, includeIntersections: false));
+        var countries = ChartMapCatalog.Load("eu-nuts0-2021", assets, options => options.MinimumLongitude(-12).MaximumLongitude(42).MinimumLatitude(34).MaximumLatitude(72).IncludeFeaturesIntersectingCoordinateBounds(false));
         var scale = IndustrialBirthsScale();
 
         return Chart.Create()
-            .WithTitle("Where new industrial firms are being born across EU regions")
-            .WithSubtitle("Catalog-loaded EU NUTS3 geometry with per-region heatmap values")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 549)
-            .WithCard(false)
-            .WithPlotBackground(false)
-            .WithMapSurface(false)
-            .WithLegend(false)
-            .WithMapLabels(false)
-            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 165), 0.75)
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .WithRegionMapCoordinateBounds(-12, 42, 34, 72)
+            .Title("Where new industrial firms are being born across EU regions")
+            .Subtitle("Catalog-loaded EU NUTS3 geometry with per-region heatmap values")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 549)
+            .ShowCard(false)
+            .ShowPlotBackground(false)
+            .Map(m => m.ShowSurface(false))
+            .Legend(false)
+            .Map(m => m.ShowLabels(false).RegionStrokeColor(ChartColor.FromRgba(255, 255, 255, 165)).RegionStrokeWidth(0.75).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
+            .RegionMapCoordinateBounds(-12, 42, 34, 72)
             .AddMapBaseLayer(countries, ChartColor.FromHex("#E8E8E8"), ChartColor.FromHex("#D3D3D3"), 0.75)
             .AddRegionHeatmap("Births per 10,000 residents", nuts3, EuNuts3IndustrialBirthsValues(nuts3), scale)
             .AddMapBoundaryLayer(countries, ChartColor.FromRgba(17, 24, 39, 230), 0.78);
@@ -382,24 +378,22 @@ internal static class MapExamples {
 
     private static Chart CreateNuts3CountryIndustrialBirthsMap(string assets, CatalogCountryMapExample example) {
         var definition = ChartMapCatalog.Load("eu-nuts3-2021", assets, options => {
-            options.WithCoordinateBounds(example.MinimumLongitude, example.MaximumLongitude, example.MinimumLatitude, example.MaximumLatitude);
+            options.MinimumLongitude(example.MinimumLongitude).MaximumLongitude(example.MaximumLongitude).MinimumLatitude(example.MinimumLatitude).MaximumLatitude(example.MaximumLatitude).IncludeFeaturesIntersectingCoordinateBounds();
             options.IncludeFeaturePropertyValues("CNTR_CODE", example.CountryCode);
         });
         var scale = IndustrialBirthsScale();
 
         return Chart.Create()
-            .WithTitle(example.Country + " NUTS3 Industrial Births")
-            .WithSubtitle("Catalog-loaded EU NUTS3 geometry filtered by CNTR_CODE=" + example.CountryCode)
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 633)
-            .WithCard(false)
-            .WithPlotBackground(false)
-            .WithMapSurface(false)
-            .WithLegend(false)
-            .WithMapLabels(false)
-            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 170), 0.75)
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .WithRegionMapCoordinateBounds(example.MinimumLongitude, example.MaximumLongitude, example.MinimumLatitude, example.MaximumLatitude)
+            .Title(example.Country + " NUTS3 Industrial Births")
+            .Subtitle("Catalog-loaded EU NUTS3 geometry filtered by CNTR_CODE=" + example.CountryCode)
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 633)
+            .ShowCard(false)
+            .ShowPlotBackground(false)
+            .Map(m => m.ShowSurface(false))
+            .Legend(false)
+            .Map(m => m.ShowLabels(false).RegionStrokeColor(ChartColor.FromRgba(255, 255, 255, 170)).RegionStrokeWidth(0.75).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
+            .RegionMapCoordinateBounds(example.MinimumLongitude, example.MaximumLongitude, example.MinimumLatitude, example.MaximumLatitude)
             .AddRegionHeatmap("Births per 10,000 residents", definition, CatalogCountryValues(definition, example.CountryCode), scale);
     }
 
@@ -457,14 +451,14 @@ internal static class MapExamples {
     }
 
     private static void Save(Chart chart, string output, string name, ChartPngOutputScale pngOutputScale) {
-        chart.WithPngOutputScale(pngOutputScale);
+        chart.Png(p => p.OutputScale((int)pngOutputScale));
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
         chart.SaveHtml(Path.Combine(output, name + ".html"));
         chart.SavePng(Path.Combine(output, name + ".png"));
     }
 
     private static void SaveGrid(ChartGrid grid, string output, string name, ChartPngOutputScale pngOutputScale) {
-        grid.WithPngOutputScale(pngOutputScale);
+        grid.PngOutputScale((int)pngOutputScale);
         grid.SaveSvg(Path.Combine(output, name + ".svg"));
         grid.SaveHtml(Path.Combine(output, name + ".html"));
         grid.SavePng(Path.Combine(output, name + ".png"));

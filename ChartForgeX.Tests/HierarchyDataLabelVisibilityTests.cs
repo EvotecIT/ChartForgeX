@@ -15,7 +15,7 @@ public sealed class HierarchyDataLabelVisibilityTests {
     [InlineData(ChartSeriesKind.Treemap, 720, 460, ThemeMode.Light)]
     [InlineData(ChartSeriesKind.Treemap, 340, 300, ThemeMode.Dark)]
     public void ChartLabelsAndSeriesOverridesShareOneRenderedPolicy(ChartSeriesKind kind, int width, int height, ThemeMode mode) {
-        var chart = Model(kind).WithDataLabels(false);
+        var chart = Model(kind).DataLabels(false);
         var series = chart.Series[0];
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode,
             frame: new VisualFrame(showLegend: false));
@@ -25,7 +25,7 @@ public sealed class HierarchyDataLabelVisibilityTests {
         Assert.Equal(0, Labels(hidden, role));
         var hiddenPixels = Pixels(hidden);
 
-        series.WithDataLabels();
+        series.ShowDataLabels(true);
         var overridden = chart.Prepare(context);
         Assert.Equal(expected, Labels(overridden, role));
         var visiblePixels = Pixels(overridden);
@@ -33,17 +33,17 @@ public sealed class HierarchyDataLabelVisibilityTests {
         Assert.Equal(hidden.Regions.Select(region => (region.Id, region.Label, region.Bounds)),
             overridden.Regions.Select(region => (region.Id, region.Label, region.Bounds)));
 
-        chart.WithDataLabels();
-        series.WithDataLabels(false);
+        chart.DataLabels();
+        series.ShowDataLabels(false);
         var suppressed = chart.Prepare(context);
         Assert.Equal(0, Labels(suppressed, role));
         Assert.Equal(hiddenPixels, Pixels(suppressed));
 
-        series.UseChartDataLabels();
+        series.ShowDataLabels(null);
         var inherited = chart.Prepare(context);
         Assert.Equal(expected, Labels(inherited, role));
         Assert.Equal(visiblePixels, Pixels(inherited));
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         var reset = chart.Prepare(context);
         Assert.Equal(0, Labels(reset, role));
         Assert.Equal(hiddenPixels, Pixels(reset));

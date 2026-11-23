@@ -107,7 +107,7 @@ internal static partial class SmokeTests {
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><style>\\40 media print{rect{fill:red}}</style><rect/></svg>"),
             "Escaped CSS at-rules should remain blocked outside quoted values.");
 
-        var boundedOutcomeStory = VisualStory.Create("Bounded outcome").WithSize(480, 320);
+        var boundedOutcomeStory = VisualStory.Create("Bounded outcome").Size(480, 320);
         boundedOutcomeStory.Scene("valid", "Completed")
             .Panel("valid", new VisualStoryTextSurface("ready"));
         AssertThrows<ArgumentOutOfRangeException>(
@@ -131,7 +131,7 @@ internal static partial class SmokeTests {
                 () => VisualStory.Create("Stable identifiers").Scene(invalidIdentifier, "Scene"),
                 "Scene identifiers should reject values that cannot round-trip through emitted SVG attributes.");
         }
-        var stableIdentifiers = VisualStory.Create("Stable identifiers").WithSize(480, 320);
+        var stableIdentifiers = VisualStory.Create("Stable identifiers").Size(480, 320);
         var stableScene = stableIdentifiers.Scene("scene-😀", "Scene");
         AssertThrows<ArgumentException>(
             () => stableScene.Panel("panel\u0001", new VisualStoryTextSurface("ready")),
@@ -147,7 +147,7 @@ internal static partial class SmokeTests {
         Assert(stableIdentifiers.ToSvg().Contains("data-cfx-scene=\"scene-😀\"", StringComparison.Ordinal),
             "Valid supplementary scalar identifiers should round-trip through SVG output unchanged.");
 
-        var endpointScenes = VisualStory.Create("Endpoint scenes").WithSize(480, 320);
+        var endpointScenes = VisualStory.Create("Endpoint scenes").Size(480, 320);
         endpointScenes.Scene("first", "First", 0.25)
             .Panel("first-result", new VisualStoryTextSurface("first"));
         endpointScenes.Scene("last", "Last", 0.25)
@@ -156,27 +156,27 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => endpointScenes.ToGif(
                 VisualStoryAnimationOptions.Create()
-                    .WithFramesPerSecond(2)
-                    .WithEndHold(0)
-                    .WithMaximumFrames(2)),
+                    .FramesPerSecond(2)
+                    .EndHoldSeconds(0)
+                    .MaximumFrames(2)),
             "Raster stories should reject endpoint sampling when residual timing makes the completed scene effectively invisible.");
         Assert(endpointScenes.ToGif(
                 VisualStoryAnimationOptions.Create()
-                    .WithFramesPerSecond(4)
-                    .WithEndHold(0)
-                    .WithMaximumFrames(2)).Length > 8,
+                    .FramesPerSecond(4)
+                    .EndHoldSeconds(0)
+                    .MaximumFrames(2)).Length > 8,
             "Raster stories should retain short endpoint scenes when both receive their requested visible duration.");
-        var unrepresentableBoundary = VisualStory.Create("Unrepresentable boundary").WithSize(480, 320);
+        var unrepresentableBoundary = VisualStory.Create("Unrepresentable boundary").Size(480, 320);
         unrepresentableBoundary.Scene("first", "First", 0.75)
             .Panel("result", new VisualStoryTextSurface("first"));
         unrepresentableBoundary.Scene("last", "Last", 0.25)
             .Panel("result", new VisualStoryTextSurface("last"));
         unrepresentableBoundary.Outcome("ready", "Ready", "result");
         var unrepresentableOptions = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(2)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithMaximumFrames(2);
+            .FramesPerSecond(2)
+            .TransitionSeconds(0)
+            .EndHoldSeconds(0)
+            .MaximumFrames(2);
         AssertThrows<InvalidOperationException>(
             () => unrepresentableBoundary.ToGif(unrepresentableOptions),
             "GIF stories should reject a frame grid that would display the final scene before its declared boundary.");
@@ -242,11 +242,11 @@ internal static partial class SmokeTests {
         }
 
         var revealStory = TerminalStory.Create()
-            .WithTiming(0, 200, 0)
-            .WithFinalPrompt(false)
+            .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
+            .ShowFinalPrompt(false)
             .Output("ready")
             .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~", TerminalThemes.Ubuntu(), transitionSeconds: 0)
-            .Table(TerminalTable.Create().WithColumns("State").AddRow("complete"))
+            .Table(TerminalTable.Create().Columns("State").AddRow("complete"))
             .SelectTab("main", transitionSeconds: 0);
         var revealLayout = TerminalStoryLayout.Build(revealStory);
         var mainRevealEnd = revealLayout.Lines
@@ -284,7 +284,7 @@ internal static partial class SmokeTests {
         Assert(denseSource.Spans.Count == 4096,
             "Syntax-span boundary validation should advance linearly through the source instead of rescanning its prefix per span.");
 
-        var invalidScalarStory = VisualStory.Create("Broken\0\u0001\u007F\u0080\uDC00\uD800\uFDD0\uFFFE" + char.ConvertFromUtf32(0x1FFFE) + " title").WithSize(480, 320);
+        var invalidScalarStory = VisualStory.Create("Broken\0\u0001\u007F\u0080\uDC00\uD800\uFDD0\uFFFE" + char.ConvertFromUtf32(0x1FFFE) + " title").Size(480, 320);
         invalidScalarStory.Scene("result", "Completed")
             .Panel("result", new VisualStoryTextSurface("Visible result"));
         invalidScalarStory.Outcome("ready", "Ready", "result");
@@ -303,7 +303,7 @@ internal static partial class SmokeTests {
 
         var boundedTabStory = TerminalStory.Create();
         AssertThrows<ArgumentOutOfRangeException>(
-            () => boundedTabStory.WithTitle(new string('x', 257)),
+            () => boundedTabStory.Title(new string('x', 257)),
             "Initial terminal tab titles should be bounded before animated fitting.");
         AssertThrows<ArgumentOutOfRangeException>(
             () => boundedTabStory.DeclareTab("long", new string('x', 257), TerminalDialect.Bash, "~", TerminalThemes.Ubuntu()),
@@ -312,7 +312,7 @@ internal static partial class SmokeTests {
             "Rejected terminal tab titles should not mutate tab declarations.");
 
         var longTabbedStory = VisualStory.Create("Bounded tab expansion")
-            .WithSize(480, 320);
+            .Size(480, 320);
         longTabbedStory.Scene("result", "Completed")
             .Panel(
                 "result",
@@ -332,24 +332,24 @@ internal static partial class SmokeTests {
             "GIF memory estimates should reserve the retained frame plus simultaneous previous/current optimization arrays.");
 
         var tallTerminal = TerminalStory.Create()
-            .WithWidth(1800)
-            .WithTypography(24, 40)
-            .WithTiming(0, 200, 0)
-            .WithFinalPrompt(false);
+            .Width(1800)
+            .Typography(24, 40)
+            .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
+            .ShowFinalPrompt(false);
         for (var index = 0; index < 120; index++) {
             tallTerminal.Output("line " + index.ToString(CultureInfo.InvariantCulture));
         }
-        var nestedTerminalStory = VisualStory.Create("Nested terminal budget").WithSize(1400, 788);
+        var nestedTerminalStory = VisualStory.Create("Nested terminal budget").Size(1400, 788);
         nestedTerminalStory.Scene("result", "Completed", 0.25)
             .Panel("result", new VisualStoryTerminalSurface(tallTerminal));
         nestedTerminalStory.Outcome("ready", "Ready", "result");
         AssertThrows<InvalidOperationException>(
             () => nestedTerminalStory.ToGif(
                 VisualStoryAnimationOptions.Create()
-                    .WithFramesPerSecond(4)
-                    .WithEndHold(0)
-                    .WithOutputScale(2)
-                    .WithMaximumFrames(2)),
+                    .FramesPerSecond(4)
+                    .EndHoldSeconds(0)
+                    .OutputScale(2)
+                    .MaximumFrames(2)),
             "Animated-story memory gates should include fitted terminal supersampling and output buffers before rendering scenes.");
     }
 }

@@ -16,8 +16,8 @@ public sealed partial class NativePhysicalViewportBrowserTests {
     [InlineData(true, 900, ThemeMode.Light)]
     public async Task AdaptivePhysicalAndLegacyRepliesRequireEveryAlternateProjectionBeforeAcceptance(bool legacy, int width, ThemeMode mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(900, 440).WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), mode)
-            .WithXAxisBounds(0, 4).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Size(900, 440).FontFamily(BrowserProofFonts.Family).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .XAxis(x => x.Bounds(0, 4)).YAxis(y => y.Bounds(0, 100))
             .AddLine("Observed", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 80) });
         void Configure(HtmlChartInteractionOptions options) {
             options.Interaction.ChartId = "adaptive-physical-acceptance";

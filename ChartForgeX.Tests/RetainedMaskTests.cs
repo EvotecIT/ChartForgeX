@@ -156,8 +156,8 @@ public sealed class RetainedMaskTests {
 
     [Fact]
     public void NativeProjectionFactsAndUnsnapshottedCommonExportCannotSilentlyLoseMaskPresentation() {
-        var chart = Chart.Create().WithHeader(false).WithLegend(false)
-            .WithXAxisBounds(0, 3).WithYAxisBounds(0, 4)
+        var chart = Chart.Create().ShowHeader(false).Legend(false)
+            .XAxis(x => x.Bounds(0, 3)).YAxis(y => y.Bounds(0, 4))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("series"), "Values", new[] {
                 new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(3, 2)
             }));
@@ -237,7 +237,7 @@ internal static class RetainedMaskFixture {
     }
 
     internal static SequenceArtifact Sequence(bool dark) {
-        var model = SequenceArtifact.Create("mask-sequence").WithSize(800, 600)
+        var model = SequenceArtifact.Create("mask-sequence").Width(800).Height(600)
             .AddParticipant("A", "Review").AddParticipant("B", "Archive").AddMessage("A", "B", "Save");
         model.Participants[0].Href = "#guide";
         model.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;

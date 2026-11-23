@@ -11,9 +11,9 @@ public static class TopologyAccentExamples {
             var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var theme = VisualTheme.Graphite();
             var drawWidth = Math.Min(1120, width - 48);
-            var chart = TopologyChart.Create().WithViewport(drawWidth, 260, 12).WithLegend(null)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(drawWidth, 260, 12)).Legend((TopologyLegend?)null)
                 .AddNode("service", "Service", 24, 65, width: drawWidth - 48, height: 105, status: TopologyHealthStatus.Critical)
-                .WithNodeIcon("service", "common:certificate").WithTheme(theme).WithThemeMode(mode);
+                .NodeIcon("service", "common:certificate").Theme(theme).ThemeMode(mode);
             var options = new TopologyRenderOptions { AccentSource = status ? TopologyAccentSource.Status : TopologyAccentSource.Auto,
                 IncludeLegend = false, NodeSurfaceStyle = TopologyNodeSurfaceStyle.Card };
             var prepared = chart.Prepare(options);

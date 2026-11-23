@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyAlignmentHierarchyTests {
     [Fact]
     public void RawHierarchyIdentityRestorationKeepsCollidingAlignmentIdsAndRemapsMembersExactlyOnce() {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(800, 600).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(800, 600)).AddHierarchy(new[] {
             new TopologyHierarchyItem("root", "Root"), new TopologyHierarchyItem("branch", "Branch", "root"),
             new TopologyHierarchyItem("leaf", "Leaf", "branch"), new TopologyHierarchyItem("peer", "Peer", "root") });
         // This caller deliberately replaces authored hierarchy ranks with global alignment preferences.

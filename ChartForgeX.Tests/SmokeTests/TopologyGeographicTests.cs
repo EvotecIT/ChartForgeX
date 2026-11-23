@@ -11,11 +11,11 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyGeographicLayoutProjectsCoordinates() {
         var chart = TopologyChart.Create()
-            .WithId("geo-topology")
-            .WithViewport(820, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("geo-topology")
+            .Viewport(new TopologyViewport(820, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("amer", "AMER", 0, 0, 0, 0, TopologyHealthStatus.Healthy, "2 sites", symbol: "region")
             .AddGroup("emea", "EMEA", 0, 0, 0, 0, TopologyHealthStatus.Warning, "1 site", symbol: "region")
             .AddNode("nyc", "New York", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, "amer", width: 64, height: 46, symbol: "NY")
@@ -25,17 +25,17 @@ internal static partial class SmokeTests {
             .AddNode("south", "South Pole", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Unknown, width: 64, height: 46, symbol: "SP")
             .AddEdge("nyc-lon", "nyc", "lon", "72 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved)
             .AddEdge("lon-sin", "lon", "sin", "165 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved)
-            .WithGroupCoordinates("amer", -98.5795, 39.8283)
-            .WithGroupCoordinates("emea", 12.4964, 41.9028)
-            .WithNodeCoordinates("nyc", -74.006, 40.7128)
-            .WithNodeCoordinates("chi", -87.6298, 41.8781)
-            .WithNodeCoordinates("lon", -0.1276, 51.5072)
-            .WithNodeCoordinates("sin", 103.8198, 1.3521)
-            .WithNodeCoordinates("south", 0, -80);
+            .UpdateGroup("amer", g => g.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateGroup("emea", g => g.Longitude(12.4964).Latitude(41.9028))
+            .UpdateNode("nyc", n => n.Longitude(-74.006).Latitude(40.7128))
+            .UpdateNode("chi", n => n.Longitude(-87.6298).Latitude(41.8781))
+            .UpdateNode("lon", n => n.Longitude(-0.1276).Latitude(51.5072))
+            .UpdateNode("sin", n => n.Longitude(103.8198).Latitude(1.3521))
+            .UpdateNode("south", n => n.Longitude(0).Latitude(-80));
 
         chart.Nodes[0].Metrics["latency.p95"] = "72 ms";
         chart.Groups[0].Metadata["calloutSubtitle"] = "2 sites / 1 critical";
-        var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeGeographicCallouts = true };
+        var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Geography = { IncludeCallouts = true } };
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-layout-mode=\"Geographic\"", StringComparison.Ordinal), "Geographic topology should expose the layout mode.");
         Assert(svg.Contains("data-cfx-projection=\"equirectangular\"", StringComparison.Ordinal), "Geographic topology should expose the projection.");
@@ -62,20 +62,20 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-callout-critical-count=\"1\"", StringComparison.Ordinal), "Geographic callouts should expose status counts.");
         Assert(svg.Contains("data-cfx-role=\"topology-callout-status\"", StringComparison.Ordinal), "Geographic callouts should render status chips.");
 
-        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeGeographicCallouts = true });
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Geography = { IncludeCallouts = true } });
         Assert(html.Contains("longitude: attr(element, 'data-node-longitude')", StringComparison.Ordinal), "Topology HTML selection details should expose node longitude.");
         Assert(html.Contains("geoVisible: attr(element, 'data-group-geo-visible')", StringComparison.Ordinal), "Topology HTML selection details should expose group geographic visibility.");
         Assert(html.Contains("nodeCount: attr(element, 'data-callout-node-count')", StringComparison.Ordinal), "Topology HTML selection details should expose callout counts.");
         Assert(chart.ToPng(options).Length > 64, "Geographic topology should render as PNG.");
 
         var europe = TopologyChart.Create()
-            .WithId("geo-europe")
-            .WithViewport(520, 320, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.Europe())
+            .Id("geo-europe")
+            .Viewport(new TopologyViewport(520, 320, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.Europe())
             .AddNode("warsaw", "Warsaw", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, width: 54, height: 40)
-            .WithNodeCoordinates("warsaw", 21.0122, 52.2297);
+            .UpdateNode("warsaw", n => n.Longitude(21.0122).Latitude(52.2297));
         var europeSvg = europe.ToSvg(options);
         Assert(europeSvg.Contains("data-cfx-role=\"topology-map-boundary\"", StringComparison.Ordinal), "Regional geographic topology should render filled land areas.");
         var regionalBoundaries = XDocument.Parse(europeSvg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-map-boundary").ToArray();
@@ -99,28 +99,23 @@ internal static partial class SmokeTests {
 
     private static void TopologyGeographicCalloutsIgnoreHiddenNodesAndDisabledLabels() {
         var chart = TopologyChart.Create()
-            .WithId("geo-callout-hidden")
-            .WithViewport(640, 340, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("geo-callout-hidden")
+            .Viewport(new TopologyViewport(640, 340, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("amer", "AMER", 0, 0, 0, 0, TopologyHealthStatus.Healthy, "1 site", symbol: "region")
             .AddNode("visible", "Visible Site", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, "amer", width: 58, height: 42, symbol: "S")
             .AddNode("anchor", "Route Anchor", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Critical, "amer", width: 24, height: 24, symbol: "A")
             .AddNode("remote", "Remote", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Warning, width: 58, height: 42, symbol: "R")
             .AddEdge("visible-remote", "visible", "remote", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved)
-            .WithGroupCoordinates("amer", -98.5795, 39.8283)
-            .WithNodeCoordinates("visible", -96.797, 32.7767)
-            .WithNodeCoordinates("anchor", -92.0, 34.5)
-            .WithNodeCoordinates("remote", -0.1276, 51.5072)
-            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+            .UpdateGroup("amer", g => g.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateNode("visible", n => n.Longitude(-96.797).Latitude(32.7767))
+            .UpdateNode("anchor", n => n.Longitude(-92.0).Latitude(34.5))
+            .UpdateNode("remote", n => n.Longitude(-0.1276).Latitude(51.5072))
+            .UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
 
-        var options = new TopologyRenderOptions {
-            IncludeLegend = false,
-            IncludeEdgeLabels = false,
-            IncludeGeographicCallouts = true,
-            NodeDisplayMode = TopologyNodeDisplayMode.Tile
-        };
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = false, Geography = { IncludeCallouts = true }, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", StringComparison.Ordinal), "Geographic callouts should still render when edge labels are disabled.");

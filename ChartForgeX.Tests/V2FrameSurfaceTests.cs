@@ -48,9 +48,9 @@ public sealed class V2FrameSurfaceTests {
         var shared = Build(0, 12, out _, radius);
         var sharedCard = Assert.Single(shared.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "frame-card");
         var theme = VisualTheme.Graphite().Configure(builder => builder.CardRadius = radius);
-        var packet = PacketLayoutBlock.Create().WithSize(160, 120).WithTheme(theme).WithBitsPerRow(8).AddField(0, 7, "Payload");
+        var packet = PacketLayoutBlock.Create().Size(160, 120).Theme(theme).BitsPerRow(8).AddField(0, 7, "Payload");
         foreach (var transparent in new[] { false, true }) {
-            packet.WithTransparentBackground(transparent);
+            packet.TransparentBackground(transparent);
             var svg = XDocument.Parse(packet.ToSvg());
             var card = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "visual-card");
             Assert.Equal(sharedCard.Radius, double.Parse(card.Attribute("rx")!.Value, CultureInfo.InvariantCulture));
@@ -63,7 +63,7 @@ public sealed class V2FrameSurfaceTests {
             Assert.Equal(transparent && radius == 3 ? 0 : 255, image.Pixels[3]);
             Assert.Equal(255, image.Pixels[(image.Height / 2 * image.Width + image.Width / 2) * 4 + 3]);
         }
-        packet.WithTransparentBackground().WithCard(false);
+        packet.TransparentBackground().ShowCard(false);
         Assert.DoesNotContain(XDocument.Parse(packet.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "visual-card");
         Assert.Equal(0, RasterImageDecoder.Decode(packet.ToPng()).Pixels[3]);
     }

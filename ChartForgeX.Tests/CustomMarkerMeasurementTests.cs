@@ -58,10 +58,10 @@ public sealed class CustomMarkerMeasurementTests {
         .CubicTo(offset + scale, -scale, offset + scale, scale, offset, scale)
         .CubicTo(offset - scale, scale, offset - scale, -scale, offset, -scale);
     private static PreparedVisual Prepare(ChartMarkerPath path) {
-        var chart = Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false).WithDataLabels(false).WithAxes(false).WithGrid(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddBubble("Area", new[] { new ChartBubble(5, 5, 100) })
-            .ConfigureBubble(options => { options.WithSizeDomain(0, 100); options.MinimumRadius = 0; options.MaximumRadius = 20; options.SizeEncoding = ChartBubbleSizeEncoding.Area; });
-        chart.Series[0].ConfigureMarkers(options => { options.CustomPath = path; options.Fill = ChartColor.Black; options.StrokeWidth = 0; });
+        var chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).DataLabels(false).Axes(false).ShowGrid(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddBubble("Area", new[] { new ChartBubble(5, 5, 100) })
+            .Bubble(options => { options.SizeDomain(0, 100); options.MinimumRadius = 0; options.MaximumRadius = 20; options.SizeEncoding = ChartBubbleSizeEncoding.Area; });
+        chart.Series[0].Markers(options => { options.CustomPath = path; options.Fill = ChartColor.Black; options.StrokeWidth = 0; });
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true;
         return chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     }

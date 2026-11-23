@@ -68,9 +68,9 @@ public sealed class NativeSeriesVisibilityTests {
     }
     [Fact]
     public void CapturedPlotAndContainedCaptionOverlapHasAlpha128RatherThanPerPrimitive192() {
-        var chart = NativeSeriesVisibilityDefaultControls.Model("bar").WithHostFrame().WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithTransparentBackground().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Center).WithYAxisBounds(0, 100);
-        chart.Series[0].WithColor(ChartColor.FromHex("#2463A1")).WithPointLabel(1, "INK");
+        var chart = NativeSeriesVisibilityDefaultControls.Model("bar").HostOwnsFrame().ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .TransparentBackground().DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Center)).YAxis(y => y.Bounds(0, 100));
+        chart.Series[0].Color(ChartColor.FromHex("#2463A1")).PointLabel(1, "INK");
         var context = VisualExportRequest.ForChart(chart).Context;
         var from = chart.PrepareVisibility(context, new ChartVisibilityView(labelLayering: ChartVisibilityLabelLayering.GroupWithSeries));
         var to = chart.PrepareVisibility(context, new ChartVisibilityView(new[] { new ChartSeriesId("observed") }, ChartVisibilityLabelLayering.GroupWithSeries));
@@ -89,10 +89,10 @@ public sealed class NativeSeriesVisibilityTests {
         var from = chart.PrepareVisibility(context, new ChartVisibilityView());
         var to = chart.PrepareVisibility(context, new ChartVisibilityView(new[] { new ChartSeriesId("observed") }));
         var captured = VisualSeriesVisibilityCapture.Frames(from, to, 3); var svg = captured[1].ToSvg(); var png = captured[1].ToPng();
-        chart.WithFontFamily("Unavailable later face").WithSize(120, 120).Series[0].WithColor(ChartColor.Black);
+        chart.FontFamily("Unavailable later face").Size(120, 120).Series[0].Color(ChartColor.Black);
         try { FontRegistry.Clear(); var again = VisualSeriesVisibilityCapture.Frames(from, to, 3); Assert.Equal(svg, again[1].ToSvg()); Assert.Equal(png, again[1].ToPng()); }
         finally { _ = BrowserProofFonts.Family; }
-        var changed = NativeSeriesVisibilityDefaultControls.Model("mixed"); changed.Series[0].WithColor(ChartColor.Black);
+        var changed = NativeSeriesVisibilityDefaultControls.Model("mixed"); changed.Series[0].Color(ChartColor.Black);
         Assert.Throws<NotSupportedException>(() => VisualSeriesVisibilityCapture.Frames(from, changed.PrepareVisibility(VisualExportRequest.ForChart(changed).Context,
             new ChartVisibilityView(new[] { new ChartSeriesId("observed") })), 3));
         var rejected = NativeSeriesVisibilityDefaultControls.Model("mixed");

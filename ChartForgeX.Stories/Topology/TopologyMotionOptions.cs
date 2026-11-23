@@ -102,59 +102,6 @@ public sealed class TopologyMotionOptions {
     }
 
     /// <summary>
-    /// Sets the animation duration.
-    /// </summary>
-    /// <param name="seconds">The duration in seconds.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithDuration(double seconds) {
-        DurationSeconds = RequiredPositiveFinite(seconds, nameof(seconds), "Topology motion duration must be a positive finite number.");
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the sampled frame rate used by animated raster exports.
-    /// </summary>
-    /// <param name="framesPerSecond">The sampled frame rate.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithFrameRate(double framesPerSecond) {
-        FramesPerSecond = RequiredPositiveFinite(framesPerSecond, nameof(framesPerSecond), "Topology motion frame rate must be a positive finite number.");
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the maximum number of frames sampled by animated raster exports.
-    /// </summary>
-    /// <param name="maximumFrames">The maximum sampled frame count.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithFrameLimit(int maximumFrames) {
-        if (maximumFrames <= 0) throw new ArgumentOutOfRangeException(nameof(maximumFrames), maximumFrames, "Topology motion raster frame limit must be greater than zero.");
-        MaximumRasterFrames = maximumFrames;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the moving route marker radius and optional color.
-    /// </summary>
-    /// <param name="radius">The marker radius.</param>
-    /// <param name="color">Optional marker color.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithMarker(double radius, string? color = null) {
-        MarkerRadius = RequiredPositiveFinite(radius, nameof(radius), "Topology motion marker radius must be a positive finite number.");
-        MarkerColor = color;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional moving route marker color.
-    /// </summary>
-    /// <param name="color">The marker color. Empty values clear the override.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithMarkerColor(string? color) {
-        MarkerColor = color;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the sampled progress used by static raster frame rendering.
     /// </summary>
     /// <param name="progress">Progress from 0.0 to 1.0.</param>
@@ -162,16 +109,6 @@ public sealed class TopologyMotionOptions {
     public TopologyMotionOptions AtProgress(double progress) {
         if (progress < 0 || progress > 1 || double.IsNaN(progress) || double.IsInfinity(progress)) throw new ArgumentOutOfRangeException(nameof(progress), progress, "Topology motion progress must be between 0.0 and 1.0.");
         Progress = progress;
-        return this;
-    }
-
-    /// <summary>
-    /// Enables or disables endpoint node pulses for explicit-edge route motion.
-    /// </summary>
-    /// <param name="enabled">Whether endpoint nodes should pulse.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithEndpointPulses(bool enabled = true) {
-        PulseRouteEndpoints = enabled;
         return this;
     }
 

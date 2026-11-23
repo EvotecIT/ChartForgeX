@@ -28,7 +28,7 @@ public sealed class FlowArtifactLabelLayoutTests : IDisposable {
     public void DefaultShortConnectorLabelStaysNearItsOwnRouteAndClearsPaintedCaptions(ThemeMode mode) {
         var flow = FlowRecipe.Create();
         // Keep the library-default short run even if the gallery later chooses a larger decision.
-        flow.ConfigureStep("decision", step => { step.Width = 130; step.Height = 68; });
+        flow.UpdateStep("decision", step => { step.Width = 130; step.Height = 68; });
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(900, 600)), VisualTheme.Graphite(), mode,
             new VisualFrame("Assessment workflow", "Typed lanes, decisions and branched routes", showLegend: false), FontSpec.FromFamily(Family));
         var prepared = flow.Prepare(context);
@@ -72,12 +72,12 @@ public sealed class FlowArtifactLabelLayoutTests : IDisposable {
 
     [Fact]
     public void EndpointCaptionUsesUnpaintedHeaderSpaceWithoutMovingAwayFromItsEndpoint() {
-        var chart = TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 300, 16)).Legend((TopologyLegend?)null)
             .AddGroup("service", "Service", 32, 60, 300, 180)
             .AddNode("source", "Source", 180, 45, width: 20, height: 20)
             .AddNode("target", "Target", 300, 45, width: 20, height: 20)
             .AddEdge("link", "source", "target", routing: TopologyEdgeRouting.Orthogonal)
-            .WithEdgeEndpointLabels("link", "TCP", null);
+            .UpdateEdge("link", e => e.SourceLabel("TCP").TargetLabel(null));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 300), 16), VisualTheme.Graphite(),
             frame: new VisualFrame(showLegend: false), font: FontSpec.FromFamily(Family));
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeDirectionMarkers = false };

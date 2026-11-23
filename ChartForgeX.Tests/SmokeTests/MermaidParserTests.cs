@@ -202,7 +202,7 @@ flowchart LR
             "Topology-backed Mermaid artifacts should declare and produce semantic JSON interchange.");
         Assert(artifact.Metadata["mermaid.nodes"] == "3" && artifact.Metadata["mermaid.edges"] == "2", "Mermaid flowchart visual artifact should expose model counts.");
         var artifactTopology = artifact.Model as TopologyChart ?? throw new InvalidOperationException("Expected a topology-backed Mermaid artifact.");
-        artifactTopology.Accessibility.WithTextAlternative("Current Mermaid flowchart", "Current topology-backed description", "pl-PL");
+        artifactTopology.Accessibility.TextAlternative("Current Mermaid flowchart", "Current topology-backed description", "pl-PL");
         VisualArtifactInterchangeEnvelope accessibilityEnvelope = artifact.ToInterchangeEnvelope();
         Assert(accessibilityEnvelope.AccessibleName == "Current Mermaid flowchart" && accessibilityEnvelope.AccessibleDescription == "Current topology-backed description" && accessibilityEnvelope.Language == "pl-PL",
             "Topology-backed Mermaid wrappers should refresh current model accessibility through the shared topology artifact path.");
@@ -318,7 +318,7 @@ title ""Domain Checks""
         var chart = document.ToChart(new MermaidPieRenderOptions { Id = "domain-checks", Width = 640, Height = 360 });
         Assert(chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Pie, "Mermaid pie conversion should produce a ChartForgeX pie chart.");
         Assert(chart.Title == "Domain Checks", "Mermaid pie conversion should use Mermaid title by default.");
-        Assert(chart.Options.XAxisLabels.Count == 3, "Mermaid pie conversion should preserve labels as chart axis labels.");
+        Assert(chart.Options.XAxis.Labels.Count == 3, "Mermaid pie conversion should preserve labels as chart axis labels.");
 
         var artifact = document.ToVisualArtifact(new MermaidPieRenderOptions { Id = "domain-checks" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid pie visual artifact should report Mermaid artifact kind.");
@@ -435,7 +435,7 @@ line [25, 50, 80]";
         Assert(chart.Series.Count == 2, "Mermaid XY chart conversion should produce one ChartForgeX series per Mermaid series.");
         Assert(chart.Series[0].Kind == ChartSeriesKind.Bar && chart.Series[1].Kind == ChartSeriesKind.Line, "Mermaid XY chart conversion should map bar and line series.");
         Assert(chart.Title == "Tickets", "Mermaid XY chart conversion should use Mermaid title by default.");
-        Assert(chart.Options.XAxisLabels.Count == 3, "Mermaid XY chart conversion should preserve x-axis labels.");
+        Assert(chart.Options.XAxis.Labels.Count == 3, "Mermaid XY chart conversion should preserve x-axis labels.");
 
         var artifact = document.ToVisualArtifact(new MermaidXYChartRenderOptions { Id = "ticket-trend" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid XY chart visual artifact should report Mermaid artifact kind.");
@@ -560,8 +560,8 @@ ticks 5";
         var chart = document.ToChart(new MermaidRadarRenderOptions { Id = "capability-radar", Width = 720, Height = 520 });
         Assert(chart.Series.Count == 2 && chart.Series[0].Kind == ChartSeriesKind.Radar, "Mermaid radar conversion should produce ChartForgeX radar series.");
         Assert(chart.Title == "Capability Radar", "Mermaid radar conversion should use Mermaid titles by default.");
-        Assert(chart.Options.XAxisLabels.Count == 3, "Mermaid radar conversion should preserve axis labels.");
-        Assert(chart.Options.YAxisMinimum == 0 && chart.Options.YAxisMaximum == 100 && chart.Options.PolarGridRingCount == 5, "Mermaid radar conversion should preserve explicit scale and concentric guide options.");
+        Assert(chart.Options.XAxis.Labels.Count == 3, "Mermaid radar conversion should preserve axis labels.");
+        Assert(chart.Options.YAxis.Min == 0 && chart.Options.YAxis.Max == 100 && chart.Options.Polar.GridRingCount == 5, "Mermaid radar conversion should preserve explicit scale and concentric guide options.");
 
         var artifact = document.ToVisualArtifact(new MermaidRadarRenderOptions { Id = "capability-radar" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid radar visual artifact should report Mermaid artifact kind.");
@@ -709,7 +709,7 @@ Ship : milestone, ship, after impl, 0d";
         var chart = document.ToChart(new MermaidGanttRenderOptions { Id = "project-plan", Width = 720, Height = 420, Today = new DateTime(2026, 1, 8) });
         Assert(chart.Series.Count == 3 && chart.Series[0].Kind == ChartSeriesKind.Gantt, "Mermaid Gantt conversion should produce one ChartForgeX Gantt series per task.");
         Assert(chart.Title == "Project Plan", "Mermaid Gantt conversion should use Mermaid titles by default.");
-        Assert(chart.Options.GanttToday.HasValue, "Mermaid Gantt conversion should accept caller-provided today markers.");
+        Assert(chart.Options.Gantt.Today.HasValue, "Mermaid Gantt conversion should accept caller-provided today markers.");
 
         var artifact = document.ToVisualArtifact(new MermaidGanttRenderOptions { Id = "project-plan" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid Gantt visual artifact should report Mermaid artifact kind.");

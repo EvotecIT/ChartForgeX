@@ -14,7 +14,7 @@ public sealed class HistogramWeightedMeanTests {
         var source = new[] { new ChartHistogramObservation(.25, 10, 1), new ChartHistogramObservation(.75, 20, 3), new ChartHistogramObservation(2, 999, 0) };
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d, 4d });
         var series = ChartSeries.CreateHistogram(new ChartSeriesId("weighted"), "Weighted quantity", source, layout, ChartHistogramAggregation.WeightedMean);
-        var chart = Chart.Create().WithAxes(false).WithGrid(false).AddSeries(series);
+        var chart = Chart.Create().Axes(false).ShowGrid(false).AddSeries(series);
         Assert.Equal(17.5, series.HistogramBins[0].Value);
         Assert.Equal(2, series.HistogramBins[0].Count);
         Assert.Equal(new[] { 0, 1 }, series.HistogramBins[0].SourceIndices);

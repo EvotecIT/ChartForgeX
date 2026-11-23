@@ -13,14 +13,14 @@ public sealed class SunburstFitAndSpacingTests {
     [InlineData(false, 0)]
     [InlineData(true, 5)]
     public void NullFloorAndZeroGapPreserveNativeBytesAndNeverEnlargeAuthoredType(bool dark, double corner) {
-        var chart = Source().ConfigureSunburst(options => options.CornerRadius = corner);
-        chart.ConfigureDataLabelStyle(style => style.WithFontSize(12));
+        var chart = Source().Sunburst(options => options.CornerRadius = corner);
+        chart.DataLabelStyle(style => style.FontSize(12));
         var original = chart.PrepareHierarchy(Context(dark), new ChartHierarchyView("services"));
-        chart.ConfigureSunburst(options => { options.MinimumLabelFontSize = null; options.SectorGap = 0; });
+        chart.Sunburst(options => { options.MinimumLabelFontSize = null; options.SectorGap = 0; });
         var explicitDefaults = chart.PrepareHierarchy(Context(dark), new ChartHierarchyView("services"));
         Assert.Equal(original.ToSvg(), explicitDefaults.ToSvg());
         Assert.Equal(original.ToPng(), explicitDefaults.ToPng());
-        chart.ConfigureSunburst(options => options.MinimumLabelFontSize = 40);
+        chart.Sunburst(options => options.MinimumLabelFontSize = 40);
         var higherFloor = chart.PrepareHierarchy(Context(dark), new ChartHierarchyView("services"));
         Assert.Equal(original.ToSvg(), higherFloor.ToSvg());
         Assert.Equal(original.ToPng(), higherFloor.ToPng());
@@ -37,9 +37,9 @@ public sealed class SunburstFitAndSpacingTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => options.MinimumLabelFontSize = 0);
         options.MinimumLabelFontSize = .5; options.MinimumLabelFontSize = null; options.SectorGap = 0;
         var other = Chart.Create().AddBar("Work", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
-        other.ConfigureSunburst(sunburst => sunburst.SectorGap = 2);
+        other.Sunburst(sunburst => sunburst.SectorGap = 2);
         Assert.Throws<InvalidOperationException>(() => other.Prepare(Context(false)));
-        other.ConfigureSunburst(sunburst => { sunburst.SectorGap = 0; sunburst.MinimumLabelFontSize = 9; });
+        other.Sunburst(sunburst => { sunburst.SectorGap = 0; sunburst.MinimumLabelFontSize = 9; });
         Assert.Throws<InvalidOperationException>(() => other.Prepare(Context(false)));
     }
 
@@ -47,11 +47,11 @@ public sealed class SunburstFitAndSpacingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OptInFloorRescuesCompletePrimaryWithoutRepeatedFormatterCallsOrEscapingPaint(bool dark) {
-        var chart = Source().ConfigureDataLabelStyle(style => style.WithFontSize(30));
+        var chart = Source().DataLabelStyle(style => style.FontSize(30));
         var fixedSize = chart.Prepare(Context(dark));
         Assert.DoesNotContain(Texts(fixedSize, "root"), text => text.Role == "sunburst-label");
         var calls = 0;
-        chart.ConfigureSunburst(options => {
+        chart.Sunburst(options => {
             options.MinimumLabelFontSize = 10; options.SectorGap = 4; options.CornerRadius = 4;
             options.SecondaryLabelFormatter = context => { calls++; return "Team " + context.Item.Id; };
         });
@@ -62,7 +62,7 @@ public sealed class SunburstFitAndSpacingTests {
         Assert.Equal(chart.Series[0].HierarchyItems.Count, calls);
         AssertCaptionInsideNativeMark(fitted, "root");
         var svg = fitted.ToSvg(); var png = fitted.ToPng();
-        chart.ConfigureSunburst(options => {
+        chart.Sunburst(options => {
             options.MinimumLabelFontSize = 3; options.SectorGap = 10000;
             options.SecondaryLabelFormatter = _ => throw new InvalidOperationException("Prepared export must not call formatters.");
         });
@@ -73,33 +73,33 @@ public sealed class SunburstFitAndSpacingTests {
 
     [Fact]
     public void SecondaryTextCannotForceAFittingPrimaryToShrinkAndImpossibleFloorsKeepFacts() {
-        var chart = Source().ConfigureDataLabelStyle(style => style.WithFontSize(12));
-        chart.ConfigureSunburst(options => {
+        var chart = Source().DataLabelStyle(style => style.FontSize(12));
+        chart.Sunburst(options => {
             options.MinimumLabelFontSize = 8;
             options.SecondaryLabelFormatter = _ => new string('W', 250);
-            options.SecondaryLabelStyle.WithFontSize(35);
+            options.SecondaryLabelStyle.FontSize(35);
         });
         var prepared = chart.PrepareHierarchy(Context(false), new ChartHierarchyView("api"));
         var primary = Assert.Single(Texts(prepared, "api"), text => text.Role == "sunburst-label");
         Assert.Equal(12, primary.Text.Size);
         Assert.Equal("API", Assert.Single(primary.Text.Lines).Text);
-        chart.Series[0].WithPointLabel(0, new string('W', 250));
+        chart.Series[0].PointLabel(0, new string('W', 250));
         var impossible = chart.Prepare(Context(false));
         Assert.DoesNotContain(Texts(impossible, "root"), text => text.Role == "sunburst-label");
         Assert.Equal(new string('W', 250), Groups(impossible)["root"].Metadata["data-cfx-full-label"]);
         Assert.Contains(impossible.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
-        chart.ConfigureSunburst(options => { options.SecondaryLabelFormatter = _ => "Team"; options.SecondaryLabelStyle.FontSize = 20; });
+        chart.Sunburst(options => { options.SecondaryLabelFormatter = _ => "Team"; options.SecondaryLabelStyle.FontSize = 20; });
         var explicitSecondary = chart.PrepareHierarchy(Context(false), new ChartHierarchyView("api"));
         Assert.Equal(20, Assert.Single(Texts(explicitSecondary, "api"), text => text.Role == "sunburst-secondary-label").Text.Size);
-        chart.ConfigureSunburst(options => options.SecondaryLabelStyle.FontSize = null);
+        chart.Sunburst(options => options.SecondaryLabelStyle.FontSize = null);
         var inheritedSecondary = chart.PrepareHierarchy(Context(false), new ChartHierarchyView("api"));
         Assert.Equal(10, Assert.Single(Texts(inheritedSecondary, "api"), text => text.Role == "sunburst-secondary-label").Text.Size);
     }
 
     [Fact]
     public void RoundedPatternUsesExactlyTheInsetNativeMarkContour() {
-        var chart = Source().WithDataLabels(false).ConfigureSunburst(options => { options.SectorGap = 8; options.CornerRadius = 6; });
-        chart.Series[0].WithPointFillPattern(1, ChartFillPattern.DiagonalForward).WithNodeState("services", ChartSeriesState.Warning);
+        var chart = Source().DataLabels(false).Sunburst(options => { options.SectorGap = 8; options.CornerRadius = 6; });
+        chart.Series[0].PointFillPattern(1, ChartFillPattern.DiagonalForward).NodeState("services", ChartSeriesState.Warning);
         var prepared = chart.Prepare(Context(false));
         var mark = Assert.IsType<VisualScenePath>(Mark(prepared, "services"));
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.PathClip != null && group.PathClip.Commands.SequenceEqual(mark.Commands));
@@ -112,9 +112,9 @@ public sealed class SunburstFitAndSpacingTests {
     [InlineData(false, 0)]
     [InlineData(true, 5)]
     public void PaintedGapPreservesAllocationAndAuthoredRemaindersAcrossFullAndSubtreeViews(bool dark, double corner) {
-        var chart = Source().WithDataLabels(false).ConfigureSunburst(options => options.CornerRadius = corner);
+        var chart = Source().DataLabels(false).Sunburst(options => options.CornerRadius = corner);
         var original = Groups(chart.Prepare(Context(dark)));
-        chart.ConfigureSunburst(options => options.SectorGap = 8);
+        chart.Sunburst(options => options.SectorGap = 8);
         var prepared = chart.Prepare(Context(dark)); var spaced = Groups(prepared);
         foreach (var id in original.Keys) foreach (var key in new[] { "data-cfx-start-angle", "data-cfx-sweep", "data-cfx-inner-radius", "data-cfx-outer-radius",
             "data-cfx-value", "data-cfx-authored-value", "data-cfx-percent", "data-cfx-remainder-value", "data-cfx-parent", "data-cfx-depth" }) {
@@ -143,9 +143,9 @@ public sealed class SunburstFitAndSpacingTests {
 
     [Fact]
     public void FullCircleChildAndSingleRootKeepClosedGeometryWithoutAnArtificialSeam() {
-        var chart = Chart.Create().WithLegend(false).AddSunburst("One branch", new[] {
+        var chart = Chart.Create().Legend(false).AddSunburst("One branch", new[] {
             new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("leaf", "Leaf", "root", 4)
-        }).ConfigureSunburst(options => { options.SectorGap = 8; options.CornerRadius = 20; });
+        }).Sunburst(options => { options.SectorGap = 8; options.CornerRadius = 20; });
         var prepared = chart.Prepare(Context(false));
         Assert.All(Groups(prepared).Values, group => Assert.Equal(Math.PI * 2, Number(group.Metadata, "data-cfx-paint-sweep"), 12));
         Assert.Equal(2, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count(slice => slice.Role == "sunburst-segment-mark"));
@@ -156,10 +156,10 @@ public sealed class SunburstFitAndSpacingTests {
 
     [Fact]
     public void ZeroThinAndExhaustedInsetsStayTruthfulAndNeverProduceInvertedOrInteractiveGeometry() {
-        var chart = Source().WithDataLabels(false).ConfigureSunburst(options => options.CornerRadius = 3);
+        var chart = Source().DataLabels(false).Sunburst(options => options.CornerRadius = 3);
         var before = Groups(chart.Prepare(Context(false)));
         Assert.Equal("precision-collapse", before["tiny"].Metadata["data-cfx-geometry-status"]);
-        chart.ConfigureSunburst(options => options.SectorGap = 12);
+        chart.Sunburst(options => options.SectorGap = 12);
         var prepared = chart.Prepare(Context(false)); var groups = Groups(prepared);
         Assert.Equal("zero", groups["zero"].Metadata["data-cfx-geometry-status"]);
         Assert.Equal("padding-collapse", groups["thin"].Metadata["data-cfx-geometry-status"]);
@@ -170,7 +170,7 @@ public sealed class SunburstFitAndSpacingTests {
             Assert.Equal("false", groups[id].Metadata["data-cfx-visible"]);
             Assert.Empty(Texts(prepared, id)); Assert.Null(Mark(prepared, id));
         }
-        chart.ConfigureSunburst(options => options.SectorGap = double.MaxValue);
+        chart.Sunburst(options => options.SectorGap = double.MaxValue);
         var exhausted = chart.Prepare(Context(false));
         Assert.DoesNotContain(exhausted.Scene.Nodes, node => node.Role == "sunburst-segment-mark");
         Assert.All(Groups(exhausted).Values.Where(group => group.Metadata["data-cfx-value"] != "0" && group.Metadata["data-cfx-node"] != "tiny"),
@@ -179,13 +179,13 @@ public sealed class SunburstFitAndSpacingTests {
         Assert.NotEmpty(exhausted.ToPng());
     }
 
-    private static Chart Source() => Chart.Create().WithLegend(false).WithDataLabels().AddSunburst("Allocation", new[] {
+    private static Chart Source() => Chart.Create().Legend(false).DataLabels().AddSunburst("Allocation", new[] {
         new ChartHierarchyItem("root", "Infrastructure", value: 120),
         new ChartHierarchyItem("services", "Services", "root", 80),
         new ChartHierarchyItem("api", "API", "services", 30), new ChartHierarchyItem("worker", "Worker", "services", 20),
         new ChartHierarchyItem("other", "Other", "root", 20), new ChartHierarchyItem("zero", "Reserve", "root", 0),
         new ChartHierarchyItem("thin", "Thin", "root", .01), new ChartHierarchyItem("tiny", "Tiny", "root", 1e-20)
-    }).ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
+    }).Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
 
     private static VisualRenderContext Context(bool dark) => new(new VisualLayoutOptions(new VisualSize(390, 420)),
         themeMode: dark ? ThemeMode.Dark : ThemeMode.Light, frame: new VisualFrame(showLegend: false),

@@ -16,9 +16,9 @@ public static partial class MermaidTreemapRendering {
             var styles = MermaidStyleParser.Resolve(definitions, classes, new Dictionary<string, string>(), node.Span, includeDefault: false);
             foreach (var declaration in styles) {
                 if (!SvgRasterColor.TryParse(declaration.Value, out var color)) continue;
-                if (declaration.Key == "fill") series.WithPointColor(index, color);
-                else if (declaration.Key == "stroke") series.WithPointStrokeColor(index, color);
-                else if (declaration.Key == "color") series.ConfigurePointDataLabelStyle(index, style => style.Color = color);
+                if (declaration.Key == "fill") series.PointColor(index, color);
+                else if (declaration.Key == "stroke") series.PointStrokeColor(index, color);
+                else if (declaration.Key == "color") series.PointDataLabelStyle(index, style => style.Color = color);
             }
         }
     }

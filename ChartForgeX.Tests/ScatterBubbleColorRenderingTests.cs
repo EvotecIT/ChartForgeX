@@ -13,7 +13,7 @@ public sealed class ScatterBubbleColorRenderingTests {
     internal static readonly ChartColor Low = ChartColor.FromHex("#2166AC"), High = ChartColor.FromHex("#B2182B"), Empty = ChartColor.FromHex("#9CA3AF");
     internal static Chart Create(bool bubble, params double?[] colors) => Create(new ChartSeriesId("samples"), bubble, colors);
     private static Chart Create(ChartSeriesId id, bool bubble, params double?[] colors) {
-        var chart = Chart.Create().WithSize(800, 500).WithDataLabels(false).ConfigureLabels(labels => labels.Color = "Temperature (°C)");
+        var chart = Chart.Create().Size(800, 500).DataLabels(false).Labels(labels => labels.Color = "Temperature (°C)");
         if (bubble) chart.AddSeries(ChartSeries.CreateBubble(id, "Samples", colors.Select((value, i) => new ChartBubble(i + 1, 10 + i * 4, (i + 1) * (i + 1)).WithColorValue(value))));
         else chart.AddSeries(ChartSeries.CreateScatter(id, "Samples", colors.Select((value, i) => new ChartPoint(i + 1, 10 + i * 4).WithColorValue(value))));
         return chart;
@@ -30,10 +30,10 @@ public sealed class ScatterBubbleColorRenderingTests {
         chart.Options.ShowGrid = false;
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
         // Keep sampled centers away from axis clipping so this test isolates fill and alpha composition.
-        chart.Options.XAxis.Minimum = 0; chart.Options.XAxis.Maximum = 6;
-        chart.Options.YAxis.Minimum = 0; chart.Options.YAxis.Maximum = 40;
+        chart.Options.XAxis.Min = 0; chart.Options.XAxis.Max = 6;
+        chart.Options.YAxis.Min = 0; chart.Options.YAxis.Max = 40;
         var scale = ChartColorScale.Sequential(Low, High).WithValueRange(0, 20).WithNoDataColor(Empty);
-        chart.Series[0].WithColorScale(scale);
+        chart.Series[0].ColorScale(scale);
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
         var points = Role(svg, "point");
         Assert.Equal(new[] { "-10", "0", "0", "100", null }, points.Select(point => (string?)point.Attribute("data-cfx-color-value")));
@@ -80,14 +80,14 @@ public sealed class ScatterBubbleColorRenderingTests {
     [InlineData(true)]
     public void InferenceIncludesOffViewportHiddenAndOverriddenRetainedFactsAndDoesNotPoolSeries(bool bubble) {
         var chart = Create(bubble, -10, 0, 100);
-        chart.Options.XAxis.Minimum = 1; chart.Options.XAxis.Maximum = 2;
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
-        chart.Series[0].WithPointColor(2, ChartColor.Black);
+        chart.Options.XAxis.Min = 1; chart.Options.XAxis.Max = 2;
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High));
+        chart.Series[0].PointColor(2, ChartColor.Black);
         chart.Series[0].Markers.Enabled = false;
         var first = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.Equal("100", (string?)Role(first, "color-scale-0").Single().Attribute("data-cfx-max-value"));
         chart.AddScatter("Samples", new[] { new ChartPoint(1, 30).WithColorValue(900), new ChartPoint(2, 35).WithColorValue(1000) });
-        chart.Series[1].WithColorScale(chart.Series[0].ColorScale); chart.Series[1].ValueAxis = ChartAxisSide.Secondary;
+        chart.Series[1].ColorScale(chart.Series[0].ColorScale); chart.Series[1].ValueAxis = ChartAxisSide.Secondary;
         var document = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.Equal("-10", (string?)Role(document, "color-scale-0").Single().Attribute("data-cfx-min-value"));
         Assert.Equal("900", (string?)Role(document, "color-scale-1").Single().Attribute("data-cfx-min-value"));
@@ -97,9 +97,9 @@ public sealed class ScatterBubbleColorRenderingTests {
     public void DuplicateNamesInPanelsKeepTheirOwnColorDomainsIdentitiesAndDetachedFacts() {
         var first = Create(new ChartSeriesId("first"), false, -10, 10); var second = Create(new ChartSeriesId("second"), true, 900, 1000);
         var scale = ChartColorScale.Sequential(Low, High);
-        first.Series[0].WithColorScale(scale);
-        second.Series[0].WithColorScale(scale);
-        var grid = ChartGrid.Create().WithColumns(2).Add(first).Add(second);
+        first.Series[0].ColorScale(scale);
+        second.Series[0].ColorScale(scale);
+        var grid = ChartGrid.Create().Columns(2).Add(first).Add(second);
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 500))));
         var document = XDocument.Parse(prepared.ToSvg()); var keys = Role(document, "color-scale-0");
         Assert.Equal(new[] { "-10", "900" }, keys.Select(key => (string?)key.Attribute("data-cfx-min-value")));
@@ -114,15 +114,15 @@ public sealed class ScatterBubbleColorRenderingTests {
     public void OverridesPrecedeMappedPaintAndResetKeepsRawFactsAndOrdinaryPatternStroke() {
         var chart = Create(false, 0, 10, null);
         var series = chart.Series[0];
-        series.WithColorScale(ChartColorScale.Sequential(Low, High).WithNoDataColor(Empty));
+        series.ColorScale(ChartColorScale.Sequential(Low, High).WithNoDataColor(Empty));
         series.Markers.Fill = ChartColor.White; series.Markers.Stroke = ChartColor.Black; series.Markers.StrokeWidth = 2;
-        series.WithPointColor(0, ChartColor.FromHex("#123456")); series.WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+        series.PointColor(0, ChartColor.FromHex("#123456")); series.PointFillPattern(1, ChartFillPattern.DiagonalForward);
         var document = XDocument.Parse(Prepare(chart).ToSvg()); var marks = Role(document, "marker");
         Assert.Equal("#123456", (string?)marks[0].Attribute("fill"));
         Assert.All(marks.Skip(1), mark => Assert.Equal("#FFFFFF", (string?)mark.Attribute("fill")));
         Assert.All(marks, mark => Assert.Equal("#000000", (string?)mark.Attribute("stroke")));
         Assert.NotEmpty(Role(document, "marker-pattern"));
-        series.Markers.Fill = null; series.WithColorScale(null);
+        series.Markers.Fill = null; series.ColorScale((ChartColorScale?)null);
         document = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.Equal("0", (string?)Role(document, "point")[0].Attribute("data-cfx-color-value"));
         Assert.Null(Role(document, "point")[2].Attribute("data-cfx-color-missing"));
@@ -132,11 +132,11 @@ public sealed class ScatterBubbleColorRenderingTests {
     [Fact]
     public void PreparedColorFactsPaintsAndKeysDoNotObserveLaterSourceOrStyleChanges() {
         var chart = Create(true, -10, 0, null);
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Series[0].UpdateBubble(0, chart.Series[0].Bubbles[0].WithColorValue(999));
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(900, 1000));
-        chart.Series[0].Markers.Fill = ChartColor.Black; chart.ConfigureLabels(labels => labels.Color = "Changed");
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(900, 1000));
+        chart.Series[0].Markers.Fill = ChartColor.Black; chart.Labels(labels => labels.Color = "Changed");
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
     }
@@ -145,15 +145,15 @@ public sealed class ScatterBubbleColorRenderingTests {
     public void BubbleSizeLabelIsLocalizedWithoutAColorScaleAndDetachedWithNumericKeys() {
         Assert.Equal("Size", new ChartLabels().Size);
         Assert.Throws<ArgumentException>(() => new ChartLabels().Size = " ");
-        var chart = Create(true, 0, null).ConfigureLabels(labels => { labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
+        var chart = Create(true, 0, null).Labels(labels => { labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
         var withoutScale = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.All(Role(withoutScale, "point"), point => Assert.Equal("Volume (m³)", (string?)point.Attribute("data-cfx-label-size")));
         Assert.Equal(new[] { "1", "4" }, Role(withoutScale, "point").Select(point => (string?)point.Attribute("data-cfx-size")));
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var document = XDocument.Parse(svg);
         Assert.Equal("Samples · Temperature (°C)", (string?)Role(document, "color-scale-source").Single().Attribute("data-cfx-label"));
         Assert.Equal("Not sampled", (string?)Role(document, "color-scale-source").Single().Attribute("data-cfx-label-no-data"));
-        chart.ConfigureLabels(labels => { labels.Color = "Changed color"; labels.Size = "Changed size"; labels.NoData = "Changed missing"; });
+        chart.Labels(labels => { labels.Color = "Changed color"; labels.Size = "Changed size"; labels.NoData = "Changed missing"; });
         Assert.Equal(svg, prepared.ToSvg());
         var changed = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.All(Role(changed, "point"), point => Assert.Equal("Changed size", (string?)point.Attribute("data-cfx-label-size")));
@@ -166,12 +166,12 @@ public sealed class ScatterBubbleColorRenderingTests {
     public void NativeDecimatedFactsAndInferredKeysUseRetainedLogicalObservations(ChartDecimationMode mode, bool adaptive) {
         var source = Enumerable.Range(0, 16).Select(index => new ChartPoint(index, Math.Sin(index), index == 8)
             .WithColorValue(index % 4 == 0 ? null : index * 10)).ToArray();
-        var chart = Chart.Create().WithSize(800, 500).WithDataLabels(false);
+        var chart = Chart.Create().Size(800, 500).DataLabels(false);
         if (adaptive) chart.AddAdaptiveScatter("Retained", source, 4, new ChartResolutionPolicy {
             MinimumPointCount = 8, MaximumPointCount = 8, PointsPerPixel = 1, DecimationMode = mode
         });
         else chart.AddDecimatedScatter("Retained", source, 8, mode);
-        var series = chart.Series[0]; series.WithColorScale(ChartColorScale.Sequential(Low, High));
+        var series = chart.Series[0]; series.ColorScale(ChartColorScale.Sequential(Low, High));
         var document = XDocument.Parse(Prepare(chart).ToSvg()); var points = Role(document, "point");
         Assert.Equal(series.Points.Count, points.Length);
         for (var index = 0; index < points.Length; index++) {
@@ -187,7 +187,7 @@ public sealed class ScatterBubbleColorRenderingTests {
     [Fact]
     public void ColorPaintKeepsRampProvenanceEvenWhenTheSeriesHasAStatusRole() {
         var chart = Create(false, 0, 10); chart.Series[0].StateRole = ChartSeriesState.Danger;
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High));
         var svg = Prepare(chart).ToSvg(new VisualSvgOptions(colorVariables: new SvgColorVariables().Add("--color-low", Low, SvgColorRole.Ramp).Add("--color-high", High, SvgColorRole.Ramp)));
         Assert.Contains("var(--color-low,", svg); Assert.Contains("var(--color-high,", svg);
     }
@@ -196,18 +196,18 @@ public sealed class ScatterBubbleColorRenderingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CenteredLabelsUseActualMappedAndOverriddenMarkerFill(bool bubble) {
-        var chart = Create(bubble, 0, 1).WithSize(600, 400).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Center)
-            .WithXAxisBounds(0, 3).WithYAxisBounds(0, 30).WithAxes(false).WithGrid(false);
+        var chart = Create(bubble, 0, 1).Size(600, 400).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Center))
+            .XAxis(x => x.Bounds(0, 3)).YAxis(y => y.Bounds(0, 30)).Axes(false).ShowGrid(false);
         var series = chart.Series[0]; series.Color = ChartColor.Black;
         if (bubble) { chart.Options.Bubble.MinimumRadius = 30; chart.Options.Bubble.MaximumRadius = 30; }
         else series.MarkerRadius = 30;
-        series.WithColorScale(ChartColorScale.Sequential(ChartColor.White, ChartColor.Black));
+        series.ColorScale(ChartColorScale.Sequential(ChartColor.White, ChartColor.Black));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var texts = Role(document, "data-label").Select(group => group.Descendants().Single(node => node.Name.LocalName == "text")).ToArray();
         Assert.Equal(ChartColor.Black.ToHex(), (string?)texts[0].Attribute("fill"));
         Assert.Equal(bubble ? ChartColor.Black.ToHex() : ChartColor.White.ToHex(), (string?)texts[1].Attribute("fill"));
         Capture(prepared, bubble ? "bubble-inside-label" : "scatter-inside-label");
-        series.Markers.Fill = ChartColor.White; series.WithPointColor(0, ChartColor.Black);
+        series.Markers.Fill = ChartColor.White; series.PointColor(0, ChartColor.Black);
         document = XDocument.Parse(Prepare(chart).ToSvg());
         texts = Role(document, "data-label").Select(group => group.Descendants().Single(node => node.Name.LocalName == "text")).ToArray();
         Assert.Equal(bubble ? ChartColor.Black.ToHex() : ChartColor.White.ToHex(), (string?)texts[0].Attribute("fill"));

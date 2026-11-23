@@ -13,7 +13,7 @@ public sealed class ChartCartesianViewportTests {
     [InlineData(ChartScaleKind.Logarithmic, true, 1, 1000, 10, 100)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic, false, -100, 100, -20, 40)]
     public void ExplicitPrimaryYUsesTheNativeScaleAndDetachedInverse(ChartScaleKind scale, bool reversed, double fullMinimum, double fullMaximum, double minimum, double maximum) {
-        var chart = Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(fullMinimum, fullMaximum).WithYAxisScale(scale)
+        var chart = Chart.Create().XAxis(x => x.Bounds(0, 10)).YAxis(yAxis => yAxis.Bounds(fullMinimum, fullMaximum).Scale(scale))
             .AddLine("Source", new[] { new ChartPoint(0, fullMinimum), new ChartPoint(5, minimum), new ChartPoint(10, fullMaximum) });
         chart.Options.YAxis.Reversed = reversed;
         var context = VisualExportRequest.ForChart(chart).Context;
@@ -35,7 +35,7 @@ public sealed class ChartCartesianViewportTests {
 
     [Fact]
     public void CartesianWindowsRetainTupleCrossingsSourceFactsAndSingleAxisPolicy() {
-        var chart = Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId("prices"), "Prices",
+        var chart = Chart.Create().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100)).AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId("prices"), "Prices",
             new[] { new ChartCandlestick(0, 80, 95, 70, 90), new ChartCandlestick(5, 80, 95, 20, 90), new ChartCandlestick(10, 10, 20, 5, 15) }));
         chart.AddNote(new ChartPoint(5, 50), "Review", id: new ChartAnnotationId("review"))
             .AddLineSegment(new ChartPoint(0, 0), new ChartPoint(10, 100), "Target");
@@ -48,8 +48,8 @@ public sealed class ChartCartesianViewportTests {
         var groups = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(3, groups.Length); Assert.Equal(new[] { "false", null, "false" }, groups.Select(group => (string?)group.Attribute("data-cfx-visible")));
         Assert.NotEmpty(groups[1].Elements()); Assert.Equal("80", (string?)groups[1].Attribute("data-cfx-open"));
-        Assert.Equal(0, chart.Options.XAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum); Assert.NotEmpty(prepared.ToPng());
-        chart.ClearAnnotations(); chart.Series[0].UseSecondaryValueAxis();
+        Assert.Equal(0, chart.Options.XAxis.Min); Assert.Equal(100, chart.Options.YAxis.Max); Assert.NotEmpty(prepared.ToPng());
+        chart.ClearAnnotations(); chart.Series[0].SecondaryAxis();
         Assert.NotNull(chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))).XProjection);
         Assert.NotNull(chart.Prepare(context).YProjection);
         var secondary = chart.Prepare(context, new ChartCartesianViewport(secondaryY: new ChartAxisWindow(30, 60)));
@@ -60,7 +60,7 @@ public sealed class ChartCartesianViewportTests {
 
     [Fact]
     public void LogarithmicConfinementPreservesTransformedSpanAndRejectsInvalidSourceWindows() {
-        var chart = Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(1, 1000).WithYAxisScale(ChartScaleKind.Logarithmic)
+        var chart = Chart.Create().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(1, 1000).Scale(ChartScaleKind.Logarithmic))
             .AddLine("Positive", new[] { new ChartPoint(0, 1), new ChartPoint(10, 1000) });
         var projection = chart.Prepare(VisualExportRequest.ForChart(chart).Context).YProjection!;
         var confined = projection.ConstrainViewport(new ChartAxisWindow(100, 10000))!;

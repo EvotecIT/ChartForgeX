@@ -13,9 +13,9 @@ public sealed class RadialFiniteFractionTests {
     [InlineData(ChartSeriesKind.PolarArea)]
     public void OverflowingTotalsRetainFinitePartsAndTheSameNativeProportions(ChartSeriesKind kind) {
         var chart = Create(kind, 1e308, 1e308);
-        chart.Options.ShowLegend = false;
-        chart.Options.ShowDataLabels = false;
-        chart.Options.ShowDonutCenterLabel = false;
+        chart.Options.Legend.Visible = false;
+        chart.Options.DataLabels.Visible = false;
+        chart.Options.Pie.ShowCenterLabel = false;
         chart.Options.ValueFormatter = value => {
             Assert.True(ChartMath.IsFinite(value));
             return value.ToString("R", CultureInfo.InvariantCulture);
@@ -31,9 +31,9 @@ public sealed class RadialFiniteFractionTests {
         });
         Assert.Contains(prepared.Scene.Diagnostics, diagnostic => diagnostic.Code == (kind == ChartSeriesKind.PolarArea ? "polar-area.total-overflow" : "radial.total-overflow"));
         var ordinary = Create(kind, 1, 1);
-        ordinary.Options.ShowLegend = false;
-        ordinary.Options.ShowDataLabels = false;
-        ordinary.Options.ShowDonutCenterLabel = false;
+        ordinary.Options.Legend.Visible = false;
+        ordinary.Options.DataLabels.Visible = false;
+        ordinary.Options.Pie.ShowCenterLabel = false;
         Assert.Equal(ordinary.ToRgbaImage().Pixels, prepared.ToRgba().Pixels);
         Assert.True(prepared.ToPng().Length > 64);
     }
@@ -42,14 +42,14 @@ public sealed class RadialFiniteFractionTests {
     [InlineData(ChartSeriesKind.Pie)]
     [InlineData(ChartSeriesKind.Donut)]
     public void OverflowingOtherCapturesContributorsAndLowerBoundWithoutInventingAValue(ChartSeriesKind kind) {
-        var chart = Create(kind, 1e308, 1e308, 1e308).WithDataLabels();
-        chart.Options.MaximumPieSlices = 2;
+        var chart = Create(kind, 1e308, 1e308, 1e308).DataLabels();
+        chart.Options.Pie.MaxSlices = 2;
         var callbacks = new List<ChartPieSliceLabelContext>();
         chart.Options.ValueFormatter = value => {
             Assert.True(ChartMath.IsFinite(value));
             return value.ToString("R", CultureInfo.InvariantCulture);
         };
-        chart.WithPieSliceLabelFormatter(context => { Assert.True(ChartMath.IsFinite(context.Value)); callbacks.Add(context); return context.Label; });
+        chart.Pie(p => p.SliceLabelBy(context => { Assert.True(ChartMath.IsFinite(context.Value)); callbacks.Add(context); return context.Label; }));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg());
         var aggregate = document.Descendants().Where(element =>
@@ -73,7 +73,7 @@ public sealed class RadialFiniteFractionTests {
         if (kind == ChartSeriesKind.Donut) {
             Assert.Equal(bound, Center(document).Attribute("data-cfx-center-value")!.Value);
             Assert.Equal("> 1.79E308", document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "donut-total-label").Value);
-            chart.WithDonutCenterText("Observed total", "Capacity");
+            chart.Pie(p => p.CenterValue("Observed total").CenterLabel("Capacity"));
             Assert.Equal("Observed total", Center(XDocument.Parse(chart.ToSvg())).Attribute("data-cfx-center-value")!.Value);
         }
     }
@@ -84,8 +84,8 @@ public sealed class RadialFiniteFractionTests {
     [InlineData(300, 240, .35)]
     [InlineData(300, 240, .62)]
     public void OverflowCenterRetainsItsExponentAtSupportedHoleSizes(int width, int height, double ratio) {
-        var chart = Create(ChartSeriesKind.Donut, 1e308, 1e308).WithSize(width, height).WithLegend(false);
-        chart.Options.DonutInnerRadiusRatio = ratio;
+        var chart = Create(ChartSeriesKind.Donut, 1e308, 1e308).Size(width, height).Legend(false);
+        chart.Options.Pie.InnerRadiusRatio = ratio;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg());
         var text = document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "donut-total-label").Value;
@@ -113,7 +113,7 @@ public sealed class RadialFiniteFractionTests {
 
     private static Chart Create(ChartSeriesKind kind, params double[] values) {
         var points = values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
-        var chart = Chart.Create().WithSize(500, 340);
+        var chart = Chart.Create().Size(500, 340);
         if (kind == ChartSeriesKind.Pie) return chart.AddPie("Parts", points);
         if (kind == ChartSeriesKind.Donut) return chart.AddDonut("Parts", points);
         return chart.AddPolarArea("Parts", points);

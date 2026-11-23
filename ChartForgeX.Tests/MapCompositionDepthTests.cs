@@ -38,7 +38,7 @@ public sealed class MapCompositionDepthTests {
     [InlineData("compact", ThemeMode.Dark)]
     public void GeographicTileInsetUsesExistingTilePaintAndKeepsItsOwnFactsKeysAndIdentity(string variant, ThemeMode mode) {
         var chart = MapCompositionDepthRecipe.Create(variant, mode);
-        var tile = chart.Series[2].WithObservationIds(new[] { new ChartObservationId("central"), new ChartObservationId("north"), new ChartObservationId("west") });
+        var tile = chart.Series[2].ObservationIds(new[] { new ChartObservationId("central"), new ChartObservationId("north"), new ChartObservationId("west") });
         var prepared = Prepare(chart);
         var root = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "geographic-map");
         Assert.Equal("equirectangular", root.Metadata["data-cfx-projection"]);
@@ -69,9 +69,9 @@ public sealed class MapCompositionDepthTests {
     [InlineData(ChartMapGeoJsonProjection.Equirectangular)]
     [InlineData(ChartMapGeoJsonProjection.WebMercator)]
     public void TileInsetNeverChangesTheGeographicPeerProjectionOrNativePointPositions(ChartMapGeoJsonProjection projection) {
-        var chart = GeographicMapCompositionTests.Fixture(projection, 800, ThemeMode.Light).WithLegend(false);
+        var chart = GeographicMapCompositionTests.Fixture(projection, 800, ThemeMode.Light).Legend(false);
         var before = Prepare(chart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray();
-        var tile = Tiles().WithMapInset(new ChartRect(.65, .65, .3, .3));
+        var tile = Tiles().MapInset(new ChartRect(.65, .65, .3, .3));
         chart.AddSeries(tile);
         var prepared = Prepare(chart);
         var after = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray();
@@ -85,33 +85,33 @@ public sealed class MapCompositionDepthTests {
     [Fact]
     public void InsetValidationRejectsUnplacedOrAmbiguousMixturesAndClearingPreservesStandaloneOutput() {
         var tile = Tiles();
-        Assert.Throws<ArgumentOutOfRangeException>(() => tile.WithMapInset(new ChartRect(0, 0, 0, 1)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => tile.WithMapInset(new ChartRect(-.01, 0, .5, .5)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => tile.WithMapInset(new ChartRect(.9, 0, .2, .5)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => tile.WithMapInset(new ChartRect(0, .9, .5, .2)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => tile.MapInset(new ChartRect(0, 0, 0, 1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => tile.MapInset(new ChartRect(-.01, 0, .5, .5)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => tile.MapInset(new ChartRect(.9, 0, .2, .5)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => tile.MapInset(new ChartRect(0, .9, .5, .2)));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRect(double.NaN, 0, 1, 1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRect(0, 0, double.PositiveInfinity, 1));
-        tile.WithMapInset(new ChartRect(.1, .1, .4, .4));
+        tile.MapInset(new ChartRect(.1, .1, .4, .4));
         var retained = tile.MapInset;
-        Assert.Throws<ArgumentOutOfRangeException>(() => tile.WithMapInset(new ChartRect(.9, 0, .2, .5)));
-        Assert.Equal(retained, tile.MapInset); tile.WithMapInset(null);
-        var standalone = Chart.Create().WithSize(520, 300).AddSeries(tile);
+        Assert.Throws<ArgumentOutOfRangeException>(() => tile.MapInset(new ChartRect(.9, 0, .2, .5)));
+        Assert.Equal(retained, tile.MapInset); tile.MapInset(null);
+        var standalone = Chart.Create().Size(520, 300).AddSeries(tile);
         var original = Prepare(standalone);
-        tile.WithMapInset(new ChartRect(0, 0, 1, 1));
+        tile.MapInset(new ChartRect(0, 0, 1, 1));
         Assert.Throws<InvalidOperationException>(() => Prepare(standalone));
-        tile.WithMapInset(null);
-        tile.WithColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White));
+        tile.MapInset(null);
+        tile.ColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White));
         Assert.Contains("inset", Assert.Throws<InvalidOperationException>(() => Prepare(standalone)).Message);
-        tile.WithColorScale(null);
+        tile.ColorScale((ChartColorScale?)null);
         Assert.Equal(original.ToSvg(), Prepare(standalone).ToSvg()); Assert.Equal(original.ToPng(), Prepare(standalone).ToPng());
         var points = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Sites", new[] { new ChartMapPoint("Site", 0, 0) });
-        Assert.Throws<InvalidOperationException>(() => points.WithMapInset(new ChartRect(0, 0, 1, 1)));
+        Assert.Throws<InvalidOperationException>(() => points.MapInset(new ChartRect(0, 0, 1, 1)));
         var unplaced = Chart.Create().AddSeries(points).AddSeries(Tiles());
         Assert.Throws<InvalidOperationException>(() => Prepare(unplaced));
         var arbitrary = MapCompositionDepthRecipe.Create("arbitrary");
         arbitrary.AddSeries(ChartSeries.CreateDottedMap(new ChartSeriesId("mixed"), "Mixed", new[] { new ChartMapPoint("Site", 0, 0) }));
         Assert.Contains("projection", Assert.Throws<InvalidOperationException>(() => Prepare(arbitrary)).Message);
-        var viewport = MapCompositionDepthRecipe.Create("arbitrary").WithMapViewport(ChartMapViewport.World());
+        var viewport = MapCompositionDepthRecipe.Create("arbitrary").Map(m => m.Viewport(ChartMapViewport.World()));
         Assert.Throws<InvalidOperationException>(() => Prepare(viewport));
     }
 
@@ -122,7 +122,7 @@ public sealed class MapCompositionDepthTests {
     [InlineData(ChartSeriesKind.TileMap, true)]
     public void EmptyPublicMapConstructorWithoutGeometryFailsClearlyBeforeLegendOrComposition(ChartSeriesKind kind, bool mixed) {
         var missing = new ChartSeries(new ChartSeriesId("missing"), "Missing", kind, Array.Empty<ChartPoint>());
-        if (mixed && kind == ChartSeriesKind.TileMap) missing.WithMapInset(new ChartRect(.1, .1, .3, .3));
+        if (mixed && kind == ChartSeriesKind.TileMap) missing.MapInset(new ChartRect(.1, .1, .3, .3));
         var chart = Chart.Create().AddSeries(missing);
         if (mixed) chart.AddDottedMap("Peer", new[] { new ChartMapPoint("Site", 0, 0) });
         var error = Assert.Throws<InvalidOperationException>(() => Prepare(chart));

@@ -19,7 +19,7 @@ public sealed class NativeInitialFadeTests {
     public void CapturedNativeFamiliesFadeWithoutInventingAnyValueOrGeometryBaseline(ChartSeriesKind kind) {
         // Exercise opacity capture within its declared payload budget; cloud density has separate placement proof.
         var chart = Assert.IsType<Chart>(ExampleRecipes.ForKind(kind).Create(kind == ChartSeriesKind.WordCloud ? "compact" : "wide"))
-            .WithFontFamily(BrowserProofFonts.Family);
+            .FontFamily(BrowserProofFonts.Family);
         var renderer = new HtmlInteractiveChartRenderer();
         var final = renderer.PrepareSection(chart); var frames = VisualValueCapture.InitialFadeFrames(final.PreparedVisual, 3);
         var payload = renderer.PrepareNativeTransitionJson(final, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 3));
@@ -49,10 +49,10 @@ public sealed class NativeInitialFadeTests {
             Directory.CreateDirectory(output); File.WriteAllText(Path.Combine(output, "initial-fade-overlap.svg"), frame.ToSvg()); File.WriteAllBytes(Path.Combine(output, "initial-fade-overlap.png"), frame.ToPng());
         }
         Assert.Equal(128, rgba.Pixels[(10 * rgba.Width + 10) * 4 + 3]); Assert.NotEqual(192, rgba.Pixels[(10 * rgba.Width + 10) * 4 + 3]);
-        var calls = 0; var chart = CircleRecipe.Create().WithValueFormat(ChartValueFormat.Custom(value => { calls++; return value + " units"; }));
+        var calls = 0; var chart = CircleRecipe.Create().ValueFormat(ChartValueFormat.Custom(value => { calls++; return value + " units"; }));
         var renderer = new HtmlInteractiveChartRenderer(); var section = renderer.PrepareSection(chart); var count = calls;
         var captured = VisualValueCapture.InitialFadeFrames(section.PreparedVisual, 3); var svg = captured.Select(item => item.ToSvg()).ToArray(); var png = captured.Select(item => item.ToPng()).ToArray();
-        chart.WithValueFormat(ChartValueFormat.Custom(_ => "Later"));
+        chart.ValueFormat(ChartValueFormat.Custom(_ => "Later"));
         try {
             FontRegistry.Clear(); var repeated = VisualValueCapture.InitialFadeFrames(section.PreparedVisual, 3);
             Assert.Equal(svg, repeated.Select(item => item.ToSvg())); for (var index = 0; index < repeated.Count; index++) Assert.Equal(png[index], repeated[index].ToPng());

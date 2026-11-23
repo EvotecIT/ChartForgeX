@@ -90,13 +90,13 @@ public sealed class MarkupTimelineParser {
 
     private static Chart BuildChart(TimelineState state) {
         var chart = Chart.Create()
-            .WithTitle(state.Title)
-            .WithSubtitle(state.Subtitle)
-            .WithSize(state.Width, state.Height);
+            .Title(state.Title)
+            .Subtitle(state.Subtitle)
+            .Size(state.Width, state.Height);
         if (state.Today.HasValue) {
             var today = state.Today.Value;
-            if (today.IsDate) chart.WithGanttToday(today.Date);
-            else chart.WithGanttToday(today.ToAxisValue());
+            if (today.IsDate) chart.GanttToday(today.Date);
+            else chart.Gantt(g => g.Today(today.ToAxisValue()));
         }
         var ganttItems = new List<ChartSeries>();
 

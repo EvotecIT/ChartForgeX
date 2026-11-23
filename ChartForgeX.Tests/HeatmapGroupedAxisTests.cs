@@ -29,7 +29,7 @@ public sealed class HeatmapGroupedAxisTests {
         Assert.Contains("North / Core / West", (string?)first.Attribute("aria-label")); Assert.Contains("Morning / Work / A", (string?)first.Attribute("aria-label"));
         Assert.Equal("North", (string?)first.Attribute("data-cfx-row-category-group-0")); Assert.Equal("Morning", (string?)first.Attribute("data-cfx-column-category-group-0"));
         Assert.Equal(categorical ? "1" : "10", (string?)first.Attribute("data-cfx-x"));
-        Assert.Equal((categorical ? chart.Options.StateCategories[0].Color : ChartColor.Black).ToCss(), (string?)first.RenderedAttribute("fill"));
+        Assert.Equal((categorical ? chart.Options.StateTimeline.Categories[0].Color : ChartColor.Black).ToCss(), (string?)first.RenderedAttribute("fill"));
         if (!categorical) { Assert.Equal("0", (string?)first.Attribute("data-cfx-value")); Assert.Equal(2, cells.Count(cell => (string?)cell.Attribute("data-cfx-value") == "0")); }
         else { Assert.Equal("pass", (string?)first.Attribute("data-cfx-status")); Assert.Equal("Pass", (string?)first.Attribute("data-cfx-state-label")); }
         Assert.DoesNotContain(cells, cell => (string?)cell.Attribute("data-cfx-series-key") == "west" && (string?)cell.Attribute("data-cfx-column") == "1");
@@ -50,7 +50,7 @@ public sealed class HeatmapGroupedAxisTests {
         Assert.NotEmpty(ByRole(xml, "axis-x-category-group-label")); Assert.NotEmpty(ByRole(xml, "axis-y-category-group-label"));
         var image = RasterImageDecoder.Decode(png); Assert.Equal(width, image.Width); Assert.Equal(560, image.Height);
         Save("grouped-heatmap-" + (categorical ? "states" : "numeric") + "-" + width + (dark ? "-dark" : "-light"), svg, png);
-        chart.Options.XAxis.Labels.Clear(); chart.Options.YAxis.Labels.Clear(); chart.Series[0].WithPointColor(0, ChartColor.FromRgba(255, 0, 0, 255));
+        chart.Options.XAxis.Labels.Clear(); chart.Options.YAxis.Labels.Clear(); chart.Series[0].PointColor(0, ChartColor.FromRgba(255, 0, 0, 255));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -94,11 +94,11 @@ public sealed class HeatmapGroupedAxisTests {
     }
 
     internal static Chart Model(bool categorical, bool dark, int width, bool grouped = true) {
-        var chart = Chart.Create().WithSize(width, 560).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Grouped matrix axes").WithXAxis("Work windows").WithYAxis("Service slots").WithDataLabels(false);
+        var chart = Chart.Create().Size(width, 560).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Grouped matrix axes").XAxis(x => x.Title("Work windows")).YAxis(y => y.Title("Service slots")).DataLabels(false);
         var colors = chart.Options.Theme.Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         if (categorical) {
-            chart.WithStateCategories(new ChartStateCategory("pass", "Pass", colors.Status.Pass.Fill), new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill));
+            chart.StateCategories(new ChartStateCategory("pass", "Pass", colors.Status.Pass.Fill), new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill));
             chart.AddSeries(StateRow("west", "West source", new[] { "pass", null, "warning", "pass" }));
             chart.AddSeries(StateRow("unknown", "Unknown source", new string?[] { null, null, null, null }));
             chart.AddSeries(StateRow("east", "East source", new[] { "warning", "pass", "pass", "warning" }));
@@ -108,14 +108,14 @@ public sealed class HeatmapGroupedAxisTests {
             chart.AddHeatmapRow("Unknown source", Array.Empty<ChartPoint>(), id: new ChartSeriesId("unknown"));
             chart.AddHeatmapRow("East source", new[] { new ChartPoint(10, 20), new ChartPoint(30, 10), new ChartPoint(70, 0), new ChartPoint(90, 5) }, id: new ChartSeriesId("east"));
             chart.AddHeatmapRow("Return source", new[] { new ChartPoint(30, 2), new ChartPoint(70, 3), new ChartPoint(90, 4) }, id: new ChartSeriesId("return"));
-            foreach (var row in chart.Series) row.WithObservationIds(row.Points.Select(point => new ChartObservationId(row.Id.Value + "-" + (point.X == 10 ? "a" : point.X == 30 ? "b" : point.X == 70 ? "c" : "d"))));
-            chart.WithHeatmapColorScale(ChartColorScale.Sequential(colors.Surface, colors.Accent).WithValueRange(0, 20));
+            foreach (var row in chart.Series) row.ObservationIds(row.Points.Select(point => new ChartObservationId(row.Id.Value + "-" + (point.X == 10 ? "a" : point.X == 30 ? "b" : point.X == 70 ? "c" : "d"))));
+            chart.Heatmap(h => h.ColorScale(ChartColorScale.Sequential(colors.Surface, colors.Accent).WithValueRange(0, 20)));
         }
-        chart.Series[0].WithPointColor(0, ChartColor.Black);
+        chart.Series[0].PointColor(0, ChartColor.Black);
         var coordinates = categorical ? new[] { 1d, 2, 3, 4 } : new[] { 10d, 30, 70, 90 };
-        chart.WithXLabels(coordinates.Select((value, index) => new ChartAxisLabel(value, index % 2 == 0 ? "A" : "B",
+        chart.XLabels(coordinates.Select((value, index) => new ChartAxisLabel(value, index % 2 == 0 ? "A" : "B",
             grouped ? new[] { index < 2 ? "Morning" : "Evening", "Work" } : Array.Empty<string>())));
-        chart.ConfigureYAxis(axis => axis.Labels.AddRange(new[] {
+        chart.YAxis(axis => axis.Labels.AddRange(new[] {
             new ChartAxisLabel(1, "West", grouped ? new[] { "North", "Core" } : Array.Empty<string>()),
             new ChartAxisLabel(2, "Unknown", grouped ? new[] { "North", "Core" } : Array.Empty<string>()),
             new ChartAxisLabel(3, "East", grouped ? new[] { "South", "Core" } : Array.Empty<string>()),
@@ -125,7 +125,7 @@ public sealed class HeatmapGroupedAxisTests {
     }
     private static ChartSeries StateRow(string id, string name, IEnumerable<string?> values) => ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId(id), name,
         values.Select(value => value == null ? (ChartHeatmapCell?)null : new ChartHeatmapCell(value)))
-        .WithObservationIds(new[] { "a", "b", "c", "d" }.Select(value => new ChartObservationId(id + "-" + value)));
+        .ObservationIds(new[] { "a", "b", "c", "d" }.Select(value => new ChartObservationId(id + "-" + value)));
     internal static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     internal static XElement[] ByRole(XDocument xml, string role) => xml.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
     internal static XElement[] Cells(XDocument xml) => ByRole(xml, "heatmap-cell");

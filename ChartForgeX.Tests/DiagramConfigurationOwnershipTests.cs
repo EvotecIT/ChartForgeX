@@ -13,10 +13,10 @@ public sealed class DiagramConfigurationOwnershipTests {
         var previousLabels = chart.Labels;
         VisualAccessibility? accessibilityCandidate = null;
         TopologyLabels? labelsCandidate = null;
-        chart.ConfigureAccessibility(options => {
+        chart.Accessibility(options => {
             accessibilityCandidate = options;
             options.Name = "Mapa usług"; options.Language = "pl-PL";
-        }).ConfigureLabels(options => {
+        }).Labels(options => {
             labelsCandidate = options;
             options.UntitledTopology = "Mapa";
             options.AccessibleTextFormatter = facts => "Opis " + facts.Count;
@@ -31,11 +31,11 @@ public sealed class DiagramConfigurationOwnershipTests {
         Assert.IsType<TopologyLabels>(labelsCandidate).AccessibleTextFormatter = _ => "Retained callback description";
         Assert.Equal("Mapa usług", chart.Accessibility.Name);
         Assert.Equal("Mapa", chart.Labels.UntitledTopology);
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureAccessibility(options => {
+        Assert.Throws<InvalidOperationException>(() => chart.Accessibility(options => {
             options.Name = "Partial name";
             throw new InvalidOperationException();
         }));
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureLabels(options => {
+        Assert.Throws<InvalidOperationException>(() => chart.Labels(options => {
             options.AccessibleTextFormatter = _ => "Partial description";
             throw new InvalidOperationException();
         }));
@@ -55,10 +55,10 @@ public sealed class DiagramConfigurationOwnershipTests {
         previousConnector.Metadata["source"] = "Original link fact";
         FlowArtifactStep? stepCandidate = null;
         FlowArtifactConnector? connectorCandidate = null;
-        flow.ConfigureStep("start", step => {
+        flow.UpdateStep("start", step => {
             stepCandidate = step;
             step.Label = "Configured step"; step.Metadata["configured"] = "Step fact";
-        }).ConfigureConnector(0, connector => {
+        }).UpdateConnector(0, connector => {
             connectorCandidate = connector;
             connector.Label = "Configured connector"; connector.Metadata["configured"] = "Link fact";
         });
@@ -74,11 +74,11 @@ public sealed class DiagramConfigurationOwnershipTests {
         previousConnector.Label = "Previous connector"; previousConnector.Metadata.Clear();
         Assert.IsType<FlowArtifactStep>(stepCandidate).Metadata.Clear();
         Assert.IsType<FlowArtifactConnector>(connectorCandidate).Metadata.Clear();
-        Assert.Throws<InvalidOperationException>(() => flow.ConfigureStep("start", step => {
+        Assert.Throws<InvalidOperationException>(() => flow.UpdateStep("start", step => {
             step.Label = "Partial step"; step.Metadata.Clear();
             throw new InvalidOperationException();
         }));
-        Assert.Throws<InvalidOperationException>(() => flow.ConfigureConnector(0, connector => {
+        Assert.Throws<InvalidOperationException>(() => flow.UpdateConnector(0, connector => {
             connector.Label = "Partial connector"; connector.Metadata.Clear();
             throw new InvalidOperationException();
         }));
@@ -95,7 +95,7 @@ public sealed class DiagramConfigurationOwnershipTests {
         previous.Cells[0].SortText = "Original sort";
         previous.Cells[0].Metadata["source"] = "Cell fact";
         TableArtifactRow? candidate = null;
-        table.ConfigureRow(0, row => {
+        table.UpdateRow(0, row => {
             candidate = row;
             row.Cells[0].DisplayText = "Configured cell";
             row.Cells[0].Metadata["configured"] = "Nested fact";
@@ -112,7 +112,7 @@ public sealed class DiagramConfigurationOwnershipTests {
         previous.Cells[0].Metadata.Clear(); previous.Metadata.Clear();
         Assert.IsType<TableArtifactRow>(candidate).Cells[0].Metadata.Clear();
         Assert.IsType<TableArtifactRow>(candidate).Cells.Clear();
-        Assert.Throws<InvalidOperationException>(() => table.ConfigureRow(0, row => {
+        Assert.Throws<InvalidOperationException>(() => table.UpdateRow(0, row => {
             row.Cells[0].DisplayText = "Partial cell";
             row.Cells.Clear(); row.Metadata.Clear();
             throw new InvalidOperationException();

@@ -64,10 +64,10 @@ public sealed class ChordRelationshipMarkupTests {
     public void TypedCommandsTablesAndFenceShareManagedFactsAndExactPreparedSvgPng(int width, ThemeMode mode) {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 520)),
             theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: mode);
-        var direct = Chart.Create().WithTitle("Transfers").AddChord("Volume", new[] { new ChartNode("a", "Support"), new ChartNode("b", "Support"), new ChartNode("idle", "Standby") }, new[] {
+        var direct = Chart.Create().Title("Transfers").AddChord("Volume", new[] { new ChartNode("a", "Support"), new ChartNode("b", "Support"), new ChartNode("idle", "Standby") }, new[] {
             new ChartFlowLink("ab", "a", "b", 7, -10), new ChartFlowLink("parallel", "a", "b", 2),
             new ChartFlowLink("reverse", "b", "a", 3, 0), new ChartFlowLink("self", "a", "a", 1, 5), new ChartFlowLink("zero", "b", "a", 0)
-        }).ConfigureChord(options => {
+        }).Chord(options => {
             options.Ordering = new ChartChordOrdering(new[] { "b", "a", "idle" }, new[] { "parallel", "self", "reverse", "ab", "zero" }, new[] { "ab", "parallel", "zero", "reverse", "self" });
             options.RibbonTension = .55;
         }).Prepare(context);

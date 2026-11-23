@@ -18,7 +18,7 @@ public sealed class InteractiveChartLocalizationBrowserTests {
     public async Task ChromeInheritsTheHostDirectionUnlessTheAuthorChoosesOne(bool fragment, bool rtlHost,
         HtmlChartTextDirection direction, string expected) {
         if (!Enabled) return;
-        var chart = StatusLines(false).WithTitle(fragment ? "Measurements" : "القياسات");
+        var chart = StatusLines(false).Title(fragment ? "Measurements" : "القياسات");
         void Configure(HtmlChartInteractionOptions options) => options.Localization.Direction = direction;
         var html = fragment ? "<!doctype html><html dir='" + (rtlHost ? "rtl" : "ltr")
             + "'><head></head><body>" + chart.ToInteractiveHtmlFragment(Configure) + "</body></html>"
@@ -49,9 +49,9 @@ public sealed class InteractiveChartLocalizationBrowserTests {
     [InlineData(980)]
     public async Task TranslatedChromeAndDynamicAnnouncementsFollowNativeUpdatesWithoutReversingAxes(int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(680, 380).WithTitle("القياسات")
+        var chart = Chart.Create().Size(680, 380).Title("القياسات")
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), "القراءات",
-                new[] { new ChartPoint(0, 4), new ChartPoint(1, 8) }).WithObservationId(0, new ChartObservationId("north")));
+                new[] { new ChartPoint(0, 4), new ChartPoint(1, 8) }).ObservationId(0, new ChartObservationId("north")));
         void Configure(HtmlChartInteractionOptions options) {
             options.Interaction.ChartId = "localized";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Export);

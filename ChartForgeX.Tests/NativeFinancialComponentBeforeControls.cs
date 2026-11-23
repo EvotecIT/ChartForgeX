@@ -27,23 +27,23 @@ public sealed class NativeFinancialComponentBeforeControls {
         Assert.False(NativeRawValueSourceMotionTests.Metadata(first).TryGetProperty("nativeValueSource", out _)); Assert.Equal(2, chart.Series[0].FinancialValues.Count);
     }
     internal static Chart Model(bool ohlc, bool labels, double open = 40, double high = 70, double low = 20, double close = 60, int width = 760, bool dark = false, bool styled = true) {
-        var chart = Chart.Create().WithTitle("Actual financial components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels);
+        var chart = Chart.Create().Title("Actual financial components").Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(true).DataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var changed = key == "delivery"; var values = new[] { new ChartCandlestick(1, changed ? open : 40, changed ? high : 70, changed ? low : 20, changed ? close : 60), new ChartCandlestick(3, 50, 75, 25, 45) };
             var series = (ohlc ? ChartSeries.CreateOhlc(new ChartSeriesId(key), key, values) : ChartSeries.CreateCandlestick(new ChartSeriesId(key), key, values))
-                .WithObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later") });
+                .ObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later") });
             if (styled) {
-                series.ConfigureFinancial(options => {
+                series.Financial(options => {
                     options.Rising.Stroke = ChartColor.FromHex("#218C74"); options.Rising.StrokeWidth = 2.5; options.Rising.DashPattern = new[] { 3d, 2d }; options.Rising.DashOffset = -1;
                     options.Falling.Stroke = ChartColor.FromHex("#CF6D45"); options.Falling.StrokeWidth = 3; options.Falling.DashPattern = new[] { 2d, 1d }; options.Falling.StrokeOpacity = .8;
                     if (!ohlc) { options.Rising.FillOpacity = .25; options.Falling.FillOpacity = 0; options.Rising.Wick.StrokeWidth = 1.5; options.Falling.Wick.DashPattern = new[] { 4d, 2d }; }
                 });
-                series.ConfigureFinancialValue(0, options => { options.StrokeWidth = 4; if (!ohlc) options.Wick.Stroke = ChartColor.FromHex("#3987E5"); });
-                series.WithPointColor(1, ChartColor.FromHex("#729BB7"));
+                series.FinancialValue(0, options => { options.StrokeWidth = 4; if (!ohlc) options.Wick.Stroke = ChartColor.FromHex("#3987E5"); });
+                series.PointColor(1, ChartColor.FromHex("#729BB7"));
             }
             chart.AddSeries(series);
         }
-        chart.ConfigureXAxis(axis => { axis.Minimum = 0; axis.Maximum = 4; }); chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 100; }); return chart;
+        chart.XAxis(axis => { axis.Min = 0; axis.Max = 4; }); chart.YAxis(axis => { axis.Min = 0; axis.Max = 100; }); return chart;
     }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer, Chart chart) => renderer.PrepareSection(chart, configure: options => { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-financial-components"; });
 }

@@ -19,8 +19,8 @@ internal static class ChartMapComposition {
         var arbitrary = data.Any(series => series.Kind == ChartSeriesKind.RegionMap && !series.RegionMapDefinition!.GeographicProjection.HasValue);
         if (arbitrary) {
             if (data.Any(series => series.Kind != ChartSeriesKind.RegionMap || series.RegionMapDefinition!.GeographicProjection.HasValue)
-                || chart.Options.HasExplicitMapViewport || chart.Options.MapConnectors.Count > 0 || data.Any(series => series.MapConnectors.Count > 0)
-                || chart.Options.MapBaseLayers.Concat(chart.Options.MapOverlayLayers).Any(layer => layer.Definition.GeographicProjection.HasValue))
+                || chart.Options.Map.HasExplicitViewport || chart.Options.Map.Connectors.Count > 0 || data.Any(series => series.MapConnectors.Count > 0)
+                || chart.Options.Map.BaseLayers.Concat(chart.Options.Map.OverlayLayers).Any(layer => layer.Definition.GeographicProjection.HasValue))
                 throw new InvalidOperationException("Arbitrary-coordinate region datasets cannot share a frame with geographic points, routes, viewports or layers; declare the same projection on every geographic region definition.");
             return null;
         }
@@ -31,19 +31,19 @@ internal static class ChartMapComposition {
                 throw new InvalidOperationException("Composed geographic map datasets must declare the same projection.");
             projection = declared;
         }
-        var resolved = projection ?? chart.Options.MapViewport.GeographicProjection ?? ChartMapGeoJsonProjection.Equirectangular;
-        foreach (var layer in chart.Options.MapBaseLayers.Concat(chart.Options.MapOverlayLayers))
+        var resolved = projection ?? chart.Options.Map.Viewport.GeographicProjection ?? ChartMapGeoJsonProjection.Equirectangular;
+        foreach (var layer in chart.Options.Map.BaseLayers.Concat(chart.Options.Map.OverlayLayers))
             if (layer.Definition.GeographicProjection.HasValue && layer.Definition.GeographicProjection.Value != resolved)
                 throw new InvalidOperationException("Geographic context layers must use the same projection as their data layers.");
         return resolved;
     }
 
     private static void ValidatePolygonViewports(Chart chart) {
-        var viewport = chart.Options.MapViewport;
-        if (viewport.CrossesAntimeridian && chart.Options.RegionMapBounds.HasValue)
+        var viewport = chart.Options.Map.Viewport;
+        if (viewport.CrossesAntimeridian && chart.Options.Map.RegionBounds.HasValue)
             throw new NotSupportedException("An antimeridian viewport cannot use projected RegionMapBounds.");
         var definitions = chart.Series.Where(series => series.Kind == ChartSeriesKind.RegionMap).Select(series => series.RegionMapDefinition!)
-            .Concat(chart.Options.MapBaseLayers.Concat(chart.Options.MapOverlayLayers).Select(layer => layer.Definition));
+            .Concat(chart.Options.Map.BaseLayers.Concat(chart.Options.Map.OverlayLayers).Select(layer => layer.Definition));
         foreach (var definition in definitions) {
             if (!viewport.CrossesAntimeridian && !definition.PolygonViewport.HasValue) continue;
             if (!definition.PolygonViewport.HasValue || !ChartGeographicProjection.SamePolygonViewport(definition.PolygonViewport.Value, viewport)

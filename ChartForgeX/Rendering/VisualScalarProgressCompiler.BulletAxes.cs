@@ -14,8 +14,8 @@ internal static partial class VisualScalarProgressCompiler {
         var entries = chart.Rows.Select(series => (Series: series, Index: series.Index)).ToArray();
         var independent = chart.Independent;
         var vertical = chart.Orientation == ChartOrientation.Vertical;
-        var sharedMinimum = chart.XAxis.Minimum ?? entries.Min(entry => entry.Series.Reading.Minimum);
-        var sharedMaximum = chart.XAxis.Maximum ?? entries.Max(entry => entry.Series.Reading.Maximum);
+        var sharedMinimum = chart.XAxis.Min ?? entries.Min(entry => entry.Series.Reading.Minimum);
+        var sharedMaximum = chart.XAxis.Max ?? entries.Max(entry => entry.Series.Reading.Maximum);
         var rows = entries.Select(entry => new BulletAxisRow(chart, entry.Series, entry.Index, independent, sharedMinimum, sharedMaximum)).ToArray();
         foreach (var row in rows) row.CaptureCaptions(chart);
         var gap = context.Theme.Spacing;
@@ -140,7 +140,7 @@ internal static partial class VisualScalarProgressCompiler {
     private sealed class BulletAxisRow {
         internal BulletAxisRow(BulletPaintContext chart, BulletRow series, int index, bool independent, double sharedMinimum, double sharedMaximum) {
             Series = series; Index = index; Axis = independent ? series.Axis.Clone() : chart.XAxis.Clone();
-            Reading = series.Reading; var reading = Reading; Minimum = independent ? Axis.Minimum ?? reading.Minimum : sharedMinimum; Maximum = independent ? Axis.Maximum ?? reading.Maximum : sharedMaximum;
+            Reading = series.Reading; var reading = Reading; Minimum = independent ? Axis.Min ?? reading.Minimum : sharedMinimum; Maximum = independent ? Axis.Max ?? reading.Maximum : sharedMaximum;
             if (Maximum <= Minimum || !Finite(Maximum - Minimum) || Axis.Scale == ChartScaleKind.Time)
                 throw new InvalidOperationException("Bullet axes require a finite positive numeric domain.");
             var lower = ChartScaleTransform.Forward(Minimum, Axis); var upper = ChartScaleTransform.Forward(Maximum, Axis);

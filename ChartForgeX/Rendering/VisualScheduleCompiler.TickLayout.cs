@@ -65,7 +65,7 @@ internal static partial class VisualScheduleCompiler {
     private static HashSet<double> ScheduleCaptionStride(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, TextStyle style, bool comfortable = false) {
         if (chart.Options.XAxis.LabelDensity == ChartLabelDensity.All) return new HashSet<double>(ticks);
-        var dayInterval = chart.Options.GanttTickInterval;
+        var dayInterval = chart.Options.Gantt.TickInterval;
         var projectStart = chart.Series.Where(series => series.Kind == ChartSeriesKind.Gantt && series.GanttItems.Count > 0)
             .Select(series => series.GanttItems[0].Start).DefaultIfEmpty(double.NaN).Min();
         var anchor = dayInterval?.Unit == ChartTimeTickUnit.Day && dayInterval.Count == 1 && ChartMath.IsFinite(projectStart)

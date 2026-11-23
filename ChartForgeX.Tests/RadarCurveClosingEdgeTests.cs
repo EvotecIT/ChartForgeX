@@ -11,8 +11,8 @@ public sealed class RadarCurveClosingEdgeTests {
     [InlineData(0d)]
     [InlineData(.25)]
     public void ColumnCaptionsAvoidEveryEdgeOfTheClosedRadarOutline(double? tension) {
-        var chart = Chart.Create().WithSize(240, 180).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Above)
+        var chart = Chart.Create().Size(240, 180).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .YAxis(y => y.Bounds(0, 100)).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Above))
             .AddRadialColumn("Observed", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 40)))
             .AddRadarLine("Target", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 80)));
         chart.Series[1].ShowDataLabels = false; chart.Series[1].Markers.Enabled = false;

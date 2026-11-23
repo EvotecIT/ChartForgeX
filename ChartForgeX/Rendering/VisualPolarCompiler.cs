@@ -122,7 +122,7 @@ internal static partial class VisualPolarCompiler {
                                 SvgPaint.Of(colors.Surface, SvgColorRole.Surface), Pattern(series, source),
                                 ChartStateMark.Backdrop(chart.Options, colors, context.Frame), radar ? "radar-point-pattern" : "polar-point-pattern");
                         }
-                        if (visible && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)))
+                        if (visible && (series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)))
                             AddDataLabel(chart, context, builder, plot, labels, series, source, pointId, formatted, mapped[index], angle, radar, seriesIndex, chart.Series.Count);
                     }
                 }
@@ -131,7 +131,7 @@ internal static partial class VisualPolarCompiler {
         }
     }
 
-    private static string Category(Chart chart, double value) => ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value)
+    private static string Category(Chart chart, double value) => ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, value)
         ?? ChartAxisValueFormatter.Format(chart.Options.XAxis, value);
     private static ChartFillPattern Pattern(ChartSeries series, int index) => index >= 0 && index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern;
     private static ChartPoint On(PolarLayout geometry, double angle, double radius) => new(geometry.Cx + Math.Cos(angle) * radius, geometry.Cy + Math.Sin(angle) * radius);
@@ -140,14 +140,14 @@ internal static partial class VisualPolarCompiler {
         var physical = chart.Options.XAxis.Reversed ? count - 1 - index : index;
         // Keep each family's existing arithmetic so unreversed prepared coordinates stay byte-for-byte stable.
         var angle = -Math.PI / 2 + (sectorSweep.HasValue ? physical * sectorSweep.Value : Math.PI * 2 * physical / count);
-        return chart.Options.PolarRotationDegrees == 0 ? angle : angle + Rotation(chart);
+        return chart.Options.Polar.RotationDegrees == 0 ? angle : angle + Rotation(chart);
     }
     /// <summary>Projects authored radians into screen coordinates, retaining the positive horizontal zero ray.</summary>
     private static double PolarAngle(Chart chart, double radians) {
         var angle = chart.Options.XAxis.Reversed ? radians : -radians;
-        return chart.Options.PolarRotationDegrees == 0 ? angle : angle + Rotation(chart);
+        return chart.Options.Polar.RotationDegrees == 0 ? angle : angle + Rotation(chart);
     }
-    private static double Rotation(Chart chart) => (chart.Options.PolarRotationDegrees % 360) * Math.PI / 180;
+    private static double Rotation(Chart chart) => (chart.Options.Polar.RotationDegrees % 360) * Math.PI / 180;
     private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
     private static string Id(int series, int? point = null) => "series-" + series.ToString(CultureInfo.InvariantCulture) + (point.HasValue ? "-point-" + point.Value.ToString(CultureInfo.InvariantCulture) : "");
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);

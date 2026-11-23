@@ -56,8 +56,8 @@ public sealed class MermaidFlowchartFontDefaultMigrationTests {
 
     [Fact]
     public void NativeGraphiteAndOrdinaryManualVersionOneStayExact() {
-        var chart = TopologyChart.Create().WithId("native-font-null-control").WithViewport(640, 400, 24).WithLayout(TopologyLayoutMode.Manual)
-            .WithTheme(VisualTheme.Graphite()).AddNode("node", "Caption", 120, 100, width: 240, height: 100);
+        var chart = TopologyChart.Create().Id("native-font-null-control").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
+            .Theme(VisualTheme.Graphite()).AddNode("node", "Caption", 120, 100, width: 240, height: 100);
         chart.Nodes[0].Shape = TopologyNodeShape.Rectangle; chart.Nodes[0].ShowStatusBadge = false;
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false };
         var prepared = chart.Prepare(); var saved = prepared.ToInterchangeEnvelope(); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var json = saved.ToJson();

@@ -16,12 +16,12 @@ public sealed class ResponsiveMatrixLayoutBrowserTests {
     [InlineData(false, true, true)]
     public async Task RowLabelsCellsAndLegendStayInsideTheirBandsAcrossWideCompactAndReturn(bool categorical, bool bottom, bool compressed) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Chart.Create().WithSize(1200, 320).WithHeader(false)
-            .WithXLabels("00:00", "00:15", "00:30", "00:45")
-            .WithLegendPosition(bottom ? ChartLegendPosition.Bottom : ChartLegendPosition.TopLeft);
+        var chart = Chart.Create().Size(1200, 320).ShowHeader(false)
+            .XLabels("00:00", "00:15", "00:30", "00:45")
+            .Legend(l => l.Position(bottom ? ChartLegendPosition.Bottom : ChartLegendPosition.TopLeft));
         if (categorical) {
             var captions = new[] { "Maintenance", "No data", "Below 50%", "50-90%", "90-99.9%", "99.9-100%" };
-            chart.WithStateCategories(captions.Select((caption, index) => new ChartStateCategory("s" + index, caption, ChartColor.FromHex("#258960"))).ToArray())
+            chart.StateCategories(captions.Select((caption, index) => new ChartStateCategory("s" + index, caption, ChartColor.FromHex("#258960"))).ToArray())
                 .AddHeatmapCategoryRow("dc-one", new ChartHeatmapCell("s5"), new ChartHeatmapCell("s4"), new ChartHeatmapCell("s3"), new ChartHeatmapCell("s1"));
         } else {
             chart.AddHeatmapRow("dc-one", new[] { new ChartPoint(1, 99.9), new ChartPoint(2, 95), new ChartPoint(3, 80), new ChartPoint(4, 60) });

@@ -53,7 +53,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests : IDisposable {
         if (collection) FontRegistry.Register(family, OpenTypeTestFonts.Collection(TopologyOwnedFontPortableTests.Bytes(), TopologyOwnedFontPortableTests.Bytes(weight:700)), 700, collectionIndex:1);
         else TopologyOwnedFontPortableTests.Register();
         var model = Model(collection ? family : TopologyOwnedFontPortableTests.Primary + ", " + TopologyOwnedFontPortableTests.Fallback);
-        model.WithTitle("").WithXLabels(collection ? "HH" : "H" + char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter), "OH");
+        model.Title("").XLabels(collection ? "HH" : "H" + char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter), "OH");
         var section = new HtmlInteractiveChartRenderer().PrepareSection(model); Capture("native-fallback-" + collection, section);
         var resources = section.WideEmission!.Fonts!;
         Assert.Contains("data-cfx-native-text-ink", section.Html, StringComparison.Ordinal);
@@ -128,8 +128,8 @@ public sealed partial class HtmlOwnedFontDeliveryTests : IDisposable {
         Assert.ThrowsAny<Xunit.Sdk.XunitException>(() => HtmlFontRootObservation.AssertDestination(section.Html, alteredWeight));
         Assert.ThrowsAny<Xunit.Sdk.XunitException>(() => HtmlFontRootObservation.AssertDestination(section.Html, destination.Replace("data-cfx-font-byte-length", "data-cfx-foreign-byte-length", StringComparison.Ordinal)));
     }
-    internal static Chart Model(string? family = null) => Chart.Create().WithSize(720,420).WithTitle("Owned native text").WithXLabels("H", "O")
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(family ?? BrowserProofFonts.Family)).AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
+    internal static Chart Model(string? family = null) => Chart.Create().Size(720,420).Title("Owned native text").XLabels("H", "O")
+        .Theme(VisualTheme.Graphite().WithFontFamily(family ?? BrowserProofFonts.Family)).AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
     private static void Capture(string name, HtmlChartSection section) {
         Save(name + ".html", section.Html); Save(name + ".svg", section.PreparedVisual.ToSvg());
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is {Length:>0} output) { Directory.CreateDirectory(output); File.WriteAllBytes(Path.Combine(output,"owned-html-"+name+".png"), section.PreparedVisual.ToPng()); }

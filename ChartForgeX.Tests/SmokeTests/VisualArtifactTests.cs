@@ -19,10 +19,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TableArtifactDeclaresNativeHostCapabilities() {
         var table = TableArtifact.Create("services")
-            .WithTitle("Service Inventory")
-            .WithSubtitle("Native-host table contract")
-            .WithCapabilities(
-                TableArtifactCapabilities.Search |
+            .Title("Service Inventory")
+            .Subtitle("Native-host table contract")
+            .Capabilities(TableArtifactCapabilities.Search |
                 TableArtifactCapabilities.Sort |
                 TableArtifactCapabilities.Filter |
                 TableArtifactCapabilities.MultiSelection |
@@ -36,7 +35,7 @@ internal static partial class SmokeTests {
             .AddRow("worker", "Worker", "Warning", 91);
 
         table.Columns[1].Metadata["facet"] = "health";
-        table.ConfigureRow(1, row => {
+        table.UpdateRow(1, row => {
             row.Status = Tone.Warning;
             row.Metadata["source"] = "probe";
             row.Cells[1].Status = Tone.Warning;
@@ -61,13 +60,13 @@ internal static partial class SmokeTests {
 
     private static void TableArtifactRendersStaticPreviewThroughVisualBlocks() {
         var table = TableArtifact.Create("accounts")
-            .WithTitle("Accounts")
-            .WithSubtitle("Static table preview")
+            .Title("Accounts")
+            .Subtitle("Static table preview")
             .AddColumn("displayName", "Display name")
             .AddColumn("state", "State", TableArtifactColumnType.Status)
             .AddRow("a", "Ada Lovelace", "Enabled")
             .AddRow("g", "Grace Hopper", "Disabled")
-            .ConfigureRow(1, row => {
+            .UpdateRow(1, row => {
                 row.Status = Tone.Danger;
                 row.Cells[1].Status = Tone.Danger;
             });
@@ -94,7 +93,7 @@ internal static partial class SmokeTests {
 
     private static void VisualArtifactWatermarksStayAlignedAcrossStaticFormats() {
         var table = TableArtifact.Create("watermarked-table")
-            .WithTitle("Quarterly Review")
+            .Title("Quarterly Review")
             .AddColumn("name", "Name")
             .AddColumn("state", "State")
             .AddRow("api", "API", "Healthy")
@@ -111,7 +110,7 @@ internal static partial class SmokeTests {
         };
         var plain = RasterImageDecoder.Decode(artifact.ToPng());
         var semantics = artifact.ToInterchangeJson();
-        artifact.WithWatermarks(watermark);
+        artifact.AddWatermarks(watermark);
 
         var svg = artifact.ToSvg(options);
         var html = artifact.ToHtmlPage(options);
@@ -137,16 +136,16 @@ internal static partial class SmokeTests {
         watermark.Opacity = 0.24;
 
         var interactiveTopologyArtifact = TopologyChart.Create()
-            .WithViewport(320, 180)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(320, 180))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 30, 50)
             .AddNode("b", "B", 210, 50)
             .AddEdge("a-b", "a", "b")
             .ToVisualArtifact();
         var interactiveWatermarkOptions = new VisualArtifactRenderOptions {
-            Topology = new TopologyRenderOptions { EnableHtmlInteractions = true }
+            Topology = new TopologyRenderOptions { Html = { Interactions = true } }
         };
-        interactiveTopologyArtifact.WithWatermarks(VisualWatermark.FromText("STATIC"));
+        interactiveTopologyArtifact.AddWatermarks(VisualWatermark.FromText("STATIC"));
         AssertThrows<InvalidOperationException>(() => interactiveTopologyArtifact.ToHtmlPage(interactiveWatermarkOptions), "Watermarked topology HTML should reject interaction requests through the same adapter ownership boundary as ordinary topology HTML.");
 
         AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
@@ -163,7 +162,7 @@ internal static partial class SmokeTests {
         denseWatermark.Repeat = true;
         denseWatermark.RepeatSpacingX = 1;
         denseWatermark.RepeatSpacingY = 1;
-        var denseArtifact = table.ToVisualArtifact().WithWatermarks(denseWatermark);
+        var denseArtifact = table.ToVisualArtifact().AddWatermarks(denseWatermark);
         AssertThrows<InvalidOperationException>(() => denseArtifact.ToSvg(), "Repeated watermark rendering should reject configurations that exceed the bounded mark count.");
 
         var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
@@ -185,7 +184,7 @@ internal static partial class SmokeTests {
         repeatedImage.OffsetX = 7;
         repeatedImage.OffsetY = 9;
         repeatedImage.Opacity = 1;
-        var repeatedImageArtifact = table.ToVisualArtifact().WithWatermarks(repeatedImage);
+        var repeatedImageArtifact = table.ToVisualArtifact().AddWatermarks(repeatedImage);
         var repeatedImageSvg = repeatedImageArtifact.ToSvg();
         Assert(CountOccurrences(repeatedImageSvg, ";base64,") == 1 && CountOccurrences(repeatedImageSvg, "<use data-cfx-role=\"watermark\"") > 1, "Repeated SVG image watermarks should define their payload once and reuse it for every placement.");
         Assert(repeatedImageSvg.Contains("x=\"12\" y=\"14\"", StringComparison.Ordinal), "Repeated SVG watermark placement should phase its tile grid from anchor, padding, and offsets.");
@@ -204,7 +203,7 @@ internal static partial class SmokeTests {
         portableWatermark.Width = 80;
         portableWatermark.Height = 80;
         portableWatermark.Opacity = 1;
-        var portableSvg = table.ToVisualArtifact().WithWatermarks(portableWatermark).ToSvg();
+        var portableSvg = table.ToVisualArtifact().AddWatermarks(portableWatermark).ToSvg();
         Assert(portableSvg.Contains("data:image/png;base64,", StringComparison.Ordinal) && !portableSvg.Contains("image/x-portable-pixmap", StringComparison.Ordinal), "SVG watermarks should transcode accepted non-web raster inputs to browser-safe PNG data URIs.");
 
         var contained = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 100, new byte[100 * 100 * 4]), new[] { portableWatermark });
@@ -212,8 +211,8 @@ internal static partial class SmokeTests {
         Assert(contained.Pixels[(50 * contained.Width + 50) * 4] >= 250 && contained.Pixels[(50 * contained.Width + 50) * 4 + 3] == 255, "PNG watermark rendering should center contained image pixels in the target box.");
 
         var topology = TopologyChart.Create()
-            .WithViewport(240, 140, 16)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(240, 140, 16))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 24, 44)
             .AddNode("right", "Right", 152, 44)
             .AddEdge("left-right", "left", "right");
@@ -226,8 +225,8 @@ internal static partial class SmokeTests {
         var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
         var scaleOnePlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
         var scaleTwoPlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
-        var scaleOneDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().WithWatermarks(scaleOneOptions, scaleWatermark).ToPng(scaleOneOptions));
-        var scaleTwoDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().WithWatermarks(scaleTwoOptions, scaleWatermark).ToPng(scaleTwoOptions));
+        var scaleOneDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().AddWatermarks(scaleOneOptions, scaleWatermark).ToPng(scaleOneOptions));
+        var scaleTwoDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().AddWatermarks(scaleTwoOptions, scaleWatermark).ToPng(scaleTwoOptions));
         Assert(scaleWatermark.Scale == 1 && scaleWatermark.FontSize == 20 && scaleWatermark.Opacity == 1
             && scaleWatermark.Anchor == VisualCanvasAnchor.Center && scaleWatermark.OffsetX == 0 && scaleWatermark.OffsetY == 0,
             "Artifact rendering should preserve the caller's watermark sizing and placement options.");
@@ -252,13 +251,13 @@ internal static partial class SmokeTests {
             "Density-two artifact watermarking should match an explicitly doubled text watermark, including placement and alpha.");
 
         var wideTopology = TopologyChart.Create()
-            .WithViewport(320, 180, 16)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(320, 180, 16))
+            .Legend((TopologyLegend?)null)
             .AddGroup("wide", "Wide", 20, 40, 620, 80)
             .AddNode("wide-left", "Left", 40, 58, groupId: "wide")
             .AddNode("wide-right", "Right", 540, 58, groupId: "wide")
             .AddEdge("wide-edge", "wide-left", "wide-right");
-        var fittedTopologyOptions = new TopologyRenderOptions { IncludeLegend = false }.WithFitContentToViewport();
+        var fittedTopologyOptions = new TopologyRenderOptions { IncludeLegend = false }.FitContentToViewport();
         var fittedWatermark = VisualWatermark.FromImage(PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 255, 0, 255, 255 })), "image/png");
         fittedWatermark.Anchor = VisualCanvasAnchor.BottomRight;
         fittedWatermark.Padding = 4;
@@ -271,7 +270,7 @@ internal static partial class SmokeTests {
         var wideArtifact = wideTopology.ToVisualArtifact();
         wideArtifact.NaturalSize = new VisualArtifactSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
         wideArtifact.PreserveNaturalSize = true;
-        wideArtifact.WithWatermarks(fittedArtifactOptions, fittedWatermark);
+        wideArtifact.AddWatermarks(fittedArtifactOptions, fittedWatermark);
         var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));
         // Prepared topology already fits its content inside the exported SVG root. Its watermark
         // anchors to that same full canvas; internal diagram fitting is not another image viewport.
@@ -295,13 +294,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
 
-        var mutableChart = Chart.Create().WithSize(240, 140).WithTitle("Mutable");
-        mutableChart.ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("Mutable chart", "A mutable size chart.", "en"));
+        var mutableChart = Chart.Create().Size(240, 140).Title("Mutable");
+        mutableChart.Accessibility(accessibility => accessibility.TextAlternative("Mutable chart", "A mutable size chart.", "en"));
         mutableChart.AddBar("Value", new[] { new ChartPoint(1, 2) });
         var mutableArtifact = mutableChart.ToVisualArtifact();
         Assert(mutableArtifact.Accessibility.Name == "Mutable chart" && mutableArtifact.Accessibility.Description == "A mutable size chart." && mutableArtifact.Accessibility.Language == "en", "Chart artifacts should preserve accessibility metadata for host adapters.");
-        mutableChart.WithSize(480, 280);
-        mutableArtifact.WithWatermarks(VisualWatermark.FromText("CURRENT"));
+        mutableChart.Size(480, 280);
+        mutableArtifact.AddWatermarks(VisualWatermark.FromText("CURRENT"));
         var resizedSvg = XDocument.Parse(mutableArtifact.ToSvg());
         var renderedMark = resizedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "watermark", StringComparison.Ordinal));
         var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
@@ -310,15 +309,15 @@ internal static partial class SmokeTests {
     }
 
     private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {
-        var chart = Chart.Create().WithSize(240, 140).WithTitle("Requests");
+        var chart = Chart.Create().Size(240, 140).Title("Requests");
         chart.AddBar("API", new[] { new ChartPoint(1, 4), new ChartPoint(2, 7) });
-        var grid = ChartGrid.Create().WithTitle("Service overview").WithColumns(1).Add(chart);
-        var canvas = VisualCanvas.Create(320, 180).WithTitle("Release overview");
-        canvas.Accessibility.WithTextAlternative("Release overview", "A fixed-size release summary.");
-        var story = VisualStory.Create("Deployment story").WithDescription("A deployment reaches ready state.").WithSize(480, 320);
+        var grid = ChartGrid.Create().Title("Service overview").Columns(1).Add(chart);
+        var canvas = VisualCanvas.Create(320, 180).Title("Release overview");
+        canvas.Accessibility.TextAlternative("Release overview", "A fixed-size release summary.");
+        var story = VisualStory.Create("Deployment story").Description("A deployment reaches ready state.").Size(480, 320);
         story.Scene("ready", "Ready").Panel("result", new VisualStoryTextSurface("Ready", emphasized: true));
         story.Outcome("ready", "The deployment is ready", "result");
-        var block = MetricCard.Create().WithMetric("Ready", "Yes").WithSize(240, 140);
+        var block = MetricCard.Create().Metric("Ready", "Yes").Size(240, 140);
 
         VisualArtifact[] artifacts = {
             grid.ToVisualArtifact("grid"),
@@ -342,8 +341,8 @@ internal static partial class SmokeTests {
         Assert(localizedCanvasArtifact.ToHtmlPage().Contains("<html lang=\"pl-PL\">", StringComparison.OrdinalIgnoreCase), "Artifact HTML should preserve an updated canvas language even without watermarks.");
 
         var directedTopology = TopologyChart.Create()
-            .WithViewport(240, 140, 16)
-            .WithLegend(null)
+            .Viewport(new TopologyViewport(240, 140, 16))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 24, 44)
             .AddNode("right", "Right", 152, 44);
         directedTopology.Edges.Add(new TopologyEdge { Id = "forward", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Forward });
@@ -361,7 +360,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TableArtifact.Create("bad").AddColumn("id", "ID").AddColumn("id", "Duplicate"), "TableArtifact should reject duplicate column ids.");
         AssertThrows<ArgumentException>(() => TableArtifact.Create("bad").AddColumn("id", "ID").AddRow("row", "a", "b"), "TableArtifact should reject row value count mismatches.");
         AssertThrows<InvalidOperationException>(() => TableArtifact.Create("bad").AddColumn("id", "ID").AddRow("row", "a").AddColumn("next", "Next"), "TableArtifact should reject adding columns after rows.");
-        AssertThrows<ArgumentOutOfRangeException>(() => TableArtifact.Create("bad").WithCapabilities((TableArtifactCapabilities)1024), "TableArtifact should reject undefined capability flags.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TableArtifact.Create("bad").Capabilities((TableArtifactCapabilities)1024), "TableArtifact should reject undefined capability flags.");
         AssertThrows<ArgumentOutOfRangeException>(() => TableArtifact.Create("bad").Capabilities = (TableArtifactCapabilities)1024, "TableArtifact should reject undefined capability flags through the public setter.");
         AssertThrows<ArgumentOutOfRangeException>(() => TableArtifact.Create("bad").ExportFormats = (VisualArtifactExportFormat)1024, "TableArtifact should reject undefined export format flags.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactColumn("bad", "Bad", (TableArtifactColumnType)999), "TableArtifactColumn should reject unknown data types.");
@@ -400,8 +399,8 @@ internal static partial class SmokeTests {
 
     private static void FlowArtifactRendersStaticPreviewAndEnvelope() {
         var flow = FlowArtifact.Create("approval")
-            .WithTitle("Approval Flow")
-            .WithSize(720, 420)
+            .Title("Approval Flow")
+            .Width(720).Height(420).Padding(24)
             .AddLane("ops", "Operations")
             .AddStep("start", "Start", FlowArtifactStepKind.Start, "ops", Tone.Success)
             .AddStep("review", "Review", FlowArtifactStepKind.Decision, "ops", Tone.Warning)
@@ -425,9 +424,9 @@ internal static partial class SmokeTests {
 
     private static void SequenceArtifactRendersStaticPreviewAndEnvelope() {
         var sequence = SequenceArtifact.Create("incident")
-            .WithTitle("Incident Flow")
-            .WithSubtitle("Native sequence preview")
-            .WithSize(760, 420)
+            .Title("Incident Flow")
+            .Subtitle("Native sequence preview")
+            .Width(760).Height(420)
             .AddParticipant("user", "User", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("api", "API")
             .AddParticipant("db", "Database", SequenceArtifactParticipantKind.Database)

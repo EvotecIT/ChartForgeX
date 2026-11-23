@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
     private static void Dotted(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var series = chart.Series[0]; var viewport = chart.Options.MapViewport;
+        var series = chart.Series[0]; var viewport = chart.Options.Map.Viewport;
         var longitudeSpan = viewport.LongitudeSpan; var latitudeSpan = viewport.MaximumLatitude - viewport.MinimumLatitude;
         if (!Finite(longitudeSpan) || !Finite(latitudeSpan) || longitudeSpan <= 0 || latitudeSpan <= 0)
             throw new InvalidOperationException("A dotted map viewport must have positive longitude and latitude spans.");
@@ -33,7 +33,7 @@ internal static partial class VisualMapCompiler {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
             ["data-cfx-projection"] = "equirectangular", ["data-cfx-viewport"] = viewport.Name ?? "",
             ["data-cfx-point-count"] = N(series.RenderPoints.Count), ["data-cfx-visible-point-count"] = N(series.RenderPoints.Count(point => Visible(point, viewport))),
-            ["data-cfx-valued-point-count"] = N(valued.Length), ["data-cfx-connector-count"] = N(chart.Options.MapConnectors.Count),
+            ["data-cfx-valued-point-count"] = N(valued.Length), ["data-cfx-connector-count"] = N(chart.Options.Map.Connectors.Count),
             ["data-cfx-viewport-min-longitude"] = N(viewport.MinimumLongitude), ["data-cfx-viewport-max-longitude"] = N(viewport.MaximumLongitude),
             ["data-cfx-viewport-min-latitude"] = N(viewport.MinimumLatitude), ["data-cfx-viewport-max-latitude"] = N(viewport.MaximumLatitude),
             ["data-cfx-min-value"] = N(min), ["data-cfx-max-value"] = N(max)

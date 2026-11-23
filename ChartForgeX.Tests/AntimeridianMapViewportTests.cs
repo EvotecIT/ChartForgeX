@@ -104,17 +104,17 @@ public sealed class AntimeridianMapViewportTests {
         var definition = new ChartMapDefinition("old-context", "Old context", 20, 20, new[] { new ChartMapRegion("A", "Alpha", "M0 0H20V20H0Z") });
         if (kind == "geographic-region") definition = definition.WithGeographicProjection(ChartMapGeoJsonProjection.Equirectangular);
         if (kind.EndsWith("region", StringComparison.Ordinal)) chart.AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("old-regions"), "Old regions", definition, new[] { new ChartRegionMapItem("A", 1) }));
-        else if (kind == "base") chart.Options.MapBaseLayers.Add(new ChartMapLayer(definition, null, ChartColor.Black, 1, "old-context"));
-        else if (kind == "overlay") chart.Options.MapOverlayLayers.Add(new ChartMapLayer(definition, null, ChartColor.Black, 1, "old-context"));
-        else chart.Options.RegionMapBounds = new ChartRect(170, -10, 20, 40);
+        else if (kind == "base") chart.Options.Map.BaseLayers.Add(new ChartMapLayer(definition, null, ChartColor.Black, 1, "old-context"));
+        else if (kind == "overlay") chart.Options.Map.OverlayLayers.Add(new ChartMapLayer(definition, null, ChartColor.Black, 1, "old-context"));
+        else chart.Options.Map.RegionBounds = new ChartRect(170, -10, 20, 40);
         Assert.Contains("antimeridian", Assert.Throws<NotSupportedException>(() => MapLabelClusterDepthTests.Prepare(chart)).Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(170, chart.Options.MapViewport.MinimumLongitude); Assert.Equal(-170, chart.Options.MapViewport.MaximumLongitude);
+        Assert.Equal(170, chart.Options.Map.Viewport.MinimumLongitude); Assert.Equal(-170, chart.Options.Map.Viewport.MaximumLongitude);
     }
 
     [Fact]
     public void IndependentTilesStillComposeAndPreparedRawIdentitiesSurviveUpdatesAndFullWorldReset() {
         var chart = DatelineMapRecipe.Create();
-        var tiles = ChartSeries.CreateTileMap(new ChartSeriesId("inset"), "Inset", new ChartTileMapDefinition("inset", "Inset", new[] { new ChartTileMapRegion("A", "Alpha", 0, 0) }), new[] { new ChartRegionMapItem("A", 7) }).WithMapInset(new ChartRect(.02, .02, .25, .2));
+        var tiles = ChartSeries.CreateTileMap(new ChartSeriesId("inset"), "Inset", new ChartTileMapDefinition("inset", "Inset", new[] { new ChartTileMapRegion("A", "Alpha", 0, 0) }), new[] { new ChartRegionMapItem("A", 7) }).MapInset(new ChartRect(.02, .02, .25, .2));
         chart.AddSeries(tiles); var prepared = MapLabelClusterDepthTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Single(MapLabelClusterDepthTests.Groups(prepared, "tile-map-region-source"));
         chart.Series[0].UpdateMapPoint(0, new ChartMapPoint("Fiji moved", -179, -18, 70));
@@ -122,7 +122,7 @@ public sealed class AntimeridianMapViewportTests {
         Assert.Equal("fiji", MapLabelClusterDepthTests.Groups(updated, "dotted-map-point-source")[0].Metadata["data-cfx-observation-id"]);
         Assert.Equal("-179", MapLabelClusterDepthTests.Groups(updated, "dotted-map-point-source")[0].Metadata["data-cfx-longitude"]);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
-        chart.WithMapViewport(ChartMapViewport.World());
+        chart.Map(m => m.Viewport(ChartMapViewport.World()));
         var world = MapLabelClusterDepthTests.Prepare(chart); Assert.DoesNotContain(MapLabelClusterDepthTests.Groups(world, "geographic-map"), group => group.Metadata.ContainsKey("data-cfx-crosses-antimeridian"));
         var marks = world.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray(); Assert.Equal(5, marks.Length);
         Assert.True(marks[2].Cx > marks[3].Cx); // Ordered World keeps +180/-180 on opposite frame edges, preserving the incumbent contract.
@@ -131,7 +131,7 @@ public sealed class AntimeridianMapViewportTests {
     [Fact]
     public void EquivalentSeamContributorsCanUseTheExistingCountBadgeAndEndpointClearancePolicies() {
         var chart = DatelineMapRecipe.Create();
-        var series = chart.Series[0].WithMapClustering(new ChartMapClustering(.01, 2, 12));
+        var series = chart.Series[0].MapClustering(new ChartMapClustering(.01, 2, 12));
         series.ReplaceMapConnectors(series.MapConnectors.Select(route => route.WithEndpointClearance(2)));
         var prepared = MapLabelClusterDepthTests.Prepare(chart); MapLabelClusterDepthTests.Capture(prepared, "dateline-cluster-clearance");
         var cluster = Assert.Single(MapLabelClusterDepthTests.Groups(prepared, "dotted-map-cluster-source"));
@@ -147,10 +147,10 @@ public sealed class AntimeridianMapViewportTests {
 
     [Fact]
     public void ExistingFixedProjectionTopologyRejectsTheNewUnsupportedWindowAndKeepsItsOrderedControl() {
-        var chart = TopologyChart.Create().WithViewport(520, 360).WithLayout(TopologyLayoutMode.Geographic)
-            .AddNode("site", "Site", 0, 0).WithNodeCoordinates("site", 178, -18);
-        chart.WithMapViewport(ChartMapViewport.AcrossAntimeridian("Pacific", 170, -170, -30, 10));
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(520, 360)).LayoutMode(TopologyLayoutMode.Geographic)
+            .AddNode("site", "Site", 0, 0).UpdateNode("site", n => n.Longitude(178).Latitude(-18));
+        chart.MapViewport(ChartMapViewport.AcrossAntimeridian("Pacific", 170, -170, -30, 10));
         Assert.Contains("ordered", Assert.Throws<NotSupportedException>(() => chart.ToSvg()).Message);
-        chart.WithMapViewport(ChartMapViewport.World()); Assert.Contains("topology", chart.ToSvg());
+        chart.MapViewport(ChartMapViewport.World()); Assert.Contains("topology", chart.ToSvg());
     }
 }

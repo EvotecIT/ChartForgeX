@@ -47,7 +47,7 @@ public sealed partial class ColorScalePositionedNativeTests {
     public void GradientKeysKeepNumericMidpointPositionsAndReadableCaptions(string family, int width, bool dark, bool right) {
         var scale = Scale(); var chart = Create(family, scale, width, dark);
         Dimension(chart, family).LegendStyle = ChartColorLegendStyle.Gradient;
-        if (right) chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (right) chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var prepared = Prepare(chart); var gradient = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGradient>(), node => node.Role == Prefix(family) + "-gradient");
         AssertGradientPixels(prepared, gradient, scale);
         var box = ((VisualSceneRectangle)gradient.Shape).Bounds;
@@ -72,7 +72,7 @@ public sealed partial class ColorScalePositionedNativeTests {
     [InlineData("sunburst")]
     public void NumericVisibilityIsIndependentOfCategoryEntriesAndRetainsDiscreteIntervals(string family) {
         var scale = ChartColorScale.Discrete(new[] { new ChartColorBand(5, Cold, "Low"), new ChartColorBand(null, Hot, "High") }).WithNoDataColor(Missing);
-        var chart = Create(family, scale).WithLegend(); chart.Series[0].ShowInLegend = false;
+        var chart = Create(family, scale).Legend(); chart.Series[0].ShowInLegend = false;
         var dimension = Dimension(chart, family); dimension.LegendStyle = ChartColorLegendStyle.Swatches;
         var visible = XDocument.Parse(Prepare(chart).ToSvg()); var prefix = Prefix(family);
         Assert.NotEmpty(Role(visible, prefix)); Assert.Empty(Role(visible, "legend-entry"));
@@ -82,7 +82,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         var hidden = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.Empty(Role(hidden, prefix)); AssertMappedMarks(Prepare(chart), hidden, family, scale);
         if (family is "scatter" or "bubble" or "region-map" or "tile-map") Assert.NotEmpty(Role(hidden, "legend-entry"));
-        dimension.ShowLegend = true; chart.WithLegend(false);
+        dimension.ShowLegend = true; chart.Legend(false);
         Assert.Empty(Role(XDocument.Parse(Prepare(chart).ToSvg()), prefix));
         dimension.LegendStyle = ChartColorLegendStyle.Gradient;
         Assert.Contains("continuous", Assert.Throws<InvalidOperationException>(() => Prepare(chart)).Message);
@@ -107,7 +107,7 @@ public sealed partial class ColorScalePositionedNativeTests {
     public void SwatchesSampleContinuousValuesWithoutChangingTheirMapping(string family, bool right) {
         var scale = Scale(); var chart = Create(family, scale, 360);
         Dimension(chart, family).LegendStyle = ChartColorLegendStyle.Swatches;
-        if (right) chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (right) chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         Assert.Empty(prepared.Scene.Nodes.OfType<VisualSceneGradient>());
         AssertKeyPaint(prepared, document, family, scale, right); AssertMappedMarks(prepared, document, family, scale);
@@ -129,8 +129,8 @@ public sealed partial class ColorScalePositionedNativeTests {
 
     [Fact]
     public void ConstantDomainKeyRemainsOneMappedColorWithoutInventingAValueRange() {
-        var chart = Chart.Create().WithSize(800, 480).AddScatter("Same", new[] { new ChartPoint(1, 10).WithColorValue(7), new ChartPoint(2, 20).WithColorValue(7) });
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Cold, Hot)).ConfigureColorDimension(options => options.LegendStyle = ChartColorLegendStyle.Gradient);
+        var chart = Chart.Create().Size(800, 480).AddScatter("Same", new[] { new ChartPoint(1, 10).WithColorValue(7), new ChartPoint(2, 20).WithColorValue(7) });
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Cold, Hot)).ColorDimension(options => options.LegendStyle = ChartColorLegendStyle.Gradient);
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         Assert.Empty(prepared.Scene.Nodes.OfType<VisualSceneGradient>());
         Assert.Equal(Cold, prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "color-scale-0-gradient").Fill);
@@ -146,8 +146,8 @@ public sealed partial class ColorScalePositionedNativeTests {
     public void GalleryModelsPrepareBothKeyPresentationsAtTheirDeclaredSize(ChartSeriesKind kind, string variant, bool dark) {
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal);
         var chart = V2GalleryModels.Create(kind, variant, dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithTitle("Measured temperature")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Size(compact ? 360 : 800, compact ? 360 : 440).Title("Measured temperature")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = Prepare(chart); var gradient = variant.Contains("gradient", StringComparison.Ordinal);
         Assert.Equal(gradient ? 1 : 0, prepared.Scene.Nodes.OfType<VisualSceneGradient>().Count());
         Assert.Contains("Temperature", prepared.ToSvg());
@@ -157,7 +157,7 @@ public sealed partial class ColorScalePositionedNativeTests {
     private static ChartColorDimensionOptions Dimension(Chart chart, string family) => family switch {
         "scatter" or "bubble" => chart.Series[0].ColorDimension,
         "treemap" => chart.Options.Treemap.ColorDimension, "sunburst" => chart.Options.Sunburst.ColorDimension,
-        "region-map" or "tile-map" => chart.Options.MapColorDimension, _ => chart.Options.HeatmapColorDimension
+        "region-map" or "tile-map" => chart.Options.Map.ColorDimension, _ => chart.Options.Heatmap.ColorDimension
     };
 
     private static void AssertGradientPixels(PreparedVisual prepared, VisualSceneGradient gradient, ChartColorScale scale) {

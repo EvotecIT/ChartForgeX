@@ -15,19 +15,19 @@ public sealed class RadarStrokeStyleTests {
         var dash = new[] { 5d, 2 };
         var stroke = new ChartStrokeStyle(ChartColor.FromArgb(128, 220, 38, 38), 4, .5, dash);
         ChartRadarOptions? retained = null;
-        series.ConfigureRadar(options => { retained = options; options.OutlineStroke = stroke; });
+        series.Radar(options => { retained = options; options.OutlineStroke = stroke; });
         var committed = Prepare(chart);
         dash[0] = 99;
         retained!.OutlineStroke = new ChartStrokeStyle(width: 0);
         Assert.Same(stroke, series.Radar.OutlineStroke);
         Assert.Equal(new[] { 5d, 2 }, series.Radar.OutlineStroke!.Dash);
-        Assert.Throws<InvalidOperationException>(() => series.ConfigureRadar(options => {
+        Assert.Throws<InvalidOperationException>(() => series.Radar(options => {
             options.OutlineStroke = new ChartStrokeStyle(width: 0);
             throw new InvalidOperationException();
         }));
         Assert.Equal(committed.ToSvg(), Prepare(chart).ToSvg());
         Assert.Equal(committed.ToPng(), Prepare(chart).ToPng());
-        series.ConfigureRadar(options => options.OutlineStroke = null);
+        series.Radar(options => options.OutlineStroke = null);
         Assert.Null(series.Radar.OutlineStroke);
         Assert.NotEqual(committed.ToPng(), Prepare(chart).ToPng());
     }
@@ -78,12 +78,12 @@ public sealed class RadarStrokeStyleTests {
     [InlineData(ChartPolarGridShape.Circle)]
     [InlineData(ChartPolarGridShape.Polygon)]
     public void GuideFillAndDashedOutlinesRetainIndependentAlphaAndZeroStroke(ChartPolarGridShape shape) {
-        var chart = Create(false).WithLegend(false).WithPolarGridShape(shape);
-        chart.Options.PolarGridFill = ChartColor.FromArgb(128, 37, 99, 235);
-        chart.Options.PolarGridFillOpacity = .5;
-        chart.Options.PolarGridStroke = new ChartStrokeStyle(ChartColor.FromHex("#DC2626"), 0, dash: new[] { 4d, 2 });
-        chart.Options.PolarAxisStroke = new ChartStrokeStyle(width: 0);
-        chart.Options.PolarGridRingCount = 2;
+        var chart = Create(false).Legend(false).Polar(p => p.GridShape(shape));
+        chart.Options.Polar.GridFill = ChartColor.FromArgb(128, 37, 99, 235);
+        chart.Options.Polar.GridFillOpacity = .5;
+        chart.Options.Polar.GridStroke = new ChartStrokeStyle(ChartColor.FromHex("#DC2626"), 0, dash: new[] { 4d, 2 });
+        chart.Options.Polar.AxisStroke = new ChartStrokeStyle(width: 0);
+        chart.Options.Polar.GridRingCount = 2;
         chart.Series[0].Radar.FillOpacity = 0;
         var prepared = Prepare(chart);
         var rings = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "radar-ring").ToArray();
@@ -92,15 +92,15 @@ public sealed class RadarStrokeStyleTests {
             Assert.Equal(ChartColor.FromArgb(64, 37, 99, 235), ring.Fill);
             Assert.Equal(0, ring.StrokeWidth); Assert.Equal(new[] { 4d, 2 }, ring.Dash);
         });
-        var filled = prepared.ToPng(); chart.Options.PolarGridFillOpacity = 0;
+        var filled = prepared.ToPng(); chart.Options.Polar.GridFillOpacity = 0;
         Assert.NotEqual(filled, Prepare(chart).ToPng());
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridFillOpacity = double.NaN);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridFillOpacity = 1.1);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.GridFillOpacity = double.NaN);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.GridFillOpacity = 1.1);
     }
 
     private static Chart Create(bool mixed) {
         var values = Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 65)).ToArray();
-        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(true).WithDataLabels(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(true).DataLabels(false).YAxis(y => y.Bounds(0, 100));
         if (mixed) chart.AddRadialColumn("Count", values);
         chart.AddRadarArea("Target", values); chart.Series.Last().Radar.CurveTension = .25;
         return chart;

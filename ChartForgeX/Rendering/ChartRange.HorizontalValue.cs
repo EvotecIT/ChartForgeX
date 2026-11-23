@@ -46,8 +46,8 @@ internal sealed partial class ChartRange {
     /// <summary>Applies explicit physical value bounds after automatic source fitting.</summary>
     private void ApplyValueBounds(ChartAxis axis, bool horizontal) {
         var min = horizontal ? MinX : MinY; var max = horizontal ? MaxX : MaxY;
-        if (axis.Minimum.HasValue) min = axis.Minimum.Value;
-        if (axis.Maximum.HasValue) max = axis.Maximum.Value;
+        if (axis.Min.HasValue) min = axis.Min.Value;
+        if (axis.Max.HasValue) max = axis.Max.Value;
         if (max <= min) (min, max) = ResolveClippedBounds(min, max, axis);
         if (horizontal) SetXBounds(min, max); else SetYBounds(min, max);
     }

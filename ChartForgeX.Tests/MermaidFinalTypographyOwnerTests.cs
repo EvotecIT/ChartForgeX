@@ -29,7 +29,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         var theme = VisualTheme.Graphite();
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         theme = theme.WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: fontSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var map = WardleyMapBlock.Create().WithSize(width, 320).WithTheme(theme, mode);
+        var map = WardleyMapBlock.Create().Size(width, 320).Theme(theme).ThemeMode(mode);
         map.Options.HostOwnsFrame = hostOwnsFrame;
         map.AddNode("api", "API", .5, .5);
         map.AddAnnotation(1, "", 1, 1);
@@ -65,8 +65,8 @@ public sealed class MermaidFinalTypographyOwnerTests {
     public async Task OversizedLegendsRetainCaptionsWhenHeightAlreadyFits(int width, int height, ChartLegendPosition position) {
         var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\npie\n\"Saved\": 8\n\"Failed\": 2");
         Assert.Empty(result.Diagnostics);
-        var chart = Assert.IsType<Chart>(result.Artifact!.Model).WithSize(width, height).WithHeader(false);
-        chart.Options.LegendPosition = position;
+        var chart = Assert.IsType<Chart>(result.Artifact!.Model).Size(width, height).ShowHeader(false);
+        chart.Options.Legend.Position = position;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var texts = XDocument.Parse(prepared.ToSvg()).Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value).ToArray();
         Assert.Contains("Saved", texts); Assert.Contains("Failed", texts);
@@ -86,12 +86,12 @@ public sealed class MermaidFinalTypographyOwnerTests {
     [InlineData(360, 320, ChartDataLabelPlacement.Inside, true)]
     [InlineData(760, 420, ChartDataLabelPlacement.Inside, true)]
     public async Task OversizedPieCaptionsFitTheirNativePlacement(int width, int height, ChartDataLabelPlacement placement, bool donut) {
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithHeader(false)
-            .WithXLabels("Saved", "Failed");
+        var chart = Chart.Create().Size(width, height).Legend(false).ShowHeader(false)
+            .XLabels("Saved", "Failed");
         var points = new[] { new ChartPoint(1, 8), new ChartPoint(2, 2) };
         if (donut) chart.AddDonut("Results", points); else chart.AddPie("Results", points);
-        chart.Options.ShowDataLabels = true; chart.Options.DataLabelPlacement = placement;
-        chart.Options.DataLabelStyle.WithFontFamily("Arial").WithFontSize(256);
+        chart.Options.DataLabels.Visible = true; chart.Options.DataLabels.Placement = placement;
+        chart.Options.DataLabelStyle.FontFamily("Arial").FontSize(256);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(e => e.Name.LocalName == "text" &&
             (string?)e.Parent?.Attribute("data-cfx-role") == "data-label").ToArray();
@@ -109,7 +109,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
                 var left = (double)label.Attribute("x")!; var top = (double)label.Attribute("y")! - builder.TextAscent(size);
                 var nearX = Math.Max(0, Math.Max(left - cx, cx - left - metrics.Width));
                 var nearY = Math.Max(0, Math.Max(top - cy, cy - top - metrics.Height));
-                if (donut) Assert.True(nearX * nearX + nearY * nearY >= Math.Pow(radius * chart.Options.DonutInnerRadiusRatio, 2) - .1);
+                if (donut) Assert.True(nearX * nearX + nearY * nearY >= Math.Pow(radius * chart.Options.Pie.InnerRadiusRatio, 2) - .1);
                 foreach (var x in new[] { left, left + metrics.Width })
                     foreach (var y in new[] { top, top + metrics.Height })
                         Assert.True(Math.Pow(x - cx, 2) + Math.Pow(y - cy, 2) <= radius * radius + .1);
@@ -158,14 +158,14 @@ public sealed class MermaidFinalTypographyOwnerTests {
     [InlineData(TopologyEdgeRouting.Curved)]
     [InlineData(TopologyEdgeRouting.Straight)]
     public async Task EndpointCaptionsReserveTheirPaintedRouteBounds(TopologyEdgeRouting routing) {
-        var chart = TopologyChart.Create().WithViewport(420, 220, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 220, 20)).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 40, 90, width: 60, height: 40)
             .AddNode("target", "Target", 320, 90, width: 60, height: 40)
             .AddNodePort("source", "top", TopologyEdgePort.Top)
             .AddNodePort("target", "top", TopologyEdgePort.Top)
             .AddEdge("route", "source", "target", routing: routing)
-            .WithEdgeNamedPorts("route", "top", "top")
-            .WithEdgeEndpointLabels("route", "outgoing records", "incoming records");
+            .UpdateEdge("route", e => e.SourcePortId("top").TargetPortId("top"))
+            .UpdateEdge("route", e => e.SourceLabel("outgoing records").TargetLabel("incoming records"));
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false });
         var svg = prepared.ToSvg();
         var surfaces = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "rect" &&

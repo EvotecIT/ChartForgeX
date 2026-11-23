@@ -13,11 +13,11 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     [InlineData(ChartHeatmapColumnWindow.Latest, true, false)]
     [InlineData(ChartHeatmapColumnWindow.Squeeze, false, false)]
     public async Task PhoneViewportHonorsColumnWindowAndKeepsItsEdgeThroughResize(ChartHeatmapColumnWindow window, bool reversed, bool dark) {
-        var chart = Fixture(12).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithHeatmapColumnWindow(window);
+        var chart = Fixture(12).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Heatmap(h => h.ColumnWindow(window));
         chart.Options.XAxis.Reversed = reversed;
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
-        Assert.Equal(window, chart.Options.HeatmapColumnWindow);
+        Assert.Equal(window, chart.Options.Heatmap.ColumnWindow);
         await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div id='panel' style='width:390px'>" + fragment + "</div></body></html>", 390, 1000);
         var page = session.Page;
         await page.WaitForFunctionAsync("()=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===390");
@@ -47,7 +47,7 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     [InlineData(ChartHeatmapColumnWindow.Latest)]
     [InlineData(ChartHeatmapColumnWindow.Squeeze)]
     public async Task FirstOverflowHonorsWindowAndReaderKeepsTheirColumnAcrossResizeAndPrint(ChartHeatmapColumnWindow window) {
-        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12).WithHeatmapColumnWindow(window), 240, 1600);
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12).Heatmap(h => h.ColumnWindow(window)), 240, 1600);
         await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div id='panel' style='width:1024px'>" + fragment + "</div></body></html>", 1024, 1000);
         var page = session.Page;
         await page.WaitForFunctionAsync("()=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===1024");

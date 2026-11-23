@@ -76,7 +76,7 @@ public sealed class TopologyGroupHeaderGeometryTests {
 
     [Fact]
     public void RoutesCanUseUnpaintedSpaceBetweenCaptionAndStatusDot() {
-        var chart = TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 300, 16)).Legend((TopologyLegend?)null)
             .AddGroup("service", "Service group", 32, 40, 300, 180)
             .AddNode("a", "Source", 180, 40, width: 20, height: 40)
             .AddNode("b", "Target", 240, 40, width: 20, height: 40)
@@ -91,7 +91,7 @@ public sealed class TopologyGroupHeaderGeometryTests {
         Assert.All(edge.Points, point => Assert.True(point.X > header.Left && point.X < header.Right && point.Y > header.Top && point.Y < header.Bottom));
     }
 
-    private static TopologyChart ManualGroup() => TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
+    private static TopologyChart ManualGroup() => TopologyChart.Create().Viewport(new TopologyViewport(400, 300, 16)).Legend((TopologyLegend?)null)
         .AddGroup("service", "Service group", 32, 40, 300, 180, subtitle: "Group description")
         .AddNode("A", "A", 64, 49, TopologyNodeKind.Generic, groupId: "service", width: 80, height: 40);
 

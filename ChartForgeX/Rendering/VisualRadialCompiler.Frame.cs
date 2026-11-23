@@ -32,14 +32,14 @@ internal static partial class VisualRadialCompiler {
 
     /// <summary>Returns complete native overflow bounds; responsive totals must never ellipsize an exponent.</summary>
     internal static string[]? ResponsiveOverflowCenter(Chart chart, VisualRenderContext context, int seriesIndex) =>
-        chart.Options.DonutCenterValue == null && !Total(chart, GetSlices(chart, context.Theme.Resolve(context.ThemeMode), seriesIndex), seriesIndex).FiniteTotal.HasValue
+        chart.Options.Pie.CenterValue == null && !Total(chart, GetSlices(chart, context.Theme.Resolve(context.ThemeMode), seriesIndex), seriesIndex).FiniteTotal.HasValue
             ? new[] { FormatOverflowCenter(false), FormatOverflowCenter(true) } : null;
 
     /// <summary>Captures the same envelope policy used for each native radial series.</summary>
     internal static FrameSizing[] ResponsiveFrames(Chart chart, VisualRenderContext context, ChartRect plot) {
         var bands = ChartRadialBandResolver.Resolve(chart);
         var outer = Enumerable.Range(0, chart.Series.Count).OrderByDescending(i => bands[i]?.OuterRatio ?? 1).First();
-        var outerPlacement = chart.Series[outer].DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var outerPlacement = chart.Series[outer].DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var frame = ResolveBandFrame(chart, context, plot, bands, outer);
         return Enumerable.Range(0, chart.Series.Count).Select(index => {
             if (frame != null) return frame.Sizing;
@@ -47,7 +47,7 @@ internal static partial class VisualRadialCompiler {
             var maximumOffset = GetSlices(chart, context.Theme.Resolve(context.ThemeMode), index)
                 .Where(slice => slice.Value > 0 && slice.RadiusRatio.GetValueOrDefault(1) > 0 && slice.PointIndex >= 0 && slice.PointIndex < series.PointSliceOffsets.Count)
                 .Select(slice => series.PointSliceOffsets[slice.PointIndex]).DefaultIfEmpty(0).Max();
-            return Sizing(chart.Series.Count > 1 ? outerPlacement : series.DataLabelPlacement ?? chart.Options.DataLabelPlacement, 1 + maximumOffset);
+            return Sizing(chart.Series.Count > 1 ? outerPlacement : series.DataLabelPlacement ?? chart.Options.DataLabels.Placement, 1 + maximumOffset);
         }).ToArray();
     }
 }

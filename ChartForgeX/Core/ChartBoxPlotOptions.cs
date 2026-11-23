@@ -20,7 +20,8 @@ public sealed class ChartBoxPlotOptions {
 
     /// <summary>Gets or sets the optional formatter for Statistics captions. Null uses the chart's numeric value format.</summary>
     /// <remarks>During preparation, numeric text and formatter output are captured once in Minimum, Q1, Median, Q3, Maximum order for every summary, even if a caption is hidden. Null or blank output suppresses that caption. Custom point labels remain observation headings; detached exports never invoke the formatter.</remarks>
-    public Func<ChartBoxPlotStatisticLabelContext, string?>? StatisticLabelFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("StatisticLabelBy")]
+public Func<ChartBoxPlotStatisticLabelContext, string?>? StatisticLabelFormatter { get; set; }
 
     /// <summary>Gets the rendered lower-whisker caption settings in Statistics mode.</summary>
     public ChartValueLabelOptions MinimumLabel { get; private set; } = new();

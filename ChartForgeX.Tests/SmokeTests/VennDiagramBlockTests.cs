@@ -7,8 +7,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void VennDiagramBlockRendersStaticSvgAndPng() {
         var block = VennDiagramBlock.Create()
-            .WithTitle("Capability Overlap")
-            .WithSize(720, 420)
+            .Title("Capability Overlap")
+            .Size(720, 420)
             .AddSet("API", "API", 60)
             .AddSet("UI", "UI", 55)
             .AddSet("Ops", "Ops", 45)

@@ -10,8 +10,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void PieAndDonutSvgExposeSliceMetadata() {
         foreach (var donut in new[] { false, true }) {
-            var chart = Chart.Create().WithSize(640, 420).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
-                .WithPieSliceLabelContent(ChartPieSliceLabelContent.Percent).WithXLabels("Passed", "Failed");
+            var chart = Chart.Create().Size(640, 420).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
+                .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Percent)).XLabels("Passed", "Failed");
             if (donut) chart.AddDonut("Results", Points(75, 25)); else chart.AddPie("Results", Points(75, 25));
             var prepared = PreparedFamily(chart);
             var groups = FamilyGroups(prepared, "radial-point");
@@ -41,8 +41,8 @@ internal static partial class SmokeTests {
             Verify.NotEmpty(prepared.ToPng());
         }
 
-        var positionedLegend = Chart.Create().WithLegendPosition(ChartLegendPosition.TopRight)
-            .WithXLabels("Passed", "Failed", "Skipped").AddDonut("Results", Points(70, 20, 10));
+        var positionedLegend = Chart.Create().Legend(l => l.Position(ChartLegendPosition.TopRight))
+            .XLabels("Passed", "Failed", "Skipped").AddDonut("Results", Points(70, 20, 10));
         var positioned = PreparedFamily(positionedLegend);
         Verify.True(positioned.Regions.Where(region => region.Role == "legend").Max(region => region.Bounds.Bottom) <
             positioned.Scene.Nodes.OfType<VisualSceneSlice>().First().Cy);

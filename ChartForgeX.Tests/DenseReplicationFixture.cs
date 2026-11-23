@@ -51,12 +51,12 @@ internal static class DenseReplicationFixture {
     /// <summary>Creates the captured site topology.</summary>
     public static TopologyChart Sites60() {
         var chart = TopologyChart.Create()
-            .WithId("dense-replication-sites")
-            .WithTitle("Replication topology")
-            .WithSubtitle("Sites: 60, domain controllers: 150; a line stands for all replication between two sites")
-            .WithViewport(1180, 1110, 24)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-            .WithLegend(TopologyLegend.Create("Legend")
+            .Id("dense-replication-sites")
+            .Title("Replication topology")
+            .Subtitle("Sites: 60, domain controllers: 150; a line stands for all replication between two sites")
+            .Viewport(new TopologyViewport(1180, 1110, 24))
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .Legend(TopologyLegend.Create("Legend")
                 .AddStatus("Healthy", TopologyHealthStatus.Healthy)
                 .AddStatus("Delayed", TopologyHealthStatus.Warning)
                 .AddStatus("Failing", TopologyHealthStatus.Critical)

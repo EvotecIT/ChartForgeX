@@ -30,10 +30,11 @@ public sealed class TopologyLabels {
     /// <see cref="ChartDescriptionKind.Topology"/> with the node, group, and edge counts. It takes the same facts as
     /// <see cref="ChartLabels.AccessibleTextFormatter"/>, so a host can use one formatter for charts and diagrams. Null
     /// (the default), or a function returning null or white space, writes <see cref="ChartDescriptionFacts.EnglishText"/>.
-    /// A description set through <see cref="TopologyChart.ConfigureAccessibility"/> still wins and the function is not called
+    /// A description set through <c>Accessibility</c> still wins and the function is not called
     /// for it. Exceptions thrown by the function are not caught; they surface from the render call.
     /// </summary>
-    public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("AccessibleTextBy")]
+public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }
 
     /// <summary>
     /// Gets or sets the title of a topology report (<c>TopologyReport</c>) whose source diagram has no title; its pages

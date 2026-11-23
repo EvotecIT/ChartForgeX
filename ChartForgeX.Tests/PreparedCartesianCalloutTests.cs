@@ -20,11 +20,11 @@ public sealed class PreparedCartesianCalloutTests {
             FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: new Dictionary<int, int> {
                 ['A'] = OpenTypeTestFonts.Flex, ['p'] = OpenTypeTestFonts.Flex, ['r'] = OpenTypeTestFonts.Flex
             }));
-            var chart = Chart.Create().WithSize(520, 300).WithTheme(VisualTheme.Graphite()).WithFontFamily(family)
-                .WithDashboardTrendPanelStyle(showLegend: true).WithXLabels("Jan", "Feb", "Mar", "Apr")
+            var chart = Chart.Create().Size(520, 300).Theme(VisualTheme.Graphite()).FontFamily(family)
+                .DashboardTrendPanelStyle(showLegend: true).XLabels("Jan", "Feb", "Mar", "Apr")
                 .AddSmoothLine("On-time", Points(21, 23, 25, 37), ChartColor.FromHex("#7057E6"))
                 .AddSmoothLine("Absent", Points(18, 22, 17, 14), ChartColor.FromHex("#5FD3D9"))
-                .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
+                .DashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
             chart.Series[2].DataLabelStyle.FontSize = fontSize;
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
             var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
@@ -47,7 +47,7 @@ public sealed class PreparedCartesianCalloutTests {
             Assert.Equal("4", (string?)metadata.Attribute("data-cfx-value"));
             Assert.Equal("Apr", (string?)metadata.Attribute("data-cfx-label"));
             Assert.Equal("false", (string?)metadata.Attribute("data-cfx-show-label"));
-            chart.Series[2].WithPointLabel(0, "Changed");
+            chart.Series[2].PointLabel(0, "Changed");
             chart.ClearAnnotations();
             Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
             Assert.NotEqual(svg, chart.ToSvg());
@@ -58,7 +58,7 @@ public sealed class PreparedCartesianCalloutTests {
 
     [Fact]
     public void OrdinaryAnnotationPaintsItsCaptionByDefault() {
-        var chart = Chart.Create().WithSize(520, 300).WithDataLabels(false)
+        var chart = Chart.Create().Size(520, 300).DataLabels(false)
             .AddLine("Observed", Points(10, 20, 30)).AddVerticalLine(2, "Milestone");
         Assert.True(Assert.Single(chart.Annotations).ShowLabel);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

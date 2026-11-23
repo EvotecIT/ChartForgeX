@@ -23,8 +23,8 @@ public sealed class PacketPreferredRowGapTests {
         Assert.Empty(markup.Diagnostics);
         var fenced = Assert.IsType<PacketLayoutBlock>(Assert.Single(markup.Artifacts).Model);
         Assert.Equal(converted.ToSvg(), fenced.ToSvg());
-        var native = PacketLayoutBlock.Create().WithSize(520, 400).WithPadding(20).WithBitsPerRow(8)
-            .WithBitNumbers(numbers).WithRowHeight(20).WithRowGap(100)
+        var native = PacketLayoutBlock.Create().Size(520, 400).Padding(20).BitsPerRow(8)
+            .ShowBitNumbers(numbers).RowHeight(20).RowGap(100)
             .AddField(0, 7, "Header").AddField(8, 15, "Payload");
         var labelTop = Number(Fields(native)[0], "y") - 20;
         foreach (var block in new[] { native, converted, fenced }) {
@@ -52,8 +52,8 @@ public sealed class PacketPreferredRowGapTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OversizedGapUsesOnlySpaceLeftAfterPreferredRowsAndBitLabels(bool numbers) {
-        var block = PacketLayoutBlock.Create().WithSize(520, 400).WithPadding(20).WithBitsPerRow(8)
-            .WithBitNumbers(numbers).WithRowHeight(20).WithRowGap(400)
+        var block = PacketLayoutBlock.Create().Size(520, 400).Padding(20).BitsPerRow(8)
+            .ShowBitNumbers(numbers).RowHeight(20).RowGap(400)
             .AddField(0, 7, "Header").AddField(8, 15, "Payload");
         var fields = Fields(block);
         var labelTop = Number(fields[0], "y") - 20;
@@ -73,12 +73,12 @@ public sealed class PacketPreferredRowGapTests {
         var options = new MermaidPacketRenderOptions { Width = 520, Height = 400, Padding = 20 };
         var parsed = new MermaidParser().ParsePacket(source);
         Assert.Empty(parsed.Diagnostics);
-        var converted = parsed.Document!.ToPacketLayoutBlock(options).WithTitle("").WithSubtitle("");
+        var converted = parsed.Document!.ToPacketLayoutBlock(options).Title("").Subtitle("");
         var markup = new MermaidVisualMarkupParser(new MermaidRenderOptions { Packet = options }).Parse("```mermaid\n" + source + "\n```");
         Assert.Empty(markup.Diagnostics);
-        var fenced = Assert.IsType<PacketLayoutBlock>(Assert.Single(markup.Artifacts).Model).WithTitle("").WithSubtitle("");
-        var native = PacketLayoutBlock.Create().WithSize(520, 400).WithPadding(20).WithBitsPerRow(512)
-            .WithBitNumbers(numbers).WithRowHeight(20).WithRowGap(300)
+        var fenced = Assert.IsType<PacketLayoutBlock>(Assert.Single(markup.Artifacts).Model).Title("").Subtitle("");
+        var native = PacketLayoutBlock.Create().Size(520, 400).Padding(20).BitsPerRow(512)
+            .ShowBitNumbers(numbers).RowHeight(20).RowGap(300)
             .AddField(0, 1, "Tag").AddField(2, 511, "Payload").AddField(512, 513, "Footer");
         foreach (var block in new[] { native, converted, fenced }) {
             var fields = Fields(block);

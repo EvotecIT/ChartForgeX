@@ -15,18 +15,18 @@ internal static partial class SmokeTests {
         AssertRgbaParity(chart.ToRgbaImage(), chart.ToPng(), "Chart");
 
         var chartGrid = ChartGrid.Create()
-            .WithPanelSize(180, 120)
-            .Add(Chart.Create().WithSize(180, 120).AddLine("Values", Points(1, 2, 3)));
+            .PanelSize(180, 120)
+            .Add(Chart.Create().Size(180, 120).AddLine("Values", Points(1, 2, 3)));
         AssertRgbaParity(chartGrid.ToRgbaImage(), chartGrid.ToPng(), "ChartGrid");
 
-        var metric = MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%");
+        var metric = MetricCard.Create().Size(180, 100).Metric("CPU", "42%");
         AssertRgbaParity(metric.ToRgbaImage(), metric.ToPng(), "IVisualBlock");
 
         var visualGrid = VisualGrid.CreateMetricStrip("Endpoint", new[] { metric });
         AssertRgbaParity(visualGrid.ToRgbaImage(), visualGrid.ToPng(), "VisualGrid");
 
         var canvas = VisualCanvas.Create(240, 120)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddText(20, 32, 200, "Direct RGBA", 20, ChartColor.FromHex("#60A5FA"));
         AssertRgbaParity(canvas.ToRgbaImage(), canvas.ToPng(), "VisualCanvas");
 

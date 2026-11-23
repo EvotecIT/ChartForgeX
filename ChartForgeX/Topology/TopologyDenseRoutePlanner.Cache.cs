@@ -70,7 +70,7 @@ internal static partial class TopologyDenseRoutePlanner {
             var options = chart.RenderOptions!;
             numbers.Add(options.ShareIncomingTrunks ? 1 : 0);
             if (options.ShareIncomingTrunks) {
-                numbers.Add(options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls &&
+                numbers.Add(options.Html.Interactions && options.Html.ForceGraphControls &&
                     chart.LayoutMode is TopologyLayoutMode.ForceDirected or TopologyLayoutMode.RelationshipRadial ? 1 : 0);
                 var highlight = TopologyHighlightState.From(chart, options);
                 foreach (var edge in edges) {

@@ -110,12 +110,12 @@ internal static class DenseRouteFixture {
     }
 
     private static TopologyChart Create(string id, string title, double width, double height) => TopologyChart.Create()
-        .WithId(id)
-        .WithTitle(title)
-        .WithSubtitle("Generic dense routing fixture")
-        .WithViewport(width, height, 24)
-        .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-        .WithLegend(TopologyLegend.Create("Legend")
+        .Id(id)
+        .Title(title)
+        .Subtitle("Generic dense routing fixture")
+        .Viewport(new TopologyViewport(width, height, 24))
+        .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
+        .Legend(TopologyLegend.Create("Legend")
             .AddStatus("Healthy", TopologyHealthStatus.Healthy)
             .AddStatus("Warning", TopologyHealthStatus.Warning)
             .AddStatus("Critical", TopologyHealthStatus.Critical)

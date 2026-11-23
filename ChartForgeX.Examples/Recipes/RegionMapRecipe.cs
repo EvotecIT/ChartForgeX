@@ -7,12 +7,11 @@ public static class RegionMapRecipe {
         if (variant is "color-dimension" or "compact-color-dimension") return Temperature(mode);
 
         var chart = Chart.Create().AddRegionMap("Observations", ChartMapCatalog.Get("us-states"), RegionValues(),
-            id: new ChartSeriesId("regional-observations")).WithMapLabels(false);
+            id: new ChartSeriesId("regional-observations")).Map(m => m.ShowLabels(false));
         if (variant == "options") {
             var colors = VisualTheme.Graphite().Resolve(mode);
-            chart.WithMapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
-                    .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
-                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+            chart.Map(m => m.ColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                    .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border)).ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         }
         return chart;
     }
@@ -24,16 +23,16 @@ public static class RegionMapRecipe {
             new ChartRegionMapItem("FL", 2.5), new ChartRegionMapItem("WA", 5), new ChartRegionMapItem("IL", 22.5),
             new ChartRegionMapItem("CO", 55)
         };
-        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
+        return Chart.Create().Labels(labels => labels.NoData = "Not sampled")
             .AddRegionHeatmap("Daily mean", ChartMapCatalog.Get("us-states"), values,
                 ChartColorScale.Diverging(ChartColor.FromHex("#2166AC"), ChartColor.FromHex("#D1D5DB"), ChartColor.FromHex("#B2182B"), 0)
                     .WithValueRange(-20, 40).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border),
                 new ChartSeriesId("state-temperatures"))
-            .WithMapLabels(false).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .ConfigureMapColorDimension(options => {
+            .Map(m => m.ShowLabels(false).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
+            .Map(map => map.ColorDimension(options => {
                 options.Name = "Temperature";
                 options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", System.Globalization.CultureInfo.InvariantCulture);
-            });
+            }));
     }
 
     private static ChartRegionMapItem[] RegionValues() => new[] {

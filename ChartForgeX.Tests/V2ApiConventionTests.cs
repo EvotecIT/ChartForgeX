@@ -48,13 +48,13 @@ public sealed class V2ApiConventionTests {
     public void ModelBuilderSelection_WithSetsOptions_AddAddsData_ConfigureInstallsDetachedOptions() {
         // This selection is the mutable model bridge used by Phase 1, not a blanket legacy API audit.
         var chart = Chart.Create();
-        Assert.Same(chart, chart.WithTitle("Capacity").WithSubtitle("Observed"));
+        Assert.Same(chart, chart.Title("Capacity").Subtitle("Observed"));
         Assert.Empty(chart.Series);
         Assert.Equal("Capacity", chart.Title);
         var axis = chart.Options.XAxis;
-        Assert.Same(chart, chart.ConfigureXAxis(existing => existing.Minimum = 1));
-        Assert.Null(axis.Minimum);
-        Assert.Equal(1d, chart.Options.XAxis.Minimum);
+        Assert.Same(chart, chart.XAxis(existing => existing.Min = 1));
+        Assert.Null(axis.Min);
+        Assert.Equal(1d, chart.Options.XAxis.Min);
         var configuredAxis = chart.Options.XAxis;
         Assert.Empty(chart.Series);
         Assert.Same(chart, chart.AddLine("Used", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5) }));
@@ -62,24 +62,23 @@ public sealed class V2ApiConventionTests {
         Assert.Equal(2, chart.Series[0].Points.Count);
         Assert.Equal("Capacity", chart.Title);
         Assert.Same(configuredAxis, chart.Options.XAxis);
-        var configure = typeof(Chart).GetMethod(nameof(Chart.ConfigureXAxis))!;
-        Assert.Equal(typeof(Action<ChartAxis>), Assert.Single(configure.GetParameters()).ParameterType);
+        var configure = typeof(ChartFluent).GetMethod(nameof(ChartFluent.XAxis), new[] { typeof(Chart), typeof(Action<ChartAxis>) })!;
         Assert.Equal(typeof(Chart), configure.ReturnType);
     }
 
     [Fact]
     public void FamilyConfigurationCallbacksApplyOptionsAndReturnTheirBuilderWithoutChangingData() {
         var chart = Chart.Create().AddRadar("Signal", new[] { new ChartPoint(1, 50), new ChartPoint(2, 70) });
-        Assert.Same(chart, chart.ConfigureFunnel(options => {
+        Assert.Same(chart, chart.Funnel(options => {
             options.Orientation = ChartOrientation.Horizontal;
         }));
-        Assert.Same(chart, chart.ConfigurePyramid(options => {
+        Assert.Same(chart, chart.Pyramid(options => {
             options.ValueEncoding = ChartPyramidValueEncoding.Area;
         }));
-        Assert.Same(chart, chart.ConfigureChord(options => {
+        Assert.Same(chart, chart.Chord(options => {
             options.RibbonOpacity = .2;
         }));
-        Assert.Same(chart, chart.ConfigureSankey(options => {
+        Assert.Same(chart, chart.Sankey(options => {
             options.NodeWidth = 18;
         }));
         Assert.Equal(ChartOrientation.Horizontal, chart.Options.Funnel.Orientation);
@@ -88,10 +87,10 @@ public sealed class V2ApiConventionTests {
         Assert.Equal(18, chart.Options.Sankey.NodeWidth);
 
         var series = chart.Series[0];
-        Assert.Same(series, series.ConfigureMarkers(options => {
+        Assert.Same(series, series.Markers(options => {
             options.Radius = 7;
         }));
-        Assert.Same(series, series.ConfigureRadar(options => {
+        Assert.Same(series, series.Radar(options => {
             options.FillOpacity = .4;
         }));
         Assert.Equal(7d, series.Markers.Radius);
@@ -101,25 +100,17 @@ public sealed class V2ApiConventionTests {
     }
 
     [Fact]
-    public void TypedBuilderConfigurationCallbacks_UseConfigureAndReturnTheirReceiver() {
-        var callbacks = new[] { typeof(Chart).Assembly, typeof(VisualGrid).Assembly }
-            .SelectMany(assembly => assembly.GetExportedTypes())
-            .SelectMany(Methods)
-            .Where(method => method.Name.StartsWith("With", StringComparison.Ordinal) || method.Name.StartsWith("Configure", StringComparison.Ordinal))
-            .Where(method => method.GetParameters().Any(parameter => parameter.ParameterType.IsGenericType
-                && parameter.ParameterType.GetGenericTypeDefinition() == typeof(Action<>)))
-            .ToArray();
-        Assert.NotEmpty(callbacks);
-        foreach (var method in callbacks) {
-            Assert.StartsWith("Configure", method.Name, StringComparison.Ordinal);
-            if (method.IsStatic) Assert.True(method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), inherit: false));
-            var receiver = method.IsStatic ? method.GetParameters()[0].ParameterType : method.DeclaringType;
-            if (method.ReturnType.IsGenericParameter) {
-                Assert.True(receiver!.IsGenericTypeDefinition);
-                Assert.Contains(method.ReturnType.GetGenericParameterConstraints(), constraint =>
-                    constraint.IsGenericType && constraint.GetGenericTypeDefinition() == receiver
-                    && constraint.GetGenericArguments().Contains(method.ReturnType));
-            } else Assert.Equal(receiver, method.ReturnType);
+    public void FluentMethods_AreNamedAfterTheirPropertiesAndReturnTheirReceiver() {
+        var types = new[] { typeof(Chart).Assembly, typeof(VisualGrid).Assembly }.SelectMany(assembly => assembly.GetExportedTypes()).ToArray();
+        // Callbacks are named after the settings they configure; only the immutable theme keeps Configure, which returns a new theme.
+        Assert.DoesNotContain(types.SelectMany(Methods), method => method.Name.StartsWith("Configure", StringComparison.Ordinal) && method.DeclaringType != typeof(VisualTheme));
+        var fluent = types.Where(type => type.Name.EndsWith("Fluent", StringComparison.Ordinal) && type.IsAbstract && type.IsSealed)
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)).ToArray();
+        Assert.NotEmpty(fluent);
+        foreach (var method in fluent) {
+            Assert.True(method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), inherit: false), method.DeclaringType!.Name + "." + method.Name);
+            var receiver = method.GetParameters()[0].ParameterType;
+            Assert.True(receiver == method.ReturnType, method.DeclaringType!.Name + "." + method.Name + " must return its receiver.");
         }
     }
 
@@ -151,7 +142,7 @@ public sealed class V2ApiConventionTests {
         Assert.Equal(ChartLineAreaForm.Area, series.Radar.Form);
         Assert.Equal(ChartLineAreaForm.Area, card.MiniSparklineStyle);
         series.Radar.Form = ChartLineAreaForm.Line;
-        Assert.Same(card, card.WithMiniSparklineStyle(series.Radar.Form));
+        Assert.Same(card, card.MiniSparklineStyle(series.Radar.Form));
         Assert.Equal(ChartLineAreaForm.Line, card.MiniSparklineStyle);
     }
 

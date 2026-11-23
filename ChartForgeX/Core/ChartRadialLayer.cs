@@ -181,81 +181,12 @@ public sealed class ChartRadialLayer {
         new(name, value, minimum, maximum, color);
 
     /// <summary>
-    /// Sets the layer name.
-    /// </summary>
-    public ChartRadialLayer WithName(string name) {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the current layer value.
-    /// </summary>
-    public ChartRadialLayer WithValue(double value) {
-        Value = value;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the layer color.
-    /// </summary>
-    public ChartRadialLayer WithColor(ChartColor? color) {
-        Color = color;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the layer scale.
     /// </summary>
-    public ChartRadialLayer WithScale(double minimum, double maximum) {
+    public ChartRadialLayer Scale(double minimum, double maximum) {
         Minimum = minimum;
         Maximum = maximum;
         if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Layer maximum must be greater than minimum.");
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the rendered radius and stroke ratios.
-    /// </summary>
-    public ChartRadialLayer WithGeometry(double radiusRatio, double strokeRatio) {
-        RadiusRatio = radiusRatio;
-        StrokeRatio = strokeRatio;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the radial angle range.
-    /// </summary>
-    public ChartRadialLayer WithAngles(double startAngleDegrees, double sweepAngleDegrees) {
-        StartAngleDegrees = startAngleDegrees;
-        SweepAngleDegrees = sweepAngleDegrees;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the endpoint style.
-    /// </summary>
-    public ChartRadialLayer WithLineCap(ChartRadialLayerCap lineCap) {
-        LineCap = lineCap;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the layer opacity.
-    /// </summary>
-    public ChartRadialLayer WithOpacity(double opacity) {
-        Opacity = opacity;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets separators drawn across the visible layer arc.
-    /// </summary>
-    public ChartRadialLayer WithSeparators(int count, ChartColor? color = null, double strokeWidth = 3, double insetRatio = 0.06) {
-        SeparatorCount = count;
-        SeparatorColor = color;
-        SeparatorStrokeWidth = strokeWidth;
-        SeparatorInsetRatio = insetRatio;
         return this;
     }
 }

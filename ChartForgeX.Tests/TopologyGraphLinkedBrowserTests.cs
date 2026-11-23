@@ -14,10 +14,10 @@ public sealed class TopologyGraphLinkedBrowserTests {
 
     [Fact]
     public void NarrowDrawingIsOptInValidatedAndCopiedWithoutChangingStaticSvg() {
-        var options = new TopologyRenderOptions { EnableHtmlViewportControls = true }.WithHtmlNarrowMinimumHeight(288);
-        Assert.Equal(288, options.Clone().HtmlNarrowMinimumHeight);
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.HtmlNarrowMinimumHeight = double.NaN);
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.HtmlNarrowMinimumHeight = -1);
+        var options = new TopologyRenderOptions { Html = { ViewportControls = true } }.Html(h => h.NarrowMinimumHeight(288));
+        Assert.Equal(288, options.Clone().Html.NarrowMinimumHeight);
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.Html.NarrowMinimumHeight = double.NaN);
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.Html.NarrowMinimumHeight = -1);
         var chart = Topology(false);
         Assert.Equal(chart.ToSvg(), chart.ToSvg(options));
         Assert.Equal(chart.ToPng(), chart.ToPng(options));
@@ -34,7 +34,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
     public async Task TopologyCommandsSeparateSelectionAndHighlightWithoutEcho(bool dark, int width) {
         if (!Enabled) return;
         var chart = Topology(dark);
-        var options = new TopologyRenderOptions { EnableHtmlSelectionPanel = false, EnableHtmlViewportControls = true, HtmlNarrowMinimumHeight = 288 };
+        var options = new TopologyRenderOptions { Html = { SelectionPanel = false, ViewportControls = true, NarrowMinimumHeight = 288 } };
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options), width, 680);
         var page = session.Page;
         await page.EvaluateAsync("""
@@ -72,12 +72,12 @@ public sealed class TopologyGraphLinkedBrowserTests {
     public async Task LateInsertedTopologyMountsOnceAndNarrowFitCentersTheWholeDrawing(string prefix) {
         if (!Enabled) return;
         var chart = Topology(false);
-        var options = new TopologyRenderOptions { EnableHtmlViewportControls = true, HtmlNarrowMinimumHeight = 288, CssClassPrefix = prefix };
+        var options = new TopologyRenderOptions { Html = { ViewportControls = true, NarrowMinimumHeight = 288 }, CssClassPrefix = prefix };
         var rootSelector = "." + prefix + "-wrapper";
         var viewportSelector = "." + prefix + "-viewport";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options), 390, 680);
         var page = session.Page;
-        var late = Topology(false).WithId("late").ToInteractiveHtmlFragmentWithoutAssets(options);
+        var late = Topology(false).Id("late").ToInteractiveHtmlFragmentWithoutAssets(options);
         await page.EvaluateAsync("({html,root})=>{document.querySelector(root).remove();document.body.insertAdjacentHTML('beforeend',html);}", new { html = late, root = rootSelector });
         Assert.Null(await page.Locator(rootSelector).GetAttributeAsync("data-cfx-runtime-bound"));
         await page.Locator(rootSelector).EvaluateAsync("root=>{ChartForgeXTopology.mount(root);ChartForgeXTopology.mount(root);window.lateEvents=0;root.addEventListener('cfx-topology-select',()=>lateEvents++);}");
@@ -104,11 +104,11 @@ public sealed class TopologyGraphLinkedBrowserTests {
         if (!Enabled) return;
         var first = reverse ? "linked-topology" : "cfx-topology";
         var last = reverse ? "cfx-topology" : "linked-topology";
-        TopologyRenderOptions Options(string prefix) => new() { CssClassPrefix = prefix, EnableHtmlSelectionPanel = false };
+        TopologyRenderOptions Options(string prefix) => new() { CssClassPrefix = prefix, Html = { SelectionPanel = false } };
         var html = "<!doctype html><html><body>"
-            + Topology(false).WithId("initial-first").ToInteractiveHtmlFragment(Options(first))
+            + Topology(false).Id("initial-first").ToInteractiveHtmlFragment(Options(first))
             + "<script>window.retainedTopologyMount=ChartForgeXTopology.mount;</script>"
-            + Topology(false).WithId("initial-last").ToInteractiveHtmlFragment(Options(last)) + "</body></html>";
+            + Topology(false).Id("initial-last").ToInteractiveHtmlFragment(Options(last)) + "</body></html>";
         await using var session = await OpenAsync(html, 960, 680);
         var page = session.Page;
         Assert.Equal(2, await page.Locator("[data-cfx-interactive=true][data-cfx-runtime-bound=true]").CountAsync());
@@ -118,7 +118,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
         foreach (var prefix in new[] { first, last }) {
             var id = "late-" + prefix;
             await page.EvaluateAsync("html=>document.body.insertAdjacentHTML('beforeend',html)",
-                Topology(false).WithId(id).ToInteractiveHtmlFragmentWithoutAssets(Options(prefix)));
+                Topology(false).Id(id).ToInteractiveHtmlFragmentWithoutAssets(Options(prefix)));
             var root = page.Locator("[data-chart-id='" + id + "'][data-cfx-interactive=true]");
             await root.EvaluateAsync("root=>ChartForgeXTopology.mount(root)");
             Assert.Equal("true", await root.GetAttributeAsync("data-cfx-runtime-bound"));
@@ -258,8 +258,8 @@ public sealed class TopologyGraphLinkedBrowserTests {
     private static Task TopologyCommand(IPage page, string name, object? detail = null) => page.Locator(TopologyRoot).EvaluateAsync(
         "(root,request)=>root.dispatchEvent(new CustomEvent(request.name,{detail:request.detail||{}}))", new { name, detail });
 
-    private static TopologyChart Topology(bool dark) => TopologyChart.Create().WithId("linked-topology")
-        .WithViewport(1060, 372, 0).WithLegend(null).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+    private static TopologyChart Topology(bool dark) => TopologyChart.Create().Id("linked-topology")
+        .Viewport(new TopologyViewport(1060, 372, 0)).Legend((TopologyLegend?)null).Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
         .AddNode("a", "API", 80, 120, width: 140, height: 80)
         .AddNode("b", "Database", 460, 120, width: 140, height: 80)
         .AddNode("c", "Queue", 840, 120, width: 140, height: 80)

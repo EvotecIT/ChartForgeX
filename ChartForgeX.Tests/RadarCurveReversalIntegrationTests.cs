@@ -13,8 +13,8 @@ public sealed class RadarCurveReversalIntegrationTests {
     [InlineData(800, 440)]
     public async Task ReversedAsymmetricCurvesFitTheWholePlot(int width, int height) {
         var values = new[] { 100d, 5, 90, 10, 80 };
-        var chart = Chart.Create().WithSize(width, height).WithHeader(false).WithLegend(false)
-            .WithAxes(false).WithGrid(false).WithDataLabels(false).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Size(width, height).ShowHeader(false).Legend(false)
+            .Axes(false).ShowGrid(false).DataLabels(false).YAxis(y => y.Bounds(0, 100))
             .AddRadarLine("Observed", values.Select((value, index) => new ChartPoint(index + 1, value)));
         chart.Options.XAxis.Reversed = true;
         chart.Series[0].Radar.CurveTension = 1;

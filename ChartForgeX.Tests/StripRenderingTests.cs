@@ -17,12 +17,11 @@ public sealed class StripRenderingTests {
     [InlineData(false, true)]
     public void ScheduleStripsUseTheEntireSharedDomainWithoutFrameGutters(bool reversed, bool time) {
         var origin = time ? new DateTime(2026, 1, 1).ToOADate() : 0;
-        var axis = new ChartAxis { Minimum = origin, Maximum = origin + 10,
-            Scale = time ? ChartScaleKind.Time : ChartScaleKind.Linear, Reversed = reversed };
+        var axis = new ChartAxis { Min = origin, Max = origin + 10, Scale = time ? ChartScaleKind.Time : ChartScaleKind.Linear, Reversed = reversed };
         var scale = new ChartStripScale(axis);
-        var chart = Chart.Create().WithTitle("Host title").WithSubtitle("Host subtitle")
+        var chart = Chart.Create().Title("Host title").Subtitle("Host subtitle")
             .AddGanttTask("A long row label belongs in HTML", origin + 2, origin + 6);
-        chart.Options.ShowDataLabels = false;
+        chart.Options.DataLabels.Visible = false;
 
         var prepared = chart.PrepareStrip(Context(), scale);
         var svg = XDocument.Parse(prepared.ToSvg("shared-row"));
@@ -35,14 +34,14 @@ public sealed class StripRenderingTests {
         Assert.DoesNotContain(svg.Descendants(), element => element.Name.LocalName == "text");
         Assert.Equal("Host title", chart.Title);
         Assert.True(chart.Options.ShowAxes);
-        Assert.Null(chart.Options.XAxis.Minimum);
-        axis.Maximum = origin + 20;
+        Assert.Null(chart.Options.XAxis.Min);
+        axis.Max = origin + 20;
         Assert.Equal(origin + 10, scale.Maximum);
     }
 
     [Fact]
     public void NumericStripKeepsTheExplicitValueDomainAcrossRows() {
-        var scale = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 100 });
+        var scale = new ChartStripScale(new ChartAxis { Min = 0, Max = 100 });
         foreach (var value in new[] { 20d, 60d }) {
             var chart = Chart.Create().AddHorizontalBar("Capacity", new[] { new ChartPoint(1, value) });
             var prepared = chart.PrepareStrip(Context(), scale);
@@ -61,7 +60,7 @@ public sealed class StripRenderingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AxisStripSharesPositionsAndKeepsBoundaryCaptionsInside(bool reversed) {
-        var axis = new ChartAxis { Minimum = 0, Maximum = 100, Reversed = reversed };
+        var axis = new ChartAxis { Min = 0, Max = 100, Reversed = reversed };
         axis.Labels.Add(new ChartAxisLabel(0, "None"));
         axis.Labels.Add(new ChartAxisLabel(50, "Half"));
         axis.Labels.Add(new ChartAxisLabel(100, "All"));
@@ -82,7 +81,7 @@ public sealed class StripRenderingTests {
     [Fact]
     public void StripScaleRejectsMissingOrCollapsedDomainsAndUnsupportedFamilies() {
         Assert.Throws<ArgumentException>(() => new ChartStripScale(new ChartAxis()));
-        var scale = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 100 });
+        var scale = new ChartStripScale(new ChartAxis { Min = 0, Max = 100 });
         var pie = Chart.Create().AddPie("Share", new[] { new ChartPoint(1, 20) });
         Assert.Throws<NotSupportedException>(() => pie.PrepareStrip(Context(), scale));
     }

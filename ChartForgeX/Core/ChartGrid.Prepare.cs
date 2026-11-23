@@ -59,9 +59,9 @@ public sealed partial class ChartGrid : IVisualRenderable {
                 var panelId = "panel-" + i.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 var options = chart.Options;
                 var modelFrame = !options.HostOwnsFrame;
-                var maximumRows = frame.LegendMaximumRows.HasValue && options.LegendMaximumRows.HasValue
-                    ? Math.Min(frame.LegendMaximumRows.Value, options.LegendMaximumRows.Value)
-                    : frame.LegendMaximumRows ?? options.LegendMaximumRows;
+                var maximumRows = frame.LegendMaximumRows.HasValue && options.Legend.MaxRows.HasValue
+                    ? Math.Min(frame.LegendMaximumRows.Value, options.Legend.MaxRows.Value)
+                    : frame.LegendMaximumRows ?? options.Legend.MaxRows;
                 var panelTheme = UsePanelThemes ? options.Theme : context.Theme;
                 var panelType = panelTheme.Typography.ForWidth(width);
                 var panelFont = UsePanelThemes ? VisualExportRequest.ChartFont(options) : context.Font;
@@ -70,10 +70,10 @@ public sealed partial class ChartGrid : IVisualRenderable {
                     Color = panelTheme.Resolve(UsePanelThemes ? options.ThemeMode : context.ThemeMode).Foreground });
                 var panelFrame = new VisualFrame(options.ShowHeader && modelFrame ? chart.Title : string.Empty,
                     options.ShowHeader && modelFrame ? chart.Subtitle : string.Empty,
-                    !frame.ShowLegend || !modelFrame ? false : options.HasExplicitLegend ? options.ShowLegend : null, options.LegendPosition,
+                    !frame.ShowLegend || !modelFrame ? false : options.Legend.HasExplicitVisibility ? options.Legend.Visible : null, options.Legend.Position,
                     frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
                     titleStyle: panelTitle, legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
-                    legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),
+                    legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.Legend.MaxHeightFraction),
                     showCard: frame.ShowCard && options.ShowCard && modelFrame, legendTitle: frame.LegendTitle) {
                     HasExplicitLegendWeight = frame.HasExplicitLegendWeight || options.LegendStyle.FontWeight != null
                 };

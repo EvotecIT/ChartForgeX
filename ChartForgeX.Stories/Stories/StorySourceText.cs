@@ -104,12 +104,6 @@ public sealed class StorySourceText {
     public static StorySourceText Create(string text, string? language = null) =>
         new StorySourceText(text) { Language = language ?? string.Empty };
 
-    /// <summary>Sets an optional language identifier used by hosts and accessibility output.</summary>
-    public StorySourceText WithLanguage(string? language) {
-        Language = language ?? string.Empty;
-        return this;
-    }
-
     /// <summary>Adds one ordered syntax span.</summary>
     public StorySourceText AddSpan(int start, int length, StorySyntaxKind kind) =>
         AddSpan(new StorySourceSpan(start, length, kind));

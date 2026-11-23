@@ -13,12 +13,7 @@ public sealed class ShadowHostLegacyEventsBrowserTests {
     [InlineData("closed")]
     public async Task TopologyPublicNotificationsCrossShadowHostWhilePeerSyncStaysLocal(string shadowMode) {
         if (!Enabled) return;
-        var options = new TopologyRenderOptions {
-            EnableHtmlSelectionPanel = false,
-            EnableHtmlViewportControls = true,
-            EnableHtmlSynchronizedState = true,
-            HtmlSyncGroupName = "shadow-legacy-topology"
-        };
+        var options = new TopologyRenderOptions { Html = { SelectionPanel = false, ViewportControls = true, SynchronizedState = true, SyncGroupName = "shadow-legacy-topology" } };
         var html = Topology("shadow-topology-source").ToInteractiveHtmlPage(options);
         var peer = Topology("shadow-topology-peer").ToInteractiveHtmlFragmentWithoutAssets(options);
         await using var session = await OpenAsync(html.Replace("</body>", peer + "</body>", StringComparison.Ordinal), 1000, 1000);
@@ -116,8 +111,8 @@ public sealed class ShadowHostLegacyEventsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static TopologyChart Topology(string id) => TopologyChart.Create().WithId(id)
-        .WithViewport(640, 300, 20).WithLegend(null)
+    private static TopologyChart Topology(string id) => TopologyChart.Create().Id(id)
+        .Viewport(new TopologyViewport(640, 300, 20)).Legend((TopologyLegend?)null)
         .AddNode("a", "API", 80, 120, width: 120, height: 70)
         .AddNode("b", "Worker", 400, 120, width: 120, height: 70)
         .AddEdge("ab", "a", "b");

@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class GalleryInteractiveHtmlHealthTests {
     [Fact]
     public void GeneratedLifecyclePagesAndBoundedInteractiveHostsQualifyWhileBrokenHostContractsFail() {
-        var chart = Chart.Create().WithSize(320, 220).WithTitle("Counts")
+        var chart = Chart.Create().Size(320, 220).Title("Counts")
             .AddBar("Counts", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
         var fit = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         var readable = chart.ToInteractiveHtmlPage();

@@ -33,9 +33,9 @@ public sealed partial class ChartSeries {
         ReplaceDifferencePoints(alignment.Points);
         if (alignment.FirstBoundary.Interpolation == alignment.SecondBoundary.Interpolation
             && alignment.FirstBoundary.StepPosition == alignment.SecondBoundary.StepPosition) {
-            WithInterpolation(alignment.FirstBoundary.Interpolation, alignment.FirstBoundary.StepPosition);
+            SetInterpolation(alignment.FirstBoundary.Interpolation, alignment.FirstBoundary.StepPosition);
             FirstBoundaryInterpolation = null; SecondBoundaryInterpolation = null;
-        } else WithBoundaryInterpolation(alignment.FirstBoundary, alignment.SecondBoundary);
+        } else BoundaryInterpolation(alignment.FirstBoundary, alignment.SecondBoundary);
         DifferenceArea = options; _differenceAlignment = alignment;
         return this;
     }

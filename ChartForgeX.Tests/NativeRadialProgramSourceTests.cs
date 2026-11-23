@@ -10,6 +10,6 @@ public sealed class NativeRadialProgramSourceTests {
         NativeRadialMotionBeforeControls.Save("radial-program-" + donut + "-" + kind + "-" + width + ".cs", program);
         Assert.DoesNotContain("{{", program, StringComparison.Ordinal); Assert.Contains("class NativeRadialMotionRecipe", program, StringComparison.Ordinal);
         Assert.Contains("PrepareNativeTransitionJson", program, StringComparison.Ordinal); Assert.Contains("ChartVisibilityTarget.RadialOther", program, StringComparison.Ordinal);
-        Assert.Contains("WithObservationIds", program, StringComparison.Ordinal); Assert.Contains("using ChartForgeX.Interactivity.Html;", program, StringComparison.Ordinal);
+        Assert.Contains("ObservationIds", program, StringComparison.Ordinal); Assert.Contains("using ChartForgeX.Interactivity.Html;", program, StringComparison.Ordinal);
     }
 }

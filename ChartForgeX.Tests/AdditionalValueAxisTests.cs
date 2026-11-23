@@ -37,7 +37,7 @@ public sealed class AdditionalValueAxisTests {
         Assert.Equal(plot.Bottom, PointCenter(prepared, 2, 1), 3);
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role is "grid-additional-y" or "grid-additional-y-minor");
 
-        humidity.Configure(axis => axis.WithMinorTicks(1).ConfigureGrid(grid => grid.WithLines(true)));
+        humidity.Axis(axis => axis.MinorTickCount(1).Grid(grid => grid.ShowLines(true)));
         var gridded = Prepare(chart);
         Assert.Equal(5, gridded.Scene.Nodes.Count(node => node.Role == "grid-additional-y"));
         Assert.Contains(gridded.Scene.Nodes, node => node.Role == "grid-additional-y-minor");
@@ -47,10 +47,10 @@ public sealed class AdditionalValueAxisTests {
     public void ACompactChartOmitsAnAdditionalColumnWithoutRoomInsteadOfOverlapping() {
         var (chart, _) = Climate(300);
         var pressure = chart.AddValueAxis(ChartAxisPlacement.End, "Pressure (Pa)",
-            axis => axis.WithBounds(0, 12000).WithLabelFormatter(value => value.ToString("N0", CultureInfo.InvariantCulture) + " Pa")
-                .ConfigureGrid(grid => grid.WithLines(true)));
+            axis => axis.Bounds(0, 12000).LabelBy(value => value.ToString("N0", CultureInfo.InvariantCulture) + " Pa")
+                .Grid(grid => grid.ShowLines(true)));
         chart.AddLine("Pressure", new[] { new ChartPoint(0, 9000), new ChartPoint(1, 11000) });
-        chart.Series[3].UseValueAxis(pressure);
+        chart.Series[3].ValueAxis(pressure);
         var prepared = Prepare(chart);
 
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.additional-axis-omitted");
@@ -75,13 +75,13 @@ public sealed class AdditionalValueAxisTests {
     }
 
     private static (Chart Chart, ChartAdditionalValueAxis Humidity) Climate(int width) {
-        var chart = Chart.Create().WithSize(width, 360).WithLegend(false).WithYAxis("Load (kW)").WithSecondaryYAxis("Supply air (°C)")
+        var chart = Chart.Create().Size(width, 360).Legend(false).YAxis(y => y.Title("Load (kW)")).SecondaryYAxis(s => s.Title("Supply air (°C)"))
             .AddArea("Load", new[] { new ChartPoint(0, 250), new ChartPoint(1, 380) })
             .AddLine("Supply air", new[] { new ChartPoint(0, 19.5), new ChartPoint(1, 24) });
-        chart.Series[1].UseSecondaryValueAxis();
-        var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)", axis => axis.WithBounds(30, 70).WithTickStep(10));
+        chart.Series[1].SecondaryAxis();
+        var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)", axis => axis.Bounds(30, 70).TickStep(10));
         chart.AddLine("Humidity", new[] { new ChartPoint(0, 70), new ChartPoint(1, 30) });
-        chart.Series[2].UseValueAxis(humidity);
+        chart.Series[2].ValueAxis(humidity);
         return (chart, humidity);
     }
 

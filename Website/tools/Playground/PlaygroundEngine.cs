@@ -215,10 +215,10 @@ public static partial class PlaygroundEngine {
             return artifact.Metadata.ContainsKey("mermaid.config.theme") ? null : artifact.ToSvg(null, scope);
         switch (artifact.Model) {
             case Chart chart:
-                chart.WithThemeMode(theme.Mode);
+                chart.ThemeMode(theme.Mode);
                 return artifact.ToSvg(null, scope);
             case TopologyChart topology:
-                topology.WithThemeMode(theme.Mode);
+                topology.ThemeMode(theme.Mode);
                 return artifact.ToSvg(null, scope);
             case SequenceArtifact sequence:
                 sequence.ThemeMode = theme.Mode;

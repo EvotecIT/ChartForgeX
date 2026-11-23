@@ -33,20 +33,20 @@ public static partial class MermaidQuadrantRendering {
         var points = document.Points.Select(point => new ChartPoint(point.X, point.Y)).ToArray();
         var settings = document.Configuration.Quadrant;
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.HasExplicitWidth ? options.Width : settings?.Width ?? options.Width,
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.HasExplicitWidth ? options.Width : settings?.Width ?? options.Width,
                 options.HasExplicitHeight ? options.Height : settings?.Height ?? options.Height)
-            .WithXAxis(FormatAxis(document.XAxisStart, document.XAxisEnd, "X"))
-            .WithYAxis(FormatAxis(document.YAxisStart, document.YAxisEnd, "Y"))
-            .WithXAxisBounds(0, 1)
-            .WithYAxisBounds(0, 1)
-            .WithDataLabels()
+            .XAxis(x => x.Title(FormatAxis(document.XAxisStart, document.XAxisEnd, "X")))
+            .YAxis(y => y.Title(FormatAxis(document.YAxisStart, document.YAxisEnd, "Y")))
+            .XAxis(x => x.Bounds(0, 1))
+            .YAxis(y => y.Bounds(0, 1))
+            .DataLabels()
             .AddScatter(options.SeriesName, points);
 
         var series = chart.Series[0];
         series.SemanticRole = "mermaid-quadrant-point";
-        for (var i = 0; i < document.Points.Count; i++) series.WithPointLabel(i, document.Points[i].Label);
+        for (var i = 0; i < document.Points.Count; i++) series.PointLabel(i, document.Points[i].Label);
         ApplyEndpointLabels(chart.Options.XAxis, document.XAxisStart, document.XAxisEnd);
         ApplyEndpointLabels(chart.Options.YAxis, document.YAxisStart, document.YAxisEnd);
         MermaidPresentation.Apply(chart, document, options.Presentation);

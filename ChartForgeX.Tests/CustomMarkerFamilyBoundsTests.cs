@@ -12,9 +12,9 @@ public sealed class CustomMarkerFamilyBoundsTests {
     [InlineData(ChartSeriesKind.Dumbbell)]
     public void ConfiguredPlotRadiiRetainFittedLegendGlyphs(ChartSeriesKind kind) {
         var chart = Family(kind);
-        chart.Series[0].ConfigureMarkers(options => { options.Radius = 32; options.Enabled = true; });
+        chart.Series[0].Markers(options => { options.Radius = 32; options.Enabled = true; });
         if (kind == ChartSeriesKind.Dumbbell)
-            chart.Series[0].ConfigureDumbbell(options => { options.StartMarker.Radius = 24; options.EndMarker.Radius = 40; });
+            chart.Series[0].Dumbbell(options => { options.StartMarker.Radius = 24; options.EndMarker.Radius = 40; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plotMarkers = prepared.Scene.Nodes.OfType<VisualSceneEllipse>()
             .Where(mark => mark.Role is "marker" or "dumbbell-start" or "dumbbell-end").ToArray();
@@ -44,8 +44,8 @@ public sealed class CustomMarkerFamilyBoundsTests {
     public void AsymmetricMarkersStayWithinTheirOwnSourceFootprintsAndKeepNativeLegendGeometry(ChartSeriesKind kind) {
         var chart = Family(kind); var series = chart.Series[0];
         var shape = ChartMarkerPath.Start(.2, -.25).LineTo(.6, -.25).LineTo(.6, .5).LineTo(.2, .5);
-        series.ConfigureMarkers(options => { options.CustomPath = shape; if (kind != ChartSeriesKind.Bubble) options.Radius = 16; options.StrokeWidth = 2; options.Enabled = true; });
-        if (kind == ChartSeriesKind.Dumbbell) series.ConfigureDumbbell(options => { options.StartMarker.Radius = 8; options.EndMarker.Radius = 20; });
+        series.Markers(options => { options.CustomPath = shape; if (kind != ChartSeriesKind.Bubble) options.Radius = 16; options.StrokeWidth = 2; options.Enabled = true; });
+        if (kind == ChartSeriesKind.Dumbbell) series.Dumbbell(options => { options.StartMarker.Radius = 8; options.EndMarker.Radius = 20; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, "custom-marker-family-bounds-" + kind);
         var roles = new[] { "marker", "bubble", "error-marker", "dumbbell-start", "dumbbell-end", "lollipop-marker", "slope-marker", "range-marker", "difference-marker", "radar-point", "polar-point" };
@@ -67,25 +67,25 @@ public sealed class CustomMarkerFamilyBoundsTests {
     [InlineData(ChartSeriesKind.RangeArea)]
     [InlineData(ChartSeriesKind.ErrorBar)]
     public void SparseCallbackSquaresFitAutomaticEndpointsAndTheirSourceRegions(ChartSeriesKind kind) {
-        var chart = Family(kind).WithLegend(false);
+        var chart = Family(kind).Legend(false);
         var series = chart.Series[0];
-        series.ConfigureMarkers(options => options.Enabled = false);
+        series.Markers(options => options.Enabled = false);
         var style = new ChartItemStyle(markers: new ChartMarkerOptions {
             Enabled = true, Radius = 32, Shape = ChartMarkerShape.Square, StrokeWidth = 2
         });
         if (kind == ChartSeriesKind.Dumbbell) {
             series.ReplaceDumbbells(new[] { new ChartDumbbell(1, 10, 20), new ChartDumbbell(3, 25, 40) });
-            series.ConfigureDumbbell(options => { options.StartMarker.Radius = 8; options.EndMarker.Radius = 12; });
-            series.WithItemStyler<ChartDumbbell>(item => item.Index == 1 ? style : null);
+            series.Dumbbell(options => { options.StartMarker.Radius = 8; options.EndMarker.Radius = 12; });
+            series.ItemStyleBy<ChartDumbbell>(item => item.Index == 1 ? style : null);
         } else if (kind == ChartSeriesKind.ErrorBar) {
             series.ReplaceErrorBars(new[] {
                 new ChartErrorBar(1, 10, yBounds: new ChartErrorBounds(10, 10)),
                 new ChartErrorBar(3, 40, yBounds: new ChartErrorBounds(40, 40))
             });
-            series.WithItemStyler<ChartErrorBar>(item => item.Index == 1 ? style : null);
+            series.ItemStyleBy<ChartErrorBar>(item => item.Index == 1 ? style : null);
         } else if (kind == ChartSeriesKind.RangeArea)
-            series.WithItemStyler<ChartRangeBand>(item => item.Index == 1 ? style : null);
-        else series.WithItemStyler<ChartPoint>(item => item.Index == 1 ? style : null);
+            series.ItemStyleBy<ChartRangeBand>(item => item.Index == 1 ? style : null);
+        else series.ItemStyleBy<ChartPoint>(item => item.Index == 1 ? style : null);
 
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var plot = prepared.XProjection!.PlotBounds;
@@ -105,7 +105,7 @@ public sealed class CustomMarkerFamilyBoundsTests {
     }
 
     private static Chart Family(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(400, 360).WithHeader(false).WithLegend(true).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(400, 360).ShowHeader(false).Legend(true).Axes(false).ShowGrid(false).DataLabels(false);
         var points = new[] { new ChartPoint(1, 20), new ChartPoint(3, 30), new ChartPoint(5, 40) };
         return kind switch {
             ChartSeriesKind.Line => chart.AddLine("Samples", points), ChartSeriesKind.Scatter => chart.AddScatter("Samples", points),

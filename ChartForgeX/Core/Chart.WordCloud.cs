@@ -26,8 +26,8 @@ public sealed partial class Chart {
             index++;
         }
 
-        Options.XAxisLabels.Clear();
-        Options.XAxisLabels.AddRange(labels);
+        Options.XAxis.Labels.Clear();
+        Options.XAxis.Labels.AddRange(labels);
         Add(name, ChartSeriesKind.WordCloud, points, color);
         Series[Series.Count - 1].PointColors.AddRange(colors);
         return this;

@@ -109,32 +109,7 @@ public sealed class ChartGridLineStyle {
     public ChartGridLineStyle Clone() => (ChartGridLineStyle)MemberwiseClone();
 
     /// <summary>
-    /// Sets whether horizontal value grid lines are drawn.
-    /// </summary>
-    public ChartGridLineStyle WithHorizontalLines(bool visible = true) { ShowHorizontalLines = visible; return this; }
-
-    /// <summary>
-    /// Sets whether vertical category grid lines are drawn.
-    /// </summary>
-    public ChartGridLineStyle WithVerticalLines(bool visible = true) { ShowVerticalLines = visible; return this; }
-
-    /// <summary>
-    /// Sets horizontal grid line opacity.
-    /// </summary>
-    public ChartGridLineStyle WithHorizontalOpacity(double opacity) { HorizontalOpacity = opacity; return this; }
-
-    /// <summary>
-    /// Sets vertical grid line opacity.
-    /// </summary>
-    public ChartGridLineStyle WithVerticalOpacity(double opacity) { VerticalOpacity = opacity; return this; }
-
-    /// <summary>
-    /// Sets grid line stroke width.
-    /// </summary>
-    public ChartGridLineStyle WithStrokeWidth(double width) { StrokeWidth = width; return this; }
-
-    /// <summary>
     /// Sets the dash and gap lengths. Use zero dash for solid lines.
     /// </summary>
-    public ChartGridLineStyle WithDash(double dash, double gap) { Dash = dash; Gap = gap; return this; }
+    internal ChartGridLineStyle SetDash(double dash, double gap) { Dash = dash; Gap = gap; return this; }
 }

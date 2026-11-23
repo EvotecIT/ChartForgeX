@@ -66,42 +66,6 @@ public sealed class VisualStoryAnimationOptions {
     /// <summary>Creates options with documentation and Discord-friendly defaults.</summary>
     public static VisualStoryAnimationOptions Create() => new();
 
-    /// <summary>Sets the requested frame rate.</summary>
-    public VisualStoryAnimationOptions WithFramesPerSecond(int framesPerSecond) {
-        FramesPerSecond = framesPerSecond;
-        return this;
-    }
-
-    /// <summary>Configures whether the animation repeats.</summary>
-    public VisualStoryAnimationOptions WithLoop(bool loop = true) {
-        Loop = loop;
-        return this;
-    }
-
-    /// <summary>Sets how long the completed scene remains visible.</summary>
-    public VisualStoryAnimationOptions WithEndHold(double seconds) {
-        EndHoldSeconds = seconds;
-        return this;
-    }
-
-    /// <summary>Sets the raster output density multiplier.</summary>
-    public VisualStoryAnimationOptions WithOutputScale(int scale) {
-        OutputScale = scale;
-        return this;
-    }
-
-    /// <summary>Sets the maximum sampled frame count.</summary>
-    public VisualStoryAnimationOptions WithMaximumFrames(int maximumFrames) {
-        MaximumFrames = maximumFrames;
-        return this;
-    }
-
-    /// <summary>Sets the cross-fade duration between scenes.</summary>
-    public VisualStoryAnimationOptions WithTransition(double seconds) {
-        TransitionSeconds = seconds;
-        return this;
-    }
-
     private static void FiniteRange(double value, double minimum, double maximum, string name) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value < minimum || value > maximum) throw new ArgumentOutOfRangeException(name);
     }

@@ -19,7 +19,7 @@ public sealed class VennQuantitativeGeometryTests {
     [InlineData(10, 10, 10)]
     [InlineData(1e300, 1e298, 1e297)]
     public void TwoSetsPreserveAreaRatiosAndDeclaredOverlapIncludingContainmentAndDisjointCases(double first, double second, double overlap) {
-        var block = VennDiagramBlock.Create().WithSize(800, 500).AddSet("A", "First", first).AddSet("B", "Second", second).AddIntersection(new[] { "A", "B" }, "Shared", overlap);
+        var block = VennDiagramBlock.Create().Size(800, 500).AddSet("A", "First", first).AddSet("B", "Second", second).AddIntersection(new[] { "A", "B" }, "Shared", overlap);
         var layout = block.MeasureLayout(); Assert.True(layout.IsAreaAccurate);
         var a = layout.Circles[0]; var b = layout.Circles[1]; var region = Assert.Single(layout.Regions);
         Assert.InRange(Math.Abs(a.Radius * a.Radius / (b.Radius * b.Radius) - first / second), 0, 1e-8);

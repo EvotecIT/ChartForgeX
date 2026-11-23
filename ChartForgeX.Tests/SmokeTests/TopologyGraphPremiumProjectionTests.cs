@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
             new TopologyHierarchyItem("platform", "Platform") { Kind = TopologyNodeKind.Namespace },
             new TopologyHierarchyItem("identity", "Identity", "platform") { Kind = TopologyNodeKind.Service, IconId = "custom:identity", Subtitle = "Authentication", Symbol = null }
         };
-        var topology = TopologyChart.Create().WithId("premium-hierarchy").AddHierarchy(items, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Card });
+        var topology = TopologyChart.Create().Id("premium-hierarchy").AddHierarchy(items, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Card });
         topology.Nodes.Single(node => node.Id == "identity").Badge = "7";
 
         var scene = topology.ToGraphScene(options => options.IconCatalog = catalog);

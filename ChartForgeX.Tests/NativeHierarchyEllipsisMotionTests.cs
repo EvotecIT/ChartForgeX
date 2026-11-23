@@ -25,9 +25,9 @@ public sealed class NativeHierarchyEllipsisMotionTests {
         } finally { _ = BrowserProofFonts.Family; }
     }
     internal static Chart Model(double reading, int width, bool dark) {
-        var chart = NativeHierarchyMotionBeforeControls.Model(false, false, reading).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.Series[0].WithPointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));
-        chart.ConfigureTreemap(options => { options.LabelTrimming = TextTrimming.Ellipsis; options.MinimumLabelFontSize = 10; }); return chart;
+        var chart = NativeHierarchyMotionBeforeControls.Model(false, false, reading).Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Series[0].PointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));
+        chart.Treemap(options => { options.LabelTrimming = TextTrimming.Ellipsis; options.MinimumLabelFontSize = 10; }); return chart;
     }
 }

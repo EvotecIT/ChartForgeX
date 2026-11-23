@@ -12,12 +12,12 @@ namespace ChartForgeX.Tests;
 public sealed class GanttStyledGuideBoundaryTests {
     [Fact]
     public void OversizedCurrentTimeGuideKeepsTheNarrowReferenceAndTaskProjection() {
-        var chart = Chart.Create().WithSize(640, 360).WithLegend(false).AddGanttTask("Task", 1, 4)
-            .WithGanttToday(2.5).AddVerticalLine(1, "");
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 0);
+        var chart = Chart.Create().Size(640, 360).Legend(false).AddGanttTask("Task", 1, 4)
+            .Gantt(g => g.Today(2.5)).AddVerticalLine(1, "");
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(width: 0);
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 20);
         var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 1024);
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(width: 1024);
         var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
         var axis = Assert.Single(actual.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
@@ -31,14 +31,14 @@ public sealed class GanttStyledGuideBoundaryTests {
     [InlineData(true)]
     public async Task CenteredGuideThatAlreadyFitsDoesNotCompressTasks(bool lanes) {
         var start = new DateTime(2026, 1, 2);
-        var chart = Chart.Create().WithSize(640, 360).WithLegend(false).WithGanttToday(start.AddDays(1.5));
-        if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+        var chart = Chart.Create().Size(640, 360).Legend(false).GanttToday(start.AddDays(1.5));
+        if (lanes) chart.StateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(3), "work") });
         else chart.AddGanttTask("Task", start, start.AddDays(3));
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 2);
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(width: 2);
         var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var axis = Assert.Single(control.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), (axis.End.X - axis.Start.X) * .8, .15);
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), (axis.End.X - axis.Start.X) * .8, .15);
         var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
         if (!InteractiveChartBrowser.Enabled) return;
@@ -54,9 +54,9 @@ public sealed class GanttStyledGuideBoundaryTests {
 
     [Fact]
     public void OppositeReferenceReservationsKeepEachGuidesOwnWidthInsideThePlot() {
-        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).AddGanttTask("Task", 1, 4)
-            .WithGanttToday(1.001).AddVerticalLine(3.999, "");
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 20);
+        var chart = Chart.Create().Size(320, 360).Legend(false).AddGanttTask("Task", 1, 4)
+            .Gantt(g => g.Today(1.001)).AddVerticalLine(3.999, "");
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(width: 20);
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 50);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
@@ -79,13 +79,13 @@ public sealed class GanttStyledGuideBoundaryTests {
     public async Task NearBoundaryScheduleGuidesKeepTheirCompletePaintedWidth(int family, bool maximum) {
         var start = new DateTime(2026, 1, 2); var end = start.AddDays(3);
         var value = (maximum ? end.AddDays(-.001) : start.AddDays(.001)).ToOADate();
-        var chart = Chart.Create().WithSize(320, 360).WithLegend(false);
-        if (family == 1) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+        var chart = Chart.Create().Size(320, 360).Legend(false);
+        if (family == 1) chart.StateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, end, "work") });
         else if (family == 3) chart.AddTimelineItem("Task", start, end);
         else chart.AddGanttTask("Task", start, end);
         var style = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 20, dash: Array.Empty<double>());
-        if (family < 2) { chart.WithGanttToday(value); chart.Options.GanttTodayStyle = style; }
+        if (family < 2) { chart.Gantt(g => g.Today(value)); chart.Options.Gantt.TodayStyle = style; }
         else { chart.AddVerticalLine(value, ""); chart.Annotations[0].StrokeStyle = style; }
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
@@ -113,13 +113,13 @@ public sealed class GanttStyledGuideBoundaryTests {
     [InlineData(true, 2)]
     public void InvisibleCurrentTimeGuidesDoNotCompressTaskGeometry(bool lanes, int hiddenBy) {
         var start = new DateTime(2026, 1, 2);
-        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).WithGanttToday(start.AddDays(-1));
-        if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+        var chart = Chart.Create().Size(320, 360).Legend(false).GanttToday(start.AddDays(-1));
+        if (lanes) chart.StateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(3), "work") });
         else chart.AddGanttTask("Task", start, start.AddDays(3));
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 0);
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(width: 0);
         var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(hiddenBy == 0 ? ChartColor.Transparent : null,
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(hiddenBy == 0 ? ChartColor.Transparent : null,
             hiddenBy == 2 ? 0 : 1024, hiddenBy == 1 ? 0 : 1);
         var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
@@ -130,7 +130,7 @@ public sealed class GanttStyledGuideBoundaryTests {
     [InlineData(1)]
     [InlineData(2)]
     public void InvisibleReferenceAnnotationsDoNotCompressTaskGeometry(int hiddenBy) {
-        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).AddGanttTask("Task", 1, 4).AddVerticalLine(0, "Reference");
+        var chart = Chart.Create().Size(320, 360).Legend(false).AddGanttTask("Task", 1, 4).AddVerticalLine(0, "Reference");
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 0);
         var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(hiddenBy == 0 ? ChartColor.Transparent : null,
@@ -153,8 +153,8 @@ public sealed class GanttStyledGuideBoundaryTests {
 
     [Fact]
     public void MaximumNativeReferenceStyleStillPaintsRasterInk() {
-        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).WithGanttToday(2).AddGanttTask("Task", 1, 4);
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 1024, dash: new[] { 1024d, .25d });
+        var chart = Chart.Create().Size(320, 360).Legend(false).Gantt(g => g.Today(2)).AddGanttTask("Task", 1, 4);
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 1024, dash: new[] { 1024d, .25d });
         var pixels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToRgba().Pixels;
         Assert.Contains(Enumerable.Range(0, pixels.Length / 4), pixel => pixels[pixel * 4] == 255 && pixels[pixel * 4 + 1] == 0 && pixels[pixel * 4 + 2] == 255);
     }
@@ -167,13 +167,13 @@ public sealed class GanttStyledGuideBoundaryTests {
     [InlineData(true, true)]
     public async Task WideCurrentTimeGuidesRemainInsideAutomaticClassicAndLaneWindows(bool lanes, bool after) {
         var start = new DateTime(2026, 1, 2);
-        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), after ? ThemeMode.Dark : ThemeMode.Light)
-            .WithGanttToday(after ? start.AddDays(5) : start.AddDays(-1));
-        if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+        var chart = Chart.Create().Size(320, 360).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(after ? ThemeMode.Dark : ThemeMode.Light)
+            .GanttToday(after ? start.AddDays(5) : start.AddDays(-1));
+        if (lanes) chart.StateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(3), "work") });
         else chart.AddGanttTask("Task", start, start.AddDays(3));
-        chart.Options.GanttTodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 20, dash: new[] { 12d, 16d });
+        chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 20, dash: new[] { 12d, 16d });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var guide = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "gantt-now-line");
         var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "schedule-axis");
@@ -210,7 +210,7 @@ public sealed class GanttStyledGuideBoundaryTests {
     [InlineData(false)]
     [InlineData(true)]
     public void WideReferenceAnnotationsReserveTheirOwnWidthAtAutomaticWindowSides(bool after) {
-        var chart = Chart.Create().WithLegend(false).AddGanttTask("Task", 1, 4).AddVerticalLine(after ? 5 : 0, "Reference");
+        var chart = Chart.Create().Legend(false).AddGanttTask("Task", 1, 4).AddVerticalLine(after ? 5 : 0, "Reference");
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 20);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");

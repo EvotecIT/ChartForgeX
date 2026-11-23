@@ -24,10 +24,10 @@ public sealed class ServerRenderedValueTests {
         Chart Model(double value) {
             var series = new ChartSeries(new ChartSeriesId("metrics"), "Metrics", kind, new[] {
                 new ChartPoint(1, 10), new ChartPoint(2, value).WithMarkOptions(options), new ChartPoint(3, 30)
-            }).WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("current"), new ChartObservationId("last") })
-                .WithMarkOptions(new ChartMarkOptions(cssClass: "host-series"));
-            return Chart.Create().WithSize(600, 320).WithFontFamily(BrowserProofFonts.Family).WithLegend(false)
-                .WithXAxisBounds(0, 4).WithYAxisBounds(0, 100).WithDataLabels(labels).AddSeries(series);
+            }).ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("current"), new ChartObservationId("last") })
+                .MarkOptions(new ChartMarkOptions(cssClass: "host-series"));
+            return Chart.Create().Size(600, 320).FontFamily(BrowserProofFonts.Family).Legend(false)
+                .XAxis(x => x.Bounds(0, 4)).YAxis(y => y.Bounds(0, 100)).DataLabels(labels).AddSeries(series);
         }
         var renderer = new HtmlInteractiveChartRenderer();
         var from = renderer.PrepareSection(Model(20)); var to = renderer.PrepareSection(Model(80));

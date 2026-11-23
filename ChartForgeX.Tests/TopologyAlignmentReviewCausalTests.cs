@@ -37,7 +37,7 @@ public sealed class TopologyAlignmentReviewCausalTests {
     }
 
     internal static TopologyChart CompartmentChart(TopologyLayoutDirection global, TopologyLayoutDirection inherited, TopologyAlignmentKind kind) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(900, 700).WithLayout(TopologyLayoutMode.Layered, global)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(900, 700)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(global)
             .AddAutoGroup("outer", "Outer").AddAutoGroup("inner", "Inner")
             .AddAutoGroup("first", "First").AddAutoGroup("second", "Second")
             .AddAutoNode("a", "A", groupId: "first", width: 140, height: 60).AddAutoNode("b", "B", groupId: "second", width: 140, height: 60);

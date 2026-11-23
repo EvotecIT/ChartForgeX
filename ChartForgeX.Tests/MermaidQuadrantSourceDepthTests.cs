@@ -58,7 +58,7 @@ public sealed class MermaidQuadrantSourceDepthTests {
         Assert.Equal("Observed", series.PointLabels[0]);
         AssertAxis(chart.Options.XAxis, (.25, "Low reach"), (.75, "High reach"));
         AssertAxis(chart.Options.YAxis, (.25, "Low confidence"), (.75, "High confidence"));
-        Assert.Equal(string.Empty, chart.XAxisTitle); Assert.Equal(string.Empty, chart.YAxisTitle);
+        Assert.Equal(string.Empty, chart.Options.XAxis.Title); Assert.Equal(string.Empty, chart.Options.YAxis.Title);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class MermaidQuadrantSourceDepthTests {
         Assert.Empty(parsed.Diagnostics); var chart = parsed.Document!.ToChart();
         var expected = second == null ? new[] { (position, first) } : new[] { (position, first), (.75, second!) };
         AssertAxis(chart.Options.XAxis, expected);
-        Assert.Equal(string.Empty, chart.XAxisTitle); Assert.Equal("Y", chart.YAxisTitle);
+        Assert.Equal(string.Empty, chart.Options.XAxis.Title); Assert.Equal("Y", chart.Options.YAxis.Title);
         Assert.Equal((.2, .8), (chart.Series[0].Points[0].X, chart.Series[0].Points[0].Y));
     }
 

@@ -21,7 +21,7 @@ public sealed partial class ChordColorDimensionTests {
         Assert.Equal(new[] { -10d, 0, 10, 20, 30 }, calls.Keys.OrderBy(value => value));
         var frozenCalls = calls.OrderBy(item => item.Key).ToArray();
         source.ReplaceFlowData(source.Nodes, source.FlowLinks.Select(flow => new ChartFlowLink(flow.Id, flow.SourceId, flow.TargetId, flow.Value, 99)));
-        chart.ConfigureChord(options => {
+        chart.Chord(options => {
             options.ColorDimension.Name = "Changed"; options.ColorScale = ChartColorScale.Sequential(High, Low).WithValueRange(0, 100);
         });
         allowCalls = false;
@@ -35,17 +35,17 @@ public sealed partial class ChordColorDimensionTests {
     [Fact]
     public void NestedColorConfigurationAndFlowReplacementCommitOnlyCompleteSnapshots() {
         var chart = Model(new double?[] { -10, 0, 10, 30, null }); var original = chart.Options.Chord;
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureChord(options => {
+        Assert.Throws<InvalidOperationException>(() => chart.Chord(options => {
             options.ColorDimension.Name = "Rejected"; options.ColorDimension.ShowLegend = false;
             throw new InvalidOperationException("Callback did not commit.");
         }));
         Assert.Same(original, chart.Options.Chord); Assert.Equal("Delay", chart.Options.Chord.ColorDimension.Name);
         ChartChordOptions? retained = null;
-        chart.ConfigureChord(options => { retained = options; options.ColorDimension.Name = "Committed"; });
+        chart.Chord(options => { retained = options; options.ColorDimension.Name = "Committed"; });
         retained!.ColorDimension.Name = "Retained edit";
         Assert.Equal("Committed", chart.Options.Chord.ColorDimension.Name);
         var series = chart.Series[0]; var scale = chart.Options.Chord.ColorScale;
-        series.WithFlowStyle("priority", new ChartFlowStyle(fill: Low)).WithFlowState("priority", ChartSeriesState.Warning);
+        series.FlowStyle("priority", new ChartFlowStyle(fill: Low)).FlowState("priority", ChartSeriesState.Warning);
         var before = Prepare(chart).ToSvg(); var facts = series.FlowLinks.ToArray();
         Assert.Throws<ArgumentException>(() => series.ReplaceFlowData(series.Nodes, new[] { new ChartFlowLink("bad", "a", "unknown", 1, 99) }));
         Assert.Throws<InvalidOperationException>(() => series.ReplaceFlowData(series.Nodes, Interrupted()));
@@ -73,9 +73,9 @@ public sealed partial class ChordColorDimensionTests {
         var variant = width == 360 ? "compact-color-dimension" : "color-dimension";
         var recipe = ExampleRecipes.OptionVariants.Single(item => item.Key == (ChartSeriesKind.Chord, "color-dimension")).Value;
         var chart = (Chart)recipe.Create(variant, dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.WithSize(width, width == 360 ? 360 : 440).WithTitle("Transfer volume and latency")
-            .WithSubtitle("Illustrative latency colors flows; transfer counts retain their weights")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Size(width, width == 360 ? 360 : 440).Title("Transfer volume and latency")
+            .Subtitle("Illustrative latency colors flows; transfer counts retain their weights")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var original = ChordRecipe.Create("wide").Series[0].FlowLinks;
         Assert.Equal(original.Select(flow => (flow.Id, flow.SourceId, flow.TargetId, flow.Value)),
             chart.Series[0].FlowLinks.Select(flow => (flow.Id, flow.SourceId, flow.TargetId, flow.Value)));

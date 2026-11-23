@@ -12,20 +12,20 @@ namespace ChartForgeX.Tests;
 public sealed class ChartDomContractTests {
     private static readonly DateTime Day = new(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
 
-    private static Chart StateTimeline() => Chart.Create().WithSize(720, 260)
-        .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("down", "Down", ChartColor.FromHex("#d4302f")))
+    private static Chart StateTimeline() => Chart.Create().Size(720, 260)
+        .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")), new ChartStateCategory("down", "Down", ChartColor.FromHex("#d4302f")))
         .AddStateTimelineLane("DC1.ad.evotec.pl", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(10), "up"), new ChartStateTimelineSegment(Day.AddHours(10), Day.AddHours(12), "down") },
             summary: "83%", group: "Warsaw", id: new ChartSeriesId("dc/DC1.ad.evotec.pl"))
         .AddStateTimelineLane("DC2.ad.evotec.pl", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(12), "up") },
             summary: "100%", group: "Warsaw", id: new ChartSeriesId("dc/DC2.ad.evotec.pl"))
         .AddStateTimelineLane("1.1.1.1", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(12), "up") }, summary: "100%", id: new ChartSeriesId("host/1.1.1.1"));
 
-    private static Chart GanttLanes() => Chart.Create().WithSize(720, 260)
-        .WithStateCategories(new ChartStateCategory("planned", "Planned", ChartColor.FromHex("#2563eb")))
+    private static Chart GanttLanes() => Chart.Create().Size(720, 260)
+        .StateCategories(new ChartStateCategory("planned", "Planned", ChartColor.FromHex("#2563eb")))
         .AddGanttLane("Patching", new[] { new ChartGanttLaneItem(Day, Day.AddHours(4), "planned", "Window") }, group: "Operations", id: new ChartSeriesId("lane-patching"));
 
-    private static Chart MixedSchedule() => Chart.Create().WithSize(720, 260)
-        .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+    private static Chart MixedSchedule() => Chart.Create().Size(720, 260)
+        .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
         .AddStateTimelineLane("DC1", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(12), "up") }, group: "Warsaw", id: new ChartSeriesId("dc/DC1"))
         .AddGanttLane("Patching", new[] { new ChartGanttLaneItem(Day, Day.AddHours(4), "up", "Window") }, group: "Operations", id: new ChartSeriesId("lane-patching"));
 
@@ -78,11 +78,11 @@ public sealed class ChartDomContractTests {
 
     [Fact]
     public void ContractRoles_AreAllEmittedByRepresentativeCharts() {
-        var line = Chart.Create().WithSize(640, 320).WithLegend(true)
+        var line = Chart.Create().Size(640, 320).Legend(true)
             .AddLine("Latency", new[] { new ChartPoint(1, 20), new ChartPoint(2, 35), new ChartPoint(3, 28) })
             .AddLine("Baseline", new[] { new ChartPoint(1, 18), new ChartPoint(2, 22), new ChartPoint(3, 24) });
-        var topology = TopologyChart.Create().WithViewport(640, 360).AddAutoNode("A", "Receive").AddAutoNode("B", "Store").AddEdge("link", "A", "B");
-        var stripAxis = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 100 }).PrepareAxis(new VisualRenderContext()).ToSvg("strip-axis");
+        var topology = TopologyChart.Create().Viewport(new TopologyViewport(640, 360)).AddAutoNode("A", "Receive").AddAutoNode("B", "Store").AddEdge("link", "A", "B");
+        var stripAxis = new ChartStripScale(new ChartAxis { Min = 0, Max = 100 }).PrepareAxis(new VisualRenderContext()).ToSvg("strip-axis");
         var emitted = new[] { line.ToSvg(), StateTimeline().ToSvg(), GanttLanes().ToSvg(), MixedSchedule().ToSvg(), topology.ToSvg(), stripAxis }
             .SelectMany(svg => XDocument.Parse(svg).Descendants())
             .Select(element => (string?)element.Attribute(ChartDomRoles.RoleAttribute))

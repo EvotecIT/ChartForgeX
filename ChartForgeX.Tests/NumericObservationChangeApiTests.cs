@@ -10,8 +10,8 @@ namespace ChartForgeX.Tests;
 public sealed class NumericObservationChangeApiTests {
     [Fact]
     public void GenericPointPayloadCapturesCompleteValuesAndKeepsPreparedOutputDetached() {
-        var series = Series().WithPointLabel(1, "Retained observation");
-        var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
+        var series = Series().PointLabel(1, "Retained observation");
+        var chart = Chart.Create().Size(640, 360).AddSeries(series);
         var prepared = Prepare(chart);
         var originalSvg = prepared.ToSvg();
         var originalPng = prepared.ToPng();
@@ -41,7 +41,7 @@ public sealed class NumericObservationChangeApiTests {
     [InlineData(false)]
     [InlineData(true)]
     public void SinglePassGenericBatchFinishesDisposalBeforeInstallingAnyChanges(bool cancelOnDisposal) {
-        var series = Series().WithPointLabel(1, "Stable");
+        var series = Series().PointLabel(1, "Stable");
         var chart = Chart.Create().AddSeries(series);
         var originalSvg = Prepare(chart).ToSvg();
         using var cancellation = new CancellationTokenSource();
@@ -75,7 +75,7 @@ public sealed class NumericObservationChangeApiTests {
     }
 
     private static ChartSeries Series() => ChartSeries.CreateScatter(new ChartSeriesId("live"), "Live",
-        new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) }).WithObservationIds(new[] { Id("a"), Id("b") });
+        new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) }).ObservationIds(new[] { Id("a"), Id("b") });
     private static ChartObservationId Id(string value) => new(value);
     private static string[] Keys(ChartSeries series) => series.ObservationIds.OrderBy(entry => entry.Key).Select(entry => entry.Value.Value).ToArray();
     private static (double X, double Y, bool BreakBefore, double? ColorValue) Facts(ChartPoint point) =>

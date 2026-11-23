@@ -7,8 +7,8 @@ namespace ChartForgeX.Rendering;
 internal static class ChartLegendVisibility {
     /// <summary>Continuous scales carry information even when the family has no categorical legend entries.</summary>
     internal static bool ForPreparedContent(Chart chart, int entryCount, ChartColorPresentationSet? colorScales = null) {
-        if (!chart.Options.ShowLegend) return false;
-        if (!chart.Options.HasExplicitLegend && chart.Series.Count > 0
+        if (!chart.Options.Legend.Visible) return false;
+        if (!chart.Options.Legend.HasExplicitVisibility && chart.Series.Count > 0
             && chart.Series[0].Kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet) return false;
         colorScales ??= new ChartColorPresentationSet(chart);
         if (chart.Options.Bubble.SizeDimension.ShowLegend && System.Linq.Enumerable.Any(chart.Series,
@@ -38,23 +38,23 @@ internal static class ChartLegendVisibility {
     }
 
     public static bool ForEntries(Chart chart, int count) =>
-        chart.Options.ShowLegend && count > 0 && (count > 1 || chart.Options.HasExplicitLegend) && !RepeatsRowLabels(chart) && !UsesDirectSeriesLabels(chart);
+        chart.Options.Legend.Visible && count > 0 && (count > 1 || chart.Options.Legend.HasExplicitVisibility) && !RepeatsRowLabels(chart) && !UsesDirectSeriesLabels(chart);
 
     /// <summary>Design rule 8: direct labels before legends. Vertical slope charts name each line at its end instead.</summary>
-    internal static bool UsesDirectSeriesLabels(Chart chart) => !chart.Options.HasExplicitLegend && chart.Series.Count > 0
+    internal static bool UsesDirectSeriesLabels(Chart chart) => !chart.Options.Legend.HasExplicitVisibility && chart.Series.Count > 0
         && chart.Series.All(series => series.Kind == ChartSeriesKind.Slope && chart.Options.SlopeOrientation != ChartOrientation.Horizontal);
 
     /// <summary>
     /// Design rule 8: a legend never repeats row labels. Gantt and timeline rows are named by their series, so an
     /// automatic series legend would list the same words a second time. An explicitly requested legend is kept.
     /// </summary>
-    internal static bool RepeatsRowLabels(Chart chart) => !chart.Options.HasExplicitLegend && chart.Series.Count > 0
+    internal static bool RepeatsRowLabels(Chart chart) => !chart.Options.Legend.HasExplicitVisibility && chart.Series.Count > 0
         && chart.Series.All(series => series.Kind is ChartSeriesKind.Gantt or ChartSeriesKind.Timeline && !VisualScheduleCompiler.IsMarker(series));
 
     public static bool ForSeries(Chart chart) {
         var count = 0;
         foreach (var series in chart.Series) if (series.ShowInLegend) count++;
-        if (count == 1 && chart.Series.Count == 1 && chart.Options.ShowPointLegend
+        if (count == 1 && chart.Series.Count == 1 && chart.Options.Legend.ShowPoints
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind)) {
             var series = chart.Series[0];
             count = System.Math.Max(count, series.AuthoredObservationCount);

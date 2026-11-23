@@ -11,12 +11,12 @@ public sealed class UnifiedThemeContractTests {
     public void ReusedThemeAndRetainedBuilderCannotMutateAnotherChart() {
         var original = VisualTheme.Graphite();
         var originalJson = original.ToJson();
-        var first = Chart.Create().WithTheme(original);
-        var second = Chart.Create().WithTheme(original);
+        var first = Chart.Create().Theme(original);
+        var second = Chart.Create().Theme(original);
         VisualThemeBuilder? retained = null;
         var authored = ChartColor.FromHex("#12345678");
 
-        first.ConfigureTheme(builder => {
+        first.Theme(builder => {
             retained = builder;
             builder.Light.Palette = new[] { authored };
             builder.Dark.Status.Pass = new VisualTokenColor(authored, ChartColor.White);
@@ -32,7 +32,7 @@ public sealed class UnifiedThemeContractTests {
         Assert.Same(original, second.Options.Theme);
         Assert.Equal(originalJson, original.ToJson());
         var configured = first.Options.Theme;
-        Assert.Throws<InvalidOperationException>(() => first.ConfigureTheme(builder => {
+        Assert.Throws<InvalidOperationException>(() => first.Theme(builder => {
             builder.Light.Background = ChartColor.Black;
             throw new InvalidOperationException("Aborted configuration");
         }));
@@ -65,7 +65,7 @@ public sealed class UnifiedThemeContractTests {
         Assert.Equal(ChartColor.FromHex("#34567890"), imported.Resolve(ThemeMode.Dark).Positive);
         Assert.Equal(ChartColor.FromHex("#10203040"), imported.Resolve(ThemeMode.Dark).Status.Pass.Fill);
         Assert.Equal(ChartColor.FromHex("#50607080"), imported.Resolve(ThemeMode.Dark).Status.Pass.Ink);
-        var chart = Chart.Create().WithSize(360, 240).WithTheme(imported)
+        var chart = Chart.Create().Size(360, 240).Theme(imported)
             .AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
         chart.Options.ShowPlotBackground = true;
         var scene = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
@@ -87,8 +87,8 @@ public sealed class UnifiedThemeContractTests {
             builder.Dark.Palette = new[] { ChartColor.FromHex("#33CCFF") };
             builder.Typography = new VisualTypography("serif", axisSize: 12, axisTitleSize: 18);
         });
-        var chart = Chart.Create().WithTitle("Traffic").WithSize(360, 240).WithTheme(theme, mode)
-            .WithDataLabels(false).AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) }, authored);
+        var chart = Chart.Create().Title("Traffic").Size(360, 240).Theme(theme).ThemeMode(mode)
+            .DataLabels(false).AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) }, authored);
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var svg = prepared.ToSvg();
@@ -100,8 +100,8 @@ public sealed class UnifiedThemeContractTests {
         Assert.Equal(png, chart.ToPng());
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneMark>(), mark => mark.Fill.HasValue && mark.Fill.Value.Equals(authored));
 
-        chart.WithTheme(VisualTheme.Graphite(), mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily("monospace");
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light)
+            .FontFamily("monospace");
         var overridden = chart.Prepare(request.Context);
         Assert.Equal(svg, overridden.ToSvg());
         Assert.Equal(png, overridden.ToPng(request.RasterOptions));

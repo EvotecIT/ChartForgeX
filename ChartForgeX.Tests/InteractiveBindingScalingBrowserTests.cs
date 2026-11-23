@@ -40,7 +40,7 @@ public sealed class InteractiveBindingScalingBrowserTests {
 
     // Load to the runtime's bound marker, best of three loads in one warm browser.
     private static async Task<double> BindAsync(IPage page, int points) {
-        var html = Chart.Create().WithSize(1200, 600).WithLegend(false)
+        var html = Chart.Create().Size(1200, 600).Legend(false)
             .AddLine("Signal", Enumerable.Range(0, points).Select(index => new ChartPoint(index, Math.Sin(index * .013) * 40 + index % 17)))
             .ToInteractiveHtmlPage(options => options.Interaction.Features =
                 ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);

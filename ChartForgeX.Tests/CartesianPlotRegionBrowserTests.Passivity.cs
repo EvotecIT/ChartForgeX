@@ -155,8 +155,8 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     }
 
     private static Chart PassiveChart() {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithTitle("Passive planning guidance")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(600, 360).Legend(false).Title("Passive planning guidance")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(5, 6), new ChartPoint(8, 8) }))
             .AddPlotRegion(new(ChartColor.FromHex("#5c9e75"), label: Guidance, opacity: .2));
         return chart;

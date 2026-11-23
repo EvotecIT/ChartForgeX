@@ -33,8 +33,8 @@ public sealed class GanttTickFallbackTests {
         var document = new MermaidParser().ParseGantt(source).Document!;
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var automatic = new MermaidParser().ParseGantt(source.Replace("tickInterval 1millisecond\n", "")).Document!.ToChart()
-            .WithTheme(VisualTheme.Graphite(), mode);
-        var chart = document.ToChart().WithTheme(VisualTheme.Graphite(), mode);
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode);
+        var chart = document.ToChart().Theme(VisualTheme.Graphite()).ThemeMode(mode);
         var automaticPrepared = automatic.Prepare(VisualExportRequest.ForChart(automatic).Context);
         var fallbackPrepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(automaticPrepared, $"gantt-automatic-date-{mode}");
@@ -50,7 +50,7 @@ public sealed class GanttTickFallbackTests {
         document.AxisFormat = "%d/%m";
         var authored = document.ToChart();
         Assert.All(Labels(authored), label => Assert.Matches("^0[12]/01$", label));
-        authored.WithXAxisValueFormatter(value => "Host " + value.ToString("0", CultureInfo.InvariantCulture));
+        authored.XAxis(x => x.LabelBy(value => "Host " + value.ToString("0", CultureInfo.InvariantCulture)));
         Assert.All(Labels(authored), label => Assert.StartsWith("Host ", label));
     }
 
@@ -58,9 +58,9 @@ public sealed class GanttTickFallbackTests {
     public void HostWindowChangesReevaluateTheEffectiveIntervalAndDefaultFormat() {
         var chart = new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\nTask :2026-01-01, 300ms").Document!.ToChart();
         Assert.Contains("2026-01-01 00:00:00.100", Labels(chart));
-        chart.ConfigureXAxis(axis => { axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2026, 1, 2).ToOADate(); });
+        chart.XAxis(axis => { axis.Min = new DateTime(2026, 1, 1).ToOADate(); axis.Max = new DateTime(2026, 1, 2).ToOADate(); });
         Assert.All(Labels(chart), label => Assert.DoesNotContain(" ", label));
-        chart.ConfigureXAxis(axis => axis.Maximum = new DateTime(2026, 1, 1).AddMilliseconds(300).ToOADate());
+        chart.XAxis(axis => axis.Max = new DateTime(2026, 1, 1).AddMilliseconds(300).ToOADate());
         Assert.Contains("2026-01-01 00:00:00.100", Labels(chart));
     }
 

@@ -13,8 +13,8 @@ internal static partial class MermaidExamples {
     private static void WriteIshikawaDepthExamples(string output) {
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var variant in new[] { "wide", "compact" }) {
-                var block = IshikawaDepthRecipe.Create(variant, mode).WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode)
-                    .WithNaturalSize(variant == "compact" ? 390 : 1100, 520);
+                var block = IshikawaDepthRecipe.Create(variant, mode).Theme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily)).ThemeMode(mode)
+                    .NaturalSize(variant == "compact" ? 390 : 1100, 520);
                 var name = "native-ishikawa-depth-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 block.SaveSvg(Path.Combine(output, name + ".svg")); block.SavePng(Path.Combine(output, name + ".png"));
                 var artifact = VisualArtifact.Create(name, VisualArtifactKind.VisualBlock, block); artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;

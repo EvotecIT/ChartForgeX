@@ -29,7 +29,7 @@ public sealed class VisualCanvasTileTypographyTests {
     [InlineData(1.5)]
     public void TileScaleChangesAllTextAndSupportingGeometry(double scale) {
         var canvas = VisualCanvas.Create(760, 220)
-            .ConfigureStyle(style => style.TileTextScale = scale)
+            .Style(style => style.TileTextScale = scale)
             .AddInfoTile(12, 12, 736, 196, "CPU", "PROCESSOR", "Intel Xeon", "48 cores",
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
                 miniChartValues: new[] { 20d, 40d, 30d, 55d });
@@ -50,7 +50,7 @@ public sealed class VisualCanvasTileTypographyTests {
     public void PerRoleSizeOverridesThemeAndTileScale() {
         var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(
             tileLabelSize: 16, tileValueSize: 26, tileDetailSize: 15));
-        var canvas = VisualCanvas.Create(440, 160).WithTheme(theme)
+        var canvas = VisualCanvas.Create(440, 160).Theme(theme)
             .AddInfoTileWithTextOptions(12, 12, 416, 136, "OS", "SYSTEM",
                 "Windows 11", new VisualCanvasInfoTileTextOptions(textScale: 0.8,
                     labelFontSize: 18), "Enterprise");

@@ -48,7 +48,7 @@ public sealed class MermaidFlowchartAssetCausalTests {
     public void NullNativeCaptionAndGlyphPoliciesHaveIncumbentByteControls() {
         var failures = new List<Exception?>();
         foreach (var mode in new[] { TopologyNodeDisplayMode.Icon, TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Artwork }) {
-            var chart = TopologyChart.Create().WithTitle("").WithViewport(320, 240, 12).WithLegend(null);
+            var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 12)).Legend((TopologyLegend?)null);
             var image = new RgbaImage(2, 2, new byte[] { 255,0,0,255, 0,255,0,128, 0,0,255,0, 255,255,0,255 });
             chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Caption", Subtitle = "Detail", X = 80, Y = 65, Width = 64, Height = 64, DisplayMode = mode,
                 Shape = TopologyNodeShape.Rectangle, Color = "#123456", IconId = "common:server",

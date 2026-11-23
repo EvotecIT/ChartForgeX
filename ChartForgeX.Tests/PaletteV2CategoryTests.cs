@@ -15,7 +15,7 @@ public sealed class PaletteV2CategoryTests {
         if (kind == ChartSeriesKind.Sunburst) items.Add(new ChartHierarchyItem("all", "All", value: 12));
         items.AddRange(Enumerable.Range(0, 12).Select(index => new ChartHierarchyItem("branch-" + index, "Branch " + index,
             kind == ChartSeriesKind.Sunburst ? "all" : null, 1)));
-        var chart = Chart.Create().WithSize(800, 600).WithLegend(false).WithDataLabels(false).WithSvgColorVariables(SvgColorVariables.SharedRoles().Clone());
+        var chart = Chart.Create().Size(800, 600).Legend(false).DataLabels(false).SvgColorVariables(SvgColorVariables.SharedRoles().Clone());
         if (kind == ChartSeriesKind.Sunburst) chart.AddSunburst("Branches", items); else chart.AddTreemap("Branches", items);
         var document = XDocument.Parse(chart.ToSvg());
         var branch = document.Descendants().Single(element => element.Name.LocalName == "g" && (string?)element.Attribute("data-cfx-node") == "branch-10");
@@ -31,10 +31,10 @@ public sealed class PaletteV2CategoryTests {
     public void InheritedPaintStaysBoundedForADeepValidHierarchy(ChartSeriesKind kind) {
         var items = Enumerable.Range(0, 20).Select(index => new ChartHierarchyItem("node-" + index, "Node " + index,
             index == 0 ? null : "node-" + (index - 1), index == 19 ? 1 : null)).ToArray();
-        var chart = Chart.Create().WithSize(800, 800).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(800, 800).Legend(false).DataLabels(false);
         if (kind == ChartSeriesKind.Sunburst) chart.AddSunburst("Depth", items); else chart.AddTreemap("Depth", items);
         var literal = chart.ToSvg(); Assert.NotEmpty(chart.ToPng());
-        chart.WithSvgColorVariables(SvgColorVariables.SharedRoles());
+        chart.SvgColorVariables(SvgColorVariables.SharedRoles());
         var bound = chart.ToSvg();
         Assert.DoesNotContain('\uFDD0', bound);
         Assert.Contains("var(--hfx-color-chart-series-1", bound, StringComparison.Ordinal);
@@ -46,7 +46,7 @@ public sealed class PaletteV2CategoryTests {
     [InlineData(ThemeMode.Dark)]
     public void PartToWholeUsesValueRankAndKeepsOtherNeutralAndLast(ThemeMode mode) {
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithSize(800, 520).WithTheme(theme, mode)
+        var chart = Chart.Create().Size(800, 520).Theme(theme).ThemeMode(mode)
             .AddPie("Allocation", new[] { new ChartPoint(1, 2), new ChartPoint(2, 20), new ChartPoint(3, 40),
                 new ChartPoint(4, 10), new ChartPoint(5, 30), new ChartPoint(6, 6), new ChartPoint(7, 1) });
         var document = XDocument.Parse(chart.ToSvg());
@@ -72,7 +72,7 @@ public sealed class PaletteV2CategoryTests {
         items.AddRange(new[] { new ChartHierarchyItem("north", "North", parent, kind == ChartSeriesKind.Sunburst ? 60 : null), new ChartHierarchyItem("south", "South", parent, kind == ChartSeriesKind.Sunburst ? 40 : null),
             new ChartHierarchyItem("north-a", "North A", "north", 25), new ChartHierarchyItem("north-b", "North B", "north", 35),
             new ChartHierarchyItem("south-a", "South A", "south", 15), new ChartHierarchyItem("south-b", "South B", "south", 25) });
-        var chart = Chart.Create().WithSize(800, 520).WithTheme(VisualTheme.Graphite(), mode);
+        var chart = Chart.Create().Size(800, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         if (kind == ChartSeriesKind.Sunburst) chart.AddSunburst("Allocation", items); else chart.AddTreemap("Allocation", items);
         var document = XDocument.Parse(chart.ToSvg());
         var nodes = document.Descendants().Where(element => element.Name.LocalName == "g" && element.Attribute("data-cfx-node") != null)

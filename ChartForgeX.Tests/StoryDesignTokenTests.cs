@@ -18,7 +18,7 @@ public sealed class StoryDesignTokenTests {
             builder.Colors(mode).Palette = new[] { invisible };
             builder.Colors(mode).Accent = invisible.WithAlpha(0);
         });
-        var story = VisualStory.Create("Readable syntax").WithTheme(theme, mode);
+        var story = VisualStory.Create("Readable syntax").Theme(theme).ThemeMode(mode);
         foreach (var kind in new[] { StorySyntaxKind.Keyword, StorySyntaxKind.Type, StorySyntaxKind.Command,
             StorySyntaxKind.Parameter, StorySyntaxKind.Variable, StorySyntaxKind.Property, StorySyntaxKind.String, StorySyntaxKind.Number })
             Assert.Equal(theme.Resolve(mode).Foreground, story.ResolvedStyle.Syntax.Resolve(kind));
@@ -31,8 +31,8 @@ public sealed class StoryDesignTokenTests {
     public void SharedThemeSelectsStoryAndTerminalSurfacesFontsAndSemanticInk(ThemeMode mode) {
         var theme = VisualTheme.Graphite();
         var colors = theme.Resolve(mode);
-        var story = VisualStory.Create("Shared appearance").WithTheme(theme, mode);
-        var terminal = TerminalStory.Create().WithTheme(theme, mode);
+        var story = VisualStory.Create("Shared appearance").Theme(theme).ThemeMode(mode);
+        var terminal = TerminalStory.Create().Theme(theme).ThemeMode(mode);
         Assert.Same(theme, story.Theme);
         Assert.Same(theme, terminal.Theme);
         Assert.Equal(colors.Background, story.ResolvedStyle.Background);
@@ -54,7 +54,7 @@ public sealed class StoryDesignTokenTests {
         var error = ChartColor.FromHex("#A52A6D");
         var theme = VisualTheme.Graphite().Configure(builder =>
             builder.Colors(mode).Status.Critical = new VisualTokenColor(ChartColors.Red, error));
-        var story = TerminalStory.Create().WithTheme(theme, mode)
+        var story = TerminalStory.Create().Theme(theme).ThemeMode(mode)
             .Output("normal").Output("success", TerminalTextTone.Success)
             .Output("warning", TerminalTextTone.Warning).Output("error", TerminalTextTone.Error);
         var output = XDocument.Parse(story.ToSvg()).Descendants()
@@ -72,7 +72,7 @@ public sealed class StoryDesignTokenTests {
     public void PreparedStoriesCaptureLocalSyntaxAndWindowOptionsWithoutMutatingSharedTheme() {
         var shared = VisualTheme.Graphite();
         var style = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColors.Red } };
-        var story = VisualStory.Create("Detached style").WithTheme(shared, ThemeMode.Dark).WithStyle(style).WithSize(480, 320);
+        var story = VisualStory.Create("Detached style").Theme(shared).ThemeMode(ThemeMode.Dark).Style(style).Size(480, 320);
         story.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
         story.Outcome("ready", "Ready", "source");
         var prepared = story.Prepare();
@@ -90,7 +90,7 @@ public sealed class StoryDesignTokenTests {
     public void StoryHtmlKeepsExplicitModeWhenItsAuthoredBackgroundHasDifferentLuminance(ThemeMode mode) {
         var theme = VisualTheme.Graphite().Configure(builder =>
             builder.Colors(mode).Background = mode == ThemeMode.Light ? ChartColor.Black : ChartColor.White);
-        var story = VisualStory.Create("Explicit appearance").WithTheme(theme, mode).WithSize(480, 320);
+        var story = VisualStory.Create("Explicit appearance").Theme(theme).ThemeMode(mode).Size(480, 320);
         story.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
         story.Outcome("ready", "Ready", "source");
         Assert.Contains("color-scheme:" + (mode == ThemeMode.Light ? "light" : "dark"), story.ToHtmlPage());

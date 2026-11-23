@@ -35,8 +35,8 @@ public sealed class ThemedSvgShareTests {
     [Theory]
     [MemberData(nameof(Families))]
     public void Chart_LightDrawingWithDarkProperties_PaintsTheDarkDrawing(string family) {
-        var light = Build(family, Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
-        var dark = Build(family, Dark).WithSvgColorVariables(Dark.ToSvgColorVariables()).ToSvg();
+        var light = Build(family, Light).SvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
+        var dark = Build(family, Dark).SvgColorVariables(Dark.ToSvgColorVariables()).ToSvg();
         AssertShared(light, dark);
     }
 
@@ -46,7 +46,7 @@ public sealed class ThemedSvgShareTests {
         foreach (var tokens in new[] { Light, Dark }) {
             // On the card, as report hosts draw marks, and on the page surface behind a chart without card (Layered).
             foreach (var (backdrop, surface) in new[] { (ChartMarkBackdrop.Card, Surface(tokens)), (ChartMarkBackdrop.Layered, tokens.Background) }) {
-                var texts = MarkTexts(Build(family, tokens).WithMarkBackdrop(backdrop).ToSvg(), surface);
+                var texts = MarkTexts(Build(family, tokens).MarkBackdrop(backdrop).ToSvg(), surface);
                 Assert.NotEmpty(texts);
                 foreach (var (fill, text, label) in texts) {
                     var contrast = Contrast(fill, text);
@@ -59,8 +59,8 @@ public sealed class ThemedSvgShareTests {
     [Fact]
     public void MarkText_OnAPaleCallerColour_StaysReadable() {
         // A strong cell of a pale series colour would get the white surface as text; the text colour contrasts more.
-        var chart = Host(Light).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
-            .WithXLabels("A", "B", "C").AddHeatmapRow("Pale", new[] { 1d, 50, 100 }, ChartColor.FromHex("#FFE066"));
+        var chart = Host(Light).Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always))
+            .XLabels("A", "B", "C").AddHeatmapRow("Pale", new[] { 1d, 50, 100 }, ChartColor.FromHex("#FFE066"));
         var texts = MarkTexts(chart.ToSvg(), Surface(Light));
         Assert.Equal(3, texts.Count);
         foreach (var (fill, text, label) in texts) Assert.True(Contrast(fill, text) >= 3, $"'{label}' is {text.ToHex()} on {fill.ToHex()}.");
@@ -82,8 +82,8 @@ public sealed class ThemedSvgShareTests {
     public void ApprovedGraphite_DefaultFamiliesShareOneSvgAcrossThemes(string family) {
         var light = VisualDesignTokens.GraphiteLight();
         var dark = VisualDesignTokens.GraphiteDark();
-        AssertShared(Build(family, light).WithSvgColorVariables(light.ToSvgColorVariables().Clone()).ToSvg(),
-            Build(family, dark).WithSvgColorVariables(dark.ToSvgColorVariables().Clone()).ToSvg(), dark);
+        AssertShared(Build(family, light).SvgColorVariables(light.ToSvgColorVariables().Clone()).ToSvg(),
+            Build(family, dark).SvgColorVariables(dark.ToSvgColorVariables().Clone()).ToSvg(), dark);
     }
 
     [Theory]
@@ -102,7 +102,7 @@ public sealed class ThemedSvgShareTests {
 
     [Fact]
     public void MarkText_IsWrittenByRole_WithVariables() {
-        var svg = Build("categorical-text", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
+        var svg = Build("categorical-text", Light).SvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         // Solid marks carry their own paired contrast ink; quiet and outlined tints retain primary text.
         var fills = ByRole(XDocument.Parse(svg), "data-label").SelectMany(label => label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text"))
             .Select(text => (string)text.Attribute("fill")!).ToArray();
@@ -114,7 +114,7 @@ public sealed class ThemedSvgShareTests {
     [Fact]
     public void Topology_LightDrawingWithDarkProperties_PaintsTheDarkDrawing_WithArrowsAndEndpointMarkers() {
         // Arrows by status, an explicit edge colour, a muted edge, and circle and diamond endpoint markers.
-        string Render(VisualDesignTokens tokens) => ArrowDiagram().WithTheme(new VisualTheme(tokens, tokens)).ToSvg(new TopologyRenderOptions { IdScope = "themed", SvgColorVariables = tokens.ToSvgColorVariables() });
+        string Render(VisualDesignTokens tokens) => ArrowDiagram().Theme(new VisualTheme(tokens, tokens)).ToSvg(new TopologyRenderOptions { IdScope = "themed", SvgColorVariables = tokens.ToSvgColorVariables() });
         var light = Render(Light);
         var document = XDocument.Parse(light);
         XElement Edge(string id) => ByRole(document, "topology-edge").Single(edge => (string?)edge.Attribute("data-edge-id") == id);
@@ -128,14 +128,14 @@ public sealed class ThemedSvgShareTests {
         // Endpoints are actual native geometry in both SVG and PNG, and all remaining clip references resolve.
         Assert.All(ByRole(document, "topology-marker"), marker => Assert.True(marker.Name.LocalName == "ellipse" || !string.IsNullOrWhiteSpace((string?)marker.Attribute("d"))));
         AssertReferencesResolve(document);
-        Assert.Equal(ArrowDiagram().WithTheme(new VisualTheme(Light, Light)).ToPng(), ArrowDiagram().WithTheme(new VisualTheme(Light, Light)).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
+        Assert.Equal(ArrowDiagram().Theme(new VisualTheme(Light, Light)).ToPng(), ArrowDiagram().Theme(new VisualTheme(Light, Light)).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
     }
 
     [Fact]
     public void Topology_BuiltInAndCustomStatusSlots_FollowStatusVariablesForEdgesAndMarkers() {
         foreach (var tokens in new[] { new VisualDesignTokens(), VisualDesignTokens.Dark() }) {
             tokens.Status.Medium = new VisualTokenColor(tokens.Palette[0], tokens.Status.Medium.Ink); // A shared RGB must still retain its semantic role.
-            var svg = ArrowDiagram().WithTheme(new VisualTheme(tokens, tokens)).ToSvg(new TopologyRenderOptions { IdScope = "role", SvgColorVariables = tokens.ToSvgColorVariables() });
+            var svg = ArrowDiagram().Theme(new VisualTheme(tokens, tokens)).ToSvg(new TopologyRenderOptions { IdScope = "role", SvgColorVariables = tokens.ToSvgColorVariables() });
             var document = XDocument.Parse(svg);
             var edge = ByRole(document, "topology-edge").Single(element => (string?)element.Attribute("data-edge-id") == "a");
             var marker = edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-marker");
@@ -151,8 +151,8 @@ public sealed class ThemedSvgShareTests {
     [Fact]
     public void Topology_MarkerGeometry_DoesNotDependOnTheEdgeColour() {
         // Theme changes alter paint while retaining endpoint shapes and their placement.
-        var light = ArrowDiagram().WithTheme(new VisualTheme(Light, Light)).ToSvg();
-        var dark = ArrowDiagram().WithTheme(new VisualTheme(Dark, Dark)).ToSvg();
+        var light = ArrowDiagram().Theme(new VisualTheme(Light, Light)).ToSvg();
+        var dark = ArrowDiagram().Theme(new VisualTheme(Dark, Dark)).ToSvg();
         string Geometry(string svg) => string.Join("|", ByRole(XDocument.Parse(svg), "topology-marker").Select(marker => marker.Name.LocalName + ":" +
             string.Join(",", marker.Attributes().Where(attribute => new[] { "d", "cx", "cy", "rx", "ry" }.Contains(attribute.Name.LocalName)).Select(attribute => attribute.ToString()))));
         Assert.NotEmpty(Geometry(light));
@@ -161,16 +161,16 @@ public sealed class ThemedSvgShareTests {
 
     [Fact]
     public void Topology_TintsFollowTheTokensAndContrastWhiteStaysLiteral() {
-        var svg = Diagram().WithTheme(new VisualTheme(Light, Light)).ToSvg(new TopologyRenderOptions { NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, SvgColorVariables = Light.ToSvgColorVariables() });
+        var svg = Diagram().Theme(new VisualTheme(Light, Light)).ToSvg(new TopologyRenderOptions { NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, SvgColorVariables = Light.ToSvgColorVariables() });
         Assert.Contains("color-mix(in srgb, rgb(from var(--cfx-surface-page, #F2F3F4) r g b / 1)", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
-        Assert.Equal(Diagram().WithTheme(new VisualTheme(Light, Light)).ToPng(), Diagram().WithTheme(new VisualTheme(Light, Light)).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
+        Assert.Equal(Diagram().Theme(new VisualTheme(Light, Light)).ToPng(), Diagram().Theme(new VisualTheme(Light, Light)).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
     }
 
     [Fact]
     public void DerivedWhite_StaysLiteralWhereTheLightCardIsWhite() {
         // The white sheen of a line equals the light card colour; it must not take the card's property.
-        var svg = Build("line", Light).WithLineVisualStyle(ChartLineVisualStyle.Premium()).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
+        var svg = Build("line", Light).Lines(l => l.VisualStyle(ChartLineVisualStyle.Premium())).SvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         var highlights = ByRole(XDocument.Parse(svg), "line-highlight");
         Assert.NotEmpty(highlights);
         Assert.All(highlights, highlight => {
@@ -181,14 +181,14 @@ public sealed class ThemedSvgShareTests {
             Assert.InRange(color.A, 1, 254);
         });
         // Applied to finished markup, the variables still match by value.
-        var mapped = Light.ToSvgColorVariables().Apply(Build("line", Light).WithLineVisualStyle(ChartLineVisualStyle.Premium()).ToSvg());
+        var mapped = Light.ToSvgColorVariables().Apply(Build("line", Light).Lines(l => l.VisualStyle(ChartLineVisualStyle.Premium())).ToSvg());
         Assert.All(ByRole(XDocument.Parse(mapped), "line-highlight"), highlight => Assert.Contains("var(--cfx-surface-card", (string)highlight.Attribute("stroke")!, StringComparison.Ordinal));
     }
 
     [Fact]
     public void RampStep_TakesTheRampPropertyWhereASeriesColourIsTheSame() {
         // Graphite's light first series colour is also the middle sequential step; a calendar day takes the ramp's property.
-        var svg = Build("calendar", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
+        var svg = Build("calendar", Light).SvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         Assert.Contains("--cfx-ramps-sequential-3", svg, StringComparison.Ordinal);
         Assert.Contains("color-mix(in srgb, rgb(from var(--cfx-ramps-sequential-", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("﷐", svg, StringComparison.Ordinal);
@@ -200,25 +200,25 @@ public sealed class ThemedSvgShareTests {
         Assert.DoesNotContain("=\"var(", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("color-mix", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("﷐", svg, StringComparison.Ordinal);
-        Assert.Equal(Build("calendar", Light).ToPng(), Build("calendar", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToPng());
+        Assert.Equal(Build("calendar", Light).ToPng(), Build("calendar", Light).SvgColorVariables(Light.ToSvgColorVariables()).ToPng());
     }
 
     [Fact]
     public void PaintTokens_CannotBeForgedFromChartText_AndExportReferencesResolve() {
         var label = "\uFDD0L\uFDD1 and \uFDD0LFFFFFFFF\uFDD1";
-        var chart = Build("line", Light).AddHorizontalLine(3, label).WithTitle(label);
+        var chart = Build("line", Light).AddHorizontalLine(3, label).Title(label);
         var svg = chart.ToSvg();
         AssertNotResolved(svg);
-        var themed = Build("line", Light).AddHorizontalLine(3, label).WithTitle(label).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
+        var themed = Build("line", Light).AddHorizontalLine(3, label).Title(label).SvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         AssertNotResolved(themed);
         AssertReferencesResolve(XDocument.Parse(svg));
         AssertReferencesResolve(XDocument.Parse(themed));
 
-        var grid = new ChartGrid().Add(Build("line", Light)).WithTitle(Forged).WithSvgColorVariables(Light.ToSvgColorVariables());
+        var grid = new ChartGrid().Add(Build("line", Light)).Title(Forged).SvgColorVariables(Light.ToSvgColorVariables());
         AssertNotResolved(grid.ToSvg());
 
         var icon = new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service)
-            .WithArtwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/><desc>" + Forged + "</desc>", "0 0 24 24"));
+            .Artwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/><desc>" + Forged + "</desc>", "0 0 24 24"));
         var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor").AddIcon(icon));
         var topology = TopologyChart.Create().AddIconNode("a", Forged, "vendor:service", 100, 100, catalog: catalog);
         AssertNotResolved(topology.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, SvgColorVariables = Light.ToSvgColorVariables() }));
@@ -229,10 +229,10 @@ public sealed class ThemedSvgShareTests {
         var tokens = new VisualDesignTokens();
         tokens.Warning = tokens.Palette[0];
         string color = tokens.Palette[0].ToHex();
-        var chart = TopologyChart.Create().WithViewport(640, 400)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 400))
             .AddAutoGroup("g", "Group", TopologyHealthStatus.Warning, color: color)
             .AddAutoNode("n", "Node", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "g", subtitle: "Subtitle", color: color)
-            .WithTheme(new VisualTheme(tokens, tokens));
+            .Theme(new VisualTheme(tokens, tokens));
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
             LegendMode = TopologyLegendMode.Auto, SvgColorVariables = tokens.ToSvgColorVariables()
         }));
@@ -339,19 +339,19 @@ public sealed class ThemedSvgShareTests {
 
     /// <summary>A chart as a report host creates it: token colours and font, transparent, no card, plot surface, or header.</summary>
     private static Chart Host(VisualDesignTokens tokens, int width = 640, int height = 320) => Chart.Create()
-        .WithSize(width, height).WithTheme(new VisualTheme(tokens, tokens)).WithTransparentBackground().WithCard(false).WithPlotBackground(false).WithHeader(false)
-        .WithMarkBackdrop(ChartMarkBackdrop.Card);
+        .Size(width, height).Theme(new VisualTheme(tokens, tokens)).TransparentBackground().ShowCard(false).ShowPlotBackground(false).ShowHeader(false)
+        .MarkBackdrop(ChartMarkBackdrop.Card);
 
     private static Chart Build(string family, VisualDesignTokens tokens) {
         var day = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         switch (family) {
             case "gauge":
                 return Host(tokens).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
-                    new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o => o.Bands.Add(new(60, 80, ChartSeriesState.Warning)));
+                    new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(o => o.Bands.Add(new(60, 80, ChartSeriesState.Warning)));
             case "bullet":
                 return Host(tokens).AddBullet("Coverage", 74, 90).AddBullet("TLS", 92, 80);
             case "funnel":
-                return Host(tokens).WithXLabels("Detected", "Fixed", "Verified").AddFunnel("Findings", Points(100, 75, 60));
+                return Host(tokens).XLabels("Detected", "Fixed", "Verified").AddFunnel("Findings", Points(100, 75, 60));
             case "sankey":
                 return Host(tokens).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Fixed", "Fixed"), new ChartNode("Monitoring", "Monitoring") }, new[] { new ChartFlowLink("flow-1", "Assessment", "Fixed", 50), new ChartFlowLink("flow-2", "Monitoring", "Fixed", 20) });
             case "treemap":
@@ -361,29 +361,29 @@ public sealed class ThemedSvgShareTests {
             case "bars":
                 return Host(tokens).AddBar("Changes", Points(3, 7, 5, 2)).AddBar("Deletes", Points(1, 2, 4, 3));
             case "flat-histogram":
-                return Host(tokens).WithBarStyle(ChartBarStyle.Flat).AddHistogram("Latency", new[] { 1d, 2, 2, 3, 3, 3, 4, 5, 5, 6 }, 5);
+                return Host(tokens).Bars(b => b.Style(ChartBarStyle.Flat)).AddHistogram("Latency", new[] { 1d, 2, 2, 3, 3, 3, 4, 5, 5, 6 }, 5);
             case "calendar":
                 return Host(tokens, 760, 230).AddCalendarHeatmap("Changes", Enumerable.Range(0, 60).Select(i => new ChartCalendarHeatmapItem(new DateTime(2026, 7, 1).AddDays(i), i % 6 == 0 ? 0 : i % 9)).ToArray());
             case "heatmap":
-                var heatmap = Host(tokens).WithXLabels("A", "B", "C", "D")
+                var heatmap = Host(tokens).XLabels("A", "B", "C", "D")
                     .AddHeatmapRow("DC01", new[] { 0d, 3, 7, 12 }).AddHeatmapRow("DC02", new[] { 5d, 0, 2, 9 });
-                heatmap.Options.HeatmapRelativeScale = true;
+                heatmap.Options.Heatmap.RelativeScale = true;
                 return heatmap;
             case "state-timeline":
                 var states = tokens.Status.OperationalStateCategories();
-                return Host(tokens, 720, 280).WithStateCategories(states.ToArray())
+                return Host(tokens, 720, 280).StateCategories(states.ToArray())
                     .AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(day, day.AddHours(6), "up"), new ChartStateTimelineSegment(day.AddHours(6), day.AddHours(8), "down"), new ChartStateTimelineSegment(day.AddHours(8), day.AddHours(12), "notObservable") })
                     .AddStateTimelineLane("DC02", new[] { new ChartStateTimelineSegment(day, day.AddHours(5), "unknown"), new ChartStateTimelineSegment(day.AddHours(5), day.AddHours(12), "maintenance") });
             case "heatmap-values":
                 // Counts across the whole ramp, from a neutral zero to the strongest step, with the value in every cell.
-                var counts = Host(tokens, 720, 280).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).WithXLabels("1", "2", "3", "4", "5", "6", "7", "8");
+                var counts = Host(tokens, 720, 280).Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always)).XLabels("1", "2", "3", "4", "5", "6", "7", "8");
                 for (var row = 0; row < 3; row++) counts.AddHeatmapRow("Row " + (row + 1).ToString(CultureInfo.InvariantCulture), Enumerable.Range(row * 8, 8).Select(value => (double)value).ToArray());
-                counts.Options.HeatmapRelativeScale = true;
+                counts.Options.Heatmap.RelativeScale = true;
                 return counts;
             case "semantic-values":
                 // Status colours from negative through warning to positive, with the value in every cell.
-                var semantic = Host(tokens, 720, 280).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).WithXLabels("1", "2", "3", "4", "5", "6", "7", "8");
-                semantic.Options.HeatmapScale = ChartHeatmapScale.Semantic;
+                var semantic = Host(tokens, 720, 280).Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always)).XLabels("1", "2", "3", "4", "5", "6", "7", "8");
+                semantic.Options.Heatmap.Scale = ChartHeatmapScale.Semantic;
                 for (var row = 0; row < 3; row++) semantic.AddHeatmapRow("Row " + (row + 1).ToString(CultureInfo.InvariantCulture), Enumerable.Range(row * 8, 8).Select(value => value * 100.0 / 23).ToArray());
                 return semantic;
             case "categorical-text":
@@ -394,18 +394,18 @@ public sealed class ThemedSvgShareTests {
                     _ => state
                 }).ToList();
                 var keys = operational.Select(state => state.Key).ToArray();
-                var matrix = Host(tokens, 760, 260).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).WithStateCategories(operational.ToArray()).WithXLabels(keys);
+                var matrix = Host(tokens, 760, 260).Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always)).StateCategories(operational.ToArray()).XLabels(keys);
                 for (var row = 0; row < 3; row++) matrix.AddHeatmapCategoryRow("Site " + (row + 1).ToString(CultureInfo.InvariantCulture), keys.Select((key, column) => (ChartHeatmapCell?)new ChartHeatmapCell(key, (row * 7 + column).ToString(CultureInfo.InvariantCulture))).ToArray());
                 return matrix;
             case "hexbin-values":
-                var hexbin = Host(tokens, 720, 320).WithDataLabels();
+                var hexbin = Host(tokens, 720, 320).DataLabels();
                 for (var row = 0; row < 3; row++) hexbin.AddHexbinHeatmapRow("Row " + (row + 1).ToString(CultureInfo.InvariantCulture), Enumerable.Range(row * 6, 6).Select(value => (double)value).ToArray());
-                hexbin.Options.HeatmapRelativeScale = true;
+                hexbin.Options.Heatmap.RelativeScale = true;
                 return hexbin;
             case "gantt-lanes":
                 var lanes = tokens.Status.OperationalStateCategories();
                 var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-                return Host(tokens, 760, 420).WithStateCategories(lanes.ToArray())
+                return Host(tokens, 760, 420).StateCategories(lanes.ToArray())
                     .AddGanttLane("Changes", lanes.Take(4).Select((state, index) => new ChartGanttLaneItem(start.AddHours(index * 6), start.AddHours(index * 6 + 5), state.Key, state.Label)).ToArray())
                     .AddGanttLane("Patching", lanes.Skip(4).Select((state, index) => new ChartGanttLaneItem(start.AddHours(index * 8), start.AddHours(index * 8 + 7), state.Key, state.Label)).ToArray());
             default:
@@ -413,14 +413,14 @@ public sealed class ThemedSvgShareTests {
         }
     }
 
-    private static TopologyChart Diagram() => TopologyChart.Create().WithId("sites").WithViewport(640, 360)
+    private static TopologyChart Diagram() => TopologyChart.Create().Id("sites").Viewport(new TopologyViewport(640, 360))
         .AddAutoGroup("waw", "Warsaw", TopologyHealthStatus.Healthy)
         .AddAutoNode("dc1", "DC01", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "waw")
         .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "waw")
         .AddAutoNode("dc3", "DC03", TopologyNodeKind.Server, TopologyHealthStatus.Critical)
         .AddEdge("a", "dc1", "dc2").AddEdge("b", "dc2", "dc3");
 
-    private static TopologyChart ArrowDiagram() => TopologyChart.Create().WithId("sites").WithViewport(720, 400)
+    private static TopologyChart ArrowDiagram() => TopologyChart.Create().Id("sites").Viewport(new TopologyViewport(720, 400))
         .AddAutoGroup("waw", "Warsaw", TopologyHealthStatus.Healthy)
         .AddAutoNode("dc1", "DC01", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "waw")
         .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "waw")
@@ -430,9 +430,9 @@ public sealed class ThemedSvgShareTests {
         .AddEdge("b", "dc2", "dc3", status: TopologyHealthStatus.Critical, direction: VisualLinkDirection.Bidirectional)
         .AddEdge("c", "dc3", "dc4", direction: VisualLinkDirection.Forward, color: "#9A5B13")
         .AddEdge("d", "dc1", "dc4", status: TopologyHealthStatus.Healthy, direction: VisualLinkDirection.Forward)
-        .WithEdgeMarkers("c", TopologyMarkerKind.Circle, TopologyMarkerKind.Arrow)
-        .WithEdgeMarkers("d", null, TopologyMarkerKind.Diamond)
-        .WithEdgeMuted("d");
+        .UpdateEdge("c", e => e.SourceMarker(TopologyMarkerKind.Circle).TargetMarker(TopologyMarkerKind.Arrow))
+        .UpdateEdge("d", e => e.SourceMarker(null).TargetMarker(TopologyMarkerKind.Diamond))
+        .UpdateEdge("d", e => e.Muted());
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 

@@ -85,8 +85,8 @@ public sealed class TopologyC4SharedPolicyClosureTests {
     [InlineData(TopologyNodeShape.Rectangle)]
     [InlineData(TopologyNodeShape.Rounded)]
     public void LabelOnlyPaddingWithoutWidthPolicyUsesTheSharedEnclosedAllocation(TopologyNodeShape shape) {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithViewport(600, 300).WithLayout(TopologyLayoutMode.GroupGrid)
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .Viewport(new TopologyViewport(600, 300)).LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoNode("padded", "Complete caption", width: 80, height: 36);
         var node = chart.Nodes[0]; node.Shape = shape; node.ShowStatusBadge = false;
         node.FitLabelToContent = true; node.PreserveDisplayModeSize = true; node.ContentPadding = 30;
@@ -104,8 +104,8 @@ public sealed class TopologyC4SharedPolicyClosureTests {
 
     [Fact]
     public void OptedInIconCaptionIsAnActualRouteObstacle() {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithViewport(700, 400).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .Viewport(new TopologyViewport(700, 400)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 40, 170, width: 70, height: 40)
             .AddNode("icon", "Wide WWW", 270, 140, width: 28, height: 28)
             .AddNode("target", "Target", 500, 170, width: 70, height: 40)

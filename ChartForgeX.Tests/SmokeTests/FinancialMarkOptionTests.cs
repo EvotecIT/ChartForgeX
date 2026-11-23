@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void FinancialMarkOptionsRenderNativeStyles() {
         foreach (var kind in new[] { ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc }) foreach (var variant in new[] { "compact-options", "compact-dashed" }) {
-            var chart = V2GalleryModels.Create(kind, variant).WithSize(360, 360).WithLegend(true);
+            var chart = V2GalleryModels.Create(kind, variant).Size(360, 360).Legend(true);
             var svg = chart.ToSvg();
             Assert(svg.Contains("data-cfx-role=\"legend-financial-", StringComparison.Ordinal), "Financial options need native financial legend glyphs.");
             Assert(svg.Contains(kind == ChartSeriesKind.Candlestick ? "data-cfx-role=\"candlestick-body\"" : "data-cfx-role=\"ohlc-stem\"", StringComparison.Ordinal),

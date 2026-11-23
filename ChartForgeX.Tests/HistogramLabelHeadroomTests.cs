@@ -18,7 +18,7 @@ public sealed class HistogramLabelHeadroomTests {
     [InlineData(ThemeMode.Dark, null)]
     public void CompactHistogramKeepsCompleteCountsAboveNarrowMaximumHeightBins(ThemeMode mode, double? maximum) {
         var chart = NarrowPeakHistogram();
-        if (maximum.HasValue) chart.Options.YAxis.WithBounds(0, maximum.Value);
+        if (maximum.HasValue) chart.Options.YAxis.Bounds(0, maximum.Value);
         var prepared = chart.Prepare(Context(mode));
         ScatterBubbleColorRenderingTests.Capture(prepared, "histogram-complete-counts-" + mode + "-" + (maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "auto"));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
@@ -41,14 +41,14 @@ public sealed class HistogramLabelHeadroomTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void SignedNearBoundaryCaptionsReserveBothLanesAfterFinalMapping(bool reversed, bool secondary) {
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels()
+        var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels()
             .AddBar("Upper", new[] { new ChartPoint(1, 90) }).AddBar("Lower", new[] { new ChartPoint(1, -90) });
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-        axis.WithBounds(-100, 100).WithReversal(reversed);
+        axis.Bounds(-100, 100).Reversed(reversed);
         for (var index = 0; index < 2; index++) {
             var series = chart.Series[index];
-            if (secondary) series.UseSecondaryValueAxis();
-            series.WithPointLabel(0, index == 0 ? "Upper edge" : "Lower edge");
+            if (secondary) series.SecondaryAxis();
+            series.PointLabel(0, index == 0 ? "Upper edge" : "Lower edge");
             series.DataLabelPlacement = (index == 0) != reversed ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Below;
         }
         var prepared = chart.Prepare(Context(ThemeMode.Light));
@@ -61,16 +61,16 @@ public sealed class HistogramLabelHeadroomTests {
             if ((index == 0) != reversed) Assert.True(label.Baseline - label.Text.Ascent + label.Text.Metrics.Height < mark.Top);
             else Assert.True(label.Baseline - label.Text.Ascent > mark.Bottom);
         }
-        Assert.Equal(-100, axis.Minimum); Assert.Equal(100, axis.Maximum);
+        Assert.Equal(-100, axis.Min); Assert.Equal(100, axis.Max);
         Assert.Contains("Upper edge", prepared.ToSvg(), StringComparison.Ordinal);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 
     [Fact]
     public void ExplicitInsideLabelsDoNotReserveAnOutsideLane() {
-        var chart = NarrowPeakHistogram().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        var chart = NarrowPeakHistogram().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         var inside = chart.Prepare(Context(ThemeMode.Light));
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         var hidden = chart.Prepare(Context(ThemeMode.Light));
         Assert.Equal(Assert.Single(hidden.Regions, region => region.Role == "cartesian-plot").Bounds,
             Assert.Single(inside.Regions, region => region.Role == "cartesian-plot").Bounds);
@@ -79,12 +79,12 @@ public sealed class HistogramLabelHeadroomTests {
     [Fact]
     public void MeasuringBarCaptionLanesDoesNotRepeatFormattingDuringPaintingOrDetachedExports() {
         var calls = 0;
-        var chart = Chart.Create().WithAxes(false).WithDataLabels()
+        var chart = Chart.Create().Axes(false).DataLabels()
             .AddBar("Requests", ChartPoints.FromValues(3, 4))
-            .WithValueFormat(ChartValueFormat.Custom(value => { calls++; return value + " requests"; }));
+            .ValueFormat(ChartValueFormat.Custom(value => { calls++; return value + " requests"; }));
         var prepared = chart.Prepare(Context(ThemeMode.Light));
         Assert.Equal(2, calls);
-        chart.WithValueFormat(ChartValueFormat.Custom(_ => throw new InvalidOperationException("The source callback must stay detached.")));
+        chart.ValueFormat(ChartValueFormat.Custom(_ => throw new InvalidOperationException("The source callback must stay detached.")));
         Assert.Contains("4 requests", prepared.ToSvg(), StringComparison.Ordinal);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(2, calls);
@@ -94,9 +94,9 @@ public sealed class HistogramLabelHeadroomTests {
     private static Chart NarrowPeakHistogram() {
         var observations = ChartSeries.CreateHistogram(new ChartSeriesId("observations"), "Observations",
             new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 }));
-        foreach (var bin in observations.HistogramBins) if (bin.Count > 0) observations.WithPointLabel(bin.Index, bin.Count + " obs");
-        var chart = Chart.Create().WithXAxis("Measurement").WithYAxis("Observation count").WithDataLabels().AddSeries(observations);
-        chart.Options.XAxis.WithBounds(0, 10);
+        foreach (var bin in observations.HistogramBins) if (bin.Count > 0) observations.PointLabel(bin.Index, bin.Count + " obs");
+        var chart = Chart.Create().XAxis(x => x.Title("Measurement")).YAxis(y => y.Title("Observation count")).DataLabels().AddSeries(observations);
+        chart.Options.XAxis.Bounds(0, 10);
         return chart;
     }
 

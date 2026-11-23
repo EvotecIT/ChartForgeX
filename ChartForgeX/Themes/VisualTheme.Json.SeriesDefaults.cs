@@ -20,8 +20,8 @@ public sealed partial class VisualTheme {
             if (source.TryGetValue("dash", out var dash)) defaults.Dash = dash.AsArray(path + ".dash").Select(item => item.AsNumber(path + ".dash")).ToArray();
             if (source.TryGetValue("curve", out var curve)) defaults.Interpolation = ParseName<ChartInterpolation>(curve.AsString(path + ".curve"), "curve");
             if (source.TryGetValue("cornerRadius", out var radius)) defaults.CornerRadius = radius.AsNumber(path + ".cornerRadius");
-            if (source.TryGetValue("marker", out var marker)) defaults.ConfigureMarkers(markers => ReadMarker(markers, marker.AsObject(path + ".marker"), path + ".marker"));
-            if (source.TryGetValue("dataLabel", out var label)) defaults.ConfigureDataLabelStyle(style => ReadLabel(style, label.AsObject(path + ".dataLabel"), path + ".dataLabel"));
+            if (source.TryGetValue("marker", out var marker)) defaults.Markers(markers => ReadMarker(markers, marker.AsObject(path + ".marker"), path + ".marker"));
+            if (source.TryGetValue("dataLabel", out var label)) defaults.DataLabelStyle(style => ReadLabel(style, label.AsObject(path + ".dataLabel"), path + ".dataLabel"));
             yield return new KeyValuePair<ChartSeriesKind, VisualSeriesDefaults>(kind, defaults);
         }
     }

@@ -73,11 +73,11 @@ internal sealed partial class MermaidSankeySettings {
             // A source literal colors the complete link independently of nodeColors. The existing ID-keyed flow owner
             // has exactly that precedence, whereas the family fallback deliberately yields to point colors.
             var series = chart.Series[0];
-            foreach (var link in series.FlowLinks) series.WithFlowStyle(link.Id, new ChartFlowStyle(fill: _ribbonFill.Value));
+            foreach (var link in series.FlowLinks) series.FlowStyle(link.Id, new ChartFlowStyle(fill: _ribbonFill.Value));
         }
         if (_labelStyle.HasValue) options.LabelStyle = _labelStyle.Value;
         var nodes = chart.Series[0].Nodes;
         for (var index = 0; index < nodes.Count; index++)
-            if (_nodeColors.TryGetValue(nodes[index].Id, out var color)) chart.Series[0].WithPointColor(index, color);
+            if (_nodeColors.TryGetValue(nodes[index].Id, out var color)) chart.Series[0].PointColor(index, color);
     }
 }

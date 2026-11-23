@@ -20,10 +20,10 @@ public sealed partial class Chart {
         ChartGuards.Finite(maximum, nameof(maximum));
         if (maximum <= 0) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Progress maximum must be greater than zero.");
         var series = ChartSeries.CreateProgressBars(name, items, color);
-        Options.ProgressMaximum = maximum;
-        Options.XAxisLabels.Clear();
+        Options.Progress.Max = maximum;
+        Options.XAxis.Labels.Clear();
         for (var index = 0; index < series.ProgressItems.Count; index++)
-            Options.XAxisLabels.Add(new ChartAxisLabel(index + 1, series.ProgressItems[index].Label));
+            Options.XAxis.Labels.Add(new ChartAxisLabel(index + 1, series.ProgressItems[index].Label));
         AddSeries(series);
         return this;
     }

@@ -11,7 +11,7 @@ public sealed class TopologyPreparedSceneRestorationBrowserTests {
     [BrowserTheory]
     [InlineData(false, 390)] [InlineData(true, 1200)]
     public async Task ImportedSceneBoundsAndCompleteTitleStayVisibleThroughOrdinaryArtifactHtml(bool dark, int width) {
-        var source = TopologyPreparedSceneRestorationCausalTests.Source(true).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var source = TopologyPreparedSceneRestorationCausalTests.Source(true).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         var saved = source.Prepare().ToInterchangeEnvelope(); var chart = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();
         var artifact = chart.ToVisualArtifact(); var after = artifact.ToInterchangeEnvelope();
         await using var session = await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }), width, 760);

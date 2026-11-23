@@ -26,10 +26,10 @@ public sealed class NativeTinyViewportResourceTests {
             : kind == ChartSeriesKind.RangeBand
                 ? ChartSeries.CreateRangeBand(id, "Source", new[] { new ChartRangeBand(0, 2, 4), new ChartRangeBand(1, 5, 7), new ChartRangeBand(2, 3, 5) })
                 : ChartSeries.CreateRangeArea(id, "Source", new[] { new ChartRangeBand(0, 2, 4), new ChartRangeBand(1, 5, 7), new ChartRangeBand(2, 3, 5) });
-        series.WithSmooth();
-        for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("reading-" + index));
-        var chart = Chart.Create().WithSize(390, 280).WithLegend(false).WithXAxisBounds(0, 2).WithYAxisBounds(0, 10).AddSeries(series);
-        if (kind == ChartSeriesKind.Line) chart.WithDataLabels();
+        series.Smooth();
+        for (var index = 0; index < 3; index++) series.ObservationId(index, new ChartObservationId("reading-" + index));
+        var chart = Chart.Create().Size(390, 280).Legend(false).XAxis(xAxis => xAxis.Bounds(0, 2)).YAxis(yAxis => yAxis.Bounds(0, 10)).AddSeries(series);
+        if (kind == ChartSeriesKind.Line) chart.DataLabels();
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var x = axes.Contains('x') ? new ChartAxisWindow(1, Math.BitIncrement(1)) : null;
         var y = axes.Contains('y') ? new ChartAxisWindow(6, Math.BitIncrement(6)) : null;
@@ -54,8 +54,8 @@ public sealed class NativeTinyViewportResourceTests {
             var png = drawing.ToPng();
             Assert.Equal(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, png.Take(8));
         }
-        Assert.Equal(0, chart.Options.XAxis.Minimum); Assert.Equal(2, chart.Options.XAxis.Maximum);
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(10, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.XAxis.Min); Assert.Equal(2, chart.Options.XAxis.Max);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(10, chart.Options.YAxis.Max);
         Assert.Equal(3, series.SourcePointCount);
     }
 }

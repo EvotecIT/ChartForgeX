@@ -1,3 +1,4 @@
+using ChartForgeX.Composition;
 /// <summary>Local backdrop filtering with a separately retained native foreground, using the ordinary optional Visuals canvas.</summary>
 public static class NativeVectorGlassExample {
     public static ChartForgeX.Composition.VisualCanvas Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
@@ -19,8 +20,8 @@ public static class NativeVectorGlassExample {
             .StrokeRoundedRectangle(24, 24, width - 48, 352, 18, accent.WithAlpha(200));
         // Only the explicitly authored backdrop is a bitmap. Foreground captions use the incumbent native text owner.
         return ChartForgeX.Composition.VisualCanvas.Create(width, 400)
-            .WithPngOutputScale(1).WithBackdrop(ChartForgeX.Composition.VisualCanvasBackdropStyle.Transparent)
-            .WithTheme(VisualTheme.Graphite(), mode).AddImage(backdrop.ToImage(), 0, 0, width, 400)
+            .PngOutputScale(1).BackdropStyle(ChartForgeX.Composition.VisualCanvasBackdropStyle.Transparent)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).AddImage(backdrop.ToImage(), 0, 0, width, 400)
             .AddText(44, 52, width - 88, "Service window", 24, ink, emphasized: true)
             .AddText(44, 106, width - 88, "Explicit local backdrop", 16, ink)
             .AddText(44, 176, width - 88, "34 ready", 40, accent, emphasized: true)

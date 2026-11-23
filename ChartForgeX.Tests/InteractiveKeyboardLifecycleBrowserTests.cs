@@ -58,7 +58,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
     public async Task RevealedHostEntersLegendThenDataAndRestoresEachComponentAfterAnotherReveal(bool dark, int width, int height) {
         if (!Enabled) return;
         var chart = StatusLines(dark);
-        if (width < 400) chart.WithSize(900, 420);
+        if (width < 400) chart.Size(900, 420);
         await using var session = await OpenAsync(HiddenHost(chart.ToInteractiveHtmlFragment(), dark, width < 400), width, height);
         var page = session.Page;
         Assert.Equal(0, await page.Locator(DataStop).CountAsync());

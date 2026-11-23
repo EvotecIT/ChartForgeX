@@ -39,9 +39,9 @@ public sealed class CartesianAuthoredAutoLabelTests {
     [InlineData(false)] [InlineData(true)]
     public void ReversedLogarithmicSecondaryValuesUseTheSameMappedObstacleLanes(bool horizontal) {
         var chart = Create(horizontal, 1100, false);
-        foreach (var series in chart.Series) series.UseSecondaryValueAxis();
+        foreach (var series in chart.Series) series.SecondaryAxis();
         var valueAxis = ChartCartesianOrientation.ValueAxis(chart, ChartAxisSide.Secondary);
-        valueAxis.WithBounds(1, 100).WithScale(ChartScaleKind.Logarithmic).WithReversal();
+        valueAxis.Bounds(1, 100).Scale(ChartScaleKind.Logarithmic).Reversed();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         AssertComplete(prepared, 1);
         var points = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
@@ -73,7 +73,7 @@ public sealed class CartesianAuthoredAutoLabelTests {
     private static Chart Create(bool horizontal, int width, bool dark) {
         var chart = new MermaidParser().ParseXYChart(MermaidXYChartSourceDepthTests.Source(horizontal)).Document!
             .ToChart(MermaidXYChartSourceDepthTests.Options(width, dark).XYChart);
-        return chart.WithLineMarkers(ChartLineMarkerMode.All);
+        return chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
     }
 
     private static void AssertComplete(PreparedVisual prepared, int lineIndex) {

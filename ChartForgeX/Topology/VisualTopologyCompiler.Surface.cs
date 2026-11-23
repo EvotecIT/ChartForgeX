@@ -129,25 +129,25 @@ internal sealed partial class VisualTopologyCompiler {
             }
         }
         if (_chart.LayoutMode != TopologyLayoutMode.Geographic) return;
-        if (_options.IncludeGeographicRegionHulls) foreach (var group in _chart.Groups) {
+        if (_options.Geography.IncludeRegionHulls) foreach (var group in _chart.Groups) {
             if (!group.Longitude.HasValue || !group.Latitude.HasValue || !TopologyMapProjection.IsVisible(_chart.MapViewport, group.Longitude.Value, group.Latitude.Value)) continue;
             var mapChart = TopologyLayoutEngine.Clone(_chart); mapChart.Legend = null;
             var map = TopologyMapProjection.MapRect(mapChart);
             var anchor = TopologyMapProjection.Project(map, _chart.MapViewport, group.Longitude.Value, group.Latitude.Value);
             var p = Point(new ChartPoint(anchor.X, anchor.Y));
-            var radius = _options.GeographicRegionHullMinRadius;
+            var radius = _options.Geography.RegionHullMinRadius;
             foreach (var node in _chart.Nodes.Where(node => node.GroupId == group.Id && node.Longitude.HasValue && node.Latitude.HasValue && EffectiveNodeDisplayMode(node, _options) != TopologyNodeDisplayMode.Hidden)) {
                 if (!TopologyMapProjection.IsVisible(_chart.MapViewport, node.Longitude!.Value, node.Latitude!.Value)) continue;
                 var projected = TopologyMapProjection.Project(map, _chart.MapViewport, node.Longitude.Value, node.Latitude.Value);
                 var dx = projected.X - anchor.X; var dy = projected.Y - anchor.Y;
-                radius = Math.Max(radius, Math.Sqrt(dx * dx + dy * dy) + _options.GeographicRegionHullPadding);
+                radius = Math.Max(radius, Math.Sqrt(dx * dx + dy * dy) + _options.Geography.RegionHullPadding);
             }
-            radius = Math.Min(_options.GeographicRegionHullMaxRadius, Math.Max(_options.GeographicRegionHullMinRadius, radius)) * _scale;
+            radius = Math.Min(_options.Geography.RegionHullMaxRadius, Math.Max(_options.Geography.RegionHullMinRadius, radius)) * _scale;
             var active = _highlight.IsGroupHighlighted(group);
             var accent = Highlight(Color(group.Color ?? ResolveGroupIcon(group, _options)?.Color, Status(group.Status)), active);
             var hullFill = ChartColorMath.WithOpacity(accent, .05); var hullStroke = ChartColorMath.WithOpacity(accent, .3);
             using (_builder.PushGroup(group.Id + "-hull", "topology-geographic-hull", new Dictionary<string, string> {
-                ["data-group-id"] = group.Id, ["data-hull-padding"] = Number(_options.GeographicRegionHullPadding * _scale)
+                ["data-group-id"] = group.Id, ["data-hull-padding"] = Number(_options.Geography.RegionHullPadding * _scale)
             })) _builder.Ellipse(p.X, p.Y, radius, radius, hullFill, hullStroke, _context.Theme.AxisStrokeWidth * _scale,
                 paint: new VisualScenePaintBinding(GroupAccentPaint(group, hullFill, active, .05), GroupAccentPaint(group, hullStroke, active, .3)));
         }

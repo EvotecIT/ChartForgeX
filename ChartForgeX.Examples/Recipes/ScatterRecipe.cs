@@ -10,7 +10,7 @@ public static class ScatterRecipe {
         // Processing time grows with batch size; priority jobs run on reserved capacity and finish faster.
         var standard = ChartSeries.CreateScatter(new ChartSeriesId("standard"), "Standard queue", Batches(count, 0, 9, .42));
         var priority = ChartSeries.CreateScatter(new ChartSeriesId("priority"), "Priority queue", Batches(count, 3, 4, .24));
-        return Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        return Chart.Create().XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
             .AddSeries(standard).AddSeries(priority);
     }
 
@@ -27,7 +27,7 @@ public static class ScatterRecipe {
     private static Chart Sparse() {
         var observations = new[] { 1, 3, 6 }.Select(index => new ChartPoint(index, 20 + index * 7 % 29, index == 6));
         var processing = ChartSeries.CreateScatter(new ChartSeriesId("processing-time"), "Processing time", observations);
-        return Chart.Create().WithXLabels("1", "2", "3", "4", "5", "6")
-            .WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddSeries(processing);
+        return Chart.Create().XLabels("1", "2", "3", "4", "5", "6")
+            .XAxis(x => x.Title("Workload batches")).YAxis(y => y.Title("Time (minutes)")).AddSeries(processing);
     }
 }

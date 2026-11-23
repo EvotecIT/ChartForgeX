@@ -15,11 +15,11 @@ public sealed class ServerRenderedMarkTests {
     [InlineData(ChartSeriesKind.Line)]
     [InlineData(ChartSeriesKind.Scatter)]
     public void MarksOutsideTheSharedDomainLeaveNoInvisibleKeyboardLink(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithYAxisBounds(0, 2).AddSeries(new ChartSeries(new ChartSeriesId("points"), "Points", kind, new[] {
+        var chart = Chart.Create().YAxis(y => y.Bounds(0, 2)).AddSeries(new ChartSeries(new ChartSeriesId("points"), "Points", kind, new[] {
             new ChartPoint(5, 1).WithMarkOptions(Linked("/inside")),
             new ChartPoint(20, 1).WithMarkOptions(Linked("/outside"))
         }));
-        var scale = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 10 });
+        var scale = new ChartStripScale(new ChartAxis { Min = 0, Max = 10 });
         var prepared = chart.PrepareStrip(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 80), 0)), scale);
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Single(document.Descendants(), element => (string?)element.Attribute("href") == "/inside");
@@ -31,13 +31,13 @@ public sealed class ServerRenderedMarkTests {
     [InlineData(false, "")] [InlineData(true, "")]
     [InlineData(false, " ")] [InlineData(true, " ")]
     public void HiddenLabelsAndBlankSummariesLeaveNoUnpaintedRowLink(bool gantt, string? emptySummary) {
-        var chart = Categories(Chart.Create()).WithAxes(false).WithSize(600, 240);
+        var chart = Categories(Chart.Create()).Axes(false).Size(600, 240);
         foreach (var summary in new[] { "Support", emptySummary }) {
             if (gantt) chart.AddGanttLane("Release", new[] { new ChartGanttLaneItem(Day, Day.AddDays(2), "up") }, summary: summary);
             else chart.AddStateTimelineLane("Availability", new[] { new ChartStateTimelineSegment(Day, Day.AddDays(2), "up") }, summary: summary);
         }
-        chart.Series[0].WithRowOptions(new ChartMarkOptions(href: "/visible"));
-        chart.Series[1].WithRowOptions(new ChartMarkOptions(href: "/empty"));
+        chart.Series[0].RowOptions(new ChartMarkOptions(href: "/visible"));
+        chart.Series[1].RowOptions(new ChartMarkOptions(href: "/empty"));
         var document = XDocument.Parse(chart.ToSvg());
         var link = Assert.Single(document.Descendants(), element => element.Name.LocalName == "a");
         Assert.Equal("/visible", (string?)link.Attribute("href"));
@@ -72,7 +72,7 @@ public sealed class ServerRenderedMarkTests {
             second = second.WithMarkOptions(Linked("/incident/b"));
         }
         var chart = Categories(Chart.Create()).AddStateTimelineLane("Availability", new[] { first, second });
-        chart.Series[0].WithMarkOptions(Linked("/incidents"));
+        chart.Series[0].MarkOptions(Linked("/incidents"));
         var document = XDocument.Parse(chart.ToSvg());
         var links = document.Descendants().Where(element => element.Name.LocalName == "a").ToArray();
         Assert.Equal(itemPolicies ? new[] { "/incident/a", "/incident/b" } : new[] { "/incidents" },
@@ -140,7 +140,7 @@ public sealed class ServerRenderedMarkTests {
         var original = new SparklineData(new double?[] { 2, null, 5 });
         var data = original.WithPointOptions(2, Linked());
         Assert.Null(original.PointOptions[2]);
-        var document = XDocument.Parse(new Sparkline(data).WithStyle(style).Prepare(new VisualRenderContext()).ToSvg());
+        var document = XDocument.Parse(new Sparkline(data).Style(style).Smooth(false).Prepare(new VisualRenderContext()).ToSvg());
         var link = Assert.Single(document.Descendants(), node => (string?)node.Attribute("href") == "/record/42");
         Assert.Equal("3", (string?)link.Attribute("data-cfx-x"));
         Assert.Equal("5", (string?)link.Attribute("data-cfx-y"));
@@ -180,7 +180,7 @@ public sealed class ServerRenderedMarkTests {
     [Fact]
     public void SelectedPointTakesARingAroundItsMarker() {
         var points = new[] { new ChartPoint(1, 2), new ChartPoint(2, 4).WithMarkOptions(new ChartMarkOptions(href: "/day", selected: true)), new ChartPoint(3, 3) };
-        var document = XDocument.Parse(Chart.Create().WithLineMarkers(ChartLineMarkerMode.All).AddLine("Updates", points).ToSvg());
+        var document = XDocument.Parse(Chart.Create().Lines(l => l.MarkerMode(ChartLineMarkerMode.All)).AddLine("Updates", points).ToSvg());
         var link = Assert.Single(document.Descendants(), node => (string?)node.Attribute("href") == "/day");
         var marker = link.Descendants().First(node => (string?)node.Attribute("data-cfx-role") == "marker");
         var outline = Assert.Single(link.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "mark-selected-outline");
@@ -194,8 +194,8 @@ public sealed class ServerRenderedMarkTests {
     [Fact]
     public void SeriesDefaultsAndRowHooksDoNotNestLinksOrReplaceItemOptions() {
         var chart = MarkChart("gantt-lane", new ChartMarkOptions(href: "#item", cssClass: "item"));
-        chart.Series[0].WithMarkOptions(new ChartMarkOptions(href: "#default", cssClass: "series"))
-            .WithRowOptions(new ChartMarkOptions(href: "#row", cssClass: "row", current: true));
+        chart.Series[0].MarkOptions(new ChartMarkOptions(href: "#default", cssClass: "series"))
+            .RowOptions(new ChartMarkOptions(href: "#row", cssClass: "row", current: true));
         var document = XDocument.Parse(chart.ToSvg());
         var item = Assert.Single(document.Descendants(), node => (string?)node.Attribute("href") == "#item");
         var row = Assert.Single(document.Descendants(), node => (string?)node.Attribute("href") == "#row");
@@ -270,7 +270,7 @@ public sealed class ServerRenderedMarkTests {
     public void LinkedMatrixRowAndLegacyCellKeepIndependentSiblingNavigation() {
         var series = ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId("row"), "Support", new ChartHeatmapCell?[] {
             new ChartHeatmapCell("up", href: "#cell")
-        }).WithRowOptions(new ChartMarkOptions(href: "#row", cssClass: "host-row"));
+        }).RowOptions(new ChartMarkOptions(href: "#row", cssClass: "host-row"));
         var document = XDocument.Parse(Categories(Chart.Create()).AddSeries(series).ToSvg());
         var links = document.Descendants().Where(node => node.Name.LocalName == "a").ToArray();
         Assert.Equal(new[] { "#row", "#cell" }, links.Select(node => (string?)node.Attribute("href")).ToArray());
@@ -285,9 +285,9 @@ public sealed class ServerRenderedMarkTests {
         var id = new ChartSeriesId("releases");
         var series = new ChartSeries(id, "Releases", ChartSeriesKind.Bar, new[] {
             new ChartPoint(1, 2), new ChartPoint(2, 4).WithMarkOptions(Linked())
-        }).WithObservationIds(new[] { new ChartObservationId("old"), new ChartObservationId("current") })
-            .WithMarkOptions(new ChartMarkOptions(cssClass: "release-series"));
-        var chart = Chart.Create().WithLegend(false).AddSeries(series);
+        }).ObservationIds(new[] { new ChartObservationId("old"), new ChartObservationId("current") })
+            .MarkOptions(new ChartMarkOptions(cssClass: "release-series"));
+        var chart = Chart.Create().Legend(false).AddSeries(series);
         var view = new ChartVisibilityView(new[] { ChartVisibilityTarget.Observation(id, new ChartObservationId("old")) }, ChartVisibilityLayout.Reflow);
         var visual = new HtmlInteractiveChartRenderer().PrepareVisibilitySection(chart, view).PreparedVisual;
         var document = XDocument.Parse(visual.ToSvg());
@@ -328,12 +328,12 @@ public sealed class ServerRenderedMarkTests {
         Assert.Throws<ArgumentException>(() => new ChartMarkOptions(cssClass: cssClass));
 
     private static Chart MarkChart(string family, ChartMarkOptions options) {
-        var chart = Chart.Create().WithSize(720, 320).WithLegend(false);
+        var chart = Chart.Create().Size(720, 320).Legend(false);
         var point = new ChartPoint(1, 4).WithMarkOptions(options);
         switch (family) {
             case "column": return chart.AddBar("Releases", new[] { point });
             case "bar": return chart.AddHorizontalBar("Releases", new[] { point });
-            case "stacked-column": return chart.WithStackedBars().AddBar("Supported", new[] { point }).AddBar("Other", new[] { new ChartPoint(1, 2) });
+            case "stacked-column": return chart.Bars(b => b.Stacked()).AddBar("Supported", new[] { point }).AddBar("Other", new[] { new ChartPoint(1, 2) });
             case "scatter": return chart.AddScatter("Events", new[] { point });
             case "line": return chart.AddLine("Trend", new[] { point, new ChartPoint(2, 3) });
             case "timeline":
@@ -359,5 +359,5 @@ public sealed class ServerRenderedMarkTests {
         }
     }
 
-    private static Chart Categories(Chart chart) => chart.WithStateCategories(new ChartStateCategory("up", "Supported", ChartColor.FromHex("#2563eb")));
+    private static Chart Categories(Chart chart) => chart.StateCategories(new ChartStateCategory("up", "Supported", ChartColor.FromHex("#2563eb")));
 }

@@ -53,15 +53,15 @@ public sealed class MermaidXYChartSourceDepthTests {
         var parsed = new MermaidParser().ParseXYChart(Source(horizontal)); Assert.Empty(parsed.Diagnostics);
         var document = Assert.IsType<MermaidXYChartDocument>(parsed.Document);
         var chart = document.ToChart(); var line = chart.Series[1];
-        Assert.Equal(new[] { "Intake", "Completed" }, chart.Series.Select(series => series.Name)); Assert.True(chart.Options.ShowLegend);
+        Assert.Equal(new[] { "Intake", "Completed" }, chart.Series.Select(series => series.Name)); Assert.True(chart.Options.Legend.Visible);
         Assert.Equal(new[] { "Opened", "", "Reviewed, ready", "Released" }, line.PointLabels);
         Assert.True(line.ShowDataLabels); Assert.False(chart.Series[0].ShowDataLabels);
         Assert.Equal(ChartDataLabelPlacement.Outside, chart.Series[0].DataLabelPlacement);
         Assert.Equal(new[] { 12d, 60, 33, 75 }, line.Points.Select(point => point.Y));
         var hosted = document.ToChart(new MermaidXYChartRenderOptions { ShowDataLabels = true });
-        Assert.True(hosted.Options.ShowDataLabels); Assert.Null(hosted.Series[1].PointLabels[1]);
+        Assert.True(hosted.Options.DataLabels.Visible); Assert.Null(hosted.Series[1].PointLabels[1]);
         var hidden = document.ToChart(new MermaidXYChartRenderOptions { ShowDataLabels = false });
-        Assert.False(hidden.Options.ShowDataLabels); Assert.Null(hidden.Series[1].ShowDataLabels);
+        Assert.False(hidden.Options.DataLabels.Visible); Assert.Null(hidden.Series[1].ShowDataLabels);
         Assert.Equal("Opened", hidden.Series[1].PointLabels[0]);
     }
 
@@ -94,12 +94,12 @@ public sealed class MermaidXYChartSourceDepthTests {
     public void UnconfiguredNumericSourcePreservesTheOriginalNativeDefaultsAndFallbackLegendNames() {
         const string source = "xychart-beta\ntitle Tickets\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]\nline [30,60,90]";
         var actual = new MermaidParser().ParseXYChart(source).Document!.ToChart();
-        var expected = Chart.Create().WithTitle("Tickets").WithSubtitle("").WithSize(900, 520).WithXAxis("Month").WithYAxis("Count")
+        var expected = Chart.Create().Title("Tickets").Subtitle("").Size(900, 520).XAxis(x => x.Title("Month")).YAxis(y => y.Title("Count"))
             .AddBar("Bar 1", new[] { new ChartPoint(1,20), new ChartPoint(2,50), new ChartPoint(3,80) })
             .AddLine("Line 1", new[] { new ChartPoint(1,30), new ChartPoint(2,60), new ChartPoint(3,90) });
-        expected.Options.YAxis.Minimum = 0; expected.Options.YAxis.Maximum = 100;
+        expected.Options.YAxis.Min = 0; expected.Options.YAxis.Max = 100;
         for (var index = 0; index < 3; index++) expected.Options.XAxis.Labels.Add(new ChartAxisLabel(index + 1, new[] { "Jan", "Feb", "Mar" }[index]));
-        Assert.True(actual.Options.ShowLegend); Assert.Null(actual.Options.ShowDataLabels);
+        Assert.True(actual.Options.Legend.Visible); Assert.Null(actual.Options.DataLabels.Visible);
         Assert.All(actual.Series, series => { Assert.Null(series.ShowDataLabels); Assert.Empty(series.PointLabels); });
         Assert.Equal(expected.ToSvg(), actual.ToSvg()); Assert.Equal(expected.ToPng(), actual.ToPng());
     }
@@ -128,7 +128,7 @@ public sealed class MermaidXYChartSourceDepthTests {
         var parsed = new MermaidParser().ParseXYChart(source); Assert.Empty(parsed.Diagnostics); var chart = parsed.Document!.ToChart();
         Assert.Equal(new[] { 2d, 5, 8 }, chart.Series[0].Points.Select(point => point.X));
         Assert.Equal(new[] { "First", "", "Last" }, chart.Series[0].PointLabels);
-        Assert.Equal(2, (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Minimum);
+        Assert.Equal(2, (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Min);
         var single = new MermaidParser().ParseXYChart(source.Replace("[10 \"First\", 50, 75 \"Last\"]", "[10 \"First\"]", StringComparison.Ordinal)).Document!.ToChart();
         Assert.Equal(2, Assert.Single(single.Series[0].Points).X);
     }

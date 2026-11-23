@@ -29,10 +29,10 @@ public sealed class TopologyNestedArtworkBudgetCausalTests {
             : TopologyIconArtwork.InlineSvg(fragment, "0 0 64 64");
     }
     private static TopologyChart Source(TopologyIconArtwork artwork) {
-        var chart = TopologyChart.Create().WithId("nested-budget").WithTitle("").WithViewport(320, 240, 24).WithLegend(null)
+        var chart = TopologyChart.Create().Id("nested-budget").Title("").Viewport(new TopologyViewport(320, 240, 24)).Legend((TopologyLegend?)null)
             .AddArtworkNode("nested", "Nested", artwork, 40, 40, width: 64, height: 64);
         chart.Nodes[0].ShowLabel = false; chart.Nodes[0].ShowStatusBadge = false;
-        return chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false });
+        return chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false });
     }
     private static Exception? Observe(string name, TopologyChart chart) {
         Exception? error = null;

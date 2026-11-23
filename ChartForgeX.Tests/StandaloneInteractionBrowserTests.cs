@@ -238,7 +238,7 @@ public sealed class StandaloneInteractionBrowserTests {
     public async Task ZoomedTicksKeepTheNativeStepPolicyAndCaptionNotation(bool whole) {
         if (!Enabled) return;
         var points = Enumerable.Range(0, whole ? 24 : 49).Select(index => new ChartForgeX.Primitives.ChartPoint(whole ? index : index * .5, 10 + index % 7)).ToArray();
-        var html = Chart.Create().WithSize(800, 400).WithTitle("Ticks").AddLine("Samples", points).ToInteractiveHtmlPage(options =>
+        var html = Chart.Create().Size(800, 400).Title("Ticks").AddLine("Samples", points).ToInteractiveHtmlPage(options =>
             options.Interaction.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom));
         await using var session = await OpenAsync(html, 1100, 700, configurePageAsync: page => page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce }));
         var page = session.Page;

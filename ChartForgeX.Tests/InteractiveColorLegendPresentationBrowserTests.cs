@@ -21,7 +21,7 @@ public sealed class InteractiveColorLegendPresentationBrowserTests {
         var dimension = ColorDimensionPresentationFixtures.Options(chart, kind);
         dimension.Name = "Temperature"; dimension.ValueFormat = ChartValueFormat.Number("0.000 '°C'");
         dimension.LegendStyle = style;
-        if (kind == ChartSeriesKind.TileMap) chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (kind == ChartSeriesKind.TileMap) chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), width + 24, 600);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

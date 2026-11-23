@@ -7,14 +7,14 @@ internal static partial class SmokeTests {
     private static void TopologyNodesCanApplyIconsByKind() {
         var catalog = TopologyIconCatalog.Default();
         var chart = TopologyChart.Create()
-            .WithId("kind-icons")
-            .WithViewport(520, 300, 24)
-            .WithLegend(null)
+            .Id("kind-icons")
+            .Viewport(new TopologyViewport(520, 300, 24))
+            .Legend((TopologyLegend?)null)
             .AddNode("cert-a", "Certificate A", 72, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy)
             .AddNode("cert-b", "Certificate B", 250, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "CRT", color: "#1D4ED8")
             .AddNode("owner", "Owner", 250, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
             .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .WithNodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog);
+            .NodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog);
 
         Assert(chart.Nodes[0].Symbol == "TLS", "Bulk node-kind icon styling should fill missing node symbols from the icon.");
         Assert(chart.Nodes[1].Symbol == "CRT", "Bulk node-kind icon styling should preserve explicit node symbols.");
@@ -31,11 +31,11 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng(new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false }).Length > 64, "Bulk node-kind icons should render as PNG.");
 
         var generic = TopologyChart.Create()
-            .WithId("kind-icon-preserve-kind")
-            .WithViewport(260, 180, 24)
-            .WithLegend(null)
+            .Id("kind-icon-preserve-kind")
+            .Viewport(new TopologyViewport(260, 180, 24))
+            .Legend((TopologyLegend?)null)
             .AddNode("generic-owner", "Owner", 70, 80, TopologyNodeKind.Generic, TopologyHealthStatus.Healthy)
-            .WithNodesOfKindIcon(TopologyNodeKind.Generic, "people:owner", catalog);
+            .NodesOfKindIcon(TopologyNodeKind.Generic, "people:owner", catalog);
         Assert(generic.Nodes[0].Kind == TopologyNodeKind.Generic, "Bulk node-kind icon styling should preserve the matched node kind instead of reclassifying by icon catalog metadata.");
         Assert(generic.Nodes[0].IconId == "people:owner", "Bulk node-kind icon styling should still apply the requested icon id.");
     }
@@ -43,11 +43,11 @@ internal static partial class SmokeTests {
     private static void TopologyNodesCanApplyCombinedKindStyle() {
         var catalog = TopologyIconCatalog.Default();
         var chart = TopologyChart.Create()
-            .WithId("combined-kind-style")
-            .WithViewport(520, 300, 24)
+            .Id("combined-kind-style")
+            .Viewport(new TopologyViewport(520, 300, 24))
             .AddNode("owner-a", "Owner A", 72, 120, TopologyNodeKind.Generic, TopologyHealthStatus.Healthy)
             .AddNode("owner-b", "Owner B", 250, 120, TopologyNodeKind.Generic, TopologyHealthStatus.Warning)
-            .WithNodesOfKindStyle(TopologyNodeKind.Generic, color: "#7C3AED", backgroundColor: "#F5F3FF", iconId: "people:owner", catalog: catalog);
+            .NodesOfKindStyle(TopologyNodeKind.Generic, color: "#7C3AED", backgroundColor: "#F5F3FF", iconId: "people:owner", catalog: catalog);
 
         Assert(chart.Nodes[0].Kind == TopologyNodeKind.Person, "Combined node-kind styling should apply the icon's generic node kind after matching the original kind.");
         Assert(chart.Nodes[0].Color == "#7C3AED", "Combined node-kind styling should keep caller accent colors ahead of icon fallback colors.");

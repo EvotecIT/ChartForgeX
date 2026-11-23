@@ -57,9 +57,9 @@ internal static partial class ChartGuards {
         ValidateAxisRuleCrossings(chart);
         chart.Options.XAxis.ValidateTickPolicy("The X axis"); chart.Options.YAxis.ValidateTickPolicy("The Y axis");
         chart.Options.SecondaryXAxis.ValidateTickPolicy("The secondary X axis"); chart.Options.SecondaryYAxis.ValidateTickPolicy("The secondary Y axis");
-        if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap && series.Kind != ChartSeriesKind.DottedMap))
+        if (chart.Options.Map.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap && series.Kind != ChartSeriesKind.DottedMap))
             throw new InvalidOperationException("Map color presentation requires numeric region, tile or dotted maps.");
-        if (chart.Options.HeatmapColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow
+        if (chart.Options.Heatmap.ColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow
             || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
             throw new InvalidOperationException("Heatmap color presentation requires numeric rectangular, hexagonal or calendar heatmaps.");
         if (chart.Options.Treemap.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Treemap))
@@ -82,8 +82,8 @@ internal static partial class ChartGuards {
                 throw new InvalidOperationException("Sankey numeric color options require Quantitative flow color mode.");
             sankey.ColorDimension.ValidateLegend(sankey.ColorScale, sankey.FlowColorMode == ChartSankeyFlowColorMode.Quantitative);
         }
-        chart.Options.MapColorDimension.ValidateLegend(chart.Options.MapColorScale);
-        chart.Options.HeatmapColorDimension.ValidateLegend(chart.Options.HeatmapColorScale);
+        chart.Options.Map.ColorDimension.ValidateLegend(chart.Options.Map.ColorScale);
+        chart.Options.Heatmap.ColorDimension.ValidateLegend(chart.Options.Heatmap.ColorScale);
         if (chart.Series.Count > 0 && chart.Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
             var sunburst = chart.Series[0].Kind == ChartSeriesKind.Sunburst;
             var dimension = sunburst ? chart.Options.Sunburst.ColorDimension : chart.Options.Treemap.ColorDimension;
@@ -91,7 +91,7 @@ internal static partial class ChartGuards {
             // Authored hierarchy color values resolve the existing theme scale during preparation.
             dimension.ValidateLegend(scale, chart.Series[0].HierarchyItems.Any(item => item.ColorValue.HasValue));
         }
-        if (chart.Options.HeatmapColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
+        if (chart.Options.Heatmap.ColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
             || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
             throw new InvalidOperationException("Heatmap color scales require numeric rectangular, hexagonal or calendar heatmaps.");
         if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Count > 0 && !ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart))
@@ -146,7 +146,7 @@ internal static partial class ChartGuards {
         if (exclusiveKinds[0] == ChartSeriesKind.Polar) {
             if (chart.Series.Any(series => {
                 var axis = series.ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-                return axis.Minimum.HasValue && axis.Minimum.Value < 0;
+                return axis.Min.HasValue && axis.Min.Value < 0;
             })) {
                 throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
             }
@@ -309,7 +309,7 @@ internal static partial class ChartGuards {
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
             if (!preparing && !chart.Series.Any(series => series.RenderPoints.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
-            if (chart.Options.HeatmapColorScale == null && chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
+            if (chart.Options.Heatmap.ColorScale == null && chart.Options.Heatmap.RelativeScale && chart.Options.Heatmap.Scale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
             }
         }
@@ -378,7 +378,7 @@ internal static partial class ChartGuards {
 
     private static void ValidateStateCategories(Chart chart) {
         var keys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var state in chart.Options.StateCategories) {
+        foreach (var state in chart.Options.StateTimeline.Categories) {
             if (state == null) throw new InvalidOperationException("State categories must not contain null entries.");
             if (!keys.Add(state.Key)) throw new InvalidOperationException("State category keys must be unique: " + state.Key);
         }

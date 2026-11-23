@@ -21,7 +21,7 @@ public sealed class SeamPolygonPaintTests {
         var isolated = new VisualSceneBuilder(prepared.Scene.Size, FontSpec.SystemSans());
         using (isolated.PushClip(map)) isolated.Path(new ChartPath(path.Commands), ChartColor.Black, strokeWidth: 0, role: "actual-island", close: true);
         var native = new PreparedVisual(isolated.Build()); var image = native.ToRgba();
-        var viewport = chart.Options.MapViewport; var source = ChartGeographicProjection.Bounds(viewport, projection);
+        var viewport = chart.Options.Map.Viewport; var source = ChartGeographicProjection.Bounds(viewport, projection);
         ChartPoint At(double longitude, double latitude) {
             var point = ChartGeographicProjection.Project(longitude, latitude, projection, viewport);
             return new ChartPoint(map.Left + (point.X - source.Left) / source.Width * map.Width, map.Top + (point.Y - source.Top) / source.Height * map.Height);
@@ -39,7 +39,7 @@ public sealed class SeamPolygonPaintTests {
         const string json = """{"type":"Feature","id":"one-feature","properties":{"code":"A"},"geometry":{"type":"Polygon","coordinates":[[[165,-25],[-160,-25],[-160,-5],[165,-5],[165,-25]],[[170,-20],[-165,-20],[-165,-10],[170,-10],[170,-20]]]}}""";
         var definition = ChartMapGeoJson.ToMapDefinition("two-pieces", "Two edge pieces", json, new ChartMapGeoJsonOptions { PolygonViewport = viewport, MaximumObservations = 20 });
         var region = Assert.Single(definition.Regions); Assert.Equal(4, region.Path.Count(character => character == 'M'));
-        var chart = Chart.Create().WithSize(800, 360).WithLegend(false).WithMapLabels(false).WithMapViewport(viewport)
+        var chart = Chart.Create().Size(800, 360).Legend(false).Map(m => m.ShowLabels(false).Viewport(viewport))
             .AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("one-region"), "One region", definition, new[] { new ChartRegionMapItem("A", 1) }));
         var prepared = MapLabelClusterDepthTests.Prepare(chart); var source = Assert.Single(MapLabelClusterDepthTests.Groups(prepared, "region-map-region-source"));
         Assert.Equal("\"one-feature\"", source.Metadata["data-cfx-feature-id-json"]); Assert.Equal("true", source.Metadata["data-cfx-visible"]);
@@ -59,13 +59,13 @@ public sealed class SeamPolygonPaintTests {
     [InlineData("ordinary-overlay")]
     public void CapturedPolygonGeometryCannotBeReinterpretedByAMismatchedView(string mismatch) {
         var chart = SeamPolygonMapRecipe.Create();
-        if (mismatch == "chart-window") chart.WithMapViewport(ChartMapViewport.AcrossAntimeridian("Different window", 172, -168, -30, 10));
-        else if (mismatch == "chart-projection") chart.WithMapViewport(ChartMapViewport.AcrossAntimeridian("Different projection", 170, -170, -30, 10, ChartMapGeoJsonProjection.WebMercator));
-        else if (mismatch == "missing-chart-view") chart.WithMapViewport(ChartMapViewport.World());
+        if (mismatch == "chart-window") chart.Map(m => m.Viewport(ChartMapViewport.AcrossAntimeridian("Different window", 172, -168, -30, 10)));
+        else if (mismatch == "chart-projection") chart.Map(m => m.Viewport(ChartMapViewport.AcrossAntimeridian("Different projection", 170, -170, -30, 10, ChartMapGeoJsonProjection.WebMercator)));
+        else if (mismatch == "missing-chart-view") chart.Map(m => m.Viewport(ChartMapViewport.World()));
         else {
             var ordinary = new ChartMapDefinition("ordinary", "Ordinary", 10, 10, new[] { new ChartMapRegion("A", "Alpha", "M0 0H10V10H0Z") });
             var layer = new ChartMapLayer(ordinary, null, ChartColor.Black, 1, "ordinary-context");
-            (mismatch.EndsWith("base", StringComparison.Ordinal) ? chart.Options.MapBaseLayers : chart.Options.MapOverlayLayers).Add(layer);
+            (mismatch.EndsWith("base", StringComparison.Ordinal) ? chart.Options.Map.BaseLayers : chart.Options.Map.OverlayLayers).Add(layer);
         }
         Assert.Contains("PolygonViewport", Assert.Throws<NotSupportedException>(() => MapLabelClusterDepthTests.Prepare(chart)).Message);
     }
@@ -75,7 +75,7 @@ public sealed class SeamPolygonPaintTests {
         var chart = SeamPolygonMapRecipe.Create(); var definition = chart.Series[0].RegionMapDefinition!;
         var renamed = ChartMapViewport.AcrossAntimeridian("Another display label", 170, -170, -30, 10);
         var context = definition.WithPolygonViewport(renamed);
-        chart.Options.MapBaseLayers.Add(new ChartMapLayer(context, null, ChartColor.Black.WithAlpha(50), .5, "seam-context"));
+        chart.Options.Map.BaseLayers.Add(new ChartMapLayer(context, null, ChartColor.Black.WithAlpha(50), .5, "seam-context"));
         var prepared = MapLabelClusterDepthTests.Prepare(chart);
         Assert.Equal(3, MapLabelClusterDepthTests.Groups(prepared, "map-layer-region-source").Length);
         Assert.Equal(definition.Regions[0].GeoJsonGeometry, MapLabelClusterDepthTests.Groups(prepared, "map-layer-region-source")[0].Metadata["data-cfx-geojson-geometry"]);
@@ -89,11 +89,11 @@ public sealed class SeamPolygonPaintTests {
     [InlineData(true)]
     public void StandaloneDottedContextCannotBypassTheRequiredMatchingPolygonView(bool overlay) {
         var definition = SeamPolygonMapRecipe.Create().Series[0].RegionMapDefinition!;
-        var chart = Chart.Create().WithSize(480, 320).AddSeries(ChartSeries.CreateDottedMap(new ChartSeriesId("points"), "Points", new[] { new ChartMapPoint("Site", 178, -18) }));
+        var chart = Chart.Create().Size(480, 320).AddSeries(ChartSeries.CreateDottedMap(new ChartSeriesId("points"), "Points", new[] { new ChartMapPoint("Site", 178, -18) }));
         var layer = new ChartMapLayer(definition, null, ChartColor.Black, 1, "seam-context");
-        (overlay ? chart.Options.MapOverlayLayers : chart.Options.MapBaseLayers).Add(layer);
+        (overlay ? chart.Options.Map.OverlayLayers : chart.Options.Map.BaseLayers).Add(layer);
         Assert.Contains("PolygonViewport", Assert.Throws<NotSupportedException>(() => MapLabelClusterDepthTests.Prepare(chart)).Message);
-        chart.WithMapViewport(definition.PolygonViewport!.Value); var prepared = MapLabelClusterDepthTests.Prepare(chart);
+        chart.Map(m => m.Viewport(definition.PolygonViewport!.Value)); var prepared = MapLabelClusterDepthTests.Prepare(chart);
         Assert.Equal(3, MapLabelClusterDepthTests.Groups(prepared, "map-layer-region-source").Length);
         Assert.Single(MapLabelClusterDepthTests.Groups(prepared, "dotted-map-point-source"));
     }
@@ -103,7 +103,7 @@ public sealed class SeamPolygonPaintTests {
         var viewport = ChartMapViewport.AcrossAntimeridian("Hole only", 170, -170, -20, -10);
         const string json = """{"type":"Feature","id":"hole-context","properties":{"code":"A"},"geometry":{"type":"Polygon","coordinates":[[[150,-30],[-140,-30],[-140,0],[150,0],[150,-30]],[[160,-25],[-150,-25],[-150,-5],[160,-5],[160,-25]]]}}""";
         var definition = ChartMapGeoJson.ToMapDefinition("hole-only", "Hole only", json, new ChartMapGeoJsonOptions { PolygonViewport = viewport });
-        var chart = Chart.Create().WithSize(480, 320).WithLegend(false).WithMapLabels(false).WithMapViewport(viewport)
+        var chart = Chart.Create().Size(480, 320).Legend(false).Map(m => m.ShowLabels(false).Viewport(viewport))
             .AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("hole-only"), "Hole only", definition, new[] { new ChartRegionMapItem("A", 1) }));
         var prepared = MapLabelClusterDepthTests.Prepare(chart);
         Assert.Equal("false", Assert.Single(MapLabelClusterDepthTests.Groups(prepared, "region-map-region-source")).Metadata["data-cfx-visible"]);

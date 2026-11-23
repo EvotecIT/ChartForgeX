@@ -188,7 +188,7 @@ public sealed class SvgRasterGaussianFilterTests {
     [Fact]
     public void ComputedPixelsCanUseTheExistingSelfContainedSnapshotWithoutInventingLiveSvgFilters() {
         var image = Import(Svg(Filter() + Impulse())).Image; var before = image.Pixels.ToArray();
-        var canvas = VisualCanvas.Create(32, 32).WithPngOutputScale(1).WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, 32, 32);
+        var canvas = VisualCanvas.Create(32, 32).PngOutputScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, 32, 32);
         var svg = canvas.ToSvg(); var png = canvas.ToPng(); var document = XDocument.Parse(svg);
         // VisualCanvas retains its ordinary unused decoration definitions; no filter is applied to this snapshot.
         Assert.DoesNotContain(document.Descendants(), element => element.Name.LocalName == "script" || element.Attribute("filter") != null);

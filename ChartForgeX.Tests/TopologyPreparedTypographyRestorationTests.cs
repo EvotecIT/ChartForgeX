@@ -104,8 +104,8 @@ public sealed class TopologyPreparedTypographyRestorationTests {
     }
 
     private static TopologyChart Source() {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(1100, 700, 28).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.GroupGrid)
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Viewport(new TopologyViewport(1100, 700, 28)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoNode("first", "Publication preparation preserves every complete source word", width: 200, height: 76)
             .AddAutoNode("second", "Delivery coordination retains the complete measured caption", width: 200, height: 76);
         foreach (var node in chart.Nodes) {
@@ -114,7 +114,7 @@ public sealed class TopologyPreparedTypographyRestorationTests {
             node.ShowStatusBadge = false;
             node.TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 18 };
         }
-        return chart.WithRenderOptions(new TopologyRenderOptions {
+        return chart.DefaultRenderOptions(new TopologyRenderOptions {
             IncludeLegend = false, WrapNodeLabels = true, MaxNodeLabelLines = 32, MaxNodeSubtitleLines = 32
         });
     }

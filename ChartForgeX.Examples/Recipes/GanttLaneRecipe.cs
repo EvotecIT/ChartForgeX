@@ -11,9 +11,9 @@ public static class GanttLaneRecipe {
         var secondary = ChartSeries.CreateGanttLane(new ChartSeriesId("secondary"), "Secondary", new[] {
             new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), "warning", "Maintenance")
         }, "Production");
-        return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+        return Chart.Create().StateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
             new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
-            .WithGanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary);
+            .GanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary);
     }
 }

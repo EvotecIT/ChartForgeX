@@ -28,9 +28,9 @@ public sealed partial class Chart {
             index++;
         }
 
-        Options.PictorialShape = shape;
-        Options.XAxisLabels.Clear();
-        Options.XAxisLabels.AddRange(labels);
+        Options.Pictorial.Shape = shape;
+        Options.XAxis.Labels.Clear();
+        Options.XAxis.Labels.AddRange(labels);
         Add(name, ChartSeriesKind.Pictorial, points, color);
         Series[Series.Count - 1].PointColors.AddRange(colors);
         return this;

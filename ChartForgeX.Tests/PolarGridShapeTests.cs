@@ -20,7 +20,7 @@ public sealed class PolarGridShapeTests {
         var values = missing ? "curve c{A: -30, B: -10}\nmin -40" : "curve c{17, 31, 73}\nmax 100";
         var document = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\n" + values + "\nticks 3\ngraticule " + shape).Document!;
         var chart = document.ToChart(new MermaidRadarRenderOptions { Width = 520, Height = 380 })
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 460);
         var rings = session.Page.Locator("[data-cfx-role=\"radar-ring\"]");
         Assert.Equal(3, await rings.CountAsync());
@@ -48,11 +48,11 @@ public sealed class PolarGridShapeTests {
     [InlineData(false, ChartPolarGridShape.Polygon, false)]
     public void SharedPolarGuidesSelectShapesWithoutChangingObservedPoints(bool radar, ChartPolarGridShape shape, bool circles) {
         var values = new[] { new ChartPoint(1, 15), new ChartPoint(2, 35), new ChartPoint(3, 25), new ChartPoint(4, 45) };
-        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 50);
+        var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.Bounds(0, 50));
         if (radar) chart.AddRadarLine("Signal", values);
         else chart.AddPolar("Signal", values);
         var original = Prepare(chart);
-        chart.WithPolarGridShape(shape);
+        chart.Polar(p => p.GridShape(shape));
         var prepared = Prepare(chart);
         var role = radar ? "radar-ring" : "polar-ring";
         var rings = prepared.Scene.Nodes.Where(node => node.Role == role).ToArray();
@@ -71,10 +71,10 @@ public sealed class PolarGridShapeTests {
         Assert.NotEmpty(png);
         if (circles == radar) Assert.False(original.ToPng().SequenceEqual(png), "Changing guide geometry must change native PNG ink.");
         var text = prepared.ToSvg();
-        chart.Options.PolarGridShape = circles ? ChartPolarGridShape.Polygon : ChartPolarGridShape.Circle;
+        chart.Options.Polar.GridShape = circles ? ChartPolarGridShape.Polygon : ChartPolarGridShape.Circle;
         Assert.Equal(text, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng());
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithPolarGridShape((ChartPolarGridShape)99));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Polar(p => p.GridShape((ChartPolarGridShape)99)));
     }
 
     [Theory]
@@ -85,7 +85,7 @@ public sealed class PolarGridShapeTests {
         var source = "radar-beta\naxis A, B, C\ncurve c{1, 2, 3}\n" + directive;
         var result = new MermaidParser().ParseRadar(source);
         Assert.False(result.HasErrors);
-        Assert.Equal(expected, result.Document!.ToChart().Options.PolarGridShape);
+        Assert.Equal(expected, result.Document!.ToChart().Options.Polar.GridShape);
         var rendered = MermaidRenderer.Render(source);
         Assert.False(rendered.HasErrors);
         Assert.NotNull(rendered.Artifact);
@@ -120,21 +120,21 @@ public sealed class PolarGridShapeTests {
     [InlineData(ChartScaleKind.Linear, false, 1)]
     [InlineData(ChartScaleKind.Linear, false, 0)]
     public void ExactGuideCountsPreserveScaleAndSourceCoordinates(ChartScaleKind kind, bool reversed, int count) {
-        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithYAxisBounds(10, 1000).WithPolarGridShape(ChartPolarGridShape.Circle)
+        var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(false).DataLabels(false)
+            .YAxis(y => y.Bounds(10, 1000)).Polar(p => p.GridShape(ChartPolarGridShape.Circle))
             .AddRadarLine("Signal", new[] { new ChartPoint(1, 10), new ChartPoint(2, 100), new ChartPoint(3, 1000) });
         chart.Options.YAxis.Scale = kind;
         chart.Options.YAxis.Reversed = reversed;
         var original = Prepare(chart);
-        chart.Options.PolarGridRingCount = count;
+        chart.Options.Polar.GridRingCount = count;
         var prepared = Prepare(chart);
         var rings = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "radar-ring").ToArray();
         Assert.Equal(count, rings.Length);
         for (var index = 0; index < count; index++) Assert.Equal(rings[count - 1].Rx * (index + 1d) / count, rings[index].Rx, 7);
         Assert.Equal(original.Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds),
             prepared.Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds));
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = -1);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = 101);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.GridRingCount = -1);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.GridRingCount = 101);
     }
 
     [Theory]
@@ -147,7 +147,7 @@ public sealed class PolarGridShapeTests {
         var result = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\ncurve c{17, 31, 73}\nticks " + count);
         Assert.False(result.HasErrors);
         var chart = result.Document!.ToChart();
-        Assert.Equal(73, chart.Options.YAxis.Maximum);
+        Assert.Equal(73, chart.Options.YAxis.Max);
         Assert.Equal(count, Prepare(chart).Scene.Nodes.Count(node => node.Role == "radar-ring"));
     }
 
@@ -160,7 +160,7 @@ public sealed class PolarGridShapeTests {
         var parsed = new MermaidParser().ParseRadar(source);
         Assert.False(parsed.HasErrors);
         var automatic = parsed.Document!.ToChart();
-        Assert.Equal(expectedMaximum, automatic.Options.YAxis.Maximum);
+        Assert.Equal(expectedMaximum, automatic.Options.YAxis.Max);
         var explicitBounds = new MermaidParser().ParseRadar(source + "\nmax " + expectedMaximum).Document!.ToChart();
         Assert.Equal(Prepare(explicitBounds).Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds),
             Prepare(automatic).Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds));
@@ -184,7 +184,7 @@ public sealed class PolarGridShapeTests {
         Assert.False(result.HasErrors);
         Assert.Equal(count, result.Document!.Ticks);
         Assert.Contains(result.Diagnostics, item => item.Span.Line == 4 && item.Severity == MermaidDiagnosticSeverity.Warning);
-        Assert.Equal(32, result.Document.ToChart().Options.PolarGridRingCount);
+        Assert.Equal(32, result.Document.ToChart().Options.Polar.GridRingCount);
         Assert.Equal(32, Prepare(result.Document.ToChart()).Scene.Nodes.Count(node => node.Role == "radar-ring"));
         Assert.Equal(count.ToString(System.Globalization.CultureInfo.InvariantCulture), result.Document.ToVisualArtifact().Metadata["mermaid.ticks"]);
     }

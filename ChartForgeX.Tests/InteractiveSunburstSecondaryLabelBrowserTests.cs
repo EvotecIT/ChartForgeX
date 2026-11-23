@@ -20,24 +20,24 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
     [InlineData(800, true, 6)]
     public async Task PreparedSecondaryTextHasSafePointerAndKeyboardReadoutsWithoutInventingNumericTargets(int width, bool dark, double radius) {
         if (!Enabled) return;
-        var chart = SunburstSecondaryLabelTests.Gallery(width, dark, radius).WithHeader(true)
-            .WithTitle("Allocation by team").WithSubtitle("Primary captions and authored secondary text");
-        chart.ConfigureLabels(labels => { labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
+        var chart = SunburstSecondaryLabelTests.Gallery(width, dark, radius).ShowHeader(true)
+            .Title("Allocation by team").Subtitle("Primary captions and authored secondary text");
+        chart.Labels(labels => { labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
         var descriptions = new Dictionary<string, string> {
             ["all"] = "Allocation", ["engineering"] = "Delivery <b>& teams", ["operations-support"] = "Shared service", ["reserve"] = "No allocation <&>"
         };
         var inclusive = radius > 0; var calls = 0;
-        chart.ConfigureSunburst(options => {
+        chart.Sunburst(options => {
             options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
             options.SecondaryLabelFormatter = context => { calls++; return descriptions.TryGetValue(context.Item.Id, out var text) ? text : null; };
         });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         Assert.Equal(14, calls);
-        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.PngFontPath!));
+        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
         html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         chart.Options.Sunburst.SecondaryLabelFormatter = _ => throw new InvalidOperationException("Prepared captions must remain detached.");
-        chart.Options.Sunburst.SecondaryLabelStyle.WithFontSize(40); descriptions["engineering"] = "Changed after preparation";
+        chart.Options.Sunburst.SecondaryLabelStyle.FontSize(40); descriptions["engineering"] = "Changed after preparation";
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 510 : 590);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => document.fonts.ready");
@@ -98,7 +98,7 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
             ? string.Concat(Enumerable.Repeat("e\u0301", 100))
             : string.Concat(Enumerable.Repeat("tenant_2a3c7e91_environment_", 5)));
         var chart = SunburstSecondaryLabelTests.Gallery(360, false, 6);
-        chart.ConfigureSunburst(options => options.SecondaryLabelFormatter = context => context.Item.Id == "engineering" ? text : null);
+        chart.Sunburst(options => options.SecondaryLabelFormatter = context => context.Item.Id == "engineering" ? text : null);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, 384, 510);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

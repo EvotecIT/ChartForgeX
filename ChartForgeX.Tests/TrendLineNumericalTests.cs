@@ -24,7 +24,7 @@ public sealed class TrendLineNumericalTests {
         Assert.Equal(source[0].X, series.Points[0].X);
         Assert.Equal(source[2].X, series.Points[1].X);
 
-        var chart = Chart.Create().WithSize(400, 260).WithAxes(false).WithGrid(false).WithLegend(false).AddSeries(series);
+        var chart = Chart.Create().Size(400, 260).Axes(false).ShowGrid(false).Legend(false).AddSeries(series);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var regression = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "regression");
         var slope = double.Parse(regression.Metadata["data-cfx-slope"], CultureInfo.InvariantCulture);

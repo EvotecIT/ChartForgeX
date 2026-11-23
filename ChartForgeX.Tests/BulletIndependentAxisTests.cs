@@ -31,20 +31,20 @@ public sealed class BulletIndependentAxisTests {
     [Fact]
     public void LocalAxisConfigurationRejectsSharedModeAndRetainsDetachedCapturedOptions() {
         var series = ChartSeries.CreateBullet(new ChartSeriesId("one"), "One", 20, 50);
-        ChartAxis? callback = null; series.ConfigureBulletAxis(axis => { callback = axis; axis.Reversed = true; axis.Labels.Add(new ChartAxisLabel(50, "Goal")); });
+        ChartAxis? callback = null; series.BulletAxis(axis => { callback = axis; axis.Reversed = true; axis.Labels.Add(new ChartAxisLabel(50, "Goal")); });
         callback!.Reversed = false; callback.Labels.Clear(); Assert.True(series.BulletAxis!.Reversed); Assert.Single(series.BulletAxis!.Labels);
         series.BulletAxis!.Labels.Clear(); Assert.Single(series.BulletAxis!.Labels);
         var chart = Chart.Create().AddSeries(series); Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
-        chart.ConfigureBullet(options => options.IndependentAxes = true); Assert.Contains("bullet-value", chart.ToSvg(), StringComparison.Ordinal);
-        Assert.Throws<NotSupportedException>(() => series.ConfigureBulletAxis(axis => axis.Scale = ChartScaleKind.Time));
+        chart.Bullet(options => options.IndependentAxes = true); Assert.Contains("bullet-value", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.Throws<NotSupportedException>(() => series.BulletAxis(axis => axis.Scale = ChartScaleKind.Time));
         Assert.True(series.BulletAxis!.Reversed);
     }
 
     [Fact]
     public void NumericRowScaleReusesCanonicalLogarithmInsteadOfLinearFractions() {
         var series = ChartSeries.CreateBullet(new ChartSeriesId("rate"), "Rate", new ChartBulletValue(10, 100, 1, 1000))
-            .ConfigureBulletAxis(axis => axis.Scale = ChartScaleKind.Logarithmic);
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).AddSeries(series).ConfigureBullet(options => options.IndependentAxes = true);
+            .BulletAxis(axis => axis.Scale = ChartScaleKind.Logarithmic);
+        var chart = Chart.Create().ShowHeader(false).Legend(false).AddSeries(series).Bullet(options => options.IndependentAxes = true);
         var scene = chart.Prepare(new VisualRenderContext()).Scene;
         var ranges = scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bullet-range").ToArray();
         var value = Assert.Single(scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "bullet-value");

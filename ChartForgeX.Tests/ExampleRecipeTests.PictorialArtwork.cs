@@ -24,7 +24,7 @@ public sealed partial class ExampleRecipeTests {
         var chart = Assert.IsType<Chart>(recipe.Create(variant, mode)); Assert.Equal(mode, chart.Options.ThemeMode);
         Assert.Equal(new[] { 2.5, 1.25, .75 }, chart.Series[0].Points.Select(point => point.Y));
         Assert.Equal(new[] { "team-a", "team-b", "team-c" }, chart.Series[0].ObservationIds.OrderBy(pair => pair.Key).Select(pair => pair.Value.Value));
-        Assert.Equal(variant == "contour", chart.Options.PictorialArtwork == null);
+        Assert.Equal(variant == "contour", chart.Options.Pictorial.Artwork == null);
         var svg = XDocument.Parse(chart.ToSvg()); var png = RasterImageDecoder.Decode(chart.ToPng());
         Assert.Equal(variant == "compact" ? 390 : 900, png.Width); Assert.Equal(460, png.Height);
         Assert.Equal(3, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "pictorial-item"));

@@ -65,8 +65,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [InlineData("y", true, 1)]
     public async Task KeyboardNavigationRevealsNativeSourceThroughNestedOuterScrollAncestors(string axis, bool shadow, double scale) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite(), shadow ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Keyboard access through host scrollers").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(596, 338).Theme(VisualTheme.Graphite()).ThemeMode(shadow ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Keyboard access through host scrollers").Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("scroll-reading"), "Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

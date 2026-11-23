@@ -36,8 +36,8 @@ public static class TopologyRecipe {
             return chart;
         }
 
-        chart.WithViewport(variant == "compact" ? 390 : 1100, 620).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(variant == "compact" ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
+        chart.Viewport(new TopologyViewport(variant == "compact" ? 390 : 1100, 620)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(variant == "compact" ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
 
         chart.Groups.Add(new TopologyGroup {
             Id = "primary", Label = "Primary region",

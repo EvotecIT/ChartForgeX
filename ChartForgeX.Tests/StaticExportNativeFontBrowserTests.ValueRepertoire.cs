@@ -8,6 +8,7 @@ using ChartForgeX.Typography;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -20,8 +21,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         NativeValueRepertoireBeforeControls.Register();
         var fallbackBytes = NativeValueRepertoireMotionTests.FallbackBytes(); FontRegistry.Register(NativeFallbackClusterBeforeControls.Fallback, fallbackBytes);
         var renderer = new HtmlInteractiveChartRenderer();
-        HtmlChartSection Section(double value) => renderer.PrepareSection(NativeValueRepertoireBeforeControls.Model(donut, "compact", value).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? ThemeMode.Dark : ThemeMode.Light),
+        HtmlChartSection Section(double value) => renderer.PrepareSection(NativeValueRepertoireBeforeControls.Model(donut, "compact", value).Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light),
             configure: options => { options.TextPresentation = HtmlChartTextPresentation.NativeContours; options.Interaction.ChartId = "value-text-repertoire"; options.Interaction.Enable(ChartInteractionFeatures.Export); });
         try {
             var from = Section(900); var to = Section(1100); var payload = renderer.PrepareNativeTransitionJson(from, to,

@@ -76,7 +76,7 @@ public sealed partial class ChordColorDimensionTests {
             new ChartFlowLink("zero", "a", "b", 0, -50), new ChartFlowLink("missing", "b", "a", 0, null)
         });
         series.ShowInLegend = false;
-        var chart = Chart.Create().AddSeries(series).ConfigureChord(options => options.ColorScale = ChartColorScale.Sequential(Low, High));
+        var chart = Chart.Create().AddSeries(series).Chord(options => options.ColorScale = ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart, legend: true); var key = PreparedChordTests.Role(prepared, "chord-color-scale").Single();
         Assert.Equal("-50", (string?)key.Attribute("data-cfx-min-value")); Assert.Equal("100", (string?)key.Attribute("data-cfx-max-value"));
         Assert.Equal("precision-collapse", (string?)Link(prepared, "tiny").Attribute("data-cfx-geometry-status"));
@@ -90,7 +90,7 @@ public sealed partial class ChordColorDimensionTests {
     [Fact]
     public void NumericPaintRetainsManualPrecedenceStateAlphaPatternStrokeAndDomainFacts() {
         var chart = Model(new double?[] { -10, 0, 10, 30, null }); var series = chart.Series[0];
-        series.WithNodeState("a", ChartSeriesState.Danger).WithFlowState("priority", ChartSeriesState.Info);
+        series.NodeState("a", ChartSeriesState.Danger).FlowState("priority", ChartSeriesState.Info);
         var initial = Prepare(chart, legend: true);
         Assert.Equal(ChartColorMath.WithOpacity(Low, .35), Ribbons(initial)[0].Fill);
         Assert.Equal("Danger", (string?)Link(initial, "forward").Attribute("data-cfx-state"));
@@ -100,10 +100,10 @@ public sealed partial class ChordColorDimensionTests {
             .Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "chord-ribbon").Attribute("fill")!.Value, StringComparison.Ordinal);
         series.Color = ChartColor.FromHex("#365F63");
         Assert.Equal(ChartColorMath.WithOpacity(series.Color.Value, .35), Ribbons(Prepare(chart))[0].Fill);
-        var sourceColor = ChartColor.FromHex("#7356BD"); series.WithPointColor(0, sourceColor);
+        var sourceColor = ChartColor.FromHex("#7356BD"); series.PointColor(0, sourceColor);
         Assert.Equal(ChartColorMath.WithOpacity(sourceColor, .35), Ribbons(Prepare(chart))[0].Fill);
         var authored = ChartColor.FromRgba(41, 94, 131, 200);
-        series.WithFlowStyle("forward", new ChartFlowStyle(fill: authored, fillOpacity: .25, fillPattern: ChartFillPattern.Crosshatch,
+        series.FlowStyle("forward", new ChartFlowStyle(fill: authored, fillOpacity: .25, fillPattern: ChartFillPattern.Crosshatch,
             stroke: ChartColor.Black, strokeWidth: 2, strokeOpacity: .4));
         var after = Prepare(chart, legend: true); var ribbon = Ribbons(after)[0];
         Assert.Equal(ChartColorMath.WithOpacity(authored, .25), ribbon.Fill); Assert.Equal(ChartColorMath.WithOpacity(ChartColor.Black, .4), ribbon.Stroke);
@@ -145,7 +145,7 @@ public sealed partial class ChordColorDimensionTests {
         var series = ChartSeries.CreateChord(new ChartSeriesId("color-flows"), "Transfers", Nodes(), ids.Select((id, index) =>
             new ChartFlowLink(id, index == 2 ? "b" : "a", index is 2 or 3 ? "a" : "b", weights[index], values[index])));
         series.ShowInLegend = false;
-        return Chart.Create().AddSeries(series).ConfigureChord(options => {
+        return Chart.Create().AddSeries(series).Chord(options => {
             options.ColorScale = ChartColorScale.Sequential(Low, High); options.ColorDimension.Name = "Delay";
             options.ColorDimension.ValueFormat = ChartValueFormat.Number("0.0 'ms'", CultureInfo.InvariantCulture);
         });

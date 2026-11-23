@@ -22,9 +22,9 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Linear, 0, 5e307)]
     [InlineData(ChartGaugeForm.Linear, 0, 1e308)]
     public void CloseBoundsKeepDistinctScaleCaptionsInPreparedSvgAndNativePng(ChartGaugeForm form, double minimum, double maximum) {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false)
             .AddGauge("Range", (minimum + maximum) / 2, minimum, maximum)
-            .ConfigureGauge(options => options.Form = form);
+            .Gauge(options => options.Form = form);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Capture(prepared, "gauge-" + form.ToString().ToLowerInvariant() + "-" + minimum.ToString("R", CultureInfo.InvariantCulture) + "-" + maximum.ToString("R", CultureInfo.InvariantCulture));
         var captions = ScaleCaptions(prepared);
@@ -48,11 +48,11 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Linear, false)]
     public void AuthoredCallbacksResolveEachDisplayedScaleValueOnceAndDoNotRunDuringDetachedExport(ChartGaugeForm form, bool axes) {
         var calls = new List<double>();
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithAxes(axes)
+        var chart = Chart.Create().Size(640, 400).Legend(false).Axes(axes)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("range"), "Range", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
-            .ConfigureGauge(options => options.Form = form)
-            .WithValueFormatter(value => { calls.Add(value); return "Value " + value.ToString("0.0000", CultureInfo.InvariantCulture); });
-        chart.Series[0].WithPointLabel(0, "Authored measurement");
+            .Gauge(options => options.Form = form)
+            .FormatValuesBy(value => { calls.Add(value); return "Value " + value.ToString("0.0000", CultureInfo.InvariantCulture); });
+        chart.Series[0].PointLabel(0, "Authored measurement");
         Assert.Empty(calls);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var expected = !axes ? new[] { 1.0025 } : form == ChartGaugeForm.Linear
@@ -62,7 +62,7 @@ public sealed class V2GaugeScaleFormattingTests {
         Assert.Equal(axes ? form == ChartGaugeForm.Linear ? 5 : 2 : 0, ScaleCaptions(prepared).Length);
         Assert.Contains(prepared.Regions, region => region.Role == "gauge-label" && region.Label == "Authored measurement");
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("Detached exports must not invoke a late formatter."));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("Detached exports must not invoke a late formatter."));
         chart.Series[0].ReplaceGaugeValues(Array.Empty<ChartGaugeValue>());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(expected.Length, calls.Count);
@@ -73,9 +73,9 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Needle)]
     [InlineData(ChartGaugeForm.Linear)]
     public void AuthoredNumericPoliciesKeepTheirDeclaredPrecision(ChartGaugeForm form) {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false)
-            .AddGauge("Range", 1.003, 1.001, 1.005).ConfigureGauge(options => options.Form = form)
-            .WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().Size(640, 400).Legend(false)
+            .AddGauge("Range", 1.003, 1.001, 1.005).Gauge(options => options.Form = form)
+            .ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         var captions = ScaleCaptions(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.Equal(form == ChartGaugeForm.Linear ? 5 : 2, captions.Length);
         Assert.Equal(form == ChartGaugeForm.Linear ? new[] { "1.00", "1.00", "1.00", "1.00", "1.01" } : new[] { "1.00", "1.01" }, captions);
@@ -90,10 +90,10 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Linear, false)]
     public void SharedMeasurementAndTargetResolveOnceWhileHiddenMeasurementsKeepRawSemanticFacts(ChartGaugeForm form, bool labels) {
         var calls = new List<double>(); var target = labels ? 1.003 : 1.0025;
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithAxes(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false).Axes(false)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(target) })))
-            .ConfigureGauge(options => options.Form = form)
-            .WithValueFormatter(number => { calls.Add(number); return "Value " + number.ToString("0.0000", CultureInfo.InvariantCulture); });
+            .Gauge(options => options.Form = form)
+            .FormatValuesBy(number => { calls.Add(number); return "Value " + number.ToString("0.0000", CultureInfo.InvariantCulture); });
         chart.Series[0].ShowDataLabels = labels;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(target, Assert.Single(calls));
@@ -119,9 +119,9 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Needle, true, 800, 440)]
     [InlineData(ChartGaugeForm.Linear, true, 800, 440)]
     public void DefaultGaugeCaptionsRemainReadableAndSeparateFromTheirMeasurements(ChartGaugeForm form, bool dark, int width, int height) {
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().Size(width, height).Legend(false).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
-            .ConfigureGauge(options => options.Form = form);
+            .Gauge(options => options.Form = form);
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title");
         Assert.Equal(context.Theme.Typography.DataLabelSize, caption.Text.Size);
@@ -139,9 +139,9 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Needle)]
     [InlineData(ChartGaugeForm.Linear)]
     public void AuthoredGaugeFontSizesRemainAuthoritativeInCompactViews(ChartGaugeForm form) {
-        var chart = Chart.Create().WithSize(360, 360).WithLegend(false)
+        var chart = Chart.Create().Size(360, 360).Legend(false)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
-            .ConfigureGauge(options => options.Form = form);
+            .Gauge(options => options.Form = form);
         chart.Series[0].DataLabelStyle.FontSize = 10;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(10, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title").Text.Size);
@@ -154,10 +154,10 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void PublishedBandedNeedleKeepsReadableMeasurementAndCaption(bool dark, bool fixtureFont) {
-        var chart = Chart.Create().WithSize(396, 294).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands")
+        var chart = Chart.Create().Size(396, 294).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Readiness needle").Subtitle("Explicit target and bands")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) })))
-            .ConfigureGauge(options => {
+            .Gauge(options => {
                 options.Form = ChartGaugeForm.Needle;
                 options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
@@ -166,7 +166,7 @@ public sealed class V2GaugeScaleFormattingTests {
         if (fixtureFont) {
             var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
             Assert.True(File.Exists(path), "The existing Carlito fixture must reproduce the compact summary's resolved row height.");
-            chart.WithPngFont(path);
+            chart.Png(p => p.FontPath(path));
         }
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label");
@@ -208,9 +208,9 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(.9, true, 800, 440)]
     [InlineData(1d, true, 800, 440)]
     public void NeedleEndpointsKeepMeasuredValueAndCaptionClearOfTheirStroke(double ratio, bool dark, int width, int height) {
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
+        var chart = Chart.Create().Size(width, height).Legend(false).Title("Range")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).Gauge(options => options.Form = ChartGaugeForm.Needle);
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-needle");
         var obstacle = new LabelMarkShape(new[] { new List<ChartForgeX.Primitives.ChartPoint> { line.Start, line.End } }, false, line.StrokeWidth);
@@ -232,8 +232,8 @@ public sealed class V2GaugeScaleFormattingTests {
 
     [Fact]
     public void NeedleEndpointPreservesUnfittableAuthoredSummaryInSemanticRegions() {
-        var chart = Chart.Create().WithSize(360, 360).WithLegend(false).WithTitle("Range")
-            .AddGauge("Tolerance", 1_000_005, 1_000_001, 1_000_005).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
+        var chart = Chart.Create().Size(360, 360).Legend(false).Title("Range")
+            .AddGauge("Tolerance", 1_000_005, 1_000_001, 1_000_005).Gauge(options => options.Form = ChartGaugeForm.Needle);
         chart.Series[0].DataLabelStyle.FontSize = 40;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role is "gauge-label" or "gauge-title");

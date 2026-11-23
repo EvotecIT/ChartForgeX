@@ -57,13 +57,13 @@ internal static class ChartTimeSpacingPreparation {
         if (category) foreach (var label in ChartCartesianOrientation.CategoryLabels(chart).Where(label => label.Groups.Count > 0)) {
             ValidateInstant(label.Value); envelope.Add(label.Value);
         }
-        if (axis.Minimum.HasValue) ValidateInstant(axis.Minimum.Value);
-        if (axis.Maximum.HasValue) ValidateInstant(axis.Maximum.Value);
+        if (axis.Min.HasValue) ValidateInstant(axis.Min.Value);
+        if (axis.Max.HasValue) ValidateInstant(axis.Max.Value);
         // Empty domains still have a deterministic transform; they do not fabricate observations or semantic facts.
-        if (values.Count == 0) values.Add(axis.Minimum ?? axis.Maximum ?? 25569d);
+        if (values.Count == 0) values.Add(axis.Min ?? axis.Max ?? 25569d);
         if (envelope.Count == 0) envelope.Add(values.Min);
-        var minimum = Math.Min(axis.Minimum ?? envelope.Min, envelope.Min);
-        var maximum = Math.Max(axis.Maximum ?? envelope.Max, envelope.Max);
+        var minimum = Math.Min(axis.Min ?? envelope.Min, envelope.Min);
+        var maximum = Math.Max(axis.Max ?? envelope.Max, envelope.Max);
         var instants = spacing.CalendarUnit is { } unit ? ChartTimeScale.UnitBoundaries(axis, minimum, maximum, unit) : values.ToArray();
         var domain = new ChartTimeSpacingDomain(spacing, instants, minimum, maximum);
         if (domain.Unit) {

@@ -15,13 +15,13 @@ public sealed class TimeAxisReviewClosureTests {
     [InlineData(true, ThemeMode.Light)]
     [InlineData(true, ThemeMode.Dark)]
     public void HorizontalAxesPreserveAutomaticAndAuthoredTickDensityThroughProjection(bool category, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(category ? 360 : 1400, category ? 800 : 360).WithHeader(false).WithLegend(false)
-            .WithThemeMode(mode).WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+        var chart = Chart.Create().Size(category ? 360 : 1400, category ? 800 : 360).ShowHeader(false).Legend(false)
+            .ThemeMode(mode).Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .AddLine("Dates", Enumerable.Range(0, 7).Select(index => category
                 ? new ChartPoint(Start.AddDays(index), index) : new ChartPoint(index, Start.AddDays(index).ToOADate())));
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var axis = category ? chart.Options.YAxis : chart.Options.XAxis;
-        axis.WithTimeScale();
+        axis.TimeScale();
         var role = category ? "axis-y-label" : "axis-x-label";
         PreparedVisual Prepare() => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var automatic = Prepare();
@@ -30,7 +30,7 @@ public sealed class TimeAxisReviewClosureTests {
         Assert.True(expected.Length > 6, "Automatic physical-axis projection must retain its measured density rather than authoring the default six-tick ceiling.");
         axis.TickCount = 4;
         Assert.InRange(Captions(Prepare(), role).Length, 2, 4);
-        axis.WithAutomaticTickCount();
+        axis.AutomaticTickCount();
         var restored = Prepare();
         Assert.Equal(expected, Captions(restored, role).Select(node => node.Text.Lines.Single().Text));
         Assert.Equal(automatic.ToPng(), restored.ToPng());
@@ -42,9 +42,9 @@ public sealed class TimeAxisReviewClosureTests {
     [InlineData(5, ThemeMode.Light)]
     [InlineData(5, ThemeMode.Dark)]
     public void UnlistedRegularBarCadencesFitTheGeneratedGridBeforePaintingCaptions(int days, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(360, 320).WithHeader(false).WithLegend(false).WithXAxisTimeScale().WithThemeMode(mode)
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .ConfigureGridStyle(style => style.ShowVerticalLines = true)
+        var chart = Chart.Create().Size(360, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale()).ThemeMode(mode)
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddBar("Readings", Enumerable.Range(0, 15).Select(index => new ChartPoint(Start.AddDays(index * days), 20 + index)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"time-cadence-{days}-{mode}");

@@ -86,11 +86,7 @@ public static class TopologyIconStencilBrowserExtensions {
         paletteOptions.Categories.AddRange(options.Categories);
         paletteOptions.Tags.AddRange(options.Tags);
         var palette = catalog.ToPaletteChart(paletteOptions);
-        var renderOptions = new TopologyRenderOptions {
-            IconCatalog = catalog,
-            IncludeLegend = false,
-            EnableHtmlInteractions = false
-        };
+        var renderOptions = new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false, Html = { Interactions = false } };
 
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()

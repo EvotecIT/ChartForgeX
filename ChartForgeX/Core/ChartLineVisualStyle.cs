@@ -136,19 +136,4 @@ public sealed class ChartLineVisualStyle {
         HighlightOpacity = HighlightOpacity,
         HighlightStrokeRatio = HighlightStrokeRatio
     };
-
-    /// <summary>
-    /// Sets the widest soft color halo opacity and extra stroke width.
-    /// </summary>
-    public ChartLineVisualStyle WithAmbientHalo(double opacity, double strokeExtra) { AmbientHaloOpacity = opacity; AmbientHaloStrokeExtra = strokeExtra; return this; }
-
-    /// <summary>
-    /// Sets the readable stroke halo opacity and extra stroke width.
-    /// </summary>
-    public ChartLineVisualStyle WithHalo(double opacity, double strokeExtra) { HaloOpacity = opacity; HaloStrokeExtra = strokeExtra; return this; }
-
-    /// <summary>
-    /// Sets the subtle white highlight opacity and stroke-width ratio.
-    /// </summary>
-    public ChartLineVisualStyle WithHighlight(double opacity, double strokeRatio = 0.30) { HighlightOpacity = opacity; HighlightStrokeRatio = strokeRatio; return this; }
 }

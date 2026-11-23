@@ -41,7 +41,7 @@ public sealed class AreaMarkerLegendPatternTests {
     }
 
     private static Chart Family(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(320, 220).WithHeader(false).WithLegend().WithDataLabels(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(320, 220).ShowHeader(false).Legend().DataLabels(false).YAxis(y => y.Bounds(0, 100));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var points = new[] { new ChartPoint(1, 20), new ChartPoint(3, 70), new ChartPoint(5, 40) };
         var ranges = new[] { new ChartRangeBand(1, 10, 30), new ChartRangeBand(3, 20, 60), new ChartRangeBand(5, 30, 80) };

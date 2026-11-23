@@ -17,8 +17,8 @@ internal static partial class VisualScalarProgressCompiler {
             ConfiguredBullets(chart, context, builder, plot, colors); return;
         }
         var entries = chart.Rows.Select(series => (Series: series, Index: series.Index)).ToArray();
-        var min = chart.XAxis.Minimum ?? entries.Min(entry => entry.Series.Reading.Minimum);
-        var max = chart.XAxis.Maximum ?? entries.Max(entry => entry.Series.Reading.Maximum);
+        var min = chart.XAxis.Min ?? entries.Min(entry => entry.Series.Reading.Minimum);
+        var max = chart.XAxis.Max ?? entries.Max(entry => entry.Series.Reading.Maximum);
         if (max <= min || !Finite(max - min)) throw new InvalidOperationException("Bullet charts require a finite shared positive range.");
         var labels = entries.Select(entry => entry.Series.AuthoredLabel ?? chart.Format.Format(entry.Series.Reading.Value)).ToArray();
         var targets = entries.Select(entry => chart.Format.Format(entry.Series.Reading.Target)).ToArray();

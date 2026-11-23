@@ -37,10 +37,10 @@ public sealed class PlaygroundMarkupBrowserTests {
         Assert.Equal(1200, wide.Options.Size.Width);
         Assert.Equal(520, wide.Options.Size.Height);
         var legend = Parse(result.GetProperty("legend").GetString()!);
-        Assert.True(legend.Options.ShowLegend);
-        Assert.Equal(ChartLegendPosition.Top, legend.Options.LegendPosition);
+        Assert.True(legend.Options.Legend.Visible);
+        Assert.Equal(ChartLegendPosition.Top, legend.Options.Legend.Position);
         var labels = Parse(result.GetProperty("labels").GetString()!);
-        Assert.False(labels.Options.ShowDataLabels);
+        Assert.False(labels.Options.DataLabels.Visible);
         foreach (var chart in new[] { wide, legend, labels })
             Assert.Equal(original.Series[0].Points.ToArray(), chart.Series[0].Points.ToArray());
         AssertNoConsoleErrors(session);

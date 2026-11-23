@@ -42,8 +42,8 @@ public sealed class MixedScheduleDepthTests {
     [InlineData(ChartSeriesKind.Gantt, ChartSeriesKind.GanttLane)]
     [InlineData(ChartSeriesKind.StateTimeline, ChartSeriesKind.GanttLane)]
     public void EveryScheduleKindPairUsesTheSameRealRowOwner(ChartSeriesKind first, ChartSeriesKind second) {
-        var chart = Chart.Create().WithSize(700, 460).WithHeader(false).WithLegend(false).WithXAxisBounds(0, 10)
-            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
+        var chart = Chart.Create().Size(700, 460).ShowHeader(false).Legend(false).XAxis(x => x.Bounds(0, 10))
+            .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
         chart.AddSeries(Source(first, "first")).AddSeries(Source(second, "second"));
         var prepared = ScheduleReversalDepthTests.Prepare(chart); Assert.Equal(2, prepared.Scene.Regions.Count(region => region.Role == "schedule-lane"));
         Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "schedule-composition");
@@ -54,16 +54,16 @@ public sealed class MixedScheduleDepthTests {
     [InlineData(ChartScaleKind.Logarithmic)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic)]
     public void MixedNonlinearAxesRejectBeforeAnyPreparedDrawingAndRawInputsStayIntact(ChartScaleKind scale) {
-        var chart = Fixture(700, false, false); var raw = chart.Series[0].Points.ToArray(); chart.WithXAxisBounds(1, 10); chart.Options.XAxis.Scale = scale;
+        var chart = Fixture(700, false, false); var raw = chart.Series[0].Points.ToArray(); chart.XAxis(x => x.Bounds(1, 10)); chart.Options.XAxis.Scale = scale;
         Assert.Contains("linear or time", Assert.Throws<InvalidOperationException>(() => ScheduleReversalDepthTests.Prepare(chart)).Message);
         Assert.Equal(raw, chart.Series[0].Points); Assert.Equal(6, chart.Series.Count);
     }
 
     [Fact]
     public void SecondaryAxesAndAmbiguousMultiObservationTimelineSourcesRejectClearly() {
-        var chart = Fixture(700, false, false); chart.Series[0].UseSecondaryValueAxis();
+        var chart = Fixture(700, false, false); chart.Series[0].SecondaryAxis();
         Assert.Contains("secondary", Assert.Throws<InvalidOperationException>(() => ScheduleReversalDepthTests.Prepare(chart)).Message);
-        chart.Series[0].UsePrimaryValueAxis(); chart.Series[0].Points.Add(new ChartPoint(2, 5));
+        chart.Series[0].PrimaryAxis(); chart.Series[0].Points.Add(new ChartPoint(2, 5));
         Assert.Contains("one start/end", Assert.Throws<InvalidOperationException>(() => ScheduleReversalDepthTests.Prepare(chart)).Message);
         Assert.Equal(2, chart.Series[0].ObservationCount);
     }
@@ -84,8 +84,7 @@ public sealed class MixedScheduleDepthTests {
     [Fact]
     public void RepeatedLocalHourAndRawExclusiveStateEndRemainDatesRatherThanFictionalLaneCoordinates() {
         var start = new DateTime(2026, 10, 25, 0, 30, 0, DateTimeKind.Utc); var end = start.AddHours(1);
-        var chart = Chart.Create().WithSize(800, 480).WithXAxisTimeScale(TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw"))
-            .WithXAxisBounds(start.ToOADate(), end.AddHours(1).ToOADate())
+        var chart = Chart.Create().Size(800, 480).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw")).Bounds(start.ToOADate(), end.AddHours(1).ToOADate()))
             .AddTimelineItem("Window", start, end.AddHours(1)).AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, end, "up") });
         chart.Options.XAxis.Reversed = chart.Options.YAxis.Reversed = true;
         var prepared = ScheduleReversalDepthTests.Prepare(chart); var xml = XDocument.Parse(prepared.ToSvg());
@@ -98,17 +97,17 @@ public sealed class MixedScheduleDepthTests {
     [Fact]
     public void CompressedSessionsRetainTheirExistingClearUnsupportedScheduleBoundary() {
         var day = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc).ToOADate();
-        var chart = Chart.Create().WithXAxisBounds(day, day + 4).AddTimelineRange("First session", day, day + 1)
+        var chart = Chart.Create().XAxis(x => x.Bounds(day, day + 4)).AddTimelineRange("First session", day, day + 1)
             .AddStateTimelineLane("Last session", new[] { new ChartStateTimelineSegment(day + 3, day + 4, "up") });
-        chart.Options.XAxis.WithTimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(day, day + 1), new ChartTimeSession(day + 3, day + 4) }));
+        chart.Options.XAxis.TimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(day, day + 1), new ChartTimeSession(day + 3, day + 4) }));
         Assert.Contains("Time session compression", Assert.Throws<NotSupportedException>(() => ScheduleReversalDepthTests.Prepare(chart)).Message);
         Assert.Equal(day, chart.Series[0].Points[0].X); Assert.Equal(day + 4, chart.Series[1].StateTimelineSegments[0].End);
     }
 
     internal static Chart Fixture(int width, bool dark, bool reversed) {
-        var chart = Chart.Create().WithSize(width, 640).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXAxisBounds(0, 10)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
+        var chart = Chart.Create().Size(width, 640).ShowHeader(false).Legend(false).DataLabels(false).XAxis(x => x.Bounds(0, 10))
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("range"), "Preparation window", ChartSeriesKind.Timeline, new[] { new ChartPoint(1, 9) }));
         var first = ChartSeries.CreateGanttTask(new ChartSeriesId("task"), "Implement", 2, 4, .5); chart.AddSeries(first);
         chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("states"), "Service", new[] {
@@ -116,9 +115,9 @@ public sealed class MixedScheduleDepthTests {
         chart.AddSeries(ChartSeries.CreateGanttLane(new ChartSeriesId("incidents"), "Incidents", new[] {
             new ChartGanttLaneItem(2, 6, "up", "Review"), new ChartGanttLaneItem(3, null, "up", "Ongoing") }, group: "Resources", summary: "2 items"));
         var next = ChartSeries.CreateGanttTask(new ChartSeriesId("next"), "Release", 7, 9); chart.AddSeries(next).AddGanttDependency(first, next);
-        chart.AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("marker"), "Checkpoint", 8)); chart.WithGanttToday(9);
+        chart.AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("marker"), "Checkpoint", 8)); chart.Gantt(g => g.Today(9));
         chart.Options.XAxis.Reversed = chart.Options.YAxis.Reversed = reversed;
-        foreach (var source in chart.Series) if (source.ObservationCount > 0) source.WithObservationId(0, new ChartObservationId(source.Id.Value + "-first"));
+        foreach (var source in chart.Series) if (source.ObservationCount > 0) source.ObservationId(0, new ChartObservationId(source.Id.Value + "-first"));
         return chart;
     }
 

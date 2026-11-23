@@ -14,9 +14,9 @@ public sealed class TopologyAuthoredDashTangentTests {
     [InlineData(false, false)] [InlineData(false, true)]
     [InlineData(true, false)] [InlineData(true, true)]
     public void AuthoredDashConnectorsUseThePaintPathEndpointDirectionThroughFitAndPortableReplay(bool cubic, bool fit) {
-        var chart = TopologyChart.Create().WithId("authored-dash-tangent").WithTitle("").WithLegend(null)
-            .WithViewport(760, 440, 24).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("authored-dash-tangent").Title("").Legend((TopologyLegend?)null)
+            .Viewport(new TopologyViewport(760, 440, 24)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("from", "From", 50, 160, width: 150, height: 70)
             .AddNode("to", "To", 540, 160, width: 150, height: 70)
             .AddEdge("route", "from", "to", direction: VisualLinkDirection.Forward);

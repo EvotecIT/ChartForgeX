@@ -78,7 +78,7 @@ public sealed class TopologyPreparedClipAndUnitRegressionTests {
         var units = saved.Annotations[0].TopologyDefaultUnits; Assert.NotNull(units); Assert.NotEqual(1, units!.Value);
         Assert.NotNull(saved.Annotations[0].TopologyRoutingViewport);
         Assert.Equal(before.ToPng(), after.ToPng()); Assert.Equal(TopologyStaticPaintObservation.Paint(before.ToSvg()), TopologyStaticPaintObservation.Paint(after.ToSvg()));
-        restored.WithViewport(restored.Viewport.Width + 100, restored.Viewport.Height + 80, restored.Viewport.Padding);
+        restored.Viewport(new TopologyViewport(restored.Viewport.Width + 100, restored.Viewport.Height + 80, restored.Viewport.Padding));
         var changed = restored.Prepare(); Capture("note-units-" + left + "-frame-edited", changed); Assert.Null(changed.ToInterchangeEnvelope().Annotations[0].TopologyDefaultUnits); Assert.Null(changed.ToInterchangeEnvelope().Annotations[0].TopologyRoutingViewport);
     }
 
@@ -124,7 +124,7 @@ public sealed class TopologyPreparedClipAndUnitRegressionTests {
     [Fact]
     public void RawUnitNullAndFactorOneStillOmitAllNewFacts() {
         var chart = Generic(TopologyNodeDisplayMode.Card, false); chart.LayoutMode = TopologyLayoutMode.Manual;
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = false });
         chart.Nodes[0].Symbol = null; chart.Annotations.Add(new TopologyAnnotation("note", "Ordinary note", "node"));
         var before = chart.Prepare(); var saved = before.ToInterchangeEnvelope(); Capture("generic-note-null-control", before);
         Assert.Null(saved.Topology!.ContentClip); Assert.Null(saved.Nodes[0].Topology!.PreparedNodeBasis); Assert.Null(saved.Annotations[0].TopologyDefaultUnits); Assert.Null(saved.Annotations[0].TopologyRoutingViewport);
@@ -144,19 +144,19 @@ public sealed class TopologyPreparedClipAndUnitRegressionTests {
     }
 
     private static TopologyChart Natural(bool left) {
-        var chart = TopologyChart.Create().WithId("actual-natural-clip").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+        var chart = TopologyChart.Create().Id("actual-natural-clip").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
             .AddNode("source","Start",40,130,width:100,height:60).AddNode("target","Finish",380,130,width:100,height:60)
             .AddEdge("flow","source","target",routing:TopologyEdgeRouting.Orthogonal,direction:VisualLinkDirection.None);
         foreach(var node in chart.Nodes) { node.ShowStatusBadge=false; node.PreserveDisplayModeSize=true; node.Shape=TopologyNodeShape.Rectangle; }
         chart.Edges[0].Waypoints.AddRange(new[] { new ChartPoint(left?-12:660,160), new ChartPoint(left?-12:660,230) });
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false,EdgeVisualStyle=ChartLineVisualStyle.Plain() }); return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false,EdgeVisualStyle=ChartLineVisualStyle.Plain() }); return chart;
     }
     private static TopologyChart Generic(TopologyNodeDisplayMode mode,bool shrink) {
-        var chart = TopologyChart.Create().WithId("generic-default-units").WithTitle("").WithViewport(shrink?320:640,shrink?240:400,24).WithLayout(TopologyLayoutMode.Layered)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","Literal native label",50,60,width:shrink?920:150,height:shrink?720:80);
+        var chart = TopologyChart.Create().Id("generic-default-units").Title("").Viewport(new TopologyViewport(shrink?320:640, shrink?240:400, 24)).LayoutMode(TopologyLayoutMode.Layered)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","Literal native label",50,60,width:shrink?920:150,height:shrink?720:80);
         var node=chart.Nodes[0];node.DisplayMode=mode;node.Kind=TopologyNodeKind.Generic;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Symbol="Q";
-        chart.WithRenderOptions(new TopologyRenderOptions {IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true,IncludeNodeLabels=true});return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions {IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true,IncludeNodeLabels=true});return chart;
     }
     private static ChartRect[] Clips(PreparedTopology value) => value.Visual.Scene.Nodes.OfType<VisualSceneGroup>().Where(group=>group.Clip.HasValue).Select(group=>group.Clip!.Value).ToArray();
     private static void Capture(string name,PreparedTopology value) => Capture(name,value.Visual);

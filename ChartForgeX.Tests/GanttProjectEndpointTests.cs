@@ -58,16 +58,16 @@ public sealed class GanttProjectEndpointTests {
             Assert.Equal(Captions(automatic).Select(label => (label.Text.Lines.Single().Text, label.X)),
                 Captions(daily).Select(label => (label.Text.Lines.Single().Text, label.X)));
         }
-        Assert.Equal(ChartTimeTickUnit.Millisecond, fallbackChart.Options.GanttTickInterval!.Unit);
-        Assert.Equal(1, fallbackChart.Options.GanttTickInterval.Count);
+        Assert.Equal(ChartTimeTickUnit.Millisecond, fallbackChart.Options.Gantt.TickInterval!.Unit);
+        Assert.Equal(1, fallbackChart.Options.Gantt.TickInterval.Count);
     }
 
     [Fact]
     public void SuccessfulFixedIntervalsKeepTheirAuthoredGridAndDoNotInventOffIntervalEndpoints() {
-        var chart = Chart.Create().WithSize(900, 300).WithHeader(false).WithLegend(false).WithPngFont(Font())
-            .ConfigureGridStyle(style => style.ShowVerticalLines = true)
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+            .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddGanttTask("Window", Start.AddHours(6), Finish.AddHours(12))
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
         var prepared = Prepare(chart);
         var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").ToArray();
         Assert.Equal(18, grid.Length);
@@ -92,10 +92,10 @@ public sealed class GanttProjectEndpointTests {
             if (!seen.Add(value)) throw new InvalidOperationException("Formatted twice");
             return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
-        var chart = Chart.Create().WithSize(900, 300).WithHeader(false).WithLegend(false).WithPngFont(Font())
-            .AddGanttTask("Project", Start.AddHours(10), Finish.AddHours(10)).ConfigureXAxis(axis => {
-                if (valueFormat) axis.WithValueFormat(ChartValueFormat.Custom(Format));
-                else axis.WithLabelFormatter(Format);
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+            .AddGanttTask("Project", Start.AddHours(10), Finish.AddHours(10)).XAxis(axis => {
+                if (valueFormat) axis.ValueFormat(ChartValueFormat.Custom(Format));
+                else axis.LabelBy(Format);
             });
         for (var preparation = 0; preparation < 2; preparation++) {
             seen.Clear();
@@ -119,19 +119,19 @@ public sealed class GanttProjectEndpointTests {
     public void SuccessfulSubdayFixedIntervalsKeepTheirTaskWindowWithPeriodicClockCaptions(string format, bool valueFormat) {
         var start = Start.AddHours(10).AddMinutes(17).AddSeconds(23).AddMilliseconds(456); var end = start.AddDays(1);
         var interval = new ChartTimeTickInterval(ChartTimeTickUnit.Minute, 15);
-        var chart = Chart.Create().WithSize(900, 300).WithHeader(false).WithLegend(false).WithPngFont(Font())
-            .ConfigureGridStyle(style => style.ShowVerticalLines = true).AddGanttTask("Window", start, end)
-            .WithGanttTickInterval(interval).ConfigureXAxis(axis => {
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+            .GridLineStyle(style => style.ShowVerticalLines = true).AddGanttTask("Window", start, end)
+            .Gantt(g => g.TickInterval(interval)).XAxis(axis => {
                 Func<double, string> clock = value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture);
-                if (valueFormat) axis.WithValueFormat(ChartValueFormat.Custom(clock));
-                else axis.WithLabelFormatter(clock);
+                if (valueFormat) axis.ValueFormat(ChartValueFormat.Custom(clock));
+                else axis.LabelBy(clock);
             });
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
         var window = Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "gantt-chart");
         Assert.Equal(start.ToOADate(), double.Parse((string)window.Attribute("data-cfx-min")!, CultureInfo.InvariantCulture), 7);
         Assert.Equal(end.ToOADate(), double.Parse((string)window.Attribute("data-cfx-max")!, CultureInfo.InvariantCulture), 7);
         Assert.Equal(96, prepared.Scene.Nodes.OfType<VisualSceneLine>().Count(line => line.Role == "schedule-grid"));
-        Assert.Same(interval, chart.Options.GanttTickInterval);
+        Assert.Same(interval, chart.Options.Gantt.TickInterval);
         ScatterBubbleColorRenderingTests.Capture(prepared, "gantt-fixed-periodic-clock-" + format + "-" + valueFormat);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
@@ -144,9 +144,8 @@ public sealed class GanttProjectEndpointTests {
     [InlineData("%f")]
     public void AutomaticPeriodicClockCaptionsDoNotExpandAMidnightAliasedWindow(string format) {
         var start = Start.AddHours(10); var end = start.AddDays(1);
-        var chart = Chart.Create().WithSize(900, 300).WithHeader(false).WithLegend(false).WithPngFont(Font())
-            .AddGanttTask("Window", start, end).ConfigureXAxis(axis => axis.WithLabelFormatter(
-                value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture)));
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+            .AddGanttTask("Window", start, end).XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture)));
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
         var window = Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "gantt-chart");
         Assert.Equal(start.ToOADate(), double.Parse((string)window.Attribute("data-cfx-min")!, CultureInfo.InvariantCulture), 7);
@@ -161,14 +160,14 @@ public sealed class GanttProjectEndpointTests {
     [InlineData(400, true)]
     public void AuthoredWindowsKeepHiddenProjectEndsOutsideTheGeneratedAxis(int width, bool fixedInterval) {
         var minimum = Start.AddDays(4); var maximum = Finish.AddDays(-4);
-        var chart = Chart.Create().WithSize(width, 300).WithHeader(false).WithLegend(false).WithPadding(0, 0, 0, 0)
-            .WithPngFont(Font()).ConfigureGridStyle(style => style.ShowVerticalLines = true)
+        var chart = Chart.Create().Size(width, 300).ShowHeader(false).Legend(false).Padding(0, 0, 0, 0)
+            .Png(p => p.FontPath(Font())).GridLineStyle(style => style.ShowVerticalLines = true)
             .AddGanttTask("Window", Start, Finish)
-            .ConfigureXAxis(axis => {
-                axis.WithBounds(minimum.ToOADate(), maximum.ToOADate());
+            .XAxis(axis => {
+                axis.Bounds(minimum.ToOADate(), maximum.ToOADate());
                 if (width > 150) axis.TickCount = 2;
             });
-        if (fixedInterval) chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
+        if (fixedInterval) chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
         var prepared = Prepare(chart);
         var regions = prepared.Regions.Where(region => region.Role == "schedule-tick-label").ToArray();
         var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").ToArray();
@@ -189,8 +188,8 @@ public sealed class GanttProjectEndpointTests {
             if (grid.Length == 2) Assert.True(grid[1].Start.X > grid[0].Start.X);
         }
         if (!fixedInterval) Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
-        Assert.Equal(minimum.ToOADate(), chart.Options.XAxis.Minimum);
-        Assert.Equal(maximum.ToOADate(), chart.Options.XAxis.Maximum);
+        Assert.Equal(minimum.ToOADate(), chart.Options.XAxis.Min);
+        Assert.Equal(maximum.ToOADate(), chart.Options.XAxis.Max);
         Assert.Equal(Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
         Assert.Equal(Finish.ToOADate(), chart.Series[0].GanttItems[0].End);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-authored-window-{width}-{fixedInterval}");
@@ -244,9 +243,9 @@ public sealed class GanttProjectEndpointTests {
     }
 
     private static Chart PlanChart(int width, ThemeMode mode, string interval) => new MermaidParser()
-        .ParseGantt(string.Format(CultureInfo.InvariantCulture, Plan, interval)).Document!.ToChart().WithSize(width, 300)
-        .WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(BrowserProofFonts.CarlitoFamily).WithPngFont(Font())
-        .ConfigureTickLabelStyle(style => style.FontSize = 12).ConfigureGridStyle(style => style.ShowVerticalLines = true);
+        .ParseGantt(string.Format(CultureInfo.InvariantCulture, Plan, interval)).Document!.ToChart().Size(width, 300)
+        .Theme(VisualTheme.Graphite()).ThemeMode(mode).FontFamily(BrowserProofFonts.CarlitoFamily).Png(p => p.FontPath(Font()))
+        .TickLabelStyle(style => style.FontSize = 12).GridLineStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(text => text.Role == "schedule-tick-label").ToArray();

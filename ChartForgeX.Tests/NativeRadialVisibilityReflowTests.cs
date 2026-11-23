@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 public sealed class NativeRadialVisibilityReflowTests {
     [Theory] [InlineData(false, false)] [InlineData(true, false)] [InlineData(false, true)] [InlineData(true, true)]
     public void FullSourceOtherTargetKeepsItsContributorsWhenVisibleNativeOtherChanges(bool donut, bool sourceOrder) {
-        var chart = NativeRadialMotionBeforeControls.Model(donut, true, "outside"); chart.Options.PiePreserveSourceOrder = sourceOrder;
+        var chart = NativeRadialMotionBeforeControls.Model(donut, true, "outside"); chart.Options.Pie.PreserveSourceOrder = sourceOrder;
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareVisibilitySection(chart, View(Primary()));
         var to = renderer.PrepareVisibilitySection(chart, View(Primary(), ChartVisibilityTarget.RadialOther(new ChartSeriesId("parts"))));
         var frames = VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5);
@@ -32,7 +32,7 @@ public sealed class NativeRadialVisibilityReflowTests {
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void ObservationReflowKeepsOriginalPaletteSparsePolicyIdsAndFullLegendReadouts(bool donut) {
-        var chart = NativeRadialMotionBeforeControls.Model(donut, false, "inside"); chart.Series[0].WithPointColor(2, ChartColor.FromRgb(31, 117, 180));
+        var chart = NativeRadialMotionBeforeControls.Model(donut, false, "inside"); chart.Series[0].PointColor(2, ChartColor.FromRgb(31, 117, 180));
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareVisibilitySection(chart, View()); var to = renderer.PrepareVisibilitySection(chart, View(Primary()));
         NativeReflowVisibilityTests.Capture(from, to, VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 3),
             renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 3)), "radial-observation-" + donut);
@@ -47,9 +47,9 @@ public sealed class NativeRadialVisibilityReflowTests {
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void HiddenRawValueAndPaintCannotMasqueradeAsSameCapturedSource(bool donut) {
-        Chart Model(bool changed) { var chart = NativeRadialMotionBeforeControls.Model(donut, true, "hidden"); chart.Options.MaximumPieSlices = 10; chart.WithLegend(false); chart.Options.ShowDonutCenterLabel = false;
+        Chart Model(bool changed) { var chart = NativeRadialMotionBeforeControls.Model(donut, true, "hidden"); chart.Options.Pie.MaxSlices = 10; chart.Legend(false); chart.Options.Pie.ShowCenterLabel = false;
             chart.Series[0].Points[4] = new ChartPoint(5, changed ? 2 * double.Epsilon : double.Epsilon);
-            chart.Series[0].WithPointSliceRadiusRatio(4, 0); if (changed) chart.Series[0].WithPointColor(4, ChartColor.Black); return chart; }
+            chart.Series[0].PointSliceRadiusRatio(4, 0); if (changed) chart.Series[0].PointColor(4, ChartColor.Black); return chart; }
         var renderer = new HtmlInteractiveChartRenderer(); var firstSource = Model(false); var lastSource = Model(true);
         var a = renderer.PrepareVisibilitySection(firstSource, View()); var b = renderer.PrepareVisibilitySection(lastSource, View());
         var last = renderer.PrepareVisibilitySection(lastSource, View(Primary())); Exception? failure = null;
@@ -84,7 +84,7 @@ public sealed class NativeRadialVisibilityReflowTests {
     }
     [Fact]
     public void AuthoredObservationNamedOtherKeepsASeparateIdentityFromCapturedOtherMembership() {
-        var chart = NativeRadialMotionBeforeControls.Model(false, true); chart.Series[0].WithObservationId(0, new ChartObservationId("Other"));
+        var chart = NativeRadialMotionBeforeControls.Model(false, true); chart.Series[0].ObservationId(0, new ChartObservationId("Other"));
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareVisibilitySection(chart, View());
         var observation = renderer.PrepareVisibilitySection(chart, View(ChartVisibilityTarget.Observation(new ChartSeriesId("parts"), new ChartObservationId("Other"))));
         var aggregate = renderer.PrepareVisibilitySection(chart, View(ChartVisibilityTarget.RadialOther(new ChartSeriesId("parts"))));
@@ -99,7 +99,7 @@ public sealed class NativeRadialVisibilityReflowTests {
     }
     [Fact]
     public void OrdinarySliceCallbackRemainsCallableAndOptInCapturedPolicyRejectsClearly() {
-        var chart = NativeRadialMotionBeforeControls.Model(false, false); var calls = 0; chart.Options.PieSliceLabelFormatter = _ => { calls++; return "Custom"; };
+        var chart = NativeRadialMotionBeforeControls.Model(false, false); var calls = 0; chart.Options.Pie.SliceLabelFormatter = _ => { calls++; return "Custom"; };
         var renderer = new HtmlInteractiveChartRenderer(); var ordinary = renderer.PrepareSection(chart); Exception? failure = null;
         try { _ = renderer.PrepareVisibilitySection(chart, View()); } catch (Exception exception) { failure = exception; }
         NativeRadialMotionBeforeControls.Capture(ordinary, "radial-ordinary-callback"); NativeRadialMotionBeforeControls.Save("radial-ordinary-callback.facts.json", JsonSerializer.Serialize(new { calls, error = failure?.Message }));
@@ -108,8 +108,8 @@ public sealed class NativeRadialVisibilityReflowTests {
     [Fact]
     public void UnprovenRadialLegendIdentitiesRejectWithoutReclassifyingEveryEntryAsAWholeSeries() {
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", ChartSeriesKind.Pie, new[] { new ChartPoint(1, 60), new ChartPoint(2, 25), new ChartPoint(3, 10) })
-            .WithObservationId(0, new ChartObservationId("primary"));
-        var chart = Chart.Create().WithSize(760, 420).WithFontFamily(BrowserProofFonts.Family).WithLegend(true).AddSeries(series);
+            .ObservationId(0, new ChartObservationId("primary"));
+        var chart = Chart.Create().Size(760, 420).FontFamily(BrowserProofFonts.Family).Legend(true).AddSeries(series);
         var renderer = new HtmlInteractiveChartRenderer(); var ordinary = renderer.PrepareSection(chart); Exception? failure = null;
         try { _ = renderer.PrepareVisibilitySection(chart, View()); } catch (Exception exception) { failure = exception; }
         NativeRadialMotionBeforeControls.Capture(ordinary, "radial-unproven-identities"); NativeRadialMotionBeforeControls.Save("radial-unproven-identities.facts.json", JsonSerializer.Serialize(new { error = failure?.Message }));

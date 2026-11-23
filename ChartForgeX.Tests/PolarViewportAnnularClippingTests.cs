@@ -17,7 +17,7 @@ public sealed class PolarViewportAnnularClippingTests {
     public void WholeOriginalCurveCommandsScaleUniformlyWithoutClampedVerticesOrInventedRunJoins(ChartLineAreaForm form, double tension) {
         var points = new[] { new ChartPoint(0, 5), new ChartPoint(1, 50), new ChartPoint(2, 95), new ChartPoint(3, 50, true), new ChartPoint(4, 5) };
         var chart = PolarViewportContractTests.Create(points); var series = chart.Series[0];
-        series.ConfigurePolar(options => { options.Form = form; options.CurveTension = tension; });
+        series.Polar(options => { options.Form = form; options.CurveTension = tension; });
         var full = PolarViewportContractTests.Prepare(chart); var prepared = PolarViewportContractTests.Prepare(chart,
             new ChartPolarViewport(radius: new ChartAxisWindow(20, 80)));
         var projection = prepared.PolarProjection!; Assert.Equal(full.PolarProjection!.Center, projection.Center);
@@ -62,8 +62,8 @@ public sealed class PolarViewportAnnularClippingTests {
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void FilledOriginalAreaUsesTheSharedAnnularStencilWithoutInventingBoundaryPolygons(int width, bool dark) {
         var points = Enumerable.Range(0, 4).Select(index => new ChartPoint(Math.PI / 4 + index * Math.PI / 2, 100)).ToArray();
-        var chart = Bare(points).WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
+        var chart = Bare(points).Size(width, 380).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Series[0].Polar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
         var full = PolarViewportContractTests.Prepare(chart);
         var prepared = PolarViewportContractTests.Prepare(chart, new ChartPolarViewport(radius: new ChartAxisWindow(40, 80)));
         var projection = prepared.PolarProjection!; var actual = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-area");
@@ -85,8 +85,8 @@ public sealed class PolarViewportAnnularClippingTests {
     public void SmoothTangentToTheInnerApertureRetainsItsExactCubicControls(bool reversed) {
         var xy = new[] { (-100d, 40d), (-50d, 40d), (50d, 40d), (100d, 40d) };
         var points = xy.Select(point => new ChartPoint(-Math.Atan2(point.Item2, point.Item1), Math.Sqrt(point.Item1 * point.Item1 + point.Item2 * point.Item2))).ToArray();
-        var chart = Bare(points).WithYAxisBounds(0, 200); chart.Options.XAxis.Reversed = reversed;
-        chart.Series[0].ConfigurePolar(options => options.CurveTension = .25);
+        var chart = Bare(points).YAxis(y => y.Bounds(0, 200)); chart.Options.XAxis.Reversed = reversed;
+        chart.Series[0].Polar(options => options.CurveTension = .25);
         var full = PolarViewportContractTests.Prepare(chart); var prepared = PolarViewportContractTests.Prepare(chart,
             new ChartPolarViewport(radius: new ChartAxisWindow(40, 100)));
         var projection = prepared.PolarProjection!; var source = Assert.Single(full.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-line");
@@ -105,7 +105,7 @@ public sealed class PolarViewportAnnularClippingTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void RadiusTicksAndGuidesUseTheSameCapturedApertureAndPreserveTheReversedSourceDirection(bool reversed) {
-        var chart = Bare(new[] { new ChartPoint(0, 10), new ChartPoint(1, 50), new ChartPoint(2, 90) }).WithAxes().WithGrid();
+        var chart = Bare(new[] { new ChartPoint(0, 10), new ChartPoint(1, 50), new ChartPoint(2, 90) }).Axes().ShowGrid();
         chart.Options.XAxis.Visible = false; chart.Options.YAxis.Reversed = reversed;
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "Inner")); chart.Options.YAxis.Labels.Add(new ChartAxisLabel(50, "Middle")); chart.Options.YAxis.Labels.Add(new ChartAxisLabel(80, "Outer"));
         var prepared = PolarViewportContractTests.Prepare(chart, new ChartPolarViewport(radius: new ChartAxisWindow(20, 80)));

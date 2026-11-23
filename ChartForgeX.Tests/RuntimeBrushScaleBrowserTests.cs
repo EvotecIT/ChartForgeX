@@ -19,10 +19,10 @@ public sealed class RuntimeBrushScaleBrowserTests {
         if (!Enabled) return;
         var minimum = symmetric ? -18d : 10;
         var maximum = symmetric ? 18d : 100;
-        var chart = Chart.Create().WithSize(reversed ? 330 : 700, 360).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), reversed ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(minimum, maximum).WithYAxisBounds(0, 10)
-            .WithXAxisScale(symmetric ? ChartScaleKind.SymmetricLogarithmic : ChartScaleKind.Logarithmic)
+        var chart = Chart.Create().Size(reversed ? 330 : 700, 360).ShowHeader(false).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(reversed ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(minimum, maximum)).YAxis(y => y.Bounds(0, 10))
+            .XAxis(x => x.Scale(symmetric ? ChartScaleKind.SymmetricLogarithmic : ChartScaleKind.Logarithmic))
             .AddLine("Measurements", new[] {new ChartPoint(minimum, 2), new ChartPoint(symmetric ? 0 : 30, 5), new ChartPoint(maximum, 8)});
         chart.Options.XAxis.SymmetricLogarithmThreshold = 2;
         chart.Options.XAxis.Reversed = reversed;

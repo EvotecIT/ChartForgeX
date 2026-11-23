@@ -4,11 +4,6 @@ using System.Globalization;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
-    /// <summary>Sets the shared numeric display policy used by value labels, totals and numeric vertical axes.</summary>
-    public Chart WithValueFormat(ChartValueFormat format) {
-        Options.ValueFormat = format ?? throw new ArgumentNullException(nameof(format));
-        return this;
-    }
 
     /// <summary>
     /// Localises the chart's dates and times: time-axis labels, tooltips and accessible names use the culture's date and
@@ -18,22 +13,10 @@ public sealed partial class Chart {
     /// Numbers keep their value format; pass the culture to it as well, for example
     /// <c>WithValueFormat(ChartValueFormat.Number("0.#", culture))</c>.
     /// </remarks>
-    public Chart WithCulture(CultureInfo culture) {
+    public Chart Culture(CultureInfo culture) {
         if (culture == null) throw new ArgumentNullException(nameof(culture));
         var copy = culture.Name.Length == 0 ? null : CultureInfo.ReadOnly((CultureInfo)culture.Clone());
         foreach (var axis in new[] { Options.XAxis, Options.YAxis, Options.SecondaryXAxis, Options.SecondaryYAxis }) axis.Culture = copy;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the unit shown after values in tooltips, readouts and accessible names, for example "ms" or "%".
-    /// </summary>
-    /// <remarks>Applies to formatted tooltip values of cartesian marks, to accessible names of line, bar, area and scatter points,
-    /// and to numeric heatmap and calendar heatmap cells (categorical state cells name their state instead).
-    /// A value format that already writes the unit keeps a single copy.
-    /// Axis tick labels stay unit-free; put the unit in the axis title instead. An empty or null unit removes it.</remarks>
-    public Chart WithValueUnit(string? unit) {
-        Options.ValueUnit = string.IsNullOrWhiteSpace(unit) ? null : unit!.Trim();
         return this;
     }
 }

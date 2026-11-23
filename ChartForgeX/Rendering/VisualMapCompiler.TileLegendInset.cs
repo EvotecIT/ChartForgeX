@@ -12,22 +12,22 @@ internal static partial class VisualMapCompiler {
     internal static TileMapLegendInset? ResolveTileLegendInset(Chart chart, VisualRenderContext context,
         VisualSceneBuilder builder, IReadOnlyList<VisualLegendEntry> entries, ChartColorPresentation presentation) {
         var series = chart.Series[0]; var definition = series.TileMapDefinition;
-        if (chart.Series.Count != 1 || series.Kind != ChartSeriesKind.TileMap || definition == null || entries.Count != 1 || !chart.Options.ShowMapLabels
+        if (chart.Series.Count != 1 || series.Kind != ChartSeriesKind.TileMap || definition == null || entries.Count != 1 || !chart.Options.Map.ShowLabels
             || !context.Frame.ShowLegend || !presentation.ShowLegend || presentation.HasName
-            || chart.Options.MapColorScale != null || chart.Options.MapScaleLegendPosition != ChartMapScaleLegendPosition.Bottom
-            || chart.Options.HasExplicitMapScaleLegendPosition
+            || chart.Options.Map.ColorScale != null || chart.Options.Map.ScaleLegendPosition != ChartMapScaleLegendPosition.Bottom
+            || chart.Options.Map.HasExplicitScaleLegendPosition
             || ChartHeatmapSurface.MapMidpointLabel(chart) != null || !HasMissingMapValues(chart)
             || !string.IsNullOrEmpty(context.Frame.Title) || !string.IsNullOrEmpty(context.Frame.Subtitle)
             || !string.IsNullOrEmpty(context.Frame.LegendTitle) || series.RenderPoints.Count == 0
             || series.RenderPoints.Any(point => !Finite(point.Y) || point.Y < 0)
-            || !Finite(chart.Options.MapRegionStrokeWidth) || chart.Options.MapRegionStrokeWidth < 0) return null;
+            || !Finite(chart.Options.Map.RegionStrokeWidth) || chart.Options.Map.RegionStrokeWidth < 0) return null;
         // Bound optional occupancy work independently of authored sparse coordinate ranges.
         if (definition.ColumnCount > 128 || definition.RowCount > 128
             || (long)definition.ColumnCount * definition.RowCount > 4096) return null;
         var pad = context.Layout.PaddingEdges; var size = context.Layout.Size;
         var plot = new ChartRect(pad.Left, pad.Top, size.Width - pad.Left - pad.Right, size.Height - pad.Top - pad.Bottom);
         var style = TickStyle(chart, context); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
-        var stroke = chart.Options.MapRegionStrokeWidth; var spacing = context.Theme.Spacing;
+        var stroke = chart.Options.Map.RegionStrokeWidth; var spacing = context.Theme.Spacing;
         var requiredTile = 0d;
         foreach (var region in definition.Regions) {
             var text = builder.MeasureText(region.Code, style);

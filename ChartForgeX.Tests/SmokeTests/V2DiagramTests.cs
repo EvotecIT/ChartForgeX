@@ -5,6 +5,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -21,7 +22,7 @@ public sealed class V2DiagramTests {
         topology.Edges[0].Label = null;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
             frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true));
-        var prepared = topology.Prepare(context, new TopologyRenderOptions().WithPlainTopologyEdges());
+        var prepared = topology.Prepare(context, new TopologyRenderOptions().EdgeVisualStyle(ChartLineVisualStyle.Plain()));
         var edge = Find(XDocument.Parse(prepared.ToSvg()), "topology-edge");
         var css = ChartColor.FromRgba(255, 0, 0, expectedAlpha).ToCss();
         var line = Assert.Single(edge.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
@@ -145,7 +146,7 @@ public sealed class V2DiagramTests {
         return chart;
     }
 
-    private static SequenceArtifact Sequence() => SequenceArtifact.Create("session").WithSize(640, 400)
+    private static SequenceArtifact Sequence() => SequenceArtifact.Create("session").Width(640).Height(400)
         .AddParticipant("client", "Client").AddParticipant("server", "Server")
         .AddMessage("client", "server", "Request\npayload")
         .AddMessage("server", "client", "Response", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);

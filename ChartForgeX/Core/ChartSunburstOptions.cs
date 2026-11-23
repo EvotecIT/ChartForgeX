@@ -43,7 +43,8 @@ public sealed class ChartSunburstOptions {
 
     /// <summary>Gets or sets the optional secondary caption formatter. Default: null.</summary>
     /// <remarks>Evaluated once per item during preparation, including hidden and zero-size items. Null, empty or whitespace output suppresses the secondary caption. Complete text remains in source semantics when it cannot fit. Exceptions propagate to the caller.</remarks>
-    public Func<ChartSunburstLabelContext, string?>? SecondaryLabelFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("SecondaryLabelBy")]
+public Func<ChartSunburstLabelContext, string?>? SecondaryLabelFormatter { get; set; }
 
     /// <summary>Gets the secondary caption overrides. Inherits the node's data-label typography at 80% of its font size with a ten-pixel minimum no larger than the primary caption, then applies these overrides.</summary>
     public TextStyleOverride SecondaryLabelStyle { get; private set; } = new();

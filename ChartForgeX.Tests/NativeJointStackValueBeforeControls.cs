@@ -52,17 +52,17 @@ public sealed class NativeJointStackValueBeforeControls {
 
     internal static Chart Model(string variant, double value, bool labels, int width = 760, bool dark = false) {
         var mapped = variant == "default-stacked" || variant == "negative-stack" ? "stacked-bar" : variant == "negative-normalized" ? "normalized-bar" : variant;
-        var chart = NativeCompleteCartesianValueRecipe.Create(mapped, value, width, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family).WithDataLabels(labels);
-        if (variant == "default-stacked") { foreach (var row in chart.Series) row.WithStackGroup(null); chart.WithBarMode(ChartBarMode.Stacked); }
+        var chart = NativeCompleteCartesianValueRecipe.Create(mapped, value, width, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family).DataLabels(labels);
+        if (variant == "default-stacked") { foreach (var row in chart.Series) row.StackGroup(null); chart.Bars(b => b.Mode(ChartBarMode.Stacked)); }
         if (variant.StartsWith("negative-", StringComparison.Ordinal)) {
             foreach (var row in chart.Series) for (var index = 0; index < row.Points.Count; index++) { var point = row.Points[index]; row.Points[index] = new ChartForgeX.Primitives.ChartPoint(point.X, -Math.Abs(point.Y), point.BreakBefore); }
-            chart.ConfigureYAxis(axis => { axis.Minimum = -160; axis.Maximum = 0; });
+            chart.YAxis(axis => { axis.Min = -160; axis.Max = 0; });
         }
         return chart;
     }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer, Chart chart, bool hidden) => renderer.PrepareVisibilitySection(chart,
         new ChartVisibilityView(hidden ? new[] { new ChartSeriesId("delivery") } : Array.Empty<ChartSeriesId>(),
-            chart.Options.ShowDataLabels == true ? ChartVisibilityLabelLayering.GroupWithSeries : ChartVisibilityLabelLayering.PreserveOverlay));
+            chart.Options.DataLabels.Visible == true ? ChartVisibilityLabelLayering.GroupWithSeries : ChartVisibilityLabelLayering.PreserveOverlay));
     private static string[] TotalFacts(PreparedVisual drawing) => drawing.Scene.Nodes.OfType<VisualSceneGroup>().Where(row => row.Role == "stack-total")
         .Select(row => row.Id + ":" + string.Join("|", row.Metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + "=" + pair.Value))).ToArray();
     private static void AssertGlobalTotalOwnership(PreparedVisual drawing) {

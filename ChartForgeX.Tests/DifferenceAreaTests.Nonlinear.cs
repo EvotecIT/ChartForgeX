@@ -19,12 +19,12 @@ public sealed partial class DifferenceAreaTests {
         var pairs = scale == ChartScaleKind.SymmetricLogarithmic ? new[] { new ChartDifferencePoint(0, -100, -10), new ChartDifferencePoint(1, 100, 2) }
             : negative ? new[] { new ChartDifferencePoint(0, -100, -10), new ChartDifferencePoint(1, -1, -2) }
             : new[] { new ChartDifferencePoint(0, 1, 10), new ChartDifferencePoint(1, 100, 2) };
-        var chart = Model(pairs); if (secondary) chart.Series[0].UseSecondaryValueAxis();
+        var chart = Model(pairs); if (secondary) chart.Series[0].SecondaryAxis();
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-        if (scale == ChartScaleKind.Logarithmic) axis.WithLogarithmicScale(domain: negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive);
+        if (scale == ChartScaleKind.Logarithmic) axis.LogarithmicScale(domain: negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive);
         else { axis.Scale = scale; axis.SymmetricLogarithmThreshold = 1; }
-        axis.WithBounds(scale == ChartScaleKind.SymmetricLogarithmic || negative ? -100 : 1, negative ? -1 : 100).WithReversal(reverseY);
-        chart.Options.XAxis.WithBounds(0, 1).WithReversal(reverseX);
+        axis.Bounds(scale == ChartScaleKind.SymmetricLogarithmic || negative ? -100 : 1, negative ? -1 : 100).Reversed(reverseY);
+        chart.Options.XAxis.Bounds(0, 1).Reversed(reverseX);
         var prepared = Prepare(chart); var a = Boundary(prepared, "difference-first"); var b = Boundary(prepared, "difference-second");
         var d0 = a.Commands[0].Y - b.Commands[0].Y; var d1 = a.Commands[^1].Y - b.Commands[^1].Y;
         var fraction = -d0 / (d1 - d0);
@@ -48,9 +48,9 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic)]
     public void IndependentSmoothAndHeldNonlinearBoundariesKeepTheExistingPaintedContourOwner(ChartScaleKind scale) {
         var chart = Model(new(1, 2, 20), new(2, 80, 10), new(4, 4, 50), new(8, 90, 8));
-        chart.Options.YAxis.Scale = scale; chart.Options.YAxis.WithBounds(1, 100).WithReversal();
-        chart.Series[0].WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
-            .ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Options.YAxis.Scale = scale; chart.Options.YAxis.Bounds(1, 100).Reversed();
+        chart.Series[0].BoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+            .Markers(markers => markers.Enabled = false);
         var prepared = Prepare(chart);
         Assert.Contains(Boundary(prepared, "difference-first").Commands, point => point.Kind == ChartPathCommandKind.CubicTo);
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "difference-positive"); Assert.Contains(prepared.Scene.Nodes, node => node.Role == "difference-negative");
@@ -71,7 +71,7 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void NonlinearAuthoredClippingRetainsUnclampedBoundariesAndCompleteOutsideSourceFacts() {
         var chart = Model(new(0, 1, 10), new(1, 100, 2));
-        chart.Options.YAxis.WithLogarithmicScale().WithBounds(2, 80);
+        chart.Options.YAxis.LogarithmicScale().Bounds(2, 80);
         var prepared = Prepare(chart); var a = Boundary(prepared, "difference-first"); var b = Boundary(prepared, "difference-second");
         var d0 = a.Commands[0].Y - b.Commands[0].Y; var d1 = a.Commands[^1].Y - b.Commands[^1].Y; var fraction = -d0 / (d1 - d0);
         var x = a.Commands[0].X * (1 - fraction) + a.Commands[^1].X * fraction;

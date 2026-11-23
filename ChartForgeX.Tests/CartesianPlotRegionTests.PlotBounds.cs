@@ -10,14 +10,14 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void PlotRegionMatchesFinalAxesAfterSecondaryAxisOrHorizontalTotalLayout(bool horizontal) {
-        var chart = Chart.Create().WithSize(520, 340).WithTitle("Mapping extent");
+        var chart = Chart.Create().Size(520, 340).Title("Mapping extent");
         var values = new[] { new ChartPoint(1, 3), new ChartPoint(2, 7) };
-        if (horizontal) chart.WithStackedBars().WithStackTotals().WithXAxisBounds(0, 10)
+        if (horizontal) chart.Bars(b => b.Stacked().ShowTotals()).XAxis(xAxis => xAxis.Bounds(0, 10))
             .AddHorizontalBar("First", values).AddHorizontalBar("Second", values.AsEnumerable().Reverse());
         else {
             chart.AddLine("Primary", values).AddLine("Secondary", new[] { new ChartPoint(1, 30), new ChartPoint(2, 70) });
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.WithSecondaryYAxisBounds(0, 100);
+            chart.Series[1].SecondaryAxis();
+            chart.SecondaryYAxis(s => s.Bounds(0, 100));
         }
         var prepared = Prepare(chart);
         var region = Assert.Single(prepared.Regions, item => item.Role == "cartesian-plot");
@@ -31,21 +31,21 @@ public sealed partial class CartesianPlotRegionTests {
         Assert.Equal(plot.Left, y.Start.X); Assert.Equal(plot.Top, y.Start.Y); Assert.Equal(plot.Bottom, y.End.Y);
         Assert.True(plot.Width > 0 && plot.Height > 0);
         if (horizontal) {
-            chart.Options.ShowStackTotals = false;
+            chart.Options.Bars.ShowTotals = false;
             Assert.True(Assert.Single(Prepare(chart).Regions, item => item.Role == "cartesian-plot").Bounds.Right > plot.Right);
         } else Assert.Equal(plot.Right, Assert.Single(axes, item => item.Role == "axis-secondary-y").Start.X);
 
-        chart.Options.ShowStackTotals = horizontal;
+        chart.Options.Bars.ShowTotals = horizontal;
         chart.Options.ClipMarksToPlot = false;
         Assert.Equal(plot, Assert.Single(Prepare(chart).Regions, item => item.Role == "cartesian-plot").Bounds);
-        chart.WithSize(800, 500).WithTitle("Changed after preparation");
+        chart.Size(800, 500).Title("Changed after preparation");
         Assert.Equal(plot, region.Bounds);
         Assert.NotEqual(plot, Assert.Single(Prepare(chart).Regions, item => item.Role == "cartesian-plot").Bounds);
     }
 
     [Fact]
     public void PlotMetadataDoesNotChangeStaticPaintOrItsIdentityAndTranslatesWithTheScene() {
-        var prepared = Prepare(Chart.Create().WithSize(360, 240).WithTitle("Metadata is not paint")
+        var prepared = Prepare(Chart.Create().Size(360, 240).Title("Metadata is not paint")
             .AddLine("Reading", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5) }));
         var plot = Assert.Single(prepared.Regions, item => item.Role == "cartesian-plot");
         var without = new VisualScene(prepared.Size, prepared.Scene.Nodes, prepared.Diagnostics,

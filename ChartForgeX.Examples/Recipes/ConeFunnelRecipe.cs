@@ -7,8 +7,8 @@ public static class ConeFunnelRecipe {
         };
         var series = new ChartSeries(new ChartSeriesId("customers"), "Customers", ChartSeriesKind.Funnel,
             stages.Select((stage, index) => new ChartPoint(index + 1, stage.Count)));
-        return Chart.Create().WithLegend(false).WithDataLabels().WithXLabels(stages.Select(stage => stage.Name).ToArray())
-            .AddSeries(series).ConfigureFunnel(options => {
+        return Chart.Create().Legend(false).DataLabels().XLabels(stages.Select(stage => stage.Name).ToArray())
+            .AddSeries(series).Funnel(options => {
                 options.Form = ChartFunnelForm.Cone;
                 // Stage names and retention sit beside the cone, so narrow stages keep their full captions.
                 options.LabelContent = ChartStageLabelContent.Separate;

@@ -23,53 +23,13 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
-    /// Sets an optional scenario accent color.
-    /// </summary>
-    /// <param name="scenario">The topology scenario.</param>
-    /// <param name="color">The scenario color.</param>
-    /// <returns>The current scenario.</returns>
-    public static TopologyScenario WithColor(this TopologyScenario scenario, string? color) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.Color = color;
-        return scenario;
-    }
-
-    /// <summary>
-    /// Sets an optional scenario description.
-    /// </summary>
-    /// <param name="scenario">The topology scenario.</param>
-    /// <param name="description">The scenario description.</param>
-    /// <returns>The current scenario.</returns>
-    public static TopologyScenario WithDescription(this TopologyScenario scenario, string? description) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.Description = description;
-        return scenario;
-    }
-
-    /// <summary>Configures route timeline playback without enabling automatic playback by default.</summary>
-    public static TopologyScenario WithPlayback(this TopologyScenario scenario, int stepDurationMilliseconds = 900, bool loop = false, bool autoPlay = false) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.PlaybackDelayMilliseconds = stepDurationMilliseconds;
-        scenario.LoopPlayback = loop;
-        scenario.AutoPlay = autoPlay;
-        return scenario;
-    }
-
-    /// <summary>Controls whether the route spotlights members by dimming surrounding topology.</summary>
-    public static TopologyScenario WithSpotlight(this TopologyScenario scenario, bool enabled = true) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.Spotlight = enabled;
-        return scenario;
-    }
-
-    /// <summary>
     /// Adds host-readable metadata to a topology scenario.
     /// </summary>
     /// <param name="scenario">The topology scenario.</param>
     /// <param name="key">The metadata key.</param>
     /// <param name="value">The metadata value.</param>
     /// <returns>The current scenario.</returns>
-    public static TopologyScenario WithMetadata(this TopologyScenario scenario, string key, string? value) {
+    public static TopologyScenario Metadata(this TopologyScenario scenario, string key, string? value) {
         if (scenario == null) throw new ArgumentNullException(nameof(scenario));
         scenario.Metadata[RequiredText(key, nameof(key), "Topology scenario metadata keys")] = value ?? string.Empty;
         return scenario;
@@ -82,16 +42,9 @@ public static partial class TopologyChartExtensions {
     /// <param name="key">The metadata key.</param>
     /// <param name="value">The metadata value.</param>
     /// <returns>The current scenario step.</returns>
-    public static TopologyScenarioStep WithMetadata(this TopologyScenarioStep step, string key, string? value) {
+    public static TopologyScenarioStep Metadata(this TopologyScenarioStep step, string key, string? value) {
         if (step == null) throw new ArgumentNullException(nameof(step));
         step.Metadata[RequiredText(key, nameof(key), "Topology scenario step metadata keys")] = value ?? string.Empty;
-        return step;
-    }
-
-    /// <summary>Overrides how long this route step remains visible during timeline playback.</summary>
-    public static TopologyScenarioStep WithDuration(this TopologyScenarioStep step, int durationMilliseconds) {
-        if (step == null) throw new ArgumentNullException(nameof(step));
-        step.DurationMilliseconds = durationMilliseconds;
         return step;
     }
 
@@ -138,18 +91,6 @@ public static partial class TopologyChartExtensions {
             step.Reverse = reverse;
             configure?.Invoke(step);
         });
-    }
-
-    /// <summary>Attaches the request or response payload shown while the step is active.</summary>
-    /// <param name="step">The topology scenario step.</param>
-    /// <param name="payload">The payload text, or <see langword="null"/> to remove it.</param>
-    /// <param name="format">How the payload should be presented.</param>
-    /// <returns>The current scenario step.</returns>
-    public static TopologyScenarioStep WithPayload(this TopologyScenarioStep step, string? payload, TopologyScenarioPayloadFormat format = TopologyScenarioPayloadFormat.Text) {
-        if (step == null) throw new ArgumentNullException(nameof(step));
-        step.Payload = payload;
-        step.PayloadFormat = format;
-        return step;
     }
 
     private static TopologyScenario AddStep(TopologyScenario scenario, TopologyScenarioStepKind kind, string id, string? label, string? description, Action<TopologyScenarioStep>? configure) {

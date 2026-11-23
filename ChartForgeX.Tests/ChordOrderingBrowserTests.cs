@@ -21,7 +21,7 @@ public sealed class ChordOrderingBrowserTests {
     public async Task DisplayOrderAndTensionKeepSourceKeyboardSelectionAndCurrentNativeExports(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Model(width, mode); var updated = Model(width, mode);
-        updated.ConfigureChord(options => {
+        updated.Chord(options => {
             options.Ordering = new ChartChordOrdering(new[] { "ops", "web", "data", "api", "idle" },
                 updated.Series[0].FlowLinks.Select(flow => flow.Id), updated.Series[0].FlowLinks.Reverse().Select(flow => flow.Id));
             options.RibbonTension = 1;
@@ -72,7 +72,7 @@ public sealed class ChordOrderingBrowserTests {
     }
 
     private static Chart Model(int width, ThemeMode mode) => ChordDepthRecipe.Create(width == 390 ? "compact" : "wide", mode)
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         options.Interaction.Enable(ChartInteractionFeatures.Export); options.Tooltip.PinOnSelect = false;

@@ -13,7 +13,7 @@ public sealed class FlowArtifactLayoutTests {
     [InlineData(FlowArtifactDirection.TopToBottom)]
     [InlineData(FlowArtifactDirection.BottomToTop)]
     public void OrderedFlowLanesStayDisjointAndContainTheirStepsWithDirectionalBranchRoutes(FlowArtifactDirection direction) {
-        var flow = FlowArtifact.Create("lane-flow").WithSize(900, 600).WithTitle("Assessment workflow")
+        var flow = FlowArtifact.Create("lane-flow").Width(900).Height(600).Padding(24).Title("Assessment workflow")
             .AddLane("service", "Service").AddLane("review", "Review")
             .AddStep("z-start", "Request received", FlowArtifactStepKind.Start, "service")
             .AddStep("y-check", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
@@ -25,7 +25,7 @@ public sealed class FlowArtifactLayoutTests {
             .AddConnector("x-review", "a-end", "Accepted")
             .AddConnector("x-review", "y-check", "Retry", FlowArtifactConnectorKind.Retry);
         flow.Direction = direction;
-        flow.ConfigureStep("x-review", step => { step.Width = 150; step.Metadata["source.fact"] = "Retain source"; });
+        flow.UpdateStep("x-review", step => { step.Width = 150; step.Metadata["source.fact"] = "Retain source"; });
         var before = flow.ToVisualArtifact().ToInterchangeJson();
         Assert.Equal(TopologyLayoutMode.Swimlane, flow.ToTopologyChart().LayoutMode);
         var prepared = flow.Prepare(VisualExportRequest.ForFlow(flow).Context);
@@ -58,7 +58,7 @@ public sealed class FlowArtifactLayoutTests {
 
     [Fact]
     public void FlowWithoutLanesStillUsesDeclaredStepOrderAndExplicitAlternativeModesRemainAvailable() {
-        var flow = FlowArtifact.Create("ordered-flow").WithSize(600, 260)
+        var flow = FlowArtifact.Create("ordered-flow").Width(600).Height(260).Padding(24)
             .AddStep("z-start", "Start", FlowArtifactStepKind.Start).AddStep("a-end", "End", FlowArtifactStepKind.End)
             .AddConnector("z-start", "a-end");
         var prepared = flow.Prepare(VisualExportRequest.ForFlow(flow).Context);

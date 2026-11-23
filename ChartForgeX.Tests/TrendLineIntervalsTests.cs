@@ -15,13 +15,13 @@ public sealed class TrendLineIntervalsTests {
         var errors = new[] { 1d, -4d, 6d, -4d, 1d };
         var source = Enumerable.Range(-2, 5).Select((x, index) => new ChartPoint(x, 1 + 2 * x + 3 * x * x + errors[index])).ToArray();
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("quadratic"), "Quadratic uncertainty", source)
-            .ConfigureTrendLine(options => { options.Model = ChartTrendLineModel.Polynomial; options.Interval = ChartTrendLineIntervalKind.Confidence; });
+            .TrendLine(options => { options.Model = ChartTrendLineModel.Polynomial; options.Interval = ChartTrendLineIntervalKind.Confidence; });
         var confidence = series.TrendLineSamples.Single(sample => sample.X == 0);
         var critical = Math.Sqrt(2) * .95 / Math.Sqrt((1 - .95) * (1 + .95));
         Assert.Equal(1, confidence.Value, 10);
         Assert.Equal(critical * Math.Sqrt(17), confidence.Upper!.Value - confidence.Value, 9);
         Assert.Equal(critical * Math.Sqrt(17), confidence.Value - confidence.Lower!.Value, 9);
-        series.ConfigureTrendLine(options => options.Interval = ChartTrendLineIntervalKind.Prediction);
+        series.TrendLine(options => options.Interval = ChartTrendLineIntervalKind.Prediction);
         var prediction = series.TrendLineSamples.Single(sample => sample.X == 0);
         Assert.Equal(critical * Math.Sqrt(52), prediction.Upper!.Value - prediction.Value, 9);
         Assert.True(prediction.Upper > confidence.Upper); Assert.True(prediction.Lower < confidence.Lower);
@@ -41,7 +41,7 @@ public sealed class TrendLineIntervalsTests {
         var source = Enumerable.Range(0, count).Select(index => new ChartPoint(index,
             2 + 3 * index + (index == 0 || index == 2 ? 1 : index == 1 ? -2 : 0))).ToArray();
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("linear"), "Student interval", source)
-            .ConfigureTrendLine(options => options.Interval = ChartTrendLineIntervalKind.Confidence);
+            .TrendLine(options => options.Interval = ChartTrendLineIntervalKind.Confidence);
         var middle = series.TrendLineSamples.Single(sample => sample.X == (count - 1) / 2d);
         var expected = critical * Math.Sqrt(6d / (count - 2) / count);
         Assert.Equal(expected, middle.Upper!.Value - middle.Value, 8);
@@ -56,7 +56,7 @@ public sealed class TrendLineIntervalsTests {
         var errors = new[] { 1d, -4d, 6d, -4d, 1d };
         var source = Enumerable.Range(1, 5).Select((x, index) => new ChartPoint(x, 2 * Math.Exp(.3 * x + .02 * errors[index]))).ToArray();
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("exponential"), "Log-fitted median", source)
-            .ConfigureTrendLine(options => { options.Model = ChartTrendLineModel.Exponential; options.Interval = interval; });
+            .TrendLine(options => { options.Model = ChartTrendLineModel.Exponential; options.Interval = interval; });
         Assert.All(series.TrendLineSamples, sample => {
             Assert.Equal(2 * Math.Exp(.3 * sample.X), sample.Value, 9);
             Assert.True(sample.Lower > 0); Assert.True(sample.Lower < sample.Value); Assert.True(sample.Upper > sample.Value);
@@ -71,17 +71,17 @@ public sealed class TrendLineIntervalsTests {
     [Fact]
     public void IntervalConfigurationRequiresResidualDegreesOfFreedomAndCapturesConfidenceIndependently() {
         var shortSeries = ChartSeries.CreateTrendLine(new ChartSeriesId("two"), "Two exact points", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
-        Assert.Throws<ArgumentException>(() => shortSeries.ConfigureTrendLine(options => options.Interval = ChartTrendLineIntervalKind.Confidence));
+        Assert.Throws<ArgumentException>(() => shortSeries.TrendLine(options => options.Interval = ChartTrendLineIntervalKind.Confidence));
         Assert.Equal(ChartTrendLineIntervalKind.None, shortSeries.TrendLineConfiguration!.Interval);
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("three"), "Three points", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(2, 2) });
         var previous = 0d;
         foreach (var confidence in new[] { .5, .9, .95, .99, .999 }) {
-            series.ConfigureTrendLine(options => { options.Interval = ChartTrendLineIntervalKind.Confidence; options.ConfidenceLevel = confidence; });
+            series.TrendLine(options => { options.Interval = ChartTrendLineIntervalKind.Confidence; options.ConfidenceLevel = confidence; });
             var middle = series.TrendLineSamples.Single(sample => sample.X == 1); var width = middle.Upper!.Value - middle.Lower!.Value;
             Assert.True(width > previous); previous = width;
         }
         var before = series.TrendLineSamples.ToArray();
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.ConfigureTrendLine(options => options.ConfidenceLevel = 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.TrendLine(options => options.ConfidenceLevel = 1));
         Assert.Equal(before, series.TrendLineSamples);
     }
 }

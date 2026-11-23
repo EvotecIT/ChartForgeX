@@ -9,7 +9,7 @@ public sealed class StoryChapterClockTests {
     [InlineData(.25000004, .5, 1)]
     [InlineData(.4, .8, 2)]
     public void CapturedChapterBoundariesSelectTheSameSceneInFramesAndAnimation(double first, double second, int chapter) {
-        var story = VisualStory.Create("Chapter clock").WithSize(480, 320);
+        var story = VisualStory.Create("Chapter clock").Size(480, 320);
         foreach (var (id, duration) in new[] { ("first", first), ("middle", second), ("last", .5) })
             story.Scene(id, id, duration).Panel(id, new VisualStoryTextSurface(id));
         story.Outcome("last", "Last", "last");

@@ -19,7 +19,7 @@ public static partial class LegacySceneBenchmarkCases {
     public static string SourceDigest(string fixture) {
         if (Phase3Fixtures.Contains(fixture)) return Phase3SourceDigest(fixture);
         var chart = (Chart)Create(fixture);
-        var source = new StringBuilder(chart.Options.BarMode.ToString());
+        var source = new StringBuilder(chart.Options.Bars.Mode.ToString());
         foreach (var series in chart.Series) {
             source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
             foreach (var point in series.Points) source.Append('|').Append(point.X.ToString("G17", CultureInfo.InvariantCulture))

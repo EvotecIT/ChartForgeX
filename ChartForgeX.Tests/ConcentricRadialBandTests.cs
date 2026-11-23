@@ -13,13 +13,13 @@ public sealed class ConcentricRadialBandTests {
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(800, 500)));
     private static Chart Rings(bool outerFirst = false) {
         var inner = new ChartSeries(new ChartSeriesId("prior"), "Prior", ChartSeriesKind.Donut,
-            new[] { new ChartPoint(1, 75), new ChartPoint(2, 25) }).WithRadialBand(new ChartRadialBand(.2, .5))
-            .WithObservationIds(new[] { new ChartObservationId("A"), new ChartObservationId("B") });
+            new[] { new ChartPoint(1, 75), new ChartPoint(2, 25) }).RadialBand(new ChartRadialBand(.2, .5))
+            .ObservationIds(new[] { new ChartObservationId("A"), new ChartObservationId("B") });
         inner.DataLabelPlacement = ChartDataLabelPlacement.Inside;
         var outer = new ChartSeries(new ChartSeriesId("current"), "Current", ChartSeriesKind.Pie,
-            new[] { new ChartPoint(1, 1), new ChartPoint(2, 1) }).WithRadialBand(new ChartRadialBand(.65, 1))
-            .WithObservationIds(new[] { new ChartObservationId("A"), new ChartObservationId("B") });
-        var chart = Chart.Create().WithSize(800, 500).WithLegend(false).WithXLabels("A", "B");
+            new[] { new ChartPoint(1, 1), new ChartPoint(2, 1) }).RadialBand(new ChartRadialBand(.65, 1))
+            .ObservationIds(new[] { new ChartObservationId("A"), new ChartObservationId("B") });
+        var chart = Chart.Create().Size(800, 500).Legend(false).XLabels("A", "B");
         return outerFirst ? chart.AddSeries(outer).AddSeries(inner) : chart.AddSeries(inner).AddSeries(outer);
     }
 
@@ -53,14 +53,14 @@ public sealed class ConcentricRadialBandTests {
     public void ClearingAnExplicitSingleBandRestoresTheOrdinaryDefaultExports(ChartSeriesKind kind, ThemeMode mode) {
         var series = new ChartSeries(new ChartSeriesId("observed"), "Observed", kind,
             new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) });
-        var chart = Chart.Create().WithSize(520, 360).WithTheme(VisualTheme.Graphite(), mode)
-            .WithLegend(false).WithHeader(false).AddSeries(series);
+        var chart = Chart.Create().Size(520, 360).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Legend(false).ShowHeader(false).AddSeries(series);
         var baseline = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = baseline.ToSvg(); var png = baseline.ToPng();
-        series.WithRadialBand(new ChartRadialBand(.1, .7));
+        series.RadialBand(new ChartRadialBand(.1, .7));
         var changed = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.NotEqual(svg, changed.ToSvg());
-        series.WithRadialBand(null);
+        series.RadialBand((ChartRadialBand?)null);
         var restored = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(svg, restored.ToSvg()); Assert.Equal(png, restored.ToPng());
         Assert.Equal(svg, baseline.ToSvg()); Assert.Equal(png, baseline.ToPng());
@@ -70,8 +70,8 @@ public sealed class ConcentricRadialBandTests {
     [InlineData(390, 360, ThemeMode.Dark)]
     [InlineData(900, 500, ThemeMode.Light)]
     public void NativeSvgAndPngPaintIndependentBandsAndRetainAnEmptyAnnularGap(int width, int height, ThemeMode mode) {
-        var chart = Rings().WithSize(width, height).WithTheme(VisualTheme.Graphite(), mode)
-            .WithHeader(false).WithDataLabels(false).WithDonutCenterLabel(false);
+        var chart = Rings().Size(width, height).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .ShowHeader(false).DataLabels(false).Pie(p => p.ShowCenterLabel(false));
         var innerColor = ChartColor.FromHex("#2468AC"); var outerColor = ChartColor.FromHex("#D45A32");
         chart.Series[0].Color = innerColor; chart.Series[1].Color = outerColor;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -115,7 +115,7 @@ public sealed class ConcentricRadialBandTests {
     public void AggregationLegendAndOverflowStayIndependentPerBandAndPreparedExportsAreDetached() {
         var chart = Rings();
         chart.Series[0].Points.Add(new ChartPoint(3, 5)); chart.Series[1].Points.Add(new ChartPoint(3, 2));
-        chart.Options.MaximumPieSlices = 2;
+        chart.Options.Pie.MaxSlices = 2;
         var prepared = chart.Prepare(Context());
         var legend = VisualRadialCompiler.LegendEntries(chart, Context().Theme.Resolve(Context().ThemeMode));
         Assert.Equal(4, legend.Count); Assert.Equal(2, legend.Count(entry => entry.Label.StartsWith("Prior:", StringComparison.Ordinal)));
@@ -140,7 +140,7 @@ public sealed class ConcentricRadialBandTests {
     [InlineData(ChartDataLabelPlacement.Above)]
     [InlineData(ChartDataLabelPlacement.Below)]
     public void InnerActiveExternalLabelsRetainTheirOwnSourceAndOverlayLeaders(ChartDataLabelPlacement placement) {
-        var chart = Rings().WithDataLabels(); chart.Series[0].DataLabelPlacement = placement;
+        var chart = Rings().DataLabels(); chart.Series[0].DataLabelPlacement = placement;
         var prepared = chart.Prepare(Context()); MultiRingDepthTests.AssertCalloutAssociations(prepared);
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "radial-data-label-source"
             && group.Metadata.TryGetValue("data-cfx-series", out var source) && source == "0" && group.Metadata["data-cfx-label-dropped"] == "false");
@@ -153,13 +153,13 @@ public sealed class ConcentricRadialBandTests {
         foreach (var values in new[] { (double.NaN, 1d), (0d, double.PositiveInfinity), (-.1, 1d), (.5, .5), (.5, .4), (.5, 1.1) })
             Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRadialBand(values.Item1, values.Item2));
         var wrong = ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", new[] { new ChartPoint(1, 2) });
-        Assert.Throws<InvalidOperationException>(() => wrong.WithRadialBand(new ChartRadialBand(.2, .5))); Assert.Null(wrong.RadialBand);
+        Assert.Throws<InvalidOperationException>(() => wrong.RadialBand(new ChartRadialBand(.2, .5))); Assert.Null(wrong.RadialBand);
         var chart = Rings(); var source = chart.Series[0].Points.ToArray();
         chart.Series[0].RadialBand = new ChartRadialBand(.5, .8);
         Assert.Contains("overlap", Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context())).Message); Assert.Equal(source, chart.Series[0].Points);
         chart.Series[0].RadialBand = new ChartRadialBand(.2, .5); chart.Series[1].RadialBand = null;
         Assert.Contains("every series", Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context())).Message);
-        chart.Series[1].RadialBand = new ChartRadialBand(.65, 1); chart.Series[0].WithPointSliceOffset(0, .1);
+        chart.Series[1].RadialBand = new ChartRadialBand(.65, 1); chart.Series[0].PointSliceOffset(0, .1);
         Assert.NotEmpty(chart.Prepare(Context()).ToPng()); Assert.Equal(source, chart.Series[0].Points);
         Assert.Equal(.1, chart.Series[0].PointSliceOffsets[0]);
     }

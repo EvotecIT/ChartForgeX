@@ -17,11 +17,11 @@ public sealed class HorizontalLineFormattingOverlayTests {
     [InlineData(760, true, false)]
     public async Task BrowserExportsKeepValueUnitsAndStatisticsOnPhysicalX(int width, bool dark, bool step) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Model(step).WithSize(width - 32, 420).WithXAxis("Latency").WithYAxis("Run")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Model(step).Size(width - 32, 420).XAxis(x => x.Title("Latency")).YAxis(y => y.Title("Run"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddMeanLine("Mean", chart.Series[0].Points).AddStandardDeviationBand("Deviation", chart.Series[0].Points);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.Options.XAxis.WithValueFormat(ChartValueFormat.Number("0' ms'"));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.Options.XAxis.ValueFormat(ChartValueFormat.Number("0' ms'"));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage();
         await using var session = await InteractiveChartBrowser.OpenAsync(html, width, 540);
@@ -49,11 +49,11 @@ public sealed class HorizontalLineFormattingOverlayTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void ValueFormattingAndExplicitLabelsStayOnPhysicalX(bool step, bool explicitLabels) {
-        var chart = Model(step).WithXAxisBounds(0, 40).WithYAxisBounds(0, 4);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        var chart = Model(step).XAxis(x => x.Bounds(0, 40)).YAxis(y => y.Bounds(0, 4));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.XAxis.TickCount = 3;
         chart.Options.YAxis.TickCount = 3;
-        chart.Options.XAxis.WithValueFormat(ChartValueFormat.Number("0.0' ms'"));
+        chart.Options.XAxis.ValueFormat(ChartValueFormat.Number("0.0' ms'"));
         if (explicitLabels) {
             chart.Options.XAxis.Labels.Add(new ChartAxisLabel(0, "zero value"));
             chart.Options.XAxis.Labels.Add(new ChartAxisLabel(40, "maximum value"));
@@ -72,13 +72,13 @@ public sealed class HorizontalLineFormattingOverlayTests {
 
     [Fact]
     public void EachPhysicalAxisCapturesOnlyItsOwnCallbackAndLabels() {
-        var chart = Model(false).WithXAxisBounds(0, 40).WithYAxisBounds(0, 4);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        var chart = Model(false).XAxis(x => x.Bounds(0, 40)).YAxis(y => y.Bounds(0, 4));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.XAxis.TickCount = 3;
         chart.Options.YAxis.TickCount = 3;
         var values = new Dictionary<double, int>(); var categories = new Dictionary<double, int>();
-        chart.Options.XAxis.WithLabelFormatter(value => Capture(values, value, "Value "));
-        chart.Options.YAxis.WithLabelFormatter(value => Capture(categories, value, "Category "));
+        chart.Options.XAxis.LabelBy(value => Capture(values, value, "Value "));
+        chart.Options.YAxis.LabelBy(value => Capture(categories, value, "Category "));
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(0, "zero value"));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(4, "last category"));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -88,8 +88,8 @@ public sealed class HorizontalLineFormattingOverlayTests {
         Assert.DoesNotContain(4, categories.Keys);
         Assert.All(values.Values.Concat(categories.Values), count => Assert.Equal(1, count));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed value callback"));
-        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
+        chart.Options.XAxis.LabelBy(_ => throw new InvalidOperationException("Changed value callback"));
+        chart.Options.YAxis.LabelBy(_ => throw new InvalidOperationException("Changed category callback"));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -100,11 +100,11 @@ public sealed class HorizontalLineFormattingOverlayTests {
     [InlineData(true, true)]
     public void StatisticalOverlaysFollowTheValueAxisRegardlessOfConfigurationOrder(bool step, bool configureFirst) {
         var chart = Model(step);
-        if (configureFirst) chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        if (configureFirst) chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var points = chart.Series[0].Points;
         chart.AddStandardDeviationBand("Deviation", points, color: HorizontalRasterAssertions.Band, opacity: 1)
             .AddMeanLine("Mean", points, HorizontalRasterAssertions.Guide).AddMedianLine("Median", points, HorizontalRasterAssertions.Guide);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var range = ChartRange.FromChart(chart);
         Assert.Equal(1, range.MinY); Assert.Equal(4, range.MaxY);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -128,7 +128,7 @@ public sealed class HorizontalLineFormattingOverlayTests {
         Assert.Contains("data-cfx-kind=\"VerticalBand\"", prepared.ToSvg());
         HorizontalRasterAssertions.Statistics(prepared, guides.First(guide => guide.Bounds.Width == 0).Bounds, band.Bounds);
         // A later preparation follows the current orientation; the detached scene retains its geometry.
-        chart.Options.LineOrientation = ChartOrientation.Vertical;
+        chart.Options.Lines.Orientation = ChartOrientation.Vertical;
         var vertical = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.All(vertical.Regions.Where(region => region.Role == "annotation"), guide => Assert.True(guide.Bounds.Width > 200));
         Assert.Contains("data-cfx-kind=\"VerticalLine\"", prepared.ToSvg());
@@ -137,7 +137,7 @@ public sealed class HorizontalLineFormattingOverlayTests {
     [Fact]
     public void ExplicitHorizontalAnnotationsRemainOnPhysicalY() {
         var chart = Model(false);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.AddHorizontalLine(8, "Category guide").AddHorizontalBand(5, 6, "Category band");
         Assert.Equal(8, ChartRange.FromChart(chart).MaxY);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -150,8 +150,8 @@ public sealed class HorizontalLineFormattingOverlayTests {
     [InlineData(true)]
     public void HorizontalBarAndWaterfallStatisticsUseTheirSharedValueAxis(bool waterfall) {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) };
-        var chart = Chart.Create().WithSize(700, 450).WithLegend(false).WithHeader(false);
-        if (waterfall) chart.AddWaterfall("Readings", points).ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+        var chart = Chart.Create().Size(700, 450).Legend(false).ShowHeader(false);
+        if (waterfall) chart.AddWaterfall("Readings", points).Waterfall(options => options.Orientation = ChartOrientation.Horizontal);
         else chart.AddHorizontalBar("Readings", points);
         var initial = ChartRange.FromChart(chart);
         chart.AddMeanLine("Mean", points).AddStandardDeviationBand("Deviation", points);
@@ -163,7 +163,7 @@ public sealed class HorizontalLineFormattingOverlayTests {
     }
 
     private static Chart Model(bool step) {
-        var chart = Chart.Create().WithSize(700, 450).WithLegend(false).WithHeader(false).WithLineMarkers(ChartLineMarkerMode.None);
+        var chart = Chart.Create().Size(700, 450).Legend(false).ShowHeader(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None));
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) };
         return step ? chart.AddStepLine("Readings", points) : chart.AddLine("Readings", points);
     }

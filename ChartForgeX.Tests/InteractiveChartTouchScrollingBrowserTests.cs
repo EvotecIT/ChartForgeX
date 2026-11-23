@@ -16,7 +16,7 @@ public sealed class InteractiveChartTouchScrollingBrowserTests {
     [InlineData(HtmlChartResponsiveLayout.Adaptive)]
     public async Task NativeTouchScrollsTheReportAndExplicitBrushRetainsItsGesture(HtmlChartResponsiveLayout layout) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(680, 400).WithTitle("Touch report observations").WithLegend(false)
+        var chart = Chart.Create().Size(680, 400).Title("Touch report observations").Legend(false)
             .AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(1, 8), new ChartPoint(2, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = layout;

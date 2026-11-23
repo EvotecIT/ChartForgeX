@@ -33,10 +33,10 @@ public sealed class NumericRadialLabelDensityTests {
 
     [Fact]
     public void AllPreservesFullTurnTickEligibilityOnIndependentAxes() {
-        var chart = NumericRadialAxisPolicyTests.RelativeChart(true).WithRadialGeometry(new(-90, 269, .2, .25, .1));
+        var chart = NumericRadialAxisPolicyTests.RelativeChart(true).RadialGeometry(new(-90, 269, .2, .25, .1));
         chart.Options.XAxis.Visible = false;
         var partial = NumericRadialAxisPolicyTests.Prepare(chart).Scene;
-        chart.WithRadialGeometry(new(-90, 270, .2, .25, .1));
+        chart.RadialGeometry(new(-90, 270, .2, .25, .1));
         var scene = NumericRadialAxisPolicyTests.Prepare(chart).Scene;
         foreach (var side in new[] { "Primary", "Secondary" }) {
             var maximumCaption = side == "Primary" ? "P2" : "S2";
@@ -51,12 +51,12 @@ public sealed class NumericRadialLabelDensityTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AllAxisCaptionsRemainObstaclesWhenPointAndTotalLabelsAreEnabled(bool bars) {
-        var chart = CrowdedChart(bars).WithSize(800, 440);
+        var chart = CrowdedChart(bars).Size(800, 440);
         chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         var axesOnly = NumericRadialAxisPolicyTests.Prepare(chart).Scene;
-        chart.WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Left);
-        chart.Options.ShowStackTotals = true;
-        chart.Series[0].WithStackGroup("requests");
+        chart.DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Left));
+        chart.Options.Bars.ShowTotals = true;
+        chart.Series[0].StackGroup("requests");
         var scene = NumericRadialAxisPolicyTests.Prepare(chart).Scene;
         var captions = NumericRadialAxisTextTests.Footprints(scene);
         var axes = captions.Where(item => item.Text.Role == "radial-category-label").ToArray();
@@ -70,8 +70,8 @@ public sealed class NumericRadialLabelDensityTests {
 
     internal static Chart CrowdedChart(bool bars) {
         var chart = V2GalleryModels.Create(bars ? ChartSeriesKind.RadialBar : ChartSeriesKind.RadialColumn, "compact-all-labels")
-            .WithSize(360, 360).WithHeader(false).WithLegend(false).WithFontFamily("Carlito");
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+            .Size(360, 360).ShowHeader(false).Legend(false).FontFamily("Carlito");
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return chart;
     }
 

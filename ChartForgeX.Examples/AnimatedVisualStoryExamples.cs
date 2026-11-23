@@ -9,23 +9,23 @@ internal static class AnimatedVisualStoryExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         var theme = VisualTheme.Graphite();
         var activity = Chart.Create()
-            .WithTitle("Release activity")
-            .WithSubtitle("A native chart can participate in the same story")
-            .WithTheme(theme, ThemeMode.Dark)
-            .WithSize(800, 338)
-            .WithAxes(false)
-            .WithGrid(false)
-            .WithLegend(false)
-            .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun")
+            .Title("Release activity")
+            .Subtitle("A native chart can participate in the same story")
+            .Theme(theme).ThemeMode(ThemeMode.Dark)
+            .Size(800, 338)
+            .Axes(false)
+            .ShowGrid(false)
+            .Legend(false)
+            .XLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun")
             .AddSmoothArea("Releases", ChartPoints.FromValues(8, 11, 9, 16, 18, 23), ChartColor.FromRgb(56, 189, 248));
 
         var portfolio = ChartTable.Create()
-            .WithTitle("Active portfolio")
-            .WithSubtitle("Exact values remain readable when motion is unavailable")
-            .WithTheme(theme, ThemeMode.Dark)
-            .WithSize(800, 338)
-            .WithDenseMode()
-            .WithColumns("Project", "Purpose", "Signal")
+            .Title("Active portfolio")
+            .Subtitle("Exact values remain readable when motion is unavailable")
+            .Theme(theme).ThemeMode(ThemeMode.Dark)
+            .Size(800, 338)
+            .Dense()
+            .Columns("Project", "Purpose", "Signal")
             .AddRow("Identity Core", "Authentication and policy", "Healthy")
             .AddRow("Report Engine", "Portable visual reports", "Growing")
             .AddRow("Automation Kit", "Operational workflows", "Stable");
@@ -38,15 +38,15 @@ internal static class AnimatedVisualStoryExamples {
             .Rise("portfolio", delaySeconds: 0.78, durationSeconds: 0.65);
 
         var story = VisualGrid.Create()
-            .WithTitle("Engineering portfolio")
-            .WithSubtitle("One reusable model for profile cards, release stories, status reports, and dashboards")
-            .WithTheme(theme, ThemeMode.Dark)
-            .WithColumns(3)
-            .WithPanelSize(250, 150)
-            .WithGap(16)
-            .WithPadding(28)
-            .WithFrame()
-            .WithPngOutputScale((int)pngOutputScale)
+            .Title("Engineering portfolio")
+            .Subtitle("One reusable model for profile cards, release stories, status reports, and dashboards")
+            .Theme(theme).ThemeMode(ThemeMode.Dark)
+            .Columns(3)
+            .PanelSize(250, 150)
+            .Gap(16)
+            .Padding(28)
+            .FrameVisible()
+            .PngOutputScale((int)pngOutputScale)
             .Add("metric-projects", Metric("Projects", "24", "Reusable libraries"))
             .Add("metric-users", Metric("Monthly users", "18.4K", "+12% this quarter"))
             .Add("metric-releases", Metric("Releases", "96", "Last 12 months"))
@@ -60,8 +60,8 @@ internal static class AnimatedVisualStoryExamples {
     }
 
     private static MetricCard Metric(string label, string value, string caption) => MetricCard.Create()
-        .WithMetric(label, value)
-        .WithCaption(caption)
-        .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-        .WithSize(250, 150);
+        .Metric(label, value)
+        .Caption(caption)
+        .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+        .Size(250, 150);
 }

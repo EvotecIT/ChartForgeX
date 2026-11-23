@@ -53,17 +53,17 @@ public sealed class RadarCurveGuideIntegrationTests {
             Assert.Equal(Math.Ceiling(count) / count, rings.Last().Rx / radius, 7);
         } else {
             Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "radar-ring");
-            chart.Options.PolarGridRingCount = null;
+            chart.Options.Polar.GridRingCount = null;
             Assert.Equal(prepared.ToPng(), Prepare(chart).ToPng());
         }
     }
 
     private static Chart Native(double count, bool grid) {
-        var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(grid).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithPolarGridShape(ChartPolarGridShape.Circle)
+        var chart = Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).Axes(false).ShowGrid(grid).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).Polar(p => p.GridShape(ChartPolarGridShape.Circle))
             .AddRadarLine("Maximum", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 100)))
             .AddRadarLine("Half", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 50)));
-        chart.Options.PolarGridRingCount = count;
+        chart.Options.Polar.GridRingCount = count;
         return chart;
     }
 

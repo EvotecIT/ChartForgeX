@@ -13,7 +13,7 @@ public sealed class TopologyFallbackRoutingTests {
     [InlineData(138)]
     public void CrowdedReadableFallbackRoutesKeepBothEndsAttached(int index) {
         var chart = DenseRouteFixture.Mesh(4 + index % 17, 25 + index % 20, 10 + index % 50)
-            .WithId("fallback-" + index).WithViewport(900 + index % 3 * 180, 500 + index % 5 * 180);
+            .Id("fallback-" + index).Viewport(new TopologyViewport(900 + index % 3 * 180, 500 + index % 5 * 180));
         var options = DenseRouteFixture.Options(subtitles: index % 3 == 0, legend: index % 4 == 0);
         options.ShareIncomingTrunks = index % 7 == 0;
         if (index % 3 == 0) for (var i = 0; i < chart.Edges.Count; i += 3) chart.Edges[i].Label = "Link " + i;

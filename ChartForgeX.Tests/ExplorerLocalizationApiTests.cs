@@ -37,7 +37,7 @@ public sealed class ExplorerLocalizationApiTests {
     [Fact]
     public void ExistingAndLocalizedTopologyExtensionCallsRemainDistinctAndDetached() {
         var chart = Topology();
-        var options = new TopologyRenderOptions { EnableHtmlSelectionPanel = true, EnableHtmlViewportControls = true };
+        var options = new TopologyRenderOptions { Html = { SelectionPanel = true, ViewportControls = true } };
         var native = chart.ToSvg();
         Assert.Contains("Topology controls", chart.ToInteractiveHtmlPage());
         Assert.Contains("Topology controls", chart.ToInteractiveHtmlPage(options));
@@ -61,7 +61,7 @@ public sealed class ExplorerLocalizationApiTests {
         var fragment = chart.ToInteractiveHtmlFragmentWithoutAssets(options, Configure);
         Assert.Contains("Brak wyboru", fragment);
         Assert.DoesNotContain("<script", fragment);
-        Assert.False(options.EnableHtmlInteractions);
+        Assert.False(options.Html.Interactions);
         Assert.Equal(native, chart.ToSvg());
         var path = Path.Combine(Path.GetTempPath(), "cfx-localization-" + Guid.NewGuid().ToString("N") + ".html");
         try {
@@ -100,7 +100,7 @@ public sealed class ExplorerLocalizationApiTests {
         Assert.Contains("Authored source", WebUtility.HtmlDecode(html));
     }
 
-    private static TopologyChart Topology() => TopologyChart.Create().WithId("localized-topology").WithTitle("Authored title")
+    private static TopologyChart Topology() => TopologyChart.Create().Id("localized-topology").Title("Authored title")
         .AddNode("source-a", "Authored source", 40, 60, status: TopologyHealthStatus.Healthy)
         .AddNode("source-b", "Authored target", 280, 60)
         .AddEdge("authored-link", "source-a", "source-b", "Raw relationship");

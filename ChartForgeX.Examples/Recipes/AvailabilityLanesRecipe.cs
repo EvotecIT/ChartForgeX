@@ -5,11 +5,11 @@ public static class AvailabilityLanesRecipe {
         if (variant is not ("availability" or "compact-availability")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc)
-            .WithStateCategories(new ChartStateCategory("up", "Up", colors.Status.Pass.Fill),
+        var chart = Chart.Create().XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
+            .StateCategories(new ChartStateCategory("up", "Up", colors.Status.Pass.Fill),
                 new ChartStateCategory("degraded", "Degraded", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory("down", "Down", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
-        chart.Options.LaneSummaryHeader = "Available";
+        chart.Options.StateTimeline.SummaryHeader = "Available";
         var targets = new[] {
             ("Warsaw", "dc1.ad.evotec.xyz", "No response to LDAP bind"), ("Warsaw", "dc2.ad.evotec.xyz", "No response to LDAP bind"),
             ("Warsaw", "dns.ad.evotec.xyz", "No DNS response"), ("Krakow", "dc3.ad.evotec.xyz", "No response to LDAP bind"),

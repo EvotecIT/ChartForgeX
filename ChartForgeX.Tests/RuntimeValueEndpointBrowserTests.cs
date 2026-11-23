@@ -4,6 +4,7 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Themes;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -14,8 +15,8 @@ public sealed class RuntimeValueEndpointBrowserTests {
     public async Task TypedWaterfallBrushUsesSecondaryRawBoundsAndOmitsAnAmbiguousMixedValueAxis(bool primaryReference) {
         if (!Enabled) return;
         var chart = ChartLinkedValueEndpointContractsTests.CreateChart("waterfall", horizontal: false, secondary: true);
-        chart.Options.SecondaryYAxis.Minimum = -5;
-        chart.Options.SecondaryYAxis.Maximum = 35;
+        chart.Options.SecondaryYAxis.Min = -5;
+        chart.Options.SecondaryYAxis.Max = 35;
         if (primaryReference) chart.AddHorizontalLine(1, "Primary reference");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Enable(ChartInteractionFeatures.Brush);
@@ -86,7 +87,7 @@ public sealed class RuntimeValueEndpointBrowserTests {
     public async Task PublicValueBoundsUseTheirOwningAxisInTargetsAndReadouts(string family, bool horizontal, bool secondary, bool dark) {
         if (!Enabled) return;
         var chart = ChartLinkedValueEndpointContractsTests.CreateChart(family, horizontal, secondary)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Enable(ChartInteractionFeatures.Selection | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Tooltips);
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

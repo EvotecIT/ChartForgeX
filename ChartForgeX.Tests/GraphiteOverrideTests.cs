@@ -12,7 +12,7 @@ public sealed class GraphiteOverrideTests {
     [Fact]
     public void FullValuesRemainAvailableWhenLabelsAreCompact() {
         const double value=12345.678912345;
-        var chart=Chart.Create().WithDataLabels().AddBar("Count",new[]{new ChartPoint(1,value)});
+        var chart=Chart.Create().DataLabels().AddBar("Count",new[]{new ChartPoint(1,value)});
         var point=Assert.Single(Roles(chart,"point"));
         Assert.Equal(value,double.Parse((string)point.Attribute("data-cfx-y")!,System.Globalization.CultureInfo.InvariantCulture));
         Assert.Contains(value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),(string)point.Attribute("data-cfx-description")!);
@@ -26,13 +26,13 @@ public sealed class GraphiteOverrideTests {
     [InlineData("funnel","funnel-label")]
     [InlineData("sankey","sankey-node-label")]
     public void SpecializedLabelsKeepExplicitTypography(string kind,string role) {
-        var chart=Chart.Create().WithSize(900,500).WithXLabels("alpha","beta");
+        var chart=Chart.Create().Size(900,500).XLabels("alpha","beta");
         var points=new[]{new ChartPoint(1,70),new ChartPoint(2,30)};
         switch(kind) {
-            case "pie": chart.AddPie("alpha",points).WithDataLabels(); break;
+            case "pie": chart.AddPie("alpha",points).DataLabels(); break;
             case "gauge": chart.AddGauge("alpha",70); break;
             case "bullet": chart.AddBullet("alpha",70,90); break;
-            case "funnel": chart.AddFunnel("alpha",points).WithDataLabels(); break;
+            case "funnel": chart.AddFunnel("alpha",points).DataLabels(); break;
             default: chart.AddSankey("Flow", new[] { new ChartNode("alpha", "alpha"), new ChartNode("beta", "beta") }, new[]{new ChartFlowLink("flow-1", "alpha","beta",70)}); break;
         }
         chart.Series[0].DataLabelStyle.FontSize=16;
@@ -46,8 +46,8 @@ public sealed class GraphiteOverrideTests {
 
     [Fact]
     public void ExplicitPiePlacementAndBudgetStillFitWithoutGradients() {
-        var chart=Chart.Create().WithSize(700,440).WithXLabels("A","B","C").AddPie("Total",new[]{new ChartPoint(1,70),new ChartPoint(2,20),new ChartPoint(3,10)})
-            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Outside).WithLegendPosition(ChartLegendPosition.Bottom).WithLegendBudget(.35,2);
+        var chart=Chart.Create().Size(700,440).XLabels("A","B","C").AddPie("Total",new[]{new ChartPoint(1,70),new ChartPoint(2,20),new ChartPoint(3,10)})
+            .DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Outside)).Legend(l => l.Position(ChartLegendPosition.Bottom).MaxHeightFraction(.35).MaxRows(2));
         Assert.NotEmpty(Roles(chart,"data-label-connector"));
         Assert.All(Roles(chart,"pie-slice"),e=>Assert.DoesNotContain("url(",(string)e.Attribute("fill")!));
         Assert.NotEmpty(chart.ToPng());
@@ -65,9 +65,9 @@ public sealed class GraphiteOverrideTests {
 
     [Fact]
     public void NamedEffectsAndExplicitAxisRuleRemainAvailable() {
-        var chart=Chart.Create().AddBar("Count",new[]{new ChartPoint(1,5),new ChartPoint(2,8)}).WithBarStyle(ChartBarStyle.Solid);
+        var chart=Chart.Create().AddBar("Count",new[]{new ChartPoint(1,5),new ChartPoint(2,8)}).Bars(b => b.Style(ChartBarStyle.Solid));
         Assert.Contains("linearGradient",chart.ToSvg());
-        chart.ConfigureYAxis(axis=>axis.ShowLine=true);
+        chart.YAxis(axis=>axis.ShowLine=true);
         var svg=XDocument.Parse(chart.ToSvg());
         var rule=Assert.Single(svg.Descendants(),e=>(string?)e.Attribute("data-cfx-role")=="axis-y");
         Assert.Equal((string?)rule.Attribute("x1"),(string?)rule.Attribute("x2"));

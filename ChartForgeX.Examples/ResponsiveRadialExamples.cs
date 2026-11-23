@@ -9,14 +9,14 @@ using ChartForgeX.Themes;
 public static class ResponsiveRadialExamples {
     /// <summary>Creates six licence categories, optionally grouping the three smallest into Other.</summary>
     public static Chart Create(ThemeMode mode, bool other = false) {
-        var chart = Chart.Create().WithSize(800, 305).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Licences by product").WithSubtitle("Assigned seats, October 2026")
-            .WithXLabels("Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3");
+        var chart = Chart.Create().Size(800, 305).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Licences by product").Subtitle("Assigned seats, October 2026")
+            .XLabels("Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3");
         var values = new double[] { 412, 268, 190, 120, 64, 31 };
         chart.AddSeries(new ChartSeries(new ChartSeriesId("licences"), "Licences", other ? ChartSeriesKind.Pie : ChartSeriesKind.Donut,
             values.Select((value, index) => new ChartPoint(index + 1, value))));
-        chart.Options.DonutCenterLabel = "Licences";
-        if (other) chart.Options.MaximumPieSlices = 4;
+        chart.Options.Pie.CenterLabel = "Licences";
+        if (other) chart.Options.Pie.MaxSlices = 4;
         return chart;
     }
 
@@ -27,7 +27,7 @@ public static class ResponsiveRadialExamples {
         var size = chart.Options.Size;
         try {
             // Native hit facts and the portable drawing share their maximum-width source frame.
-            chart.WithSize(1600, 420);
+            chart.Size(1600, 420);
             var host = new HtmlInteractiveChartRenderer().RenderFragment(chart, options => {
                 options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
                 options.IncludeResetButton = false;
@@ -37,7 +37,7 @@ public static class ResponsiveRadialExamples {
             var end = host.IndexOf("</svg>", start, StringComparison.Ordinal) + "</svg>".Length;
             return host.Substring(0, start) + drawing + host.Substring(end)
                 + "<style>" + HtmlResponsiveChartRenderer.Stylesheet + "</style><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>";
-        } finally { chart.WithSize(size.Width, size.Height); }
+        } finally { chart.Size(size.Width, size.Height); }
     }
 
     private static string Document(string content, bool dark) => ExampleTypography.EmbedInHost("<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Responsive pie and donut charts</title>"
@@ -56,7 +56,7 @@ public static class ResponsiveRadialExamples {
             var panel = "<div class='panel' id='" + key + "' style='width:390px;max-width:100%'>" + fragment + "</div>";
             File.WriteAllText(Path.Combine(output, key + ".html"), Document(panel, mode == ThemeMode.Dark));
             examples.Append("<article><h2>").Append(other ? "Pie with Other" : "Donut").Append(" · ").Append(mode).Append("</h2>").Append(panel).Append("</article>");
-            chart.WithSize(390, 420);
+            chart.Size(390, 420);
             File.WriteAllBytes(Path.Combine(output, "static-" + key + "-390.png"), chart.ToPng());
         }
         var controls = "<header><h1>Responsive pie and donut charts</h1><label>Maximum chart width<select id='width'><option value='390'>390 px</option><option value='1024'>1024 px</option><option value='1440'>1440 px</option><option value='100%'>Fit available width</option></select></label>"

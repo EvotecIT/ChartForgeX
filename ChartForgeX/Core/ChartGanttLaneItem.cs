@@ -5,7 +5,7 @@ namespace ChartForgeX.Core;
 
 /// <summary>
 /// Represents one item in a Gantt lane, such as an incident: a start, an optional end, a category key resolved through
-/// <see cref="ChartOptions.StateCategories"/> (for example a severity), a short label, and optional tooltip detail.
+/// <see cref="ChartStateTimelineOptions.Categories"/> (for example a severity), a short label, and optional tooltip detail.
 /// Times are OLE Automation dates holding UTC instants.
 /// </summary>
 public readonly struct ChartGanttLaneItem {
@@ -13,7 +13,7 @@ public readonly struct ChartGanttLaneItem {
     /// distinct instants at the 100-microsecond time-axis display resolution.</summary>
     /// <param name="start">The start instant.</param>
     /// <param name="end">The end instant, later than <paramref name="start"/>, or null while the item is still open;
-    /// open items run to the UTC instant set by <see cref="Chart.WithGanttLaneNow"/>
+    /// open items run to the UTC instant set by <see cref="Chart.GanttLaneNow"/>
     /// or, when that is not set, slightly past the latest time in the chart.</param>
     /// <param name="category">The category key, for example <c>critical</c>.</param>
     /// <param name="label">Optional short text drawn inside the bar when it fits.</param>

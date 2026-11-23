@@ -5,13 +5,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
-    /// <summary>Configures range-bar direction and captions. Multiple range-bar series share distinct category slots.</summary>
-    /// <remarks>Horizontal range bars use the primary X value axis and Y category axis, and require only range-bar series. Configure before or after adding the series.</remarks>
-    public Chart ConfigureRangeBar(Action<ChartRangeBarOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Options.RangeBar = ChartOptionConfiguration.Configure(Options.RangeBar, configure, options => options.Clone());
-        return this;
-    }
 
     /// <summary>
     /// Adds a range-bar series with the configured orientation and one distinct category slot per series.

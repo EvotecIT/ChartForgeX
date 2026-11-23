@@ -12,15 +12,15 @@ public sealed class PreparedTopologyDiagnosticSnapshotTests {
     [InlineData(false, TopologyEdgeRouting.Curved)]
     [InlineData(true, TopologyEdgeRouting.Curved)]
     public void AnalysisUsesRenderedFrameAndFitCoordinates(bool fit, TopologyEdgeRouting routing) {
-        var chart = TopologyChart.Create().WithViewport(860, 440, 24).WithTitle("Measured topology frame")
-            .WithLegend(TopologyLegend.Default().AddNodeKind("Server", TopologyNodeKind.Server, symbol: "S"))
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(860, 440, 24)).Title("Measured topology frame")
+            .Legend(TopologyLegend.Default().AddNodeKind("Server", TopologyNodeKind.Server, symbol: "S"))
             .AddGroup("group", "Services", 50, 80, 700, 240)
             .AddNode("source", "Source caption", 90, 140, groupId: "group", width: 60, height: 40)
             .AddNode("target", "Target caption", 640, 140, groupId: "group", width: 60, height: 40)
             .AddNode("wall", "Wall", 380, 140, groupId: "group", width: 60, height: 100)
             .AddNodePort("source", "out", TopologyEdgePort.Right, .3)
             .AddEdge("route", "source", "target", routing: routing)
-            .WithEdgeNamedPorts("route", "out", null);
+            .UpdateEdge("route", e => e.SourcePortId("out").TargetPortId(null));
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile,
             EdgeCornerStyle = TopologyEdgeCornerStyle.Rounded };
         var prepared = chart.Prepare(options);

@@ -99,10 +99,10 @@ public sealed class TextLanguageTests {
 
     [Fact]
     public void ChartAndPaginatedGridExportTheExplicitLanguage() {
-        var chart = Chart.Create().WithTitle("бб").ConfigureTitleStyle(s => s.WithOpenTypeLanguage("SRB"));
+        var chart = Chart.Create().Title("бб").TitleStyle(s => s.OpenTypeLanguageTag("SRB"));
         var svg = chart.ToSvg();
         Assert.Contains("font-language-override:'SRB '", svg);
-        var grid = new ChartGrid { Title = "бб" }; grid.TitleStyle.WithOpenTypeLanguage("BGR"); grid.Add(chart);
+        var grid = new ChartGrid { Title = "бб" }; grid.TitleStyle.OpenTypeLanguageTag("BGR"); grid.Add(chart);
         var page = Assert.Single(grid.Paginate(1));
         Assert.Equal("BGR ", page.Grid.TitleStyle.OpenTypeLanguageTag);
         Assert.Contains("font-language-override:'BGR '", page.Grid.ToSvg());
@@ -115,11 +115,11 @@ public sealed class TextLanguageTests {
         try {
             FontRegistry.Register("CFX Language Fitting", path);
             const string sourceLabel = "бббббб";
-            var chart = Chart.Create().WithSize(360, 600).WithXLabels(sourceLabel).WithXAxisLabelAngle(0)
-                .ConfigureTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
+            var chart = Chart.Create().Size(360, 600).XLabels(sourceLabel).XAxis(x => x.LabelAngle(0))
+                .TickLabelStyle(s => s.FontFamily("CFX Language Fitting").FontSize(100).FontWeight("400"))
                 .AddBar("Value", new[] { new ChartPoint(1, 1) });
             chart.Options.YAxis.Visible = false;
-            chart.Options.TickLabelStyle.WithOpenTypeLanguage("BGR");
+            chart.Options.TickLabelStyle.OpenTypeLanguageTag("BGR");
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 600))));
             var document = XDocument.Parse(prepared.ToSvg());
             var selected = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "axis-x-label")
@@ -145,7 +145,7 @@ public sealed class TextLanguageTests {
     [Fact]
     public void HtmlGridHeadersPreserveLanguageAndExplicitDefaultReset() {
         var grid = new ChartGrid { Title = "бб", Subtitle = "HH" }; grid.Add(Chart.Create());
-        grid.TitleStyle.WithOpenTypeLanguage("SRB"); grid.SubtitleStyle.WithOpenTypeLanguage("normal");
+        grid.TitleStyle.OpenTypeLanguageTag("SRB"); grid.SubtitleStyle.OpenTypeLanguageTag("normal");
         var renderer = new HtmlChartGridRenderer();
         foreach (var html in new[] { renderer.RenderFragment(grid), renderer.RenderPage(grid) }) {
             var decoded = System.Net.WebUtility.HtmlDecode(html);
@@ -160,8 +160,8 @@ public sealed class TextLanguageTests {
         File.WriteAllBytes(path, Bytes());
         try {
             FontRegistry.Register("CFX Language Grid", path);
-            var grid = new ChartGrid { Title = "бббббб" }; grid.Add(Chart.Create().WithSize(400, 300));
-            grid.TitleStyle.WithFontFamily("CFX Language Grid").WithFontSize(100).WithWeight("400").WithOpenTypeLanguage("BGR");
+            var grid = new ChartGrid { Title = "бббббб" }; grid.Add(Chart.Create().Size(400, 300));
+            grid.TitleStyle.FontFamily("CFX Language Grid").FontSize(100).FontWeight("400").OpenTypeLanguageTag("BGR");
             var doc = XDocument.Parse(grid.ToSvg());
             var header = doc.Descendants().First(e => (string?)e.Attribute("data-cfx-role") == "frame-heading");
             var width = double.Parse(doc.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture) - grid.Padding * 2;
@@ -180,8 +180,8 @@ public sealed class TextLanguageTests {
         try {
             FontRegistry.Register("CFX Language Radial", path);
             var chart = Chart.Create().AddProgressRing("бб", new[] { new ChartPoint(0, 40) });
-            chart.Options.ShowProgressRingCenterLabel = true;
-            var style = new TextStyleOverride().WithFontFamily("CFX Language Radial").WithWeight("400").WithOpenTypeLanguage("BGR");
+            chart.Options.Progress.ShowRingCenterLabel = true;
+            var style = new TextStyleOverride().FontFamily("CFX Language Radial").FontWeight("400").OpenTypeLanguageTag("BGR");
             var radius = ProgressRingLayout.RequestedCenterRadius(chart, chart.Series[0], 300, "бб", 100, 1, style);
             Assert.True(radius * 2 >= Font().WithLanguage("BGR ").Measure("бб", 100) + 20, "The ring must reserve localized text and horizontal padding.");
         } finally { FontRegistry.Clear(); File.Delete(path); }
@@ -194,11 +194,11 @@ public sealed class TextLanguageTests {
     [InlineData("650", "normal")]
     public void NumericRoleWeightsRemainSupportedWhenLanguageIsExplicit(string weight, string language) {
         var grid = new ChartGrid { Title = "Language", Subtitle = "Forms" }; grid.Add(Chart.Create());
-        grid.TitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
-        grid.SubtitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
+        grid.TitleStyle.FontWeight(weight).OpenTypeLanguageTag(language);
+        grid.SubtitleStyle.FontWeight(weight).OpenTypeLanguageTag(language);
         Assert.Contains("font-weight=\"" + weight + "\"", grid.ToSvg());
-        var chart = Chart.Create().WithSize(360, 260).WithDataLabels()
-            .ConfigureDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
+        var chart = Chart.Create().Size(360, 260).DataLabels()
+            .DataLabelStyle(s => s.FontWeight(weight).OpenTypeLanguageTag(language))
             .AddProgressRing("Language", new[] { new ChartPoint(0, 40) });
         Assert.Contains("font-weight=\"" + weight + "\"", chart.ToSvg());
         Assert.NotEmpty(chart.ToPng());
@@ -211,7 +211,7 @@ public sealed class TextLanguageTests {
         Assert.Equal("SRB ", style.OpenTypeLanguageTag);
         Assert.Equal("BGR ", copy.OpenTypeLanguageTag);
         Assert.Equal("SRB ", new TextStyleOverride().Resolve(style).OpenTypeLanguageTag);
-        Assert.Null(new TextStyleOverride().WithOpenTypeLanguage("normal").Resolve(style).OpenTypeLanguageTag);
+        Assert.Null(new TextStyleOverride().OpenTypeLanguageTag("normal").Resolve(style).OpenTypeLanguageTag);
     }
 
     [Theory]

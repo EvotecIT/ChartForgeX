@@ -15,7 +15,7 @@ public sealed class PolarFormsResponsiveBrowserTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public async Task SourceNavigationCrossesBreaksWithoutJoiningGeometryAndSurvivesNativeResponsiveReplacement(bool dark, bool narrow) {
         if (!Enabled) return;
-        var chart = PolarDisconnectedCurveTests.Create(800, dark).WithAxes().WithHeader(true).WithTitle("Directional observations");
+        var chart = PolarDisconnectedCurveTests.Create(800, dark).Axes().ShowHeader(true).Title("Directional observations");
         chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Enable(ChartInteractionFeatures.Export);

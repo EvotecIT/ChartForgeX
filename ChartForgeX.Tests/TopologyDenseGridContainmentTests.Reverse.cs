@@ -37,9 +37,9 @@ public sealed partial class TopologyDenseGridContainmentTests {
     [Fact]
     public void FittingFractionalReverseFramesKeepTheirNativePositions() {
         foreach (var direction in new[] { TopologyLayoutDirection.RightToLeft, TopologyLayoutDirection.BottomToTop }) {
-            var chart = TopologyChart.Create().WithViewport(760.5, 570.5, 28).WithLayout(TopologyLayoutMode.DenseGrouped, direction);
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(760.5, 570.5, 28)).LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(direction);
             foreach (var id in new[] { "first", "second" })
-                chart.AddAutoGroup(id, id).WithGroupLayout(id, TopologyGroupLayoutPolicy.Grid)
+                chart.AddAutoGroup(id, id).UpdateGroup(id, g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid))
                     .AddAutoNode(id + "-node", id, groupId: id, width: 132, height: 58);
             var groups = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).ToInterchangeEnvelope().Groups;
             var first = groups.Single(group => group.Id == "first");
@@ -65,7 +65,7 @@ public sealed partial class TopologyDenseGridContainmentTests {
         chart.AddNode("fixed-node", "Fixed card", pinned.X + (horizontal ? 10 : 20), pinned.Y + (horizontal ? 100 : 30),
                 groupId: "g0", width: 36, height: 24)
             .AddEdge("manual", "fixed-node", "g1-n0", "Manual", routing: TopologyEdgeRouting.Orthogonal)
-            .WithEdgeWaypoints("manual", center).WithEdgeLabelAnchor("manual", center).WithEdgeRouteLane("manual", 18);
+            .EdgeWaypoints("manual", center).EdgeLabelAnchor("manual", center).EdgeRouteLane("manual", 18);
         var options = new TopologyRenderOptions { IncludeLegend = false, CanvasSurfaceStyle = surface };
         var prepared = chart.Prepare(options); var facts = prepared.ToInterchangeEnvelope();
         CaptureReverse("reverse-manual-" + direction + (surface == TopologyCanvasSurfaceStyle.Plain ? "" : "-" + surface), prepared);
@@ -88,12 +88,12 @@ public sealed partial class TopologyDenseGridContainmentTests {
 
     private static TopologyChart ReverseGrid(TopologyLayoutDirection direction, int width) {
         var horizontal = direction == TopologyLayoutDirection.RightToLeft;
-        var chart = TopologyChart.Create().WithViewport(width, 570, 28).WithLayout(TopologyLayoutMode.DenseGrouped, direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, 570, 28)).LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(direction)
             .AddGroup("g0", "Fixed", horizontal ? 530 : 80, 90, horizontal ? 190 : 500, horizontal ? 150 : 170)
-            .WithGroupLayout("g0", TopologyGroupLayoutPolicy.Grid);
+            .UpdateGroup("g0", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid));
         for (var groupIndex = 1; groupIndex < (horizontal ? 3 : 5); groupIndex++) {
             var id = "g" + groupIndex;
-            chart.AddAutoGroup(id, "Auto " + groupIndex).WithGroupLayout(id, TopologyGroupLayoutPolicy.Grid);
+            chart.AddAutoGroup(id, "Auto " + groupIndex).UpdateGroup(id, g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid));
             if (!horizontal) { chart.Groups[groupIndex].Width = 500; chart.Groups[groupIndex].Height = 170; }
             for (var nodeIndex = 0; nodeIndex < (groupIndex == 1 ? horizontal ? 2 : 5 : 1); nodeIndex++)
                 chart.AddAutoNode(id + "-n" + nodeIndex, "Card " + nodeIndex, groupId: id, width: 132, height: 58);

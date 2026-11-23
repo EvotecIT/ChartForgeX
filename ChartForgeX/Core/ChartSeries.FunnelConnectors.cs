@@ -15,7 +15,7 @@ public sealed partial class ChartSeries {
     /// <param name="fromSourceIndex">The zero-based existing source observation, including the current last source.</param>
     /// <param name="style">Immutable paint, or null to inherit.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithFunnelConnectorStyle(int fromSourceIndex, ChartFunnelConnectorStyle? style) {
+    public ChartSeries FunnelConnectorStyle(int fromSourceIndex, ChartFunnelConnectorStyle? style) {
         if (Kind != ChartSeriesKind.Funnel) throw new NotSupportedException("Connection paint applies only to Funnel source observations.");
         ValidatePointIndex(fromSourceIndex);
         while (_funnelConnectorStyles.Count <= fromSourceIndex) _funnelConnectorStyles.Add(null);

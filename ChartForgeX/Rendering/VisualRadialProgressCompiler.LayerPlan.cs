@@ -42,7 +42,7 @@ internal static partial class VisualRadialProgressCompiler {
             _layers = new Layer[series.RadialLayers.Count]; var centerRadius = maximum;
             for (var index = 0; index < _layers.Length; index++) {
                 var layer = series.RadialLayers[index];
-                var radius = outer * layer.RadiusRatio; var stroke = outer * layer.StrokeRatio * chart.Options.RadialProgressStrokeScale;
+                var radius = outer * layer.RadiusRatio; var stroke = outer * layer.StrokeRatio * chart.Options.Progress.RadialStrokeScale;
                 centerRadius = Math.Min(centerRadius, Math.Max(0, radius - stroke / 2));
                 var color = ChartColorMath.WithOpacity(layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), layer.Opacity);
                 var display = ChartNumericFormatter.FormatValue(chart.Options, layer.Value);
@@ -53,7 +53,7 @@ internal static partial class VisualRadialProgressCompiler {
                     Color = color, Paint = VisualChartPaint.Series(series, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), index, layer.Color.HasValue).WithOpacity(color, layer.Opacity),
                     Separators = layer.SeparatorCount, SeparatorColor = layer.SeparatorColor ?? colors.Surface,
                     SeparatorStroke = layer.SeparatorStrokeWidth, SeparatorInset = layer.SeparatorInsetRatio,
-                    PinStateColors = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None,
+                    PinStateColors = chart.Options.StateTimeline.PinColorsInForcedColors && series.StateRole != ChartSeriesState.None,
                     ObservationId = series.ObservationIds.TryGetValue(index, out var id) ? id.Value : null,
                     AuthoredLabel = index < series.PreparedLabels.Count ? series.PreparedLabels[index] : null
                 };

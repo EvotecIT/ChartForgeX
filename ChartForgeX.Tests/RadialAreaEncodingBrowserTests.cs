@@ -60,14 +60,14 @@ public sealed class RadialAreaEncodingBrowserTests {
         var points = reordered ? original.AsEnumerable().Reverse().ToArray() : original;
         var series = new ChartSeries(new ChartSeriesId("observed"), reordered ? "Updated measurements" : "Measured requests", ChartSeriesKind.RadialColumn, points);
         var ids = new[] { "north", "south", "east" };
-        for (var index = 0; index < points.Length; index++) series.WithObservationId(index, new ChartObservationId(ids[(int)points[index].X - 1]));
+        for (var index = 0; index < points.Length; index++) series.ObservationId(index, new ChartObservationId(ids[(int)points[index].X - 1]));
         var peer = new ChartSeries(new ChartSeriesId("follow-up"), "Follow-up", ChartSeriesKind.RadialColumn,
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(4, 80) });
-        if (reordered) { series.WithStackGroup("requests"); peer.WithStackGroup("requests"); }
-        var chart = Chart.Create().WithSize(width, 560).WithFontFamily(BrowserProofFonts.Family)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Requests by intake channel").WithXLabels("North", "South", "East", "West").WithYAxisBounds(0, 140)
-            .WithLegend().WithDataLabels(false).WithRadialGeometry(new(-90, 270, .15, .18, .1, valueEncoding: ChartRadialValueEncoding.Area));
+        if (reordered) { series.StackGroup("requests"); peer.StackGroup("requests"); }
+        var chart = Chart.Create().Size(width, 560).FontFamily(BrowserProofFonts.Family)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Requests by intake channel").XLabels("North", "South", "East", "West").YAxis(y => y.Bounds(0, 140))
+            .Legend().DataLabels(false).RadialGeometry(new(-90, 270, .15, .18, .1, valueEncoding: ChartRadialValueEncoding.Area));
         chart.Options.YAxis.TickCount = 4; chart.Options.YAxis.Reversed = reordered; chart.Options.XAxis.Reversed = reordered;
         return reordered ? chart.AddSeries(peer).AddSeries(series) : chart.AddSeries(series).AddSeries(peer);
     }

@@ -19,7 +19,7 @@ public sealed class ComparisonMarkupTests {
             var values = dumbbell ? "20 -10 -5 15" : "20 -5";
             var source = "```chartforgex chart v1\ntype " + kind + "\ntitle Changes\nsize " + width + "x360\nlabels North South\nseries Comparison\nvalues " + values + "\noption " + kind + "Orientation " + orientation + "\n```";
             var parsed = new MarkupChartParser().Parse(source); Assert.Empty(parsed.Diagnostics);
-            var direct = Chart.Create().WithTitle("Changes").WithSize(width, 360).WithXLabels("North", "South");
+            var direct = Chart.Create().Title("Changes").Size(width, 360).XLabels("North", "South");
             if (dumbbell) direct.AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 20, -10), new ChartDumbbell(2, -5, 15) });
             else direct.AddLollipop("Comparison", new[] { new ChartPoint(1, 20), new ChartPoint(2, -5) });
             direct.Options.LollipopOrientation = direct.Options.DumbbellOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;

@@ -16,7 +16,7 @@ public sealed class SankeyOptionsTests {
     [InlineData(ChartSankeyAlignment.Justify, 0, 1, 2, 3, 3, 0, 0, 3)]
     [InlineData(ChartSankeyAlignment.CenterSources, 0, 1, 2, 3, 1, 2, 0, 1)]
     public void UnequalPathsUseTheSelectedLayersAndOneTruthfulFlowScale(ChartSankeyAlignment alignment, params int[] layers) {
-        var chart = UnequalPaths().ConfigureSankey(options => { options.Alignment = alignment; options.NodeWidth = 18; options.NodeGap = 24; });
+        var chart = UnequalPaths().Sankey(options => { options.Alignment = alignment; options.NodeWidth = 18; options.NodeGap = 24; });
         var nodes = chart.Series[0].Nodes.ToArray(); var flows = chart.Series[0].FlowLinks.ToArray();
         var prepared = Prepare(chart); var targets = Targets(prepared);
         Assert.Equal(layers, targets.Where(IsNode).Select(node => (int)Number(node, "layer")));
@@ -39,7 +39,7 @@ public sealed class SankeyOptionsTests {
     [InlineData(ChartSankeyVerticalAlignment.Center)]
     [InlineData(ChartSankeyVerticalAlignment.Bottom)]
     public void VerticalPlacementUsesEachColumnsUnusedSpaceWithoutChangingGapOrThickness(ChartSankeyVerticalAlignment alignment) {
-        var chart = OrderedBranches().ConfigureSankey(options => {
+        var chart = OrderedBranches().Sankey(options => {
             options.NodeOrder = ChartSankeyNodeOrder.Input; options.VerticalAlignment = alignment; options.NodeGap = 24; options.NodeWidth = 18;
         });
         var prepared = Prepare(chart);
@@ -58,8 +58,8 @@ public sealed class SankeyOptionsTests {
     [InlineData(ChartSankeyNodeOrder.LabelAscending, "b", "a", "z")]
     [InlineData(ChartSankeyNodeOrder.LabelDescending, "z", "b", "a")]
     public void DisplayOrderingRetainsTiesAuthoredIdentityAndPointStyleIndexes(ChartSankeyNodeOrder order, params string[] expected) {
-        var chart = OrderedBranches().ConfigureSankey(options => { options.NodeOrder = order; options.NodeFill = ChartColor.Black; });
-        var authored = ChartColor.FromHex("#7356BD"); chart.Series[0].WithPointColor(1, authored);
+        var chart = OrderedBranches().Sankey(options => { options.NodeOrder = order; options.NodeFill = ChartColor.Black; });
+        var authored = ChartColor.FromHex("#7356BD"); chart.Series[0].PointColor(1, authored);
         var prepared = Prepare(chart);
         Assert.Equal(expected, prepared.Regions.Where(region => region.Role == "sankey-node" && region.Id != "series-0-node-root")
             .OrderBy(region => region.Bounds.Top).Select(region => region.Id.Substring("series-0-node-".Length)));
@@ -77,18 +77,18 @@ public sealed class SankeyOptionsTests {
     [InlineData(ThemeMode.Dark)]
     public void FamilyPaintRespectsPointOverridesAndClampsRadiusInTheSharedScene(ThemeMode mode) {
         var point = ChartColor.FromHex("#7356BD"); var nodeFill = ChartColor.FromHex("#365F63"); var ribbonFill = ChartColor.FromHex("#607DAA");
-        var chart = OrderedBranches().ConfigureSankey(options => {
+        var chart = OrderedBranches().Sankey(options => {
             options.NodeFill = nodeFill; options.RibbonFill = ribbonFill; options.RibbonOpacity = .6; options.NodeWidth = 18; options.NodeCornerRadius = 30;
         });
         chart.Series[0].Color = ChartColor.Black;
-        chart.Series[0].WithPointColor(1, point).WithNodeState("a", ChartSeriesState.Warning);
+        chart.Series[0].PointColor(1, point).NodeState("a", ChartSeriesState.Warning);
         var prepared = Prepare(chart, mode);
         var bars = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "sankey-node-mark").ToArray();
         Assert.Equal(new[] { nodeFill, point, nodeFill, nodeFill }, bars.Select(node => node.Fill!.Value));
         Assert.All(bars, node => Assert.Equal(Math.Min(node.Bounds.Width, node.Bounds.Height) / 2, node.Radius));
         Assert.All(prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "sankey-ribbon"),
             ribbon => Assert.Equal(ChartColorMath.WithOpacity(ribbonFill, .6), ribbon.Fill));
-        chart.Series[0].WithPointColor(0, point);
+        chart.Series[0].PointColor(0, point);
         Assert.All(Prepare(chart, mode).Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "sankey-ribbon"),
             ribbon => Assert.Equal(ChartColorMath.WithOpacity(point, .6), ribbon.Fill));
     }
@@ -97,7 +97,7 @@ public sealed class SankeyOptionsTests {
     public void PreparedGeometryAndPaintRemainDetachedFromLaterOptionEdits() {
         var chart = UnequalPaths(); var prepared = Prepare(chart);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-        chart.ConfigureSankey(options => {
+        chart.Sankey(options => {
             options.Alignment = ChartSankeyAlignment.Center; options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelDescending; options.NodeWidth = 18; options.NodeGap = 24; options.NodeCornerRadius = 0;
             options.NodeFill = ChartColor.Black; options.RibbonFill = ChartColor.Black; options.RibbonOpacity = .8;
@@ -128,7 +128,7 @@ public sealed class SankeyOptionsTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => options.NodeOrder = (ChartSankeyNodeOrder)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => options.NodeWidth = 0);
         Assert.Throws<ArgumentOutOfRangeException>(() => options.RibbonOpacity = 1.1);
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureSankey(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Sankey((Action<ChartSankeyOptions>)null!));
         options.NodeGap = 0; options.NodeCornerRadius = 0; options.RibbonOpacity = 0;
         Assert.NotEmpty(Prepare(chart).ToPng(new VisualRenderOptions(supersampling: 1)));
         options.RibbonOpacity = 1; options.NodeWidth = 1000;
@@ -150,7 +150,7 @@ public sealed class SankeyOptionsTests {
         new ChartNode("root", "Root"), new ChartNode("b", "Alpha"), new ChartNode("z", "alpha"), new ChartNode("a", "Alpha")
     }, new[] { new ChartFlowLink("to-z", "root", "z", 7), new ChartFlowLink("to-b", "root", "b", 4), new ChartFlowLink("to-a", "root", "a", 2) });
     private static PreparedVisual Prepare(Chart chart, ThemeMode mode = ThemeMode.Light) {
-        chart.Series[0].WithDataLabels(false);
+        chart.Series[0].ShowDataLabels(false);
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: false)));
     }
     private static XElement[] Targets(PreparedVisual prepared) => XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => node.Attribute("data-cfx-target-kind") != null).ToArray();

@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class FlowEffectiveHeadingObservationTests {
     [Fact]
     public void FlowPortableRestorationRetainsSourceHeadingsAndTheSeparateCallerFrame() {
-        var flow=FlowArtifact.Create("flow-effective-heading").WithTitle("Model flow").WithSubtitle("Model subtitle").WithSize(640,400).AddStep("step","ChartForgeX");
+        var flow=FlowArtifact.Create("flow-effective-heading").Title("Model flow").Subtitle("Model subtitle").Width(640).Height(400).Padding(24).AddStep("step","ChartForgeX");
         var context=new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640,400),24),VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family),
             frame:new VisualFrame(title:"Caller flow",subtitle:"Caller subtitle",showLegend:false,transparentBackground:true));
         var before=flow.Prepare(context);var saved=before.ToArtifact().ToInterchangeEnvelope();var json=saved.ToJson();var read=VisualArtifactInterchangeEnvelope.FromJson(json);

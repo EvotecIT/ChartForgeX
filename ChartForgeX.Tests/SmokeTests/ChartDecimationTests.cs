@@ -34,7 +34,7 @@ internal static partial class SmokeTests {
 
     private static void DecimatedChartsPreserveSourcePointIdentities() {
         var points = Enumerable.Range(0, 120).Select(index => new ChartPoint(index, Math.Cos(index / 8d) * 10d)).ToArray();
-        var chart = Chart.Create().WithSize(640, 360).AddDecimatedLine("Latency", points, 24, ChartDecimationMode.MinMax);
+        var chart = Chart.Create().Size(640, 360).AddDecimatedLine("Latency", points, 24, ChartDecimationMode.MinMax);
         var series = chart.Series[0];
         Assert(series.IsDecimated && series.SourcePointCount == 120 && series.Points.Count <= 24, "Decimated series should expose truthful source and rendered counts.");
         Assert(series.DecimationMode == ChartDecimationMode.MinMax && series.SourcePointIndices.Count == series.Points.Count, "Decimated series should expose its algorithm and source-index mapping.");
@@ -80,9 +80,9 @@ internal static partial class SmokeTests {
         var interactiveHtml = chart.ToInteractiveHtmlFragment();
         Assert(PreparedPointTargetCount(interactiveHtml) == series.Points.Count,
             "Interactive adaptive trends should retain every source observation's completed target bounds for tooltips, scenarios and keyboard interaction.");
-        var sparklineSvg = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToSvg();
+        var sparklineSvg = Chart.Create().Sparkline().AddAdaptiveLine("Signal", points, 320).ToSvg();
         Assert(!sparklineSvg.Contains("data-cfx-role=\"line-point-target\"", StringComparison.Ordinal), "Static adaptive sparklines should omit interaction-only point targets.");
-        var sparklineHtml = Chart.Create().WithSparkline().AddAdaptiveLine("Signal", points, 320).ToInteractiveHtmlFragment();
+        var sparklineHtml = Chart.Create().Sparkline().AddAdaptiveLine("Signal", points, 320).ToInteractiveHtmlFragment();
         Assert(PreparedPointTargetCount(sparklineHtml) == series.Points.Count,
             "Interactive adaptive sparklines should preserve observation target bounds even when static chrome and visible markers stay suppressed.");
 

@@ -50,7 +50,7 @@ public sealed class HistogramOptionsTests {
     public void AggregatesPreserveCountsSourceQuantitiesAndUndefinedEmptyMeans(ChartHistogramAggregation aggregation, double first, double second) {
         var observations = new[] { new ChartPoint(.25, 6), new ChartPoint(.75, -6), new ChartPoint(2, -9) };
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d, 5d });
-        var chart = Chart.Create().WithAxes(false).WithDataLabels().AddHistogram("Quantity", observations, layout, aggregation);
+        var chart = Chart.Create().Axes(false).DataLabels().AddHistogram("Quantity", observations, layout, aggregation);
         var bins = chart.Series[0].HistogramBins;
         Assert.Equal(new[] { 2, 1, 0 }, bins.Select(bin => bin.Count));
         Assert.Equal(first, bins[0].Value); Assert.Equal(second, bins[1].Value);
@@ -95,10 +95,10 @@ public sealed class HistogramOptionsTests {
     public void DensityRectanglesUseActualWidthsAndEqualAreasAcrossSvgAndNativeRaster() {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 4d });
         var red = ChartColor.FromHex("#C52E3C");
-        var chart = Chart.Create().WithAxes(false).WithBarStyle(ChartBarStyle.SegmentedCapsule)
+        var chart = Chart.Create().Axes(false).Bars(b => b.Style(ChartBarStyle.SegmentedCapsule))
             .AddHistogram("Equal quantity", new[] { .25, .75, 2d, 3d }, layout, ChartHistogramEncoding.Density, red);
         chart.Options.ShowGrid = false;
-        chart.Options.XAxis.WithBounds(0, 4); chart.Options.YAxis.WithBounds(0, 2);
+        chart.Options.XAxis.Bounds(0, 4); chart.Options.YAxis.Bounds(0, 2);
         var prepared = Prepare(chart);
         var narrow = Bounds(prepared, 0, 0); var wide = Bounds(prepared, 0, 1);
         Assert.Equal(narrow.Right, wide.Left, 8);
@@ -128,14 +128,14 @@ public sealed class HistogramOptionsTests {
     [InlineData(-1, true)]
     public void DensityRetainsItsZeroOriginWhenAuthoredBoundsCropTheRepresentedArea(int sign, bool clipping) {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d });
-        var chart = Chart.Create().WithAxes(false).WithGrid(false)
+        var chart = Chart.Create().Axes(false).ShowGrid(false)
             .AddHistogram("Quantity", new[] { new ChartPoint(1, 6 * sign) }, layout,
                 ChartHistogramAggregation.Sum, ChartHistogramEncoding.Density);
-        chart.Options.YAxis.WithBounds(sign > 0 ? 1 : -4, sign > 0 ? 4 : -1);
+        chart.Options.YAxis.Bounds(sign > 0 ? 1 : -4, sign > 0 ? 4 : -1);
         chart.Options.ClipMarksToPlot = clipping;
         var prepared = Prepare(chart);
         var mark = Bounds(prepared, 0, 0);
-        chart.Options.YAxis.WithBounds(sign > 0 ? 0 : -3, sign > 0 ? 3 : 0);
+        chart.Options.YAxis.Bounds(sign > 0 ? 0 : -3, sign > 0 ? 3 : 0);
         var reference = Bounds(Prepare(chart), 0, 0);
         // Density represents area from zero, even when authored bounds crop that area.
         Assert.Equal(reference.Height, mark.Height, 8);
@@ -148,7 +148,7 @@ public sealed class HistogramOptionsTests {
     [Fact]
     public void DensityStacksAndRangesUseEncodedHeightWhileTotalsRetainSignedRawAggregates() {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d, 5d });
-        var chart = Chart.Create().WithStackedBars().WithStackTotals()
+        var chart = Chart.Create().Bars(b => b.Stacked().ShowTotals())
             .AddHistogram("A", new[] { new ChartPoint(1, 6), new ChartPoint(3, -9) }, layout, ChartHistogramAggregation.Sum, ChartHistogramEncoding.Density)
             .AddHistogram("B", new[] { new ChartPoint(1, 2), new ChartPoint(3, -3) }, layout, ChartHistogramAggregation.Sum, ChartHistogramEncoding.Density);
         var prepared = Prepare(chart);
@@ -174,13 +174,13 @@ public sealed class HistogramOptionsTests {
             chart = Density(); chart.Options.YAxis.Scale = scale;
             Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         }
-        var normalized = Density().WithStackedBars(); normalized.Series[0].WithNormalization(100);
+        var normalized = Density().Bars(b => b.Stacked()); normalized.Series[0].NormalizedTo(100);
         Assert.Throws<InvalidOperationException>(() => Prepare(normalized));
         var grouped = Density().AddHistogram("Other", new[] { .5 }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d }), ChartHistogramEncoding.Density);
         Assert.Throws<InvalidOperationException>(() => Prepare(grouped));
-        var mixed = Density().WithStackedBars().AddBar("Count", new[] { new ChartPoint(.5, 2) });
+        var mixed = Density().Bars(b => b.Stacked()).AddBar("Count", new[] { new ChartPoint(.5, 2) });
         Assert.Throws<InvalidOperationException>(() => Prepare(mixed));
-        var overlapping = Density().WithStackedBars().AddHistogram("Other bounds", new[] { .5 }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d }), ChartHistogramEncoding.Density);
+        var overlapping = Density().Bars(b => b.Stacked()).AddHistogram("Other bounds", new[] { .5 }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d }), ChartHistogramEncoding.Density);
         Assert.Throws<InvalidOperationException>(() => Prepare(overlapping));
         var degenerate = ChartHistogramBinLayout.FromCount(1, 1, 1, roundBounds: false);
         Assert.Throws<ArgumentException>(() => Chart.Create().AddHistogram("No area", new[] { 1d }, degenerate, ChartHistogramEncoding.Density));
@@ -190,12 +190,12 @@ public sealed class HistogramOptionsTests {
     public void DifferentIntervalsWithIdenticalCentersNeverCollapseIntoOneStackCoordinate() {
         var left = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d, 7d, 8d, 10d });
         var right = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 4d, 6d, 8d, 10d });
-        var chart = Chart.Create().WithStackedBars().AddHistogram("Wide", new[] { 5d }, left).AddHistogram("Narrow", new[] { 5d }, right);
+        var chart = Chart.Create().Bars(b => b.Stacked()).AddHistogram("Wide", new[] { 5d }, left).AddHistogram("Narrow", new[] { 5d }, right);
         var prepared = Prepare(chart);
         Assert.Equal("0", Point(prepared, 1, 2).Metadata["data-cfx-base"]);
         Assert.Equal("1", Point(prepared, 1, 2).Metadata["data-cfx-stack-end"]);
         Assert.Equal(2, Footprint(prepared, 0, 2) / Footprint(prepared, 1, 2), 8);
-        var equivalent = Chart.Create().WithStackedBars().AddHistogram("First", new[] { 5d }, left)
+        var equivalent = Chart.Create().Bars(b => b.Stacked()).AddHistogram("First", new[] { 5d }, left)
             .AddHistogram("Same bins", new[] { 5d }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d, 7d, 8d, 10d }));
         Assert.Equal("1", Point(Prepare(equivalent), 1, 2).Metadata["data-cfx-base"]);
     }
@@ -230,10 +230,10 @@ public sealed class HistogramOptionsTests {
     [Fact]
     public void HistogramConstructionPreservesAuthoredAxisLabelsAndRejectsStaleAggregateEdits() {
         var chart = Chart.Create(); var label = new ChartAxisLabel(1, "Authored measurement label");
-        chart.Options.XAxisLabels.Add(label);
+        chart.Options.XAxis.Labels.Add(label);
         chart.AddHistogram("First", new[] { 1d, 2d }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 4d }));
         chart.AddHistogram("Second", new[] { 1d }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d, 4d }));
-        Assert.Equal(label, Assert.Single(chart.Options.XAxisLabels));
+        Assert.Equal(label, Assert.Single(chart.Options.XAxis.Labels));
         Assert.Throws<NotSupportedException>(() => chart.Series[0].Points[0] = new ChartPoint(.5, 99));
         Assert.NotNull(Prepare(chart));
     }

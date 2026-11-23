@@ -19,9 +19,9 @@ public sealed class IndependentColorDimensionTests {
     public void CulturalColorCaptionsLeaveYSizePaintAndSourceFactsIndependent(ChartSeriesKind kind, string mode, int width, bool dark) {
         var chart = ColorDimensionPresentationFixtures.Create(kind, mode, width, dark);
         var series = chart.Series[0]; var bubble = kind == ChartSeriesKind.Bubble;
-        if (mode == "uniform") series.WithColorScale(ChartColorScale.Sequential(Low, High).WithValueRange(0, 20));
+        if (mode == "uniform") series.ColorScale(ChartColorScale.Sequential(Low, High).WithValueRange(0, 20));
         var ordinary = XDocument.Parse(Prepare(chart).ToSvg());
-        series.ConfigureColorDimension(options => {
+        series.ColorDimension(options => {
             options.Name = "Temperature";
             options.ValueFormat = ChartValueFormat.Number("0.000 '°C'", CultureInfo.GetCultureInfo("fr-FR"));
         });
@@ -61,12 +61,12 @@ public sealed class IndependentColorDimensionTests {
     [InlineData(ChartSeriesKind.Treemap, false)]
     [InlineData(ChartSeriesKind.Sunburst, true)]
     public void HierarchyColorPolicyLeavesSizesTotalsAndSecondaryContextIndependent(ChartSeriesKind kind, bool discrete) {
-        var chart = Chart.Create().WithSize(800, 500).WithDataLabels(false).WithValueFormat(ChartValueFormat.Number("0.0 'items'"));
+        var chart = Chart.Create().Size(800, 500).DataLabels(false).ValueFormat(ChartValueFormat.Number("0.0 'items'"));
         var items = new[] { new ChartHierarchyItem("root", "Root", colorValue: 0),
             new ChartHierarchyItem("a", "A", "root", 9, 7.125), new ChartHierarchyItem("b", "B", "root", 4) };
         var contexts = new List<ChartSunburstLabelContext>();
         if (kind == ChartSeriesKind.Sunburst) chart.AddSunburst("Samples", items)
-            .ConfigureSunburst(options => options.SecondaryLabelFormatter = value => { contexts.Add(value); return value.FormattedValue + " secondary"; });
+            .Sunburst(options => options.SecondaryLabelFormatter = value => { contexts.Add(value); return value.FormattedValue + " secondary"; });
         else chart.AddTreemap("Samples", items);
         var scale = discrete ? ChartColorScale.Discrete(new[] { new ChartColorBand(5, Low), new ChartColorBand(null, High) })
             : ChartColorScale.Sequential(new[] { new ChartColorStop(0, Low), new ChartColorStop(8, Empty), new ChartColorStop(20, High) });

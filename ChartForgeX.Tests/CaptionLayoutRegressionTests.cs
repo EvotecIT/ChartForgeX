@@ -42,7 +42,7 @@ public sealed class CaptionLayoutRegressionTests {
     [Fact]
     public void TreemapOmitsAnUnfittingCompleteNameWhileKeepingItsMarkAndSourceFacts() {
         const string name = "A service name that cannot fit in a tiny cell";
-        var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] { new ChartHierarchyItem("service", name, value: 125) });
+        var chart = Chart.Create().DataLabels().AddTreemap("Allocation", new[] { new ChartHierarchyItem("service", name, value: 125) });
         var prepared = chart.Prepare(Context(40, 32, ThemeMode.Light, false, 0));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "treemap-label");
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "treemap-tile-mark");
@@ -88,7 +88,7 @@ public sealed class CaptionLayoutRegressionTests {
     [InlineData(320, ThemeMode.Light)]
     [InlineData(320, ThemeMode.Dark)]
     public void TreemapWrapsThePrimaryCaptionIntoSpareHeightAndKeepsItsValueAndSource(int width, ThemeMode mode) {
-        var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
+        var chart = Chart.Create().DataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("service", "Service team", value: 125)
         });
         var prepared = chart.Prepare(Context(width, 180, mode, false, 0));
@@ -110,7 +110,7 @@ public sealed class CaptionLayoutRegressionTests {
 
     [Fact]
     public void TreemapGivesItsValueRowToTheCompletePrimaryCaptionWhenOnlyTwoRowsFit() {
-        var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
+        var chart = Chart.Create().DataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("service", "Service team", value: 125)
         });
         var prepared = chart.Prepare(Context(74, 64, ThemeMode.Light, false, 0));

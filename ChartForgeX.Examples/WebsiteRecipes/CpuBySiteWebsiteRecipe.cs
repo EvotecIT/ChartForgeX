@@ -28,11 +28,11 @@ public static class CpuBySiteWebsiteRecipe {
             samples,
             sample => sample.Site,
             (site, rows) => Chart.Create()
-                .WithTitle(site)
-                .WithYAxis("CPU (%)")
+                .Title(site)
+                .YAxis(y => y.Title("CPU (%)"))
                 .AddLine("CPU", rows,
                     sample => sample.Minute, sample => sample.Cpu),
-            columns: 2).WithThemeMode(mode);
+            columns: 2).ThemeMode(mode);
 #endregion
         return report;
     }

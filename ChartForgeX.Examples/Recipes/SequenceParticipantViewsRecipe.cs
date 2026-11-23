@@ -3,8 +3,8 @@ public static class SequenceParticipantViewsRecipe {
     /// <summary>Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.</summary>
     public static SequenceArtifact Create(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create("sequence-participant-views").WithSize(variant=="compact"?390:1000,820)
-            .WithTitle("Participant views").WithSubtitle("Unused records stay editable; footer occurrences share source identity")
+        var model=SequenceArtifact.Create("sequence-participant-views").Width(variant=="compact"?390:1000).Height(820)
+            .Title("Participant views").Subtitle("Unused records stay editable; footer occurrences share source identity")
             .AddParticipant("A","Review",SequenceArtifactParticipantKind.Actor).AddParticipant("Unused","Retained unused participant")
             .AddParticipant("B","Archive").AddParticipant("Empty","Retained empty-group participant").AddParticipant("N","Audit")
             .AddMessage("A","B","Store").AddMessage("B","A","Saved",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage("A","B","Close")

@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 public sealed class KeyedPointChangesTests {
     [Fact]
     public void RollingTransactionKeepsSurvivingKeysAndEveryPresentationOverride() {
-        var series = Series().WithPointColor(1, "#123456").WithPointLabel(1, "Second")
-            .WithPointFillPattern(1, ChartFillPattern.Crosshatch)
-            .ConfigurePointDataLabelStyle(1, style => style.FontSize = 13);
+        var series = Series().PointColor(1, "#123456").PointLabel(1, "Second")
+            .PointFillPattern(1, ChartFillPattern.Crosshatch)
+            .PointDataLabelStyle(1, style => style.FontSize = 13);
         series.PointSliceOffsets.AddRange(new[] { 0d, .2, 0d });
-        var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
+        var chart = Chart.Create().Size(640, 360).AddSeries(series);
         var frozen = Prepare(chart); var svg = frozen.ToSvg(); var png = frozen.ToPng();
         var pointsView = series.Points;
         var labelsView = series.PointLabels;
@@ -42,7 +42,7 @@ public sealed class KeyedPointChangesTests {
 
     [Fact]
     public void InvalidThrowingOversizedAndCanceledBatchesLeaveInstalledFactsAndOverridesUntouched() {
-        var series = Series().WithPointColor(1, "#123456").WithPointLabel(1, "Second");
+        var series = Series().PointColor(1, "#123456").PointLabel(1, "Second");
         var chart = Chart.Create().AddSeries(series); var before = Prepare(chart).ToSvg();
         var invalid = new[] {
             new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99)), ChartObservationChange<ChartPoint>.Append(Id("a"), new ChartPoint(7, 70)) },
@@ -107,8 +107,8 @@ public sealed class KeyedPointChangesTests {
     public void SupportedPointMappedFamiliesRetainKeyedSourceFactsThroughBothNativeExports(ChartSeriesKind kind) {
         var series = new ChartSeries(new ChartSeriesId("live"), "Live", kind,
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) })
-            .WithObservationIds(new[] { Id("a"), Id("b"), Id("c") });
-        var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
+            .ObservationIds(new[] { Id("a"), Id("b"), Id("c") });
+        var chart = Chart.Create().Size(640, 360).AddSeries(series);
         var frozen = Prepare(chart); var original = frozen.ToSvg();
         series.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 25)),
             ChartObservationChange<ChartPoint>.Append(Id("d"), new ChartPoint(4, 40)) }, maximumObservations: 3);
@@ -139,6 +139,6 @@ public sealed class KeyedPointChangesTests {
     }
     private static ChartObservationId Id(string value) => new(value);
     private static ChartSeries Series() => ChartSeries.CreateScatter(new ChartSeriesId("orders"), "Orders",
-        new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) }).WithObservationIds(new[] { Id("a"), Id("b"), Id("c") });
+        new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) }).ObservationIds(new[] { Id("a"), Id("b"), Id("c") });
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
 }

@@ -37,9 +37,9 @@ internal static class NativeRangeFlashFixture {
     }
 
     internal static Chart Model(bool area, bool destination, string change = "lower", string policy = "styled", int width = 760, bool dark = false) {
-        var chart = Chart.Create().WithTitle("Native interval flash").WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithLegend(true).WithDataLabels(true).WithLuminousLineStyle();
+        var chart = Chart.Create().Title("Native interval flash").Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Legend(true).DataLabels(true).Lines(l => l.LuminousStyle());
         foreach (var key in new[] { "delivery", "comparison" }) {
             var changed = destination && key == "delivery";
             var values = new[] {
@@ -53,19 +53,19 @@ internal static class NativeRangeFlashFixture {
             var kindArea = key == "delivery" ? area : !area;
             var series = kindArea ? ChartSeries.CreateRangeArea(new ChartSeriesId(key), key, values)
                 : ChartSeries.CreateRangeBand(new ChartSeriesId(key), key, values);
-            series.WithObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later"), new ChartObservationId("disconnected"), new ChartObservationId("tail") })
-                .WithColor(key == "delivery" ? ChartColor.FromRgba(32, 96, 160, policy == "alpha" ? (byte)128 : (byte)255) : ChartColor.FromHex("#8546AD"))
-                .WithFillPattern(ChartFillPattern.Crosshatch).WithPointFillPattern(0, ChartFillPattern.DiagonalForward).WithMarkerRadius(6);
+            series.ObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later"), new ChartObservationId("disconnected"), new ChartObservationId("tail") })
+                .Color(key == "delivery" ? ChartColor.FromRgba(32, 96, 160, policy == "alpha" ? (byte)128 : (byte)255) : ChartColor.FromHex("#8546AD"))
+                .FillPattern(ChartFillPattern.Crosshatch).PointFillPattern(0, ChartFillPattern.DiagonalForward).MarkerRadius(6);
             series.Markers.Enabled = policy != "markers-off";
             series.Markers.Shape = policy == "circle" ? ChartMarkerShape.Circle : ChartMarkerShape.Diamond;
             series.Markers.Stroke = ChartColor.FromHex("#F8FAFC"); series.Markers.StrokeWidth = 1.5;
-            if (policy == "secondary" && key == "delivery") series.UseSecondaryValueAxis();
+            if (policy == "secondary" && key == "delivery") series.SecondaryAxis();
             chart.AddSeries(series);
         }
-        chart.ConfigureXAxis(axis => { axis.Minimum = 0; axis.Maximum = 4; });
-        chart.ConfigureYAxis(axis => { axis.Minimum = policy == "log" ? 1 : policy == "clipped" ? 20 : 0; axis.Maximum = policy == "clipped" ? 50 : 100;
+        chart.XAxis(axis => { axis.Min = 0; axis.Max = 4; });
+        chart.YAxis(axis => { axis.Min = policy == "log" ? 1 : policy == "clipped" ? 20 : 0; axis.Max = policy == "clipped" ? 50 : 100;
             if (policy == "log") axis.Scale = ChartScaleKind.Logarithmic; });
-        if (policy == "secondary") chart.ConfigureSecondaryYAxis(axis => { axis.Minimum = 0; axis.Maximum = 200; });
+        if (policy == "secondary") chart.SecondaryYAxis(axis => { axis.Min = 0; axis.Max = 200; });
         return chart;
     }
 

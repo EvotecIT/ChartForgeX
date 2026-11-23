@@ -14,7 +14,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         void Configure(HtmlChartInteractionOptions options, bool enabled) {
             Fit(options);
-            options.Interaction.AddScenario("review", "Measurement review", scenario => scenario.WithPlayback(30000, loop: true)
+            options.Interaction.AddScenario("review", "Measurement review", scenario => scenario.PlaybackDelayMilliseconds(30000).LoopPlayback().AutoPlay(false)
                 .AddSeriesStep("samples", "Measured samples").AddSeriesStep("reference", "Reference line"));
             if (!enabled) options.Interaction.Disable(ChartInteractionFeatures.Scenarios | ChartInteractionFeatures.StepPlayback);
         }

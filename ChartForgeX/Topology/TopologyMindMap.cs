@@ -119,7 +119,7 @@ public static class TopologyMindMapExtensions {
             edge.Metadata["mindmap.relationship"] = "parent-child";
         }
 
-        if (options.ApplyMindMapLayout) chart.WithLayout(TopologyLayoutMode.MindMap);
+        if (options.ApplyMindMapLayout) chart.LayoutMode(TopologyLayoutMode.MindMap);
         return chart;
     }
 

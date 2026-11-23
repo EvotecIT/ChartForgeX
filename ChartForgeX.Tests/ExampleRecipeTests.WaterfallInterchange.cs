@@ -27,7 +27,7 @@ public sealed partial class ExampleRecipeTests {
         Assert.Equal("cost-change", series.ObservationIds[3].Value); Assert.Equal("cost-checkpoint", series.ObservationIds[4].Value);
         Assert.Equal(35, ChartWaterfallSteps.Create(series)[^1].Value);
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal); var width = compact ? 390 : 900;
-        chart.WithSize(width, 440).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        chart.Size(width, 440).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var svg = prepared.ToSvg("portable-waterfall"); var png = prepared.ToPng();
         var document = XDocument.Parse(svg); var image = RasterImageDecoder.Decode(png);
         Assert.Equal(width, image.Width); Assert.Equal(440, image.Height);

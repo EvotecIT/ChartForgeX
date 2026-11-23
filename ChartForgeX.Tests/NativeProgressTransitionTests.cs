@@ -26,7 +26,7 @@ public sealed class NativeProgressTransitionTests {
         NativeValueIdentityProof.AssertEqual(expected, frames[1], "progress-existing-" + row);
         var svg = frames.Select(frame => frame.ToSvg("captured-progress")).ToArray();
         var png = frames.Select(frame => frame.ToPng()).ToArray();
-        beforeChart.WithFontFamily("Missing later face").WithValueFormat(ChartValueFormat.Custom(_ => "Changed"));
+        beforeChart.FontFamily("Missing later face").ValueFormat(ChartValueFormat.Custom(_ => "Changed"));
         beforeChart.Series[0].UpdateProgressItem(row, new ChartProgressItem("Changed", first, row == 0 ? 0 : -20, row == 0 ? 1 : 20));
         try {
             FontRegistry.Clear();
@@ -55,7 +55,7 @@ public sealed class NativeProgressTransitionTests {
         foreach (var count in new[] { 1, 17 }) Assert.Throws<ArgumentOutOfRangeException>(() => renderer.PrepareValueTransitionJson(initial, destination, count));
         var changed = Model(760, true, 0, .75, family); changed.Series[0].UpdateProgressItem(0, new ChartProgressItem("Reviewed fraction", .75, 0, 2));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(initial, renderer.PrepareSection(changed), 3));
-        var formatted = Model(760, true, 0, .75, family).WithValueFormat(ChartValueFormat.Custom(value => value.ToString("0.##")));
+        var formatted = Model(760, true, 0, .75, family).ValueFormat(ChartValueFormat.Custom(value => value.ToString("0.##")));
         var ordinary = renderer.PrepareSection(formatted); Assert.NotEmpty(ordinary.PreparedVisual.ToPng());
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(initial, ordinary, 3));
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
@@ -93,8 +93,8 @@ public sealed class NativeProgressTransitionTests {
 
     internal static Chart Model(int width, bool dark, int row, double reading, string family) {
         var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily(family).WithProgressHandles();
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithItalic().WithUnderline(TextDecorationStyle.Dashed));
+            .FontFamily(family).Progress(p => p.ShowHandles());
+        chart.Series[0].DataLabelStyle(style => style.Italic().UnderlineStyle(TextDecorationStyle.Dashed));
         var current = chart.Series[0].ProgressItems[row];
         chart.Series[0].UpdateProgressItem(row, new ChartProgressItem(current.Label, reading, current.Minimum, current.Maximum!.Value, current.Color));
         return chart;

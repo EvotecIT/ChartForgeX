@@ -15,13 +15,13 @@ public sealed class WaterfallObservationIdentityBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {
             ChartWaterfallItem.Delta(1, 10), ChartWaterfallItem.Subtotal(2), ChartWaterfallItem.Delta(3, 20)
-        }).WithObservationId(0, new ChartObservationId("first-change"))
-            .WithObservationId(1, new ChartObservationId("checkpoint"))
-            .WithObservationId(2, new ChartObservationId("second-change"));
+        }).ObservationId(0, new ChartObservationId("first-change"))
+            .ObservationId(1, new ChartObservationId("checkpoint"))
+            .ObservationId(2, new ChartObservationId("second-change"));
         series.UpdateWaterfallItem(2, ChartWaterfallItem.Delta(3, 25));
-        var chart = Chart.Create().WithSize(width, 360).WithTitle("Movement by stage").WithPointLegend()
-            .WithXLabels("Opening change", "Stage subtotal", "Later change")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+        var chart = Chart.Create().Size(width, 360).Title("Movement by stage").Legend(l => l.ShowPoints())
+            .XLabels("Opening change", "Stage subtotal", "Later change")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 24, 520);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => { window.waterfallIdentitySelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.waterfallIdentitySelections.push(event.detail.target)); }");

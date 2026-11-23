@@ -9,10 +9,10 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyDenseGroupedLayoutHandlesAdReplicationSubnetFixtures() {
         var chart = TopologyChart.Create()
-            .WithId("ad-dense-fixture")
-            .WithViewport(1040, 540, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
+            .Id("ad-dense-fixture")
+            .Viewport(new TopologyViewport(1040, 540, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: "#16A34A")
             .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Warning, "56 sites", symbol: "region", color: "#2563EB")
             .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: "#8B5CF6")
@@ -33,16 +33,16 @@ internal static partial class SmokeTests {
             .AddEdge("amer-branch-replication", "amer-east", "emea-west", "32 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "Q:128", tertiaryLabel: "2m ago")
             .AddEdge("apac-critical-replication", "apac-hub", "apac-anz", "142 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "Q:915", tertiaryLabel: "Just now")
             .AddEdge("subnet-overlap", "emea-subnet", "apac-subnet", "Overlap", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "10.20.2.0/24")
-            .WithGroupLayout("amer", TopologyGroupLayoutPolicy.Grid)
-            .WithGroupLayout("emea", TopologyGroupLayoutPolicy.Grid)
-            .WithGroupLayout("apac", TopologyGroupLayoutPolicy.Grid);
+            .UpdateGroup("amer", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid))
+            .UpdateGroup("emea", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid))
+            .UpdateGroup("apac", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid));
 
         var options = new TopologyRenderOptions {
             IncludeLegend = false,
             IncludeTileSubtitles = true,
             IncludeEdgeLabelBackplates = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile
-        }.WithMonitoringDashboardStyle();
+        }.MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var labelLayouts = TopologyRenderPrimitives.EdgeLabelLayouts(prepared, options);
@@ -57,10 +57,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutSeparatesDenseMembershipClusters() {
         var chart = TopologyChart.Create()
-            .WithId("force-users")
-            .WithViewport(1040, 640, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-users")
+            .Viewport(new TopologyViewport(1040, 640, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddAutoGroup("tenant", "Tenant", TopologyHealthStatus.Healthy, "3 populations", symbol: "T")
             .AddAutoGroup("segments", "User Segments", TopologyHealthStatus.Warning, "sampled cohorts", symbol: "SEG")
             .AddAutoNode("directory", "Directory", TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, "tenant", "5000 users", width: 104, height: 56, symbol: "AD");
@@ -75,8 +75,8 @@ internal static partial class SmokeTests {
         }
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-            .WithMonitoringDashboardStyle()
-            .WithFitContentToViewport();
+            .MonitoringDashboardStyle()
+            .FitContentToViewport();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var segmentNodes = prepared.Nodes.Where(node => node.Id.StartsWith("segment-", StringComparison.Ordinal)).ToList();
         var tenant = prepared.Groups.Single(group => group.Id == "tenant");
@@ -98,10 +98,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutAnchorsGroupHubs() {
         var chart = TopologyChart.Create()
-            .WithId("force-hub-anchor")
-            .WithViewport(760, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-hub-anchor")
+            .Viewport(new TopologyViewport(760, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddAutoGroup("population", "Population", TopologyHealthStatus.Warning, "cohorts")
             .AddAutoNode("population-root", "5000 Users", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "population", "population", width: 112, height: 58, symbol: "U");
 
@@ -112,8 +112,8 @@ internal static partial class SmokeTests {
         }
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-            .WithMonitoringDashboardStyle()
-            .WithFitContentToViewport();
+            .MonitoringDashboardStyle()
+            .FitContentToViewport();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var group = prepared.Groups.Single(item => item.Id == "population");
         var root = prepared.Nodes.Single(node => node.Id == "population-root");
@@ -132,10 +132,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutHonorsExplicitGroupAnchors() {
         var chart = TopologyChart.Create()
-            .WithId("force-explicit-anchors")
-            .WithViewport(640, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-explicit-anchors")
+            .Viewport(new TopologyViewport(640, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddGroup("left", "Left", 80, 90, 180, 120, TopologyHealthStatus.Healthy)
             .AddGroup("right", "Right", 380, 100, 180, 120, TopologyHealthStatus.Warning)
             .AddAutoNode("left-1", "Left 1", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left")
@@ -156,10 +156,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutHandlesZeroSizeExplicitGroupAnchors() {
         var chart = TopologyChart.Create()
-            .WithId("force-zero-size-anchor")
-            .WithViewport(640, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-zero-size-anchor")
+            .Viewport(new TopologyViewport(640, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddGroup("left", "Left", 90, 80, 0, 0, TopologyHealthStatus.Healthy)
             .AddGroup("right", "Right", 360, 90, 0, 0, TopologyHealthStatus.Warning);
 
@@ -179,12 +179,12 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutTreatsZeroOriginGroupsAsExplicitAnchors() {
         var chart = TopologyChart.Create()
-            .WithId("force-zero-origin-anchor")
-            .WithViewport(640, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-zero-origin-anchor")
+            .Viewport(new TopologyViewport(640, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddGroup("origin", "Origin", 0, 0, 160, 120, TopologyHealthStatus.Healthy)
-            .WithGroupPosition("origin", 0, 0)
+            .UpdateGroup("origin", g => g.X(0).Y(0))
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("origin-node", "Origin", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "origin")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Team, TopologyHealthStatus.Warning, "auto")
@@ -200,10 +200,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutKeepsSizeOnlyGroupsAutoAnchored() {
         var chart = TopologyChart.Create()
-            .WithId("force-size-only-auto-anchor")
-            .WithViewport(640, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-size-only-auto-anchor")
+            .Viewport(new TopologyViewport(640, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddGroup("left", "Left", 0, 0, 160, 120, TopologyHealthStatus.Healthy)
             .AddGroup("right", "Right", 0, 0, 160, 120, TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left")
@@ -221,10 +221,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutKeepsWeightedAnchorsInsideNarrowViewport() {
         var chart = TopologyChart.Create()
-            .WithId("force-narrow-weighted-anchors")
-            .WithViewport(160, 240, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-narrow-weighted-anchors")
+            .Viewport(new TopologyViewport(160, 240, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddAutoGroup("one", "One", TopologyHealthStatus.Healthy)
             .AddAutoGroup("two", "Two", TopologyHealthStatus.Warning)
             .AddAutoGroup("three", "Three", TopologyHealthStatus.Critical)
@@ -245,10 +245,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceDirectedLayoutKeepsTinyAnchorParticlesConstrained() {
         var chart = TopologyChart.Create()
-            .WithId("force-tiny-explicit-anchors")
-            .WithViewport(220, 180, 16)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .Id("force-tiny-explicit-anchors")
+            .Viewport(new TopologyViewport(220, 180, 16))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddGroup("left", "Left", 60, 42, 24, 44, TopologyHealthStatus.Healthy)
             .AddGroup("right", "Right", 136, 42, 24, 44, TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left Node", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "left", width: 96, height: 48)
@@ -268,14 +268,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringBundleRouteLabelsRemainReadable() {
         var chart = TopologyChart.Create()
-            .WithId("dense-route-label-bundle")
-            .WithViewport(1080, 520, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
+            .Id("dense-route-label-bundle")
+            .Viewport(new TopologyViewport(1080, 520, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("source", "Source Site", TopologyHealthStatus.Healthy, "6 DCs")
             .AddAutoGroup("target", "Target Site", TopologyHealthStatus.Warning, "6 DCs")
-            .WithGroupLayout("source", TopologyGroupLayoutPolicy.Grid)
-            .WithGroupLayout("target", TopologyGroupLayoutPolicy.Grid);
+            .UpdateGroup("source", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid))
+            .UpdateGroup("target", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid));
 
         for (var i = 0; i < 6; i++) {
             chart
@@ -302,7 +302,7 @@ internal static partial class SmokeTests {
             IncludeTileSubtitles = true,
             IncludeEdgeLabelBackplates = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile
-        }.WithMonitoringDashboardStyle();
+        }.MonitoringDashboardStyle();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var labels = TopologyRenderPrimitives.EdgeLabelLayouts(prepared, options);
         var svg = chart.ToSvg(options);
@@ -318,16 +318,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseGroupedLayoutPreparesLargeAdSiteSubnetFixture() {
         var chart = TopologyChart.Create()
-            .WithId("large-ad-site-subnet-fixture")
-            .WithViewport(1400, 760, 28)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
+            .Id("large-ad-site-subnet-fixture")
+            .Viewport(new TopologyViewport(1400, 760, 28))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: "#16A34A")
             .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Warning, "56 sites", symbol: "region", color: "#2563EB")
             .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: "#8B5CF6")
-            .WithGroupLayout("amer", TopologyGroupLayoutPolicy.CollapsedDots)
-            .WithGroupLayout("emea", TopologyGroupLayoutPolicy.CollapsedDots)
-            .WithGroupLayout("apac", TopologyGroupLayoutPolicy.CollapsedDots);
+            .UpdateGroup("amer", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots))
+            .UpdateGroup("emea", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots))
+            .UpdateGroup("apac", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots));
 
         var amerSites = AddDenseSitesAndSubnets(chart, "amer", "AMER", 47, 104, 10);
         var emeaSites = AddDenseSitesAndSubnets(chart, "emea", "EMEA", 56, 122, 20);
@@ -342,8 +342,8 @@ internal static partial class SmokeTests {
         AddReplicationPairs(chart, apacSites, amerSites, "apac-amer-repl", 12, TopologyHealthStatus.Critical);
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false, IncludeEdgeLabels = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithMonitoringDashboardStyle()
-            .WithFitContentToViewport();
+            .MonitoringDashboardStyle()
+            .FitContentToViewport();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var interGroupEdges = prepared.Edges.Where(edge => edge.Kind is TopologyEdgeKind.Link or TopologyEdgeKind.Replication).ToList();
         var nodeLookup = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -364,12 +364,12 @@ internal static partial class SmokeTests {
 
     private static void TopologyCollapsedDotPlacementUsesSizingColumnCount() {
         var chart = TopologyChart.Create()
-            .WithId("collapsed-dot-column-count")
-            .WithViewport(720, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped)
+            .Id("collapsed-dot-column-count")
+            .Viewport(new TopologyViewport(720, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped)
             .AddAutoGroup("users", "Users", TopologyHealthStatus.Warning)
-            .WithGroupLayout("users", TopologyGroupLayoutPolicy.CollapsedDots);
+            .UpdateGroup("users", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots));
 
         for (var i = 0; i < 49; i++) {
             chart.AddAutoNode("user-" + i.ToString("00", CultureInfo.InvariantCulture), "User " + i.ToString("00", CultureInfo.InvariantCulture), TopologyNodeKind.Person, TopologyHealthStatus.Healthy, "users");
@@ -384,9 +384,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringSingleLineRouteLabelsUseClearance() {
         var chart = TopologyChart.Create()
-            .WithId("single-line-route-label-clearance")
-            .WithViewport(520, 220, 24)
-            .WithLegend(null)
+            .Id("single-line-route-label-clearance")
+            .Viewport(new TopologyViewport(520, 220, 24))
+            .Legend((TopologyLegend?)null)
             .AddNode("amer", "AMER Hub", 70, 86, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 96, height: 56)
             .AddNode("emea", "EMEA Hub", 354, 86, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 96, height: 56)
             .AddEdge("amer-emea", "amer", "emea", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal);
@@ -394,7 +394,7 @@ internal static partial class SmokeTests {
         var options = new TopologyRenderOptions {
             IncludeLegend = false,
             IncludeEdgeLabelBackplates = false
-        }.WithMonitoringDashboardStyle();
+        }.MonitoringDashboardStyle();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var edge = prepared.Edges.Single(item => item.Id == "amer-emea");
@@ -409,9 +409,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyLayeredHierarchyRoutesAvoidNodesForWrappedChildren() {
         var chart = TopologyChart.Create()
-            .WithId("tiered-hierarchy-buses")
-            .WithViewport(620, 520, 24)
-            .WithLegend(null)
+            .Id("tiered-hierarchy-buses")
+            .Viewport(new TopologyViewport(620, 520, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(ManyChildHierarchyItems(), new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 });
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
@@ -428,14 +428,14 @@ internal static partial class SmokeTests {
         Assert(sharedBusEdges.All(edge => Math.Abs(double.Parse(edge.Metadata["hierarchy.route.busY"], CultureInfo.InvariantCulture) - edge.Waypoints[0].Y) < 0.001), "Shared hierarchy bus diagnostics should match the final normalized waypoint geometry.");
         var routeHits = edges.Select(edge => new { edge.Id, Hits = TopologyRenderPrimitives.EdgeRouteDiagnostics(prepared, edge, nodes).ObstacleHits }).Where(item => item.Hits > 0).ToList();
         Assert(routeHits.Count == 0, "Wrapped hierarchy routes should not cross any unrelated node card. Hits: " + string.Join(", ", routeHits.Select(item => item.Id + "=" + item.Hits)));
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Obstacle-aware hierarchy fan-outs should render as PNG.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle()).Length > 64, "Obstacle-aware hierarchy fan-outs should render as PNG.");
     }
 
     private static void TopologyLayeredHierarchySupportsReverseDirections() {
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("bottom-to-top-hierarchy")
-            .WithViewport(620, 520, 24)
-            .WithLegend(null)
+            .Id("bottom-to-top-hierarchy")
+            .Viewport(new TopologyViewport(620, 520, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(ManyChildHierarchyItems(), new TopologyHierarchyOptions { LayoutDirection = TopologyLayoutDirection.BottomToTop, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 }), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomRoot = bottomToTop.Nodes.Single(node => node.Id == "root");
         var bottomChildren = bottomToTop.Nodes.Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == "root").ToList();
@@ -449,9 +449,9 @@ internal static partial class SmokeTests {
         Assert(bottomHits.Count == 0, "Bottom-to-top wrapped routes should avoid node cards. Hits: " + string.Join(", ", bottomHits.Select(item => item.Id + "=" + item.Hits)));
 
         var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("right-to-left-hierarchy")
-            .WithViewport(720, 440, 24)
-            .WithLegend(null)
+            .Id("right-to-left-hierarchy")
+            .Viewport(new TopologyViewport(720, 440, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(ManyChildHierarchyItems(), new TopologyHierarchyOptions { LayoutDirection = TopologyLayoutDirection.RightToLeft, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 }), options: new TopologyRenderOptions { IncludeLegend = false });
         var rightRoot = rightToLeft.Nodes.Single(node => node.Id == "root");
         var rightChildren = rightToLeft.Nodes.Where(node => node.Metadata.TryGetValue("hierarchy.parentId", out var parent) && parent == "root").ToList();
@@ -471,9 +471,9 @@ internal static partial class SmokeTests {
             new("child", "Child", "root") { Kind = TopologyNodeKind.Person }
         };
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("single-bottom-to-top-hierarchy")
-            .WithViewport(320, 280, 24)
-            .WithLegend(null)
+            .Id("single-bottom-to-top-hierarchy")
+            .Viewport(new TopologyViewport(320, 280, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(items, new TopologyHierarchyOptions { LayoutDirection = TopologyLayoutDirection.BottomToTop, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 }), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomEdge = bottomToTop.Edges.Single();
 
@@ -481,9 +481,9 @@ internal static partial class SmokeTests {
         Assert(bottomEdge.TargetPort == TopologyEdgePort.Bottom, "Bottom-to-top single-child hierarchy routes should enter children from below after mirroring.");
 
         var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("single-right-to-left-hierarchy")
-            .WithViewport(360, 240, 24)
-            .WithLegend(null)
+            .Id("single-right-to-left-hierarchy")
+            .Viewport(new TopologyViewport(360, 240, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(items, new TopologyHierarchyOptions { LayoutDirection = TopologyLayoutDirection.RightToLeft, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 70, NodeHeight = 46 }), options: new TopologyRenderOptions { IncludeLegend = false });
         var rightEdge = rightToLeft.Edges.Single();
 
@@ -518,10 +518,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseGroupedLayoutSupportsRightToLeftFlow() {
         var chart = TopologyChart.Create()
-            .WithId("dense-right-left")
-            .WithViewport(920, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .Id("dense-right-left")
+            .Viewport(new TopologyViewport(920, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.RightToLeft)
             .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy)
             .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Healthy)
             .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Healthy)
@@ -531,12 +531,12 @@ internal static partial class SmokeTests {
             .AddEdge("amer-emea", "amer-hub", "emea-hub", "24 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .AddEdge("emea-apac", "emea-hub", "apac-hub", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle());
         var amer = prepared.Groups.Single(group => group.Id == "amer");
         var emea = prepared.Groups.Single(group => group.Id == "emea");
         var apac = prepared.Groups.Single(group => group.Id == "apac");
         var link = prepared.Edges.Single(edge => edge.Id == "amer-emea");
-        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
+        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle());
 
         Assert(amer.X > emea.X && emea.X > apac.X, "Right-to-left dense grouped layout should mirror group ordering.");
         Assert(link.SourcePort == TopologyEdgePort.Left && link.TargetPort == TopologyEdgePort.Right, "Right-to-left dense grouped edge defaults should mirror outside-facing ports.");
@@ -545,20 +545,20 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseReverseLayoutsPreserveExplicitGroupCoordinates() {
         var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("dense-explicit-rtl")
-            .WithViewport(760, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .Id("dense-explicit-rtl")
+            .Viewport(new TopologyViewport(760, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.RightToLeft)
             .AddGroup("pinned", "Pinned", 80, 90, 180, 150, TopologyHealthStatus.Healthy)
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
             .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("dense-explicit-btt")
-            .WithViewport(760, 520, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop)
+            .Id("dense-explicit-btt")
+            .Viewport(new TopologyViewport(760, 520, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.BottomToTop)
             .AddGroup("pinned", "Pinned", 90, 120, 180, 150, TopologyHealthStatus.Healthy)
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
@@ -575,10 +575,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseReverseLayoutsKeepSizeOnlyGroupsAutoPacked() {
         var prepared = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("dense-size-only-rtl")
-            .WithViewport(760, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .Id("dense-size-only-rtl")
+            .Viewport(new TopologyViewport(760, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.RightToLeft)
             .AddGroup("left", "Left", 0, 0, 180, 150, TopologyHealthStatus.Healthy)
             .AddGroup("right", "Right", 0, 0, 180, 150, TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
@@ -594,16 +594,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseReverseLayoutsRefreshRestoredEdgeGeometry() {
         var prepared = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("dense-restored-manual-route")
-            .WithViewport(760, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .Id("dense-restored-manual-route")
+            .Viewport(new TopologyViewport(760, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.RightToLeft)
             .AddGroup("pinned", "Pinned", 80, 90, 180, 150, TopologyHealthStatus.Healthy)
             .AddAutoGroup("auto", "Auto", TopologyHealthStatus.Warning)
             .AddAutoNode("pinned-node", "Pinned", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "pinned")
             .AddAutoNode("auto-node", "Auto", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "auto")
             .AddEdge("link", "pinned-node", "auto-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeWaypoints("link", new ChartForgeX.Primitives.ChartPoint(260, 180)), options: new TopologyRenderOptions { IncludeLegend = false });
+            .EdgeWaypoints("link", new ChartForgeX.Primitives.ChartPoint(260, 180)), options: new TopologyRenderOptions { IncludeLegend = false });
         var edge = prepared.Edges.Single(item => item.Id == "link");
         var pinned = prepared.Groups.Single(group => group.Id == "pinned");
         var auto = prepared.Groups.Single(group => group.Id == "auto");
@@ -616,27 +616,27 @@ internal static partial class SmokeTests {
 
     private static void TopologyMirroringInvertsRouteLanes() {
         var rightToLeft = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("rtl-route-lane")
-            .WithViewport(720, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.RightToLeft)
+            .Id("rtl-route-lane")
+            .Viewport(new TopologyViewport(720, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.RightToLeft)
             .AddAutoGroup("left", "Left", TopologyHealthStatus.Healthy)
             .AddAutoGroup("right", "Right", TopologyHealthStatus.Warning)
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
             .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeRouteLane("link", 24), options: new TopologyRenderOptions { IncludeLegend = false });
+            .EdgeRouteLane("link", 24), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
-            .WithId("btt-route-lane")
-            .WithViewport(360, 620, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop)
+            .Id("btt-route-lane")
+            .Viewport(new TopologyViewport(360, 620, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.BottomToTop)
             .AddAutoGroup("top", "Top", TopologyHealthStatus.Healthy)
             .AddAutoGroup("bottom", "Bottom", TopologyHealthStatus.Warning)
             .AddAutoNode("top-node", "Top", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "top")
             .AddAutoNode("bottom-node", "Bottom", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "bottom")
             .AddEdge("link", "top-node", "bottom-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeRouteLane("link", 18), options: new TopologyRenderOptions { IncludeLegend = false });
+            .EdgeRouteLane("link", 18), options: new TopologyRenderOptions { IncludeLegend = false });
 
         Assert(Math.Abs(rightToLeft.Edges.Single().RouteLane + 24) < 0.001, "Right-to-left mirroring should invert the route-lane sign for regenerated edge geometry.");
         Assert(Math.Abs(bottomToTop.Edges.Single().RouteLane + 18) < 0.001, "Bottom-to-top mirroring should invert the route-lane sign for regenerated edge geometry.");
@@ -644,10 +644,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseGroupedLayoutSupportsBottomToTopFlow() {
         var chart = TopologyChart.Create()
-            .WithId("dense-bottom-top")
-            .WithViewport(520, 720, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop)
+            .Id("dense-bottom-top")
+            .Viewport(new TopologyViewport(520, 720, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.BottomToTop)
             .AddAutoGroup("core", "Core", TopologyHealthStatus.Healthy)
             .AddAutoGroup("middle", "Middle", TopologyHealthStatus.Warning)
             .AddAutoGroup("edge", "Edge", TopologyHealthStatus.Critical)
@@ -657,12 +657,12 @@ internal static partial class SmokeTests {
             .AddEdge("core-middle", "core-hub", "middle-hub", "32 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .AddEdge("middle-edge", "middle-hub", "edge-hub", "58 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle());
         var core = prepared.Groups.Single(group => group.Id == "core");
         var middle = prepared.Groups.Single(group => group.Id == "middle");
         var edge = prepared.Groups.Single(group => group.Id == "edge");
         var link = prepared.Edges.Single(edgeItem => edgeItem.Id == "core-middle");
-        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
+        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle());
 
         Assert(core.Y > middle.Y && middle.Y > edge.Y, "Bottom-to-top dense grouped layout should mirror group ordering vertically.");
         Assert(link.SourcePort == TopologyEdgePort.Top && link.TargetPort == TopologyEdgePort.Bottom, "Bottom-to-top dense grouped edge defaults should mirror outside-facing ports.");
@@ -671,10 +671,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyDenseGroupedBottomToTopKeepsMultiColumnPacking() {
         var chart = TopologyChart.Create()
-            .WithId("dense-bottom-top-columns")
-            .WithViewport(900, 720, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.BottomToTop);
+            .Id("dense-bottom-top-columns")
+            .Viewport(new TopologyViewport(900, 720, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.BottomToTop);
 
         for (var i = 0; i < 6; i++) {
             var id = "group-" + i.ToString("00", CultureInfo.InvariantCulture);

@@ -165,7 +165,7 @@ public sealed class NamedTargetIdentityBrowserTests {
     private static Chart Model(string? seriesId, string name) {
         var nodes = new[] { new ChartNode("north", "North"), new ChartNode("south", "South") };
         var links = new[] { new ChartFlowLink("flow", "north", "south", 7) };
-        var chart = Chart.Create().WithSize(560, 300).WithHeader(false).WithLegend(false);
+        var chart = Chart.Create().Size(560, 300).ShowHeader(false).Legend(false);
         return seriesId is null ? chart.AddSankey(name, nodes, links)
             : chart.AddSeries(ChartSeries.CreateSankey(new ChartSeriesId(seriesId), name, nodes, links));
     }

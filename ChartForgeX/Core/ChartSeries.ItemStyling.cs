@@ -18,7 +18,7 @@ public sealed partial class ChartSeries {
     /// <typeparam name="TDatum">The series' authored observation type.</typeparam>
     /// <param name="styler">Returns immutable overrides, or null to retain the authored presentation.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithItemStyler<TDatum>(Func<ChartItemStyleContext<TDatum>, ChartItemStyle?>? styler) {
+    public ChartSeries ItemStyleBy<TDatum>(Func<ChartItemStyleContext<TDatum>, ChartItemStyle?>? styler) {
         if (TrySetRelationshipItemStyler(styler)) return this;
         if (typeof(TDatum) != DatumType)
             throw new ArgumentException("This series uses " + DatumType.Name + " observations, not " + typeof(TDatum).Name + ".", nameof(styler));

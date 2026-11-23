@@ -126,5 +126,5 @@ public sealed class HtmlTooltipPositionOptionsTests {
         File.WriteAllBytes(Path.Combine(directory, "native-position-default.png"), png);
     }
 
-    private static Chart Chart() => ChartForgeX.Core.Chart.Create().WithSize(520, 320).AddLine("Readings", ChartPoints.FromValues(1, 3, 2));
+    private static Chart Chart() => ChartForgeX.Core.Chart.Create().Size(520, 320).AddLine("Readings", ChartPoints.FromValues(1, 3, 2));
 }

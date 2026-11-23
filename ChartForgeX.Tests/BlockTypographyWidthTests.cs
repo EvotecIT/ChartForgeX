@@ -22,8 +22,8 @@ public sealed class BlockTypographyWidthTests {
     public async Task LongHeadingsRemainVisibleWithinTheContentWidth(bool graphite, bool subtitle) {
         var theme = Theme(graphite); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: 25, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); }); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: 25, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var packet = Packet(theme).AddField(0, 31, "Header");
-        if (subtitle) packet.WithSubtitle(new string('W', 80));
-        else packet.WithTitle(new string('W', 80));
+        if (subtitle) packet.Subtitle(new string('W', 80));
+        else packet.Title(new string('W', 80));
         var role = subtitle ? "visual-subtitle" : "visual-title";
         var heading = Assert.Single(XDocument.Parse(packet.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == role);
         Assert.NotEqual("none", (string?)heading.Attribute("display"));
@@ -40,7 +40,7 @@ public sealed class BlockTypographyWidthTests {
     [InlineData(true, 320)]
     public async Task LargeBitNumbersFitNarrowFieldsWithoutDroppingTheirValues(bool graphite, int width) {
         var theme = Theme(graphite); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var packet = Packet(theme).WithSize(width, 300).AddField(0, 0, "FlagA").AddField(1, 1, "FlagB").AddField(2, 31, "Data");
+        var packet = Packet(theme).Size(width, 300).AddField(0, 0, "FlagA").AddField(1, 1, "FlagB").AddField(2, 31, "Data");
         var elements = XDocument.Parse(packet.ToSvg()).Descendants().ToArray();
         var fields = elements.Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();
         var labels = elements.Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("packet-bit-", StringComparison.Ordinal) == true).ToArray();
@@ -76,7 +76,7 @@ public sealed class BlockTypographyWidthTests {
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#FF0000"); }); theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.Transparent }; });
-        var packet = Packet(theme).WithTransparentBackground().AddField(0, 31, "MMMM");
+        var packet = Packet(theme).TransparentBackground().AddField(0, 31, "MMMM");
         var svg = packet.ToSvg();
         var raster = SvgRasterizer.Rasterize(svg, 520, 300);
         Assert.Empty(raster.Diagnostics);
@@ -90,7 +90,7 @@ public sealed class BlockTypographyWidthTests {
         return VisualTheme.Graphite().WithFontFamily("Arial");
     }
 
-    private static PacketLayoutBlock Packet(VisualTheme theme) => PacketLayoutBlock.Create().WithSize(520, 300).WithPadding(18, 16, 18, 12).WithCard(false).WithTheme(theme);
+    private static PacketLayoutBlock Packet(VisualTheme theme) => PacketLayoutBlock.Create().Size(520, 300).Padding(18, 16, 18, 12).ShowCard(false).Theme(theme);
 
     private static double Measure(XElement text) => new LabelPlacementService().Measure(text.Value, new TextStyle {
         Font = new FontSpec { Family = "Arial", Weight = text.Attribute("font-weight") == null ? 400 : (int)Number(text, "font-weight") },

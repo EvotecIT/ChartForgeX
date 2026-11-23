@@ -13,8 +13,8 @@ public static partial class TopologyChartExtensions {
     /// <param name="offsetX">The horizontal label offset in pixels.</param>
     /// <param name="offsetY">The vertical label offset in pixels.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeLabelAnnotationOffset(this TopologyChart chart, string edgeId, double offsetX, double offsetY) {
-        return chart.WithEdgeLabelOffset(edgeId, offsetX, offsetY).ClearEdgeLabelAnchor(edgeId);
+    public static TopologyChart EdgeLabelAnnotationOffset(this TopologyChart chart, string edgeId, double offsetX, double offsetY) {
+        return chart.UpdateEdge(edgeId, e => e.LabelOffsetX(offsetX).LabelOffsetY(offsetY)).ClearEdgeLabelAnchor(edgeId);
     }
 
     /// <summary>
@@ -24,7 +24,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="edgeId">The edge id.</param>
     /// <param name="anchor">The canvas-space point the label leader should point to.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeLabelAnchor(this TopologyChart chart, string edgeId, ChartPoint anchor) {
+    public static TopologyChart EdgeLabelAnchor(this TopologyChart chart, string edgeId, ChartPoint anchor) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
         TopologyModelGuards.Finite(anchor.X, nameof(anchor));
@@ -49,8 +49,8 @@ public static partial class TopologyChartExtensions {
     /// <param name="x">The canvas-space horizontal point.</param>
     /// <param name="y">The canvas-space vertical point.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeLabelAnchor(this TopologyChart chart, string edgeId, double x, double y) {
-        return chart.WithEdgeLabelAnchor(edgeId, new ChartPoint(x, y));
+    public static TopologyChart EdgeLabelAnchor(this TopologyChart chart, string edgeId, double x, double y) {
+        return chart.EdgeLabelAnchor(edgeId, new ChartPoint(x, y));
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="edgeId">The edge id.</param>
     /// <param name="nodeId">The node id the label leader should point to.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeLabelAnchorNode(this TopologyChart chart, string edgeId, string nodeId) {
+    public static TopologyChart EdgeLabelAnchorNode(this TopologyChart chart, string edgeId, string nodeId) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
         nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");

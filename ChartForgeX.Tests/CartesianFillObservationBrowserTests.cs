@@ -24,7 +24,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartDifferencePoint(1, negative ? 8 : 2, negative ? 2 : 8),
             new ChartDifferencePoint(2, negative ? 2 : 8, negative ? 8 : 2)
         }));
-        chart.Series[0].WithColor(ChartColor.Transparent).ConfigureDifferenceArea(options => {
+        chart.Series[0].Color(ChartColor.Transparent).DifferenceArea(options => {
             options.PositiveFill = ChartColor.FromHex("#DF3040"); options.NegativeFill = ChartColor.FromHex("#305CDF");
             options.PositiveFillOpacity = negative ? 0 : .8; options.NegativeFillOpacity = negative ? .8 : 0;
         });
@@ -59,7 +59,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             ? new[] { new ChartPoint(0, 8), new ChartPoint(1, 2), new ChartPoint(2, 2) }
             : new[] { new ChartPoint(0, 2), new ChartPoint(1, 2), new ChartPoint(2, 8) };
         // A terminal observation on the plot edge keeps a bare stem; one inside the plot closes its outer tread.
-        var chart = position == ChartStepPosition.Start ? Frame().WithXAxisBounds(0, 2.2) : Frame().WithXAxisBounds(-.2, 2);
+        var chart = position == ChartStepPosition.Start ? Frame().XAxis(x => x.Bounds(0, 2.2)) : Frame().XAxis(x => x.Bounds(-.2, 2));
         if (kind == ChartSeriesKind.StepArea) chart.AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, points));
         else if (kind == ChartSeriesKind.StackedArea) chart.AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StackedArea, points));
         else chart.AddSeries(ChartSeries.CreateArea(new ChartSeriesId("observed"), "Observed", points));
@@ -74,7 +74,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartPoint(0, 2), new ChartPoint(.025, 8), new ChartPoint(.05, 2), new ChartPoint(2, 2)
         }));
         Configure(chart, ChartStepPosition.End);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         await AssertAvailabilityAsync(chart, 1, true, "scalar-linear-peak", expectedReadout: "8");
     }
 
@@ -90,8 +90,8 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartPoint(.05, 2 * direction), new ChartPoint(2, 2 * direction)
         }));
         Configure(chart, ChartStepPosition.End, reversedSecondary);
-        if (negative) chart.Options.YAxis.WithBounds(-10, 0);
-        chart.Series[0].WithInterpolation(interpolation);
+        if (negative) chart.Options.YAxis.Bounds(-10, 0);
+        chart.Series[0].Interpolation(interpolation);
         await AssertAvailabilityAsync(chart, 1, true, $"scalar-peak-{interpolation}-{negative}-{reversedSecondary}",
             expectedReadout: negative ? "-8" : "8", captureScalarInk: interpolation == ChartInterpolation.Smooth);
     }
@@ -99,35 +99,35 @@ public sealed partial class CartesianFillObservationBrowserTests {
     [BrowserFact]
     public async Task StackedPeakKeepsItsRawValueAboveAnotherSeries() {
         if (!Enabled) return;
-        var chart = Frame().WithYAxisBounds(0, 12)
+        var chart = Frame().YAxis(y => y.Bounds(0, 12))
             .AddSeries(new ChartSeries(new ChartSeriesId("base"), "Base", ChartSeriesKind.StackedArea, new[] { new ChartPoint(0, 2), new ChartPoint(.025, 2), new ChartPoint(.05, 2), new ChartPoint(2, 2) }))
             .AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StackedArea, new[] { new ChartPoint(0, 2), new ChartPoint(.025, 8), new ChartPoint(.05, 2), new ChartPoint(2, 2) }));
         chart.Options.ClipMarksToPlot = true;
-        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
-        chart.Series[1].WithInterpolation(ChartInterpolation.Linear)
-            .ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].Markers(markers => markers.Enabled = false);
+        chart.Series[1].Interpolation(ChartInterpolation.Linear)
+            .Markers(markers => markers.Enabled = false);
         await AssertAvailabilityAsync(chart, 1, true, "scalar-stacked-peak", seriesIndex: 1, expectedReadout: "8");
     }
 
     [BrowserFact]
     public async Task ScalarPeakOnTheNativeClipBoundaryRemainsAvailable() {
         if (!Enabled) return;
-        var chart = Frame().WithYAxisBounds(0, 8).AddSeries(ChartSeries.CreateArea(new ChartSeriesId("observed"), "Observed", new[] {
+        var chart = Frame().YAxis(y => y.Bounds(0, 8)).AddSeries(ChartSeries.CreateArea(new ChartSeriesId("observed"), "Observed", new[] {
             new ChartPoint(0, 2), new ChartPoint(.025, 8), new ChartPoint(.05, 2), new ChartPoint(2, 2)
         }));
         Configure(chart, ChartStepPosition.End);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         await AssertAvailabilityAsync(chart, 1, true, "scalar-clipped-peak", expectedReadout: "8");
     }
 
     [BrowserFact]
     public async Task ScalarPeakOutsideTheNativeClipCannotUseItsPartialFootprint() {
         if (!Enabled) return;
-        var chart = Frame().WithYAxisBounds(0, 8).AddSeries(ChartSeries.CreateArea(new ChartSeriesId("observed"), "Observed", new[] {
+        var chart = Frame().YAxis(y => y.Bounds(0, 8)).AddSeries(ChartSeries.CreateArea(new ChartSeriesId("observed"), "Observed", new[] {
             new ChartPoint(0, 2), new ChartPoint(.025, 8.02), new ChartPoint(.05, 2), new ChartPoint(2, 2)
         }));
         Configure(chart, ChartStepPosition.End);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         await AssertAvailabilityAsync(chart, 1, false, "scalar-outside-clip-peak");
     }
 
@@ -137,7 +137,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
     public async Task ScalarStepFillUsesOnlyTheOriginalLocalFootprint(double heldValue, bool available) {
         if (!Enabled) return;
         // On the plot edge the first observation has no closed outer tread, so only its held footprint can paint.
-        var chart = Frame().WithXAxisBounds(0, 2.2).AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] {
+        var chart = Frame().XAxis(x => x.Bounds(0, 2.2)).AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] {
             new ChartPoint(0, 8), new ChartPoint(1, heldValue), new ChartPoint(2, heldValue)
         }));
         Configure(chart, ChartStepPosition.Start);
@@ -153,7 +153,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         if (!Enabled) return;
         var chart = Range(kind, new[] { new ChartRangeBand(0, 0, 10), new ChartRangeBand(1, 7, 8), new ChartRangeBand(2, 7, 8) });
         Configure(chart, ChartStepPosition.Start, reversedSecondary);
-        if (clipped) (reversedSecondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithBounds(7.2, 7.8);
+        if (clipped) (reversedSecondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Bounds(7.2, 7.8);
         await AssertAvailabilityAsync(chart, 0, true, $"{kind}-partial-{clipped}-{reversedSecondary}");
     }
 
@@ -166,7 +166,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartRangeBand(0, 7.001, 7.0011), new ChartRangeBand(1, 7.001, 7.0011), new ChartRangeBand(2, 7.001, 7.0011)
         });
         Configure(chart, ChartStepPosition.Middle);
-        if (interpolation == ChartInterpolation.Linear) chart.Series[0].WithInterpolation(interpolation);
+        if (interpolation == ChartInterpolation.Linear) chart.Series[0].Interpolation(interpolation);
         await AssertAvailabilityAsync(chart, 0, true, $"thin-{interpolation}");
     }
 
@@ -181,9 +181,9 @@ public sealed partial class CartesianFillObservationBrowserTests {
         if (kind == ChartSeriesKind.RangeArea) chart = Range(kind, new[] {
             new ChartRangeBand(0, overlap ? 0 : 1, overlap ? 10 : 2), new ChartRangeBand(1, 7, 8), new ChartRangeBand(2, 7, 8)
         });
-        else chart = Frame().WithXAxisBounds(0, 2.2).AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] { new ChartPoint(0, overlap ? 2 : 8), new ChartPoint(1, 2), new ChartPoint(2, 2) }));
+        else chart = Frame().XAxis(x => x.Bounds(0, 2.2)).AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepArea, new[] { new ChartPoint(0, overlap ? 2 : 8), new ChartPoint(1, 2), new ChartPoint(2, 2) }));
         Configure(chart, ChartStepPosition.Start);
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         await AssertAvailabilityAsync(chart, 0, overlap, $"{kind}-hatch-{overlap}", patternOnly: true);
     }
 
@@ -196,7 +196,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartRangeBand(0, 1, 3), new ChartRangeBand(1, 2, 2), new ChartRangeBand(2, 6, 8)
         });
         Configure(chart, ChartStepPosition.Start);
-        if (patternOnly) chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        if (patternOnly) chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         await AssertAvailabilityAsync(chart, 0, false, $"range-tied-hold-{patternOnly}", patternOnly);
     }
 
@@ -207,7 +207,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartRangeBand(0, 0, 10), new ChartRangeBand(1, 7, 8), new ChartRangeBand(2, 7, 8)
         });
         Configure(chart, ChartStepPosition.Start);
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         await AssertAvailabilityAsync(chart, 0, true, "hatch-hidden-base", patternOnly: true, hideBase: true);
     }
 
@@ -219,9 +219,9 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, true, "scalar-envelope-stroke", envelopeStroke: true);
     }
 
-    private static Chart Frame() => Chart.Create().WithSize(600, 380).WithTitle("Native fill availability")
-        .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
-        .WithXAxisBounds(-.2, 2.2).WithYAxisBounds(0, 10).WithLineVisualStyle(ChartLineVisualStyle.Plain());
+    private static Chart Frame() => Chart.Create().Size(600, 380).Title("Native fill availability")
+        .Theme(VisualTheme.Graphite()).Legend(false).DataLabels(false)
+        .XAxis(x => x.Bounds(-.2, 2.2)).YAxis(y => y.Bounds(0, 10)).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
 
     private static Chart Range(ChartSeriesKind kind, ChartRangeBand[] ranges) {
         var chart = Frame();
@@ -230,12 +230,12 @@ public sealed partial class CartesianFillObservationBrowserTests {
 
     private static void Configure(Chart chart, ChartStepPosition position, bool reversedSecondary = false) {
         chart.Options.ClipMarksToPlot = true;
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, position)
-            .ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, position)
+            .Markers(markers => markers.Enabled = false);
         if (reversedSecondary) {
-            chart.Series[0].UseSecondaryValueAxis();
-            chart.Options.XAxis.WithReversal(); chart.Options.SecondaryYAxis.WithBounds(0, 10).WithReversal();
-            chart.Options.YAxis.WithBounds(0, 100);
+            chart.Series[0].SecondaryAxis();
+            chart.Options.XAxis.Reversed(); chart.Options.SecondaryYAxis.Bounds(0, 10).Reversed();
+            chart.Options.YAxis.Bounds(0, 100);
         }
     }
 

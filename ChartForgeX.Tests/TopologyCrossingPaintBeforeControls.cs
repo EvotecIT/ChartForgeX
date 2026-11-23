@@ -54,7 +54,7 @@ public sealed class TopologyCrossingPaintBeforeControls {
 
 internal static class CrossingPaintControlFixture {
     internal static TopologyChart Create(string form = "X") {
-        var chart = TopologyChart.Create().WithId("crossing-control").WithViewport(400, 320, 24).WithLayout(TopologyLayoutMode.Manual).WithLegend(null);
+        var chart = TopologyChart.Create().Id("crossing-control").Viewport(new TopologyViewport(400, 320, 24)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null);
         chart.AddNode("left", "Left", 20, 100, width: 40, height: 40).AddNode("right", "Right", 300, 100, width: 40, height: 40)
             .AddNode("top", "Top", 150, 20, width: 40, height: 40).AddNode("bottom", "Bottom", 150, 240, width: 40, height: 40);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.ShowStatusBadge = false; }

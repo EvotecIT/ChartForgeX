@@ -30,11 +30,11 @@ internal static class ChartValueAxisRange {
             if (Math.Abs(ticks[index] - ticks[index - 1] - step) > step * 1e-6) return ticks; // irregular (fitted calendar or authored) scale
         var tolerance = step * 1e-6;
         var result = new List<double>(ticks);
-        if (!axis.Maximum.HasValue) {
+        if (!axis.Max.HasValue) {
             for (var guard = 0; maximum > result[result.Count - 1] + tolerance && guard < 4; guard++) result.Add(Clean(result[result.Count - 1] + step, step));
             if (maximum < result[result.Count - 1] + tolerance) maximum = result[result.Count - 1];
         }
-        if (!axis.Minimum.HasValue) {
+        if (!axis.Min.HasValue) {
             for (var guard = 0; minimum < result[0] - tolerance && guard < 4; guard++) result.Insert(0, Clean(result[0] - step, step));
             if (minimum > result[0] - tolerance) minimum = result[0];
         }
@@ -46,8 +46,8 @@ internal static class ChartValueAxisRange {
         if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum) return ticks;
         var outer = ChartTicks.Generate(axis, minimum, maximum);
         if (outer.Count == 0) return ticks;
-        if (!axis.Minimum.HasValue && outer[0] < minimum) minimum = outer[0];
-        if (!axis.Maximum.HasValue && outer[outer.Count - 1] > maximum) maximum = outer[outer.Count - 1];
+        if (!axis.Min.HasValue && outer[0] < minimum) minimum = outer[0];
+        if (!axis.Max.HasValue && outer[outer.Count - 1] > maximum) maximum = outer[outer.Count - 1];
         return ChartTicks.GenerateInside(axis, minimum, maximum);
     }
 

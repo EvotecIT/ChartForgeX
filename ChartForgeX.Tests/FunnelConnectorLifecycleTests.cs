@@ -11,8 +11,8 @@ public sealed class FunnelConnectorLifecycleTests {
         var chart = StagePresentationOptionsTests.Create(false, ChartFunnelForm.Cone, ChartOrientation.Vertical);
         var series = chart.Series[0];
         var retained = new ChartFunnelConnectorStyle(fill: ChartColor.FromHex("#B35618"), fillOpacity: .7);
-        series.WithFunnelConnectorStyle(1, retained);
-        series.Points.Insert(0, new ChartPoint(0, 120)); series.WithObservationId(0, new ChartObservationId("new"));
+        series.FunnelConnectorStyle(1, retained);
+        series.Points.Insert(0, new ChartPoint(0, 120)); series.ObservationId(0, new ChartObservationId("new"));
         Assert.Same(retained, series.FunnelConnectorStyles[2]); Assert.Equal("review", series.ObservationIds[2].Value);
         series.Points.RemoveAt(0);
         Assert.Same(retained, series.FunnelConnectorStyles[1]); Assert.Equal("review", series.ObservationIds[1].Value);
@@ -36,8 +36,8 @@ public sealed class FunnelConnectorLifecycleTests {
     public void LastSourceStyleBecomesOutgoingOnAppendAndVisibilityNeverDeletesSourceFacts() {
         var chart = StagePresentationOptionsTests.Create(false, ChartFunnelForm.StageBars, ChartOrientation.Vertical);
         var series = chart.Series[0];
-        series.WithFunnelConnectorStyle(2, new ChartFunnelConnectorStyle(visible: false));
-        series.Points.Add(new ChartPoint(4, 0)); series.WithObservationId(3, new ChartObservationId("zero"));
+        series.FunnelConnectorStyle(2, new ChartFunnelConnectorStyle(visible: false));
+        series.Points.Add(new ChartPoint(4, 0)); series.ObservationId(3, new ChartObservationId("zero"));
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         Assert.Equal(3, prepared.Scene.Nodes.OfType<VisualSceneGroup>().Count(group => group.Role == "funnel-connection"));
         Assert.Equal(2, prepared.Scene.Nodes.OfType<VisualScenePath>().Count(path => path.Role == "funnel-dropoff"));
@@ -45,7 +45,7 @@ public sealed class FunnelConnectorLifecycleTests {
         Assert.Contains("data-cfx-observation-id=\"zero\"", prepared.ToSvg());
         var last = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Last(group => group.Role == "funnel-connection");
         Assert.Equal("25", last.Metadata["data-cfx-from-value"]); Assert.Equal("0", last.Metadata["data-cfx-to-value"]);
-        series.WithFunnelConnectorStyle(2, null);
+        series.FunnelConnectorStyle(2, null);
         Assert.Equal(3, StagePresentationOptionsTests.Prepare(chart).Scene.Nodes.OfType<VisualScenePath>().Count(path => path.Role == "funnel-dropoff"));
     }
 }

@@ -39,14 +39,14 @@ internal sealed partial class MermaidXYChartSettings {
     }
     private void ApplyPaint(Chart chart, MermaidPresentationOptions? host) {
         // An explicit host theme owns colors. Source background still requests a painted canvas, using that host color.
-        if (_background.HasValue) chart.WithTransparentBackground(false);
+        if (_background.HasValue) chart.TransparentBackground(false);
         if (host?.Theme != null) return;
         var theme = chart.Options.Theme;
         if (_background.HasValue) theme = theme.Configure(builder => { builder.Light.Background = _background.Value; builder.Dark.Background = _background.Value; });
         if (_palette != null) theme = theme.WithPalette(_palette);
-        chart.WithTheme(theme);
-        if (_title.HasValue) chart.ConfigureTitleStyle(style => style.Color = _title.Value);
-        if (_legend.HasValue) chart.ConfigureLegendStyle(style => style.Color = _legend.Value);
-        if (_dataLabel.HasValue) chart.ConfigureDataLabelStyle(style => style.Color = _dataLabel.Value);
+        chart.Theme(theme);
+        if (_title.HasValue) chart.TitleStyle(style => style.Color = _title.Value);
+        if (_legend.HasValue) chart.LegendStyle(style => style.Color = _legend.Value);
+        if (_dataLabel.HasValue) chart.DataLabelStyle(style => style.Color = _dataLabel.Value);
     }
 }

@@ -7,11 +7,11 @@ namespace ChartForgeX.Tests;
 public sealed class NativeTopologyViewFrameTests {
     [Fact]
     public void FocusedViewHeadingsUseTheSameSingleFrameReservationAsSourceHeadings() {
-        var source = Diagram().WithTitle("Source").WithSubtitle("Source detail");
+        var source = Diagram().Title("Source").Subtitle("Source detail");
         var view = new TopologyView { Id = "focused", Title = "Focused network", Subtitle = "Selected services" };
         var options = new TopologyRenderOptions { IncludeLegend = false, View = view };
         var focused = source.Prepare(options);
-        var plain = Diagram().WithTitle(view.Title!).WithSubtitle(view.Subtitle!).Prepare(new TopologyRenderOptions { IncludeLegend = false });
+        var plain = Diagram().Title(view.Title!).Subtitle(view.Subtitle!).Prepare(new TopologyRenderOptions { IncludeLegend = false });
         var envelope = focused.ToInterchangeEnvelope(); var ordinary = plain.ToInterchangeEnvelope();
         Assert.Equal("network-focused", envelope.Id);
         Assert.Equal(view.Title, envelope.Title); Assert.Equal(view.Subtitle, envelope.Subtitle);
@@ -26,7 +26,7 @@ public sealed class NativeTopologyViewFrameTests {
         Assert.Equal("Focused network", view.Title); Assert.Equal("Selected services", options.View!.Subtitle);
     }
 
-    private static TopologyChart Diagram() => TopologyChart.Create().WithId("network").WithViewport(480, 300, 20).WithLegend(null)
+    private static TopologyChart Diagram() => TopologyChart.Create().Id("network").Viewport(new TopologyViewport(480, 300, 20)).Legend((TopologyLegend?)null)
         .AddNode("left", "Left", 20, 20, width: 100, height: 64)
         .AddNode("right", "Right", 300, 20, width: 100, height: 64)
         .AddEdge("link", "left", "right", routing: TopologyEdgeRouting.Straight);

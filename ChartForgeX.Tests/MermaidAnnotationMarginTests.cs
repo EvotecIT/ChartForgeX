@@ -67,7 +67,7 @@ public sealed class MermaidAnnotationMarginTests {
     [InlineData(TopologyAnnotationSide.Left)]
     [InlineData(TopologyAnnotationSide.Right)]
     public void NativeAnnotationsRetainFramePaddingOnEitherSide(TopologyAnnotationSide side) {
-        var chart = TopologyChart.Create().WithViewport(640, 300, 24).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 300, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("a", "Source", 80, 100).AddNode("b", "Other", 420, 100);
         chart.Annotations.Add(new TopologyAnnotation("note", "An independent note", "a", side));
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false });

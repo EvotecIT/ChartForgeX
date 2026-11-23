@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyAlignmentTests {
     private static TopologyChart Chart() {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(800, 600, 24).WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(800, 600, 24)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         foreach (var id in new[] { "third", "first", "second", "below" }) {
             chart.AddAutoNode(id, id, width: 140, height: 60); var node = chart.Nodes.Last();
             node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true;
@@ -36,7 +36,7 @@ public sealed class TopologyAlignmentTests {
 
     [Fact]
     public void ColumnAcrossPreferredHorizontalGroupsFindsTheFeasibleVerticalSeparation() {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(800, 600).WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(800, 600)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("left", "Left").AddAutoGroup("right", "Right")
             .AddAutoNode("a", "A", groupId: "left").AddAutoNode("b", "B", groupId: "right");
         chart.Alignments.Add(new TopologyAlignment("vertical", TopologyAlignmentKind.Column, new[] { "a", "b" }));
@@ -49,7 +49,7 @@ public sealed class TopologyAlignmentTests {
 
     [Fact]
     public void InterleavedParentShellsAreAGenuineConflictRatherThanAResourceResult() {
-        var chart = TopologyChart.Create().WithTitle("").WithLayout(TopologyLayoutMode.Layered)
+        var chart = TopologyChart.Create().Title("").LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoGroup("one", "One").AddAutoGroup("two", "Two")
             .AddAutoNode("a", "A", groupId: "one").AddAutoNode("c", "C", groupId: "one")
             .AddAutoNode("b", "B", groupId: "two").AddAutoNode("d", "D", groupId: "two");

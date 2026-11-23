@@ -63,7 +63,7 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
             if (!visible) continue;
-            var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+            var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
             var y = placement == ChartDataLabelPlacement.Below ? Math.Max(a.Y, b.Y)
                 : placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right ? a.Y / 2 + b.Y / 2 : Math.Min(a.Y, b.Y);
             AddLabel(chart, context, series, index, item, new ChartPoint(a.X, y), bounds, label, labels, first.Y);

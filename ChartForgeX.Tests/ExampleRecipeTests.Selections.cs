@@ -63,7 +63,7 @@ public sealed partial class ExampleRecipeTests {
         Assert.Equal("$820,000", cost.Options.ValueFormatter!(820000));
 
         var coverage = ControlCoverageRecipe.Create();
-        Assert.Equal(ChartHeatmapScale.Semantic, coverage.Options.HeatmapScale);
+        Assert.Equal(ChartHeatmapScale.Semantic, coverage.Options.Heatmap.Scale);
         Assert.Equal(new[] { "Primary domains", "Parked domains", "Regional domains", "Acquired domains" }, coverage.Series.Select(series => series.Name));
         Assert.Equal(new[] { 96d, 88, 74, 63, 58, 92 }, coverage.Series[0].Points.Select(point => point.Y));
         Assert.Equal("96%", coverage.Options.ValueFormatter!(96));
@@ -71,7 +71,7 @@ public sealed partial class ExampleRecipeTests {
         var trend = DashboardPremiumTrendRecipe.Create();
         var snippet = DashboardPremiumTrendRecipe.Create("snippet");
         Assert.False(trend.Options.ShowHeader);
-        Assert.False(snippet.Options.ShowLegend);
+        Assert.False(snippet.Options.Legend.Visible);
         Assert.Equal(new[] { 24d, 36, 48, 58, 46, 68, 76 }, trend.Series[0].Points.Select(point => point.Y));
         Assert.Equal(trend.Series.SelectMany(series => series.Points).Select(point => point.Y),
             snippet.Series.SelectMany(series => series.Points).Select(point => point.Y));
@@ -81,6 +81,6 @@ public sealed partial class ExampleRecipeTests {
         Assert.Equal(new[] { "Indonesia", "Spain", "United States", "Norway" }, locations.Select(point => point.Label));
         Assert.Equal(113.9213, locations[0].Longitude);
         Assert.Equal(-0.7893, locations[0].Latitude);
-        Assert.Equal(2, map.Options.MapConnectors.Count);
+        Assert.Equal(2, map.Options.Map.Connectors.Count);
     }
 }

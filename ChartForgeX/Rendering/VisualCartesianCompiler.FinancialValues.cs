@@ -11,7 +11,7 @@ internal static partial class VisualCartesianCompiler {
     internal static IVisualValuePlan? TryCaptureFinancialValues(Chart chart, VisualRenderContext context,
         VisualSceneTextCapture text, VisualScene scene, ChartCartesianProjection? axes) {
         if (!context.CaptureNativeValueSource || axes == null || ChartCartesianOrientation.IsHorizontal(chart) || !text.SupportsCapturedReplay
-            || chart.Series.Count == 0 || chart.Options.ShowPointLegend || chart.Options.ValueFormatter != null
+            || chart.Series.Count == 0 || chart.Options.Legend.ShowPoints || chart.Options.ValueFormatter != null
             || chart.Series.Any(series => series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) || series.Id.IsAutomatic || series.FinancialValues.Count == 0
                 || series.ObservationIds.Count != series.FinancialValues.Count || Enumerable.Range(0, series.FinancialValues.Count).Any(index => !series.ObservationIds.ContainsKey(index)))) return null;
         if (!ComponentValueAxesSupported(chart)) return null;

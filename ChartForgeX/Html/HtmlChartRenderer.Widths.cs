@@ -37,7 +37,7 @@ public sealed partial class HtmlChartRenderer {
                 .Attribute(AutoThemeStyle.ScopeAttribute, auto?.Id).Attribute(AutoThemeStyle.Attribute, auto == null ? null : AutoThemeStyle.AttributeValue).EndStartElement();
             for (var i = 0; i < ordered.Length; i++) {
                 var width = ordered[i];
-                chart.WithSize(width, size.Height);
+                chart.Size(width, size.Height);
                 var scope = VisualSvgOptions.NamespaceFromExternalId(idScope + "|w" + N(width));
                 var options = new VisualSvgOptions(scope, chart.Options.SvgColorVariables, responsive: true);
                 var svg = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(auto == null ? options : options.WithColorScope(auto.Variables));
@@ -49,7 +49,7 @@ public sealed partial class HtmlChartRenderer {
             }
             writer.EndElement();
         } finally {
-            chart.WithSize(size.Width, size.Height);
+            chart.Size(size.Width, size.Height);
         }
         return HtmlStrictStyles.Apply(writer.Build(), _styleNonce);
     }

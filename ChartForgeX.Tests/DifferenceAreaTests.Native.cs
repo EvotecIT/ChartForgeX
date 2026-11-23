@@ -14,9 +14,9 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void ActualCrossingSplitsNativeFillWithoutChangingPolarityOnReversedAxes(bool reverseX, bool reverseY) {
-        var chart = Model(new(0, 8, 2), new(1, 2, 5)); chart.Series[0].WithStrokeWidth(1);
-        chart.Options.XAxis.WithBounds(0, 1).WithReversal(reverseX);
-        chart.Options.YAxis.WithBounds(0, 10).WithReversal(reverseY);
+        var chart = Model(new(0, 8, 2), new(1, 2, 5)); chart.Series[0].StrokeWidth(1);
+        chart.Options.XAxis.Bounds(0, 1).Reversed(reverseX);
+        chart.Options.YAxis.Bounds(0, 10).Reversed(reverseY);
         var prepared = Prepare(chart);
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
         var start = first.Commands[0]; var end = first.Commands[^1];
@@ -42,7 +42,7 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void TypedPairBreaksBothNativeBoundariesAndFill() {
         var chart = Model(new(0, 8, 2), new(1, 8, 2), new(3, 8, 2, true), new(4, 8, 2));
-        chart.Series[0].WithStrokeWidth(1);
+        chart.Series[0].StrokeWidth(1);
         chart.Series[0].UpdateDifferencePoint(2, new ChartDifferencePoint(3, 8, 2, true));
         var prepared = Prepare(chart);
         foreach (var role in new[] { "difference-first", "difference-second" })
@@ -75,9 +75,9 @@ public sealed partial class DifferenceAreaTests {
     public void SecondaryLinearScaleAndClippingKeepTheUnclampedCrossing() {
         var chart = Model(new(0, 600, 100), new(1, 100, 500));
         chart.AddLine("Primary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
-        chart.Series[0].UseSecondaryValueAxis().WithStrokeWidth(1);
-        chart.Options.XAxis.WithBounds(.2, .8); chart.Options.YAxis.WithBounds(0, 3);
-        chart.Options.SecondaryYAxis.WithBounds(150, 450);
+        chart.Series[0].SecondaryAxis().StrokeWidth(1);
+        chart.Options.XAxis.Bounds(.2, .8); chart.Options.YAxis.Bounds(0, 3);
+        chart.Options.SecondaryYAxis.Bounds(150, 450);
         var prepared = Prepare(chart);
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
         var x = first.Commands[0].X + (first.Commands[^1].X - first.Commands[0].X) * 5 / 9;
@@ -88,7 +88,7 @@ public sealed partial class DifferenceAreaTests {
         AssertPaint(image, Sample(first, second, .4), Red, 128);
         AssertPaint(image, Sample(first, second, .7), Blue, 128);
         Assert.Equal("secondary", Group(prepared, "series-0-point-0")["data-cfx-axis"]);
-        var automatic = Model(new(0, 600, 100), new(1, 100, 500)); automatic.Series[0].UseSecondaryValueAxis();
+        var automatic = Model(new(0, 600, 100), new(1, 100, 500)); automatic.Series[0].SecondaryAxis();
         automatic.AddLine("Primary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         var primary = ChartRange.FromChart(automatic); var secondary = ChartRange.FromSecondaryValueAxis(automatic, primary);
         Assert.True(primary.MaxY < 10); Assert.True(secondary.MaxY >= 600 && secondary.MinY <= 100);
@@ -99,7 +99,7 @@ public sealed partial class DifferenceAreaTests {
         var chart = Model(new(0, double.MaxValue, -double.MaxValue), new(1, -double.MaxValue, double.MaxValue));
         // This isolates crossing arithmetic from the separate axis-domain arithmetic contract.
         var ordinary = Model(new(0, 1, 0), new(1, 0, 1));
-        ordinary.Options.XAxis.WithBounds(0, 1); ordinary.Options.YAxis.WithBounds(0, 1);
+        ordinary.Options.XAxis.Bounds(0, 1); ordinary.Options.YAxis.Bounds(0, 1);
         var mapped = new ChartPairedBoundaryGeometry(ordinary.Series[0], new ChartMapper(new ChartRect(0, 0, 100, 100),
             ChartRange.FromChart(ordinary), ordinary.Options.XAxis, ordinary.Options.YAxis));
         var regions = ChartDifferenceAreaGeometry.Regions(chart.Series[0], mapped);

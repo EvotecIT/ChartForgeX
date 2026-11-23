@@ -64,7 +64,7 @@ public sealed class WaterfallCheckpointBrowserTests {
         }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 24, 540);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
-        var fontDirectory = Path.GetDirectoryName(chart.Options.PngFontPath)!;
+        var fontDirectory = Path.GetDirectoryName(chart.Options.Png.FontPath)!;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content =
             "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Regular.ttf"))) + ") format('truetype');font-weight:400}"
             + "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Bold.ttf"))) + ") format('truetype');font-weight:700}" });
@@ -222,34 +222,34 @@ public sealed class WaterfallCheckpointBrowserTests {
 
     private static Chart Create(int width, bool dark, bool horizontal, double? opening) {
         var sign = opening < 0 ? -1 : 1;
-        var chart = Chart.Create().WithSize(width, 440).WithTitle(opening.HasValue ? "Waterfall opening balance" : "Waterfall checkpoints")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithFontFamily("Carlito")
-            .WithPointLegend().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithBarStyle(ChartBarStyle.Flat)
-            .WithXLabels("Open", "Adjust", "Stage", "Cost", "Costs", "Recover", "Balance", "Late", "Late sum")
+        var chart = Chart.Create().Size(width, 440).Title(opening.HasValue ? "Waterfall opening balance" : "Waterfall checkpoints")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).FontFamily("Carlito")
+            .Legend(l => l.ShowPoints()).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside)).Bars(b => b.Style(ChartBarStyle.Flat))
+            .XLabels("Open", "Adjust", "Stage", "Cost", "Costs", "Recover", "Balance", "Late", "Late sum")
             .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {
                 opening.HasValue ? ChartWaterfallItem.OpeningBalance(1, opening.Value) : ChartWaterfallItem.Delta(1, 120),
                 ChartWaterfallItem.Delta(2, -30 * sign), ChartWaterfallItem.Subtotal(3),
                 ChartWaterfallItem.Delta(4, -130 * sign), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70 * sign),
                 ChartWaterfallItem.Total(7), ChartWaterfallItem.Delta(8, -20 * sign), ChartWaterfallItem.Subtotal(9)
             }));
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
-        chart.Series[0].WithPointColor(4, "#A5358A").WithPointFillPattern(4, ChartFillPattern.Crosshatch);
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Series[0].PointColor(4, "#A5358A").PointFillPattern(4, ChartFillPattern.Crosshatch);
         if (horizontal) {
-            chart.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
-                .WithDataLabelPlacement(ChartDataLabelPlacement.Auto);
+            chart.Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
+                .DataLabels(d => d.Placement(ChartDataLabelPlacement.Auto));
             if (dark) {
-                chart.WithBarStyle(ChartBarStyle.SegmentedCapsule);
-                chart.Options.XAxis.WithReversal();
+                chart.Bars(b => b.Style(ChartBarStyle.SegmentedCapsule));
+                chart.Options.XAxis.Reversed();
             }
-            chart.Options.YAxis.WithReversal();
-            if (opening.HasValue) chart.Options.XAxis.WithBounds(-160, 160);
-            else chart.Options.YAxis.WithLabelFormatter(value => "Step " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+            chart.Options.YAxis.Reversed();
+            if (opening.HasValue) chart.Options.XAxis.Bounds(-160, 160);
+            else chart.Options.YAxis.LabelBy(value => "Step " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(5, "Costs"));
         }
         if (opening.HasValue) {
-            chart.ConfigureLabels(labels => labels.OpeningBalance = "Initial balance");
+            chart.Labels(labels => labels.OpeningBalance = "Initial balance");
             // Required caption hit-testing uses a short authored label: compact numeric captions may be omitted whole.
-            chart.Series[0].WithPointLabel(0, horizontal ? "IB" : "Opening caption");
+            chart.Series[0].PointLabel(0, horizontal ? "IB" : "Opening caption");
         }
         return chart;
     }

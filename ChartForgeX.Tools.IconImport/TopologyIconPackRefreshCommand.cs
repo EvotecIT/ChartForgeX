@@ -45,8 +45,8 @@ internal static class TopologyIconPackRefreshCommand {
 
     private static void PrepareAuthoredSvgManifest(TopologyIconPack pack) {
         pack.Metadata.Remove("artwork.generator");
-        pack.WithMetadata("artwork.workflow", "svg-authored");
-        pack.WithMetadata("previews.refreshedBy", "ChartForgeX.Tools.IconImport --refresh-pack");
+        pack.Metadata("artwork.workflow", "svg-authored");
+        pack.Metadata("previews.refreshedBy", "ChartForgeX.Tools.IconImport --refresh-pack");
         foreach (var icon in pack.Icons) {
             if (icon.Artwork == null) continue;
             icon.Artwork.SvgBody = null;

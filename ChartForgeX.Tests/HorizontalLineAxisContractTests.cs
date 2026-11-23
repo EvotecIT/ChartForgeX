@@ -13,10 +13,10 @@ public sealed class HorizontalLineAxisContractTests {
     [InlineData(20, true)]
     [InlineData(-20, true)]
     public void ReversedValueAxisPlacesAutomaticLabelsInTheMappedDirection(double value, bool step) {
-        var chart = Model(new[] { new ChartPoint(1, value) }, step).WithXAxisBounds(-100, 100).WithYAxisBounds(0, 2);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        var chart = Model(new[] { new ChartPoint(1, value) }, step).XAxis(x => x.Bounds(-100, 100)).YAxis(y => y.Bounds(0, 2));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.XAxis.Reversed = true;
-        chart.Options.ShowDataLabels = true;
+        chart.Options.DataLabels.Visible = true;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var point = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
@@ -30,8 +30,8 @@ public sealed class HorizontalLineAxisContractTests {
     public void HorizontalTimeCategoryTitlesExposeTheRequestedZone(string title) {
         var first = new DateTime(2026, 10, 11).ToOADate();
         var chart = Model(new[] { new ChartPoint(first, 20), new ChartPoint(first + 3, 40) });
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.YAxisTitle = title;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.Options.YAxis.Title = title;
         chart.Options.YAxis.Scale = ChartScaleKind.Time;
         chart.Options.YAxis.ShowTimeZone = true;
         chart.Options.YAxis.TimeZoneLabel = "UTC+02";
@@ -49,7 +49,7 @@ public sealed class HorizontalLineAxisContractTests {
         var first = time ? new DateTime(2026, 10, 11, 12, 0, 0, DateTimeKind.Utc).ToOADate() : 1d;
         var last = time ? first + 1d / 86400000 : first + 1e-8;
         var chart = Model(new[] { new ChartPoint(first, 20), new ChartPoint(last, 40) }, step);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.YAxis.Scale = time ? ChartScaleKind.Time : ChartScaleKind.Linear;
         var range = ChartRange.FromChart(chart);
         Assert.Equal(first, range.MinY);
@@ -70,7 +70,7 @@ public sealed class HorizontalLineAxisContractTests {
         var horizontal = Model(vertical.Series[0].Points.ToArray());
         vertical.Options.YAxis.Scale = scale;
         horizontal.Options.XAxis.Scale = scale;
-        horizontal.Options.LineOrientation = ChartOrientation.Horizontal;
+        horizontal.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var source = ChartRange.FromChart(vertical);
         var transposed = ChartRange.FromChart(horizontal);
         Assert.Equal(source.MinY, transposed.MinX);
@@ -105,13 +105,13 @@ public sealed class HorizontalLineAxisContractTests {
         var first = time ? new DateTime(2026, 10, 11, 12, 0, 0, DateTimeKind.Utc).ToOADate() : 2;
         var last = first + 6;
         var chart = Model(new[] { new ChartPoint(first + .25, 20) });
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         if (emptyBar) chart.AddHorizontalBar("Empty", Array.Empty<ChartPoint>());
-        chart.WithYAxisBounds(first, last);
+        chart.YAxis(y => y.Bounds(first, last));
         var axis = chart.Options.YAxis;
         axis.Scale = time ? ChartScaleKind.Time : ChartScaleKind.Linear;
         axis.TickCount = 4;
-        axis.WithLabelFormatter(value => value.ToString("R", CultureInfo.InvariantCulture));
+        axis.LabelBy(value => value.ToString("R", CultureInfo.InvariantCulture));
         var expected = ChartTicks.ForAxis(axis, first, last).Select(value => {
             var text = value.ToString("R", CultureInfo.InvariantCulture);
             return text + " (" + text + ")";
@@ -125,11 +125,11 @@ public sealed class HorizontalLineAxisContractTests {
     [InlineData(true)]
     public void NonAlignedExplicitCategoryBoundsRetainOnlyTicksInsideTheirDomain(bool step) {
         var chart = Model(new[] { new ChartPoint(1.1, 20), new ChartPoint(9.1, 60) }, step);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.WithYAxisBounds(1.1, 9.1);
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.YAxis(y => y.Bounds(1.1, 9.1));
         var axis = chart.Options.YAxis;
         axis.TickCount = 6;
-        axis.WithLabelFormatter(value => value.ToString("R", CultureInfo.InvariantCulture));
+        axis.LabelBy(value => value.ToString("R", CultureInfo.InvariantCulture));
         var expected = ChartTicks.ForAxis(axis, 1.1, 9.1).Select(value => {
             var text = value.ToString("R", CultureInfo.InvariantCulture);
             return text + " (" + text + ")";
@@ -139,8 +139,8 @@ public sealed class HorizontalLineAxisContractTests {
         Assert.Equal(0, System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants()
             .Count(element => (string?)element.Attribute("data-cfx-role") == "grid-y"));
         Assert.Equal(expected, prepared.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label));
-        Assert.Equal(1.1, chart.Options.YAxis.Minimum);
-        Assert.Equal(9.1, chart.Options.YAxis.Maximum);
+        Assert.Equal(1.1, chart.Options.YAxis.Min);
+        Assert.Equal(9.1, chart.Options.YAxis.Max);
         Assert.NotEmpty(prepared.ToPng());
     }
 
@@ -150,10 +150,10 @@ public sealed class HorizontalLineAxisContractTests {
     [InlineData(ChartDataLabelPlacement.Above, 20)]
     [InlineData(ChartDataLabelPlacement.Above, -20)]
     public void AutomaticLabelsFollowTheValueDirectionAndExplicitLabelsKeepTheirSide(ChartDataLabelPlacement placement, double value) {
-        var chart = Model(new[] { new ChartPoint(1, value) }).WithXAxisBounds(-100, 100).WithYAxisBounds(0, 2);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.Options.ShowDataLabels = true;
-        chart.Options.DataLabelPlacement = placement;
+        var chart = Model(new[] { new ChartPoint(1, value) }).XAxis(x => x.Bounds(-100, 100)).YAxis(y => y.Bounds(0, 2));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.Options.DataLabels.Visible = true;
+        chart.Options.DataLabels.Placement = placement;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var point = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
@@ -171,9 +171,9 @@ public sealed class HorizontalLineAxisContractTests {
     public void AutomaticLabelsUseOrthogonalSpaceWhenBothValueDirectionsIntersectTheLine(bool step, bool distinctCategories) {
         var delta = distinctCategories ? .001 : 0;
         var chart = Model(new[] { new ChartPoint(1, 20), new ChartPoint(1 + delta, 40), new ChartPoint(1 + delta * 2, 60) }, step)
-            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 2);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.Options.ShowDataLabels = true;
+            .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 2));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.Options.DataLabels.Visible = true;
         if (step) chart.Series[0].StepPosition = ChartStepPosition.Start;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label")
@@ -186,10 +186,10 @@ public sealed class HorizontalLineAxisContractTests {
     [InlineData(20)]
     [InlineData(-20)]
     public void AutomaticPointLabelsClearVisibleMarkerExtents(double value) {
-        var chart = Model(new[] { new ChartPoint(1, value) }).WithXAxisBounds(-100, 100).WithYAxisBounds(0, 2)
-            .WithLineMarkers(ChartLineMarkerMode.All);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.Options.ShowDataLabels = true;
+        var chart = Model(new[] { new ChartPoint(1, value) }).XAxis(x => x.Bounds(-100, 100)).YAxis(y => y.Bounds(0, 2))
+            .Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.Options.DataLabels.Visible = true;
         chart.Series[0].MarkerRadius = 18;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var point = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
@@ -199,7 +199,7 @@ public sealed class HorizontalLineAxisContractTests {
     }
 
     private static Chart Model(ChartPoint[] points, bool step = false) {
-        var chart = Chart.Create().WithSize(700, 450).WithLegend(false).WithHeader(false).WithLineMarkers(ChartLineMarkerMode.None);
+        var chart = Chart.Create().Size(700, 450).Legend(false).ShowHeader(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None));
         return step ? chart.AddStepLine("Readings", points) : chart.AddLine("Readings", points);
     }
 }

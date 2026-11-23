@@ -12,7 +12,7 @@ public sealed class RadialAreaEncodingBoundaryTests {
     public void ExplicitRadiusRetainsDefaultBytesAndDoesNotChangeTheLegacyPolarAreaLaw() {
         var chart = RadialAreaEncodingTests.Create().AddRadialColumn("Observed", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
         var svg = chart.ToSvg(); var png = chart.ToPng();
-        chart.WithRadialGeometry(new(valueEncoding: ChartRadialValueEncoding.Radius));
+        chart.RadialGeometry(new(valueEncoding: ChartRadialValueEncoding.Radius));
         Assert.Equal(svg, chart.ToSvg()); Assert.Equal(png, chart.ToPng());
         Assert.DoesNotContain("data-cfx-value-encoding", svg, StringComparison.Ordinal);
         var legacy = RadialAreaEncodingTests.Create().AddPolarArea("Legacy rose", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
@@ -27,7 +27,7 @@ public sealed class RadialAreaEncodingBoundaryTests {
     [InlineData(ChartSeriesKind.PolarArea)]
     [InlineData(ChartSeriesKind.Radar)]
     public void AreaRejectsOtherCoordinateOwnersInsteadOfChangingTheirMeaning(ChartSeriesKind kind) {
-        var chart = RadialAreaEncodingTests.Create().WithRadialGeometry(RadialAreaEncodingTests.Geometry())
+        var chart = RadialAreaEncodingTests.Create().RadialGeometry(RadialAreaEncodingTests.Geometry())
             .AddSeries(new ChartSeries(new ChartSeriesId("other"), "Other", kind, new[] { new ChartPoint(1, 25), new ChartPoint(2, 50), new ChartPoint(3, 75) }));
         Assert.Throws<NotSupportedException>(() => chart.ToSvg());
     }
@@ -37,20 +37,20 @@ public sealed class RadialAreaEncodingBoundaryTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic)]
     [InlineData(ChartScaleKind.Time)]
     public void AreaRejectsNonlinearSelectedRadiusAxes(ChartScaleKind scale) {
-        var chart = RadialAreaEncodingTests.Create().WithRadialGeometry(RadialAreaEncodingTests.Geometry()).AddRadialColumn("Observed", new[] { new ChartPoint(1, 25) });
-        chart.Options.YAxis.WithBounds(1, 100).WithScale(scale);
+        var chart = RadialAreaEncodingTests.Create().RadialGeometry(RadialAreaEncodingTests.Geometry()).AddRadialColumn("Observed", new[] { new ChartPoint(1, 25) });
+        chart.Options.YAxis.Bounds(1, 100).Scale(scale);
         Assert.Throws<NotSupportedException>(() => chart.ToSvg());
     }
 
     [Fact]
     public void AreaRejectsNegativeSourceOrSelectedBoundsAndMixedRadarWithoutRewritingThem() {
-        var chart = RadialAreaEncodingTests.Create().WithRadialGeometry(RadialAreaEncodingTests.Geometry()).AddRadialColumn("Observed", new[] { new ChartPoint(1, 25) });
-        chart.Options.SecondaryYAxis.WithBounds(-20, -1); // The unused axis does not participate.
+        var chart = RadialAreaEncodingTests.Create().RadialGeometry(RadialAreaEncodingTests.Geometry()).AddRadialColumn("Observed", new[] { new ChartPoint(1, 25) });
+        chart.Options.SecondaryYAxis.Bounds(-20, -1); // The unused axis does not participate.
         Assert.NotEmpty(chart.ToPng());
         chart.Series[0].Points[0] = new ChartPoint(1, -1); Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
         Assert.Equal(-1, chart.Series[0].Points[0].Y); chart.Series[0].Points[0] = new ChartPoint(1, 25);
-        chart.Options.YAxis.WithBounds(-10, 100); Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
-        chart.Options.YAxis.WithBounds(0, 100); chart.AddRadar("Reference", new[] { new ChartPoint(1, 25), new ChartPoint(2, 50), new ChartPoint(3, 75) });
+        chart.Options.YAxis.Bounds(-10, 100); Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
+        chart.Options.YAxis.Bounds(0, 100); chart.AddRadar("Reference", new[] { new ChartPoint(1, 25), new ChartPoint(2, 50), new ChartPoint(3, 75) });
         Assert.Throws<NotSupportedException>(() => chart.ToSvg());
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRadialGeometryOptions(valueEncoding: (ChartRadialValueEncoding)99));
     }
@@ -59,8 +59,8 @@ public sealed class RadialAreaEncodingBoundaryTests {
     public void MissingZeroAllZeroAndClearRefillRetainRealSourceIdentity() {
         var series = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.RadialColumn,
             new[] { new ChartPoint(1, 0), new ChartPoint(3, 25) })
-            .WithObservationId(0, new ChartObservationId("north")).WithObservationId(1, new ChartObservationId("east"));
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithRadialGeometry(RadialAreaEncodingTests.Geometry()).AddSeries(series);
+            .ObservationId(0, new ChartObservationId("north")).ObservationId(1, new ChartObservationId("east"));
+        var chart = Chart.Create().ShowHeader(false).Legend(false).RadialGeometry(RadialAreaEncodingTests.Geometry()).AddSeries(series);
         var before = chart.Prepare(new VisualRenderContext());
         Assert.Single(NumericRadialSeriesTests.Marks(before.Scene)); Assert.Equal(2, before.Regions.Count(region => region.Role == "point"));
         Assert.Equal("zero", RadialAreaEncodingTests.Facts(before.Scene, 0, 0)["data-cfx-geometry-status"]);

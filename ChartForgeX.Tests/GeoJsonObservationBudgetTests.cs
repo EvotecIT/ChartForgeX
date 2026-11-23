@@ -40,7 +40,7 @@ public sealed class GeoJsonObservationBudgetTests {
     [Fact]
     public void CoordinateFiltersSkipExpansionButDoNotHideInvalidGeometryAndLimitsArePositive() {
         var options = new ChartMapGeoJsonOptions { MaximumObservations = 1, MaximumExpandedLabelCharacters = 1 };
-        options.WithCoordinateBounds(10, 20, 10, 20);
+        options.MinimumLongitude(10).MaximumLongitude(20).MinimumLatitude(10).MaximumLatitude(20).IncludeFeaturesIntersectingCoordinateBounds();
         Assert.Empty(ChartMapGeoJson.ToMapPoints(Feature("MultiPoint", "[[0,0],[1,1]]", "Outside"), options));
         Assert.Empty(ChartMapGeoJson.ToMapConnectors(Feature("LineString", "[[0,0],[1,1]]", "Outside"), options));
         Assert.Throws<ArgumentOutOfRangeException>(() => ChartMapGeoJson.ToMapPoints(Feature("Point", "[181,0]", "Outside"), options));

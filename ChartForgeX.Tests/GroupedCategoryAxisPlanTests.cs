@@ -20,8 +20,8 @@ public sealed class GroupedCategoryAxisPlanTests {
     public void RunsUseSortedContiguousPrefixesIncludingUngroupedAndMissingLeaves() {
         var values = new[] { 1.5, 8.5, 10.5, 12.5, 14.5 };
         var series = ChartSeries.CreateBar(new ChartSeriesId("observations"), "Observed", values.Select(value => new ChartPoint(value, value + 1)));
-        series.WithObservationId(0, new ChartObservationId("jan"));
-        var chart = Chart.Create().AddSeries(series).WithXLabels(new[] {
+        series.ObservationId(0, new ChartObservationId("jan"));
+        var chart = Chart.Create().AddSeries(series).XLabels(new[] {
             new ChartAxisLabel(14.5, "Jan", "2027", "Q1"), new ChartAxisLabel(3.5, "Feb", "2026", "Q1"),
             new ChartAxisLabel(1.5, "Jan", "2026", "Q1"), new ChartAxisLabel(8.5, "Mar", "2026", "Q2"),
             new ChartAxisLabel(10.5, "Gap"), new ChartAxisLabel(12.5, "Apr", "2026", "Q1")
@@ -49,7 +49,7 @@ public sealed class GroupedCategoryAxisPlanTests {
         var source = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(1.5) + 3);
         var parents = new[] { "North" };
         var chart = Chart.Create().AddBar("Observed", new[] { new ChartPoint(source, 7) })
-            .WithXLabels(new[] { new ChartAxisLabel(1.5, "Central", parents) });
+            .XLabels(new[] { new ChartAxisLabel(1.5, "Central", parents) });
         var calls = 0;
         var plan = Assert.IsType<ChartCategoryGroupPlan>(ChartCategoryGroupPlan.TryCreate(chart));
         var bindings = Assert.IsAssignableFrom<IReadOnlyList<ChartAxisLabel>>(ChartCartesianCategoryLabels.CaptureBindings(
@@ -82,11 +82,11 @@ public sealed class GroupedCategoryAxisPlanTests {
         if (route.StartsWith("bar", StringComparison.Ordinal)) chart.AddHorizontalBar("Observed", points);
         else {
             if (route == "line-y") chart.AddLine("Observed", points); else chart.AddStepLine("Observed", points);
-            chart.Options.LineOrientation = ChartOrientation.Horizontal;
+            chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         }
         var catalog = new[] { new ChartAxisLabel(1.5, "Central", "North"), new ChartAxisLabel(3.5, "Central", "South") };
         if (route == "bar-legacy") {
-            chart.WithXLabels(catalog);
+            chart.XLabels(catalog);
             chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
         } else {
             chart.Options.YAxis.Labels.AddRange(catalog);
@@ -115,11 +115,11 @@ public sealed class GroupedCategoryAxisPlanTests {
             case "secondary": chart.Options.SecondaryYAxis.Labels.Add(new ChartAxisLabel(7, "Value", "Group")); break;
             case "time": chart.Options.XAxis.Scale = ChartScaleKind.Time; break;
             case "logarithmic": chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic; break;
-            case "radial": chart = Chart.Create().AddPie("Share", new[] { new ChartPoint(1, 7) }).WithXLabels(chart.Options.XAxis.Labels); break;
-            case "sparkline": chart.WithSparkline(); break;
-            case "histogram": chart = Chart.Create().AddHistogram("Counts", new[] { 1d, 2, 3 }, 2).WithXLabels(chart.Options.XAxis.Labels); break;
+            case "radial": chart = Chart.Create().AddPie("Share", new[] { new ChartPoint(1, 7) }).XLabels(chart.Options.XAxis.Labels); break;
+            case "sparkline": chart.Sparkline(); break;
+            case "histogram": chart = Chart.Create().AddHistogram("Counts", new[] { 1d, 2, 3 }, 2).XLabels(chart.Options.XAxis.Labels); break;
             case "ignored-legacy":
-                chart = Chart.Create().AddHorizontalBar("Observed", new[] { new ChartPoint(1, 7) }).WithXLabels(chart.Options.XAxis.Labels);
+                chart = Chart.Create().AddHorizontalBar("Observed", new[] { new ChartPoint(1, 7) }).XLabels(chart.Options.XAxis.Labels);
                 chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "Physical label")); break;
         }
         Assert.Throws<NotSupportedException>(() => ChartGuards.RenderCompatibility(chart, preparing: true));
@@ -161,7 +161,7 @@ public sealed class GroupedCategoryAxisPlanTests {
         var left = oppositeSigns ? -double.MaxValue : double.MaxValue / 2;
         var right = double.MaxValue;
         var chart = Chart.Create().AddBar("Observed", new[] { new ChartPoint(left, 1), new ChartPoint(right, 2) })
-            .WithXLabels(new[] { new ChartAxisLabel(left, "First", "A"), new ChartAxisLabel(right, "Second", "B") });
+            .XLabels(new[] { new ChartAxisLabel(left, "First", "A"), new ChartAxisLabel(right, "Second", "B") });
         var plan = Assert.IsType<ChartCategoryGroupPlan>(ChartCategoryGroupPlan.TryCreate(chart));
         var spans = plan.CreateSpans(left, right);
         var midpoint = oppositeSigns ? 0 : left + (right - left) / 2;
@@ -190,5 +190,5 @@ public sealed class GroupedCategoryAxisPlanTests {
     }
 
     private static Chart Single() => Chart.Create().AddBar("Observed", new[] { new ChartPoint(1, 7) })
-        .WithXLabels(new[] { new ChartAxisLabel(1, "Leaf", "Group") });
+        .XLabels(new[] { new ChartAxisLabel(1, "Leaf", "Group") });
 }

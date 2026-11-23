@@ -14,7 +14,7 @@ public sealed class PolarHiddenGuideCaptionTests {
     public void HiddenFractionalGuideCaptionsMatchTheSelectedValuePositions(bool polar, bool reversed) {
         var chart = Native(polar, reversed);
         var original = Prepare(chart);
-        chart.Options.PolarGridRingCount = 2.5;
+        chart.Options.Polar.GridRingCount = 2.5;
         var fractional = Prepare(chart);
         Dictionary<string, (double X, double Y)> Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role == (polar ? "polar-radius-label" : "radar-ring-label"))
@@ -35,8 +35,8 @@ public sealed class PolarHiddenGuideCaptionTests {
     [InlineData(960, true)]
     public async Task HiddenFractionalCaptionsRemainVisibleOnBothRadiusAxes(int width, bool reversed) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Native(false, reversed).WithSize(width < 400 ? 320 : 600, 440);
-        chart.Options.PolarGridRingCount = 2.5;
+        var chart = Native(false, reversed).Size(width < 400 ? 320 : 600, 440);
+        chart.Options.Polar.GridRingCount = 2.5;
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToHtmlPage(), width, 620);
         Assert.Equal(4, await session.Page.Locator("[data-cfx-role=radar-ring-label]").CountAsync());
         Assert.Equal(0, await session.Page.Locator("[data-cfx-role=radar-ring]").CountAsync());
@@ -52,13 +52,13 @@ public sealed class PolarHiddenGuideCaptionTests {
     }
 
     private static Chart Native(bool polar, bool reversed) {
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(0, 10));
         var values = new[] { new ChartPoint(1, 17), new ChartPoint(2, 31), new ChartPoint(3, 73) };
         var rates = values.Select(point => new ChartPoint(point.X, point.Y / 10)).ToArray();
         if (polar) chart.AddPolar("Counts", values).AddPolar("Rate", rates);
         else chart.AddRadarLine("Counts", values).AddRadarLine("Rate", rates);
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.XAxis.Visible = false;
+        chart.Series[1].SecondaryAxis(); chart.Options.XAxis.Visible = false;
         chart.Options.YAxis.Reversed = reversed; chart.Options.SecondaryYAxis.Reversed = reversed;
         foreach (var value in reversed ? new[] { 20d, 60d } : new[] { 40d, 80d }) {
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(value, "Count " + value));

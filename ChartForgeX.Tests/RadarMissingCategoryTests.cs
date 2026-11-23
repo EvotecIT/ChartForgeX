@@ -42,7 +42,7 @@ public sealed class RadarMissingCategoryTests {
         Assert.Equal(policy == ChartRadarMissingCategoryPolicy.Gap,
             prepared.Diagnostics.Any(diagnostic => diagnostic.Code == "radar.open-area"));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[1].ConfigureRadar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Zero);
+        chart.Series[1].Radar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Zero);
         chart.Series[1].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -51,7 +51,7 @@ public sealed class RadarMissingCategoryTests {
     [InlineData(false)]
     [InlineData(true)]
     public void GapKeepsTheObservedRunAcrossTheCategorySeamAndRespectsReversal(bool mixed) {
-        var chart = Create(mixed, ChartRadarMissingCategoryPolicy.Gap).ConfigureXAxis(axis => axis.Reversed = true);
+        var chart = Create(mixed, ChartRadarMissingCategoryPolicy.Gap).XAxis(axis => axis.Reversed = true);
         var prepared = Prepare(chart);
         var document = XDocument.Parse(prepared.ToSvg());
         var group = document.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "radar-series"
@@ -67,26 +67,26 @@ public sealed class RadarMissingCategoryTests {
     public void MissingPolicyConfigurationIsDetachedValidatedAndKeepsZeroAsTheDefault() {
         var chart = Create(false, ChartRadarMissingCategoryPolicy.Zero);
         ChartRadarOptions? captured = null;
-        chart.Series[1].ConfigureRadar(options => { captured = options; options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap; });
+        chart.Series[1].Radar(options => { captured = options; options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap; });
         captured!.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Connect;
         Assert.Equal(ChartRadarMissingCategoryPolicy.Gap, chart.Series[1].Radar.MissingCategoryPolicy);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[1].ConfigureRadar(options => options.MissingCategoryPolicy = (ChartRadarMissingCategoryPolicy)99));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[1].Radar(options => options.MissingCategoryPolicy = (ChartRadarMissingCategoryPolicy)99));
         Assert.Equal(ChartRadarMissingCategoryPolicy.Gap, chart.Series[1].Radar.MissingCategoryPolicy);
         Assert.Equal(ChartRadarMissingCategoryPolicy.Zero, new ChartRadarOptions().MissingCategoryPolicy);
     }
 
     private static Chart Create(bool mixed, ChartRadarMissingCategoryPolicy policy) {
         var all = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 80)).ToArray();
-        var chart = Chart.Create().WithSize(600, 420).WithHeader(false).WithLegend().WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(600, 420).ShowHeader(false).Legend().Axes(false).ShowGrid(false)
+            .DataLabels(false).YAxis(y => y.Bounds(0, 100));
         if (mixed) chart.AddRadialColumn("Categories", all);
         else chart.AddRadarLine("Categories", all);
-        chart.Series[0].WithLegendEntry(false);
-        if (!mixed) chart.Series[0].ConfigureMarkers(options => options.Enabled = false);
+        chart.Series[0].ShowInLegend(false);
+        if (!mixed) chart.Series[0].Markers(options => options.Enabled = false);
         var sample = new ChartSeries(new ChartSeriesId("sample"), "Observed", ChartSeriesKind.Radar, new[] {
             new ChartPoint(1, 0), new ChartPoint(2, 70), new ChartPoint(4, 60), new ChartPoint(6, 50)
-        }).WithObservationId(0, new ChartObservationId("observed-zero"))
-            .ConfigureRadar(options => { options.MissingCategoryPolicy = policy; options.CurveTension = .2; options.FillOpacity = .2; });
+        }).ObservationId(0, new ChartObservationId("observed-zero"))
+            .Radar(options => { options.MissingCategoryPolicy = policy; options.CurveTension = .2; options.FillOpacity = .2; });
         return chart.AddSeries(sample);
     }
 

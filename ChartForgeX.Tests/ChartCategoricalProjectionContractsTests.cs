@@ -46,8 +46,8 @@ public sealed class ChartCategoricalProjectionContractsTests {
     [InlineData(ChartSeriesKind.BoxPlot)]
     [InlineData(ChartSeriesKind.Waterfall)]
     public void IntrinsicCategoryBindingsCaptureEachActualCaptionOnceWithoutFormattingPaddingBounds(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(700, 380).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 100).WithYAxisBounds(.5, 2.5);
+        var chart = Chart.Create().Size(700, 380).ShowHeader(false).Legend(false).DataLabels(false)
+            .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(.5, 2.5));
         if (kind == ChartSeriesKind.HorizontalBar) chart.AddHorizontalBar("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
         else if (kind == ChartSeriesKind.RangeBar) {
             chart.AddRangeBar("Readings", new[] { new ChartInterval(1, 10, 20), new ChartInterval(2, 30, 40) });
@@ -79,17 +79,17 @@ public sealed class ChartCategoricalProjectionContractsTests {
             ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 20, 40, 60, 80, 100 })));
         Assert.Null(Projection(histogram).CategoryLabels);
         var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-        var buckets = Chart.Create().WithXAxisTimeScale().AddSeries(ChartSeries.CreateBar(new ChartSeriesId("opened"), "Opened",
-            new[] { new ChartPoint(start, 2), new ChartPoint(start.AddDays(1), 4) }).WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
+        var buckets = Chart.Create().XAxis(x => x.TimeScale()).AddSeries(ChartSeries.CreateBar(new ChartSeriesId("opened"), "Opened",
+            new[] { new ChartPoint(start, 2), new ChartPoint(start.AddDays(1), 4) }).TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
         Assert.Null(Projection(buckets).CategoryLabels);
     }
 
     private static Chart Frame(bool horizontal, double minimum, double maximum) {
-        var chart = Chart.Create().WithSize(700, 380).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(700, 380).ShowHeader(false).Legend(false).DataLabels(false);
         if (horizontal) {
-            chart.Options.LineOrientation = ChartOrientation.Horizontal;
-            chart.WithXAxisBounds(0, 10).WithYAxisBounds(minimum, maximum);
-        } else chart.WithXAxisBounds(minimum, maximum).WithYAxisBounds(0, 10);
+            chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+            chart.XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(minimum, maximum));
+        } else chart.XAxis(x => x.Bounds(minimum, maximum)).YAxis(y => y.Bounds(0, 10));
         return chart;
     }
 

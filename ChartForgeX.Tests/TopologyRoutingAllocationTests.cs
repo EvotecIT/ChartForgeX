@@ -29,9 +29,9 @@ public sealed class TopologyRoutingAllocationTests {
     // Groups of ten cards joined in a chain, about 0.3 extra links per card across groups, and a link between neighbouring groups.
     private static TopologyChart Chart(int nodes) {
         var side = Math.Sqrt(nodes) * 90;
-        var chart = TopologyChart.Create().WithId("routing-allocation").WithTitle("Routing allocation")
-            .WithViewport(Math.Max(1200, side * 1.4), Math.Max(800, side), 24)
-            .WithLayout(TopologyLayoutMode.ForceDirected, TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Id("routing-allocation").Title("Routing allocation")
+            .Viewport(new TopologyViewport(Math.Max(1200, side * 1.4), Math.Max(800, side), 24))
+            .LayoutMode(TopologyLayoutMode.ForceDirected).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         var groups = Math.Max(1, nodes / 10);
         uint state = 777;
         int Next(int max) { state = unchecked(state * 1664525u + 1013904223u); return (int)((state >> 8) % (uint)max); }

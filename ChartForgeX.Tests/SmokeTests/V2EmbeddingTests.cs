@@ -15,7 +15,7 @@ namespace ChartForgeX.Tests;
 public sealed class V2EmbeddingTests {
     [Fact]
     public void ImageCompositionEmbedsTheSamePreparedChartAndGridPixelsWithFitAndOpacity() {
-        var chart = Sample().WithPngOutputScale(2).WithTransparentBackground(false);
+        var chart = Sample().Png(p => p.OutputScale(2)).TransparentBackground(false);
         var chartRequest = VisualExportRequest.ForChart(chart);
         var chartPixels = chart.Prepare(chartRequest.Context).ToRgba(chartRequest.RasterOptions);
         var actualChart = ImageComposition.Create(340, 230, ChartColor.White)
@@ -23,8 +23,8 @@ public sealed class V2EmbeddingTests {
         var expectedChart = ImageComposition.Create(340, 230, ChartColor.White)
             .DrawImage(chartPixels, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToImage();
         Assert.Equal(expectedChart.Pixels, actualChart.Pixels);
-        var grid = ChartGrid.Create().WithColumns(2).WithPanelSize(180, 130).WithPadding(8)
-            .WithPngOutputScale(2).Add(chart).Add(Sample());
+        var grid = ChartGrid.Create().Columns(2).PanelSize(180, 130).Padding(8)
+            .PngOutputScale(2).Add(chart).Add(Sample());
         var gridRequest = VisualExportRequest.ForGrid(grid);
         var gridPixels = grid.Prepare(gridRequest.Context).ToRgba(gridRequest.RasterOptions);
         var actualGrid = ImageComposition.CreateTransparent(410, 180)
@@ -32,14 +32,14 @@ public sealed class V2EmbeddingTests {
         var expectedGrid = ImageComposition.CreateTransparent(410, 180)
             .DrawImage(gridPixels, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToImage();
         Assert.Equal(expectedGrid.Pixels, actualGrid.Pixels);
-        Assert.Equal(2, chart.Options.PngOutputScale);
+        Assert.Equal(2, chart.Options.Png.OutputScale);
         Assert.False(chart.Options.TransparentBackground);
     }
 
     [Fact]
     public void StaticHtmlHostsEmbedPreparedGeometryAndKeepArbitraryHostScopesDistinct() {
         // An explicit mode embeds the literal prepared SVG; Auto writes it with scoped properties (AutoThemeHtmlTests).
-        var chart = Sample().WithTitle("<Revenue & cost>").WithThemeMode(ThemeMode.Light);
+        var chart = Sample().Title("<Revenue & cost>").ThemeMode(ThemeMode.Light);
         var chartPrepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var chartHtml = new HtmlChartRenderer().RenderFragment(chart);
         Assert.Contains(chartPrepared.ToSvg(new VisualSvgOptions(colorVariables: chart.Options.SvgColorVariables, responsive: true)), chartHtml);
@@ -48,7 +48,7 @@ public sealed class V2EmbeddingTests {
         Assert.Equal(chartPrepared.Size.Width.ToString(System.Globalization.CultureInfo.InvariantCulture), chartSvg.Attribute("width")?.Value);
         Assert.Null(XDocument.Parse(chartPrepared.ToSvg()).Root!.Attribute("style"));
         Assert.DoesNotContain("<script", new HtmlChartRenderer().RenderPage(chart), StringComparison.OrdinalIgnoreCase);
-        var grid = ChartGrid.Create().WithTitle("Shared comparison").WithThemeMode(ThemeMode.Light).WithColumns(2).Add(chart).Add(chart);
+        var grid = ChartGrid.Create().Title("Shared comparison").ThemeMode(ThemeMode.Light).Columns(2).Add(chart).Add(chart);
         grid.Accessibility.Language = "pl";
         var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         var renderer = new HtmlChartGridRenderer();
@@ -68,9 +68,9 @@ public sealed class V2EmbeddingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void VisualGridHostsSharePreparedChartSourcesWithoutMutatingTransparency(bool dark) {
-        var chart = Sample().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.WithTransparentBackground(false).WithPngOutputScale(2);
-        var grid = VisualGrid.Create().WithPadding(0).WithGap(0).WithPanelSize(240, 160).Add(chart);
+        var chart = Sample().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.TransparentBackground(false).Png(p => p.OutputScale(2));
+        var grid = VisualGrid.Create().Padding(0).Gap(0).PanelSize(240, 160).Add(chart);
         var svg = new SvgVisualGridRenderer().Render(grid);
         var html = new HtmlVisualGridRenderer().RenderFragment(grid, "host scope");
         var pixels = grid.ToRgbaImage();
@@ -81,11 +81,11 @@ public sealed class V2EmbeddingTests {
         Assert.Equal(240, pixels.Width); Assert.Equal(160, pixels.Height);
         Assert.Contains(pixels.Pixels.Where((_, index) => index % 4 == 3), alpha => alpha > 0);
         Assert.False(chart.Options.TransparentBackground);
-        Assert.Equal(2, chart.Options.PngOutputScale);
+        Assert.Equal(2, chart.Options.Png.OutputScale);
         Assert.Equal("Source", chart.Title);
     }
 
-    private static Chart Sample() => Chart.Create().WithTitle("Source").WithSize(240, 160).WithPadding(8, 8, 8, 8).WithLegend(false)
+    private static Chart Sample() => Chart.Create().Title("Source").Size(240, 160).Padding(8, 8, 8, 8).Legend(false)
         .AddLine("Samples", new[] { new ChartPoint(0, 1), new ChartPoint(1, 4), new ChartPoint(2, 2) });
     private static XElement EmbeddedSvg(string html) => XDocument.Parse(html).Descendants().Single(element => element.Name.LocalName == "svg");
 }

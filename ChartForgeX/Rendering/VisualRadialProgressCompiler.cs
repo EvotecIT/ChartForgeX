@@ -40,7 +40,7 @@ internal static partial class VisualRadialProgressCompiler {
         if (series.RenderPoints.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("radial.no-data", "Progress rings need at least one value.")); return; }
         if (series.RenderPoints.Any(point => double.IsNaN(point.Y) || double.IsInfinity(point.Y) || point.Y < 0 || point.Y > 100))
             throw new InvalidOperationException("Progress-ring values must be finite and between zero and 100.");
-        var outer = Math.Min(maximum, maximum * .85 * chart.Options.RadialProgressRadiusScale);
+        var outer = Math.Min(maximum, maximum * .85 * chart.Options.Progress.RadialRadiusScale);
         if (outer < 1) { builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "The viewport is too small for progress rings.")); return; }
         builder.CaptureValue(new RingPlan(chart, context, cx, cy, outer, colors));
     }
@@ -50,9 +50,9 @@ internal static partial class VisualRadialProgressCompiler {
         if (series.RadialLayers.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("radial.no-data", "Layered radial charts need at least one layer.")); return; }
         if (series.RadialLayers.Any(layer => layer == null || layer.Maximum <= layer.Minimum || double.IsInfinity(layer.Maximum - layer.Minimum)))
             throw new InvalidOperationException("Radial layers require non-null layers and finite positive ranges.");
-        var extent = series.RadialLayers.Max(layer => layer.RadiusRatio + layer.StrokeRatio * chart.Options.RadialProgressStrokeScale / 2);
+        var extent = series.RadialLayers.Max(layer => layer.RadiusRatio + layer.StrokeRatio * chart.Options.Progress.RadialStrokeScale / 2);
         var separatorClearance = series.RadialLayers.Max(layer => layer.SeparatorCount > 0 ? layer.SeparatorStrokeWidth / 2 : 0);
-        var outer = Math.Min(maximum * .85 * chart.Options.RadialProgressRadiusScale, Math.Max(0, maximum - separatorClearance) / extent);
+        var outer = Math.Min(maximum * .85 * chart.Options.Progress.RadialRadiusScale, Math.Max(0, maximum - separatorClearance) / extent);
         if (outer <= 0) { builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "Layer separators exceed the available viewport.")); return; }
         builder.CaptureValue(new LayerPlan(chart, context, cx, cy, maximum, outer, colors));
     }

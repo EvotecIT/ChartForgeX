@@ -43,7 +43,7 @@ internal static class ChartTimeSessionValidation {
                     + " anchors a source instant inside a closed time-session gap.");
         }
         foreach (var label in axis.Labels) ValidateCaption(domain, label.Value);
-        foreach (var label in chart.Options.XAxisLabels) ValidateCaption(domain, label.Value);
+        foreach (var label in chart.Options.XAxis.Labels) ValidateCaption(domain, label.Value);
     }
 
     private static void ValidateCaption(ChartTimeSessionDomain domain, double value) {

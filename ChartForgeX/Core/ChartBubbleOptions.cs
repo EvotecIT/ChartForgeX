@@ -61,7 +61,7 @@ public sealed class ChartBubbleOptions {
     /// <param name="minimumValue">The inclusive minimum source size.</param>
     /// <param name="maximumValue">The inclusive maximum source size, greater than the minimum.</param>
     /// <returns>The current options.</returns>
-    public ChartBubbleOptions WithSizeDomain(double minimumValue, double maximumValue) {
+    public ChartBubbleOptions SizeDomain(double minimumValue, double maximumValue) {
         NonNegative(minimumValue, nameof(minimumValue)); NonNegative(maximumValue, nameof(maximumValue));
         if (maximumValue <= minimumValue)
             throw new ArgumentOutOfRangeException(nameof(maximumValue), maximumValue, "Bubble size-domain bounds must be increasing.");
@@ -71,7 +71,7 @@ public sealed class ChartBubbleOptions {
 
     /// <summary>Infers a common source-size domain from every bubble observation, including hidden and secondary-axis series.</summary>
     /// <returns>The current options.</returns>
-    public ChartBubbleOptions UseAutomaticSizeDomain() { MinimumValue = null; MaximumValue = null; return this; }
+    public ChartBubbleOptions AutomaticSizeDomain() { MinimumValue = null; MaximumValue = null; return this; }
 
     /// <summary>Copies the configured state for isolated chart configuration.</summary>
     internal ChartBubbleOptions Clone() {

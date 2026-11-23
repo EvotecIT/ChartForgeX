@@ -66,7 +66,7 @@ public sealed class MermaidSurfaceElementAppearanceTests {
 
     [Theory] [InlineData(TopologyNodeShape.DoubleCircle)] [InlineData(TopologyNodeShape.Stadium)]
     public void NativeDefaultAndExplicitNullPreserveExistingBytes(TopologyNodeShape shape) {
-        var chart = TopologyChart.Create().WithId("ordinary-elements").WithTitle("").WithViewport(320, 240, 16).WithLegend(null);
+        var chart = TopologyChart.Create().Id("ordinary-elements").Title("").Viewport(new TopologyViewport(320, 240, 16)).Legend((TopologyLegend?)null);
         var node = new TopologyNode { Id = "work", Shape = shape, X = 60, Y = 60, Width = 160, Height = 100,
             ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true, BackgroundColor = "#ff0000", BorderColor = "#0000ff" };
         chart.Nodes.Add(node); var before = chart.ToVisualArtifact();

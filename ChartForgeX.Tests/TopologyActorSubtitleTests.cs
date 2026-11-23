@@ -56,8 +56,8 @@ public sealed class TopologyActorSubtitleTests {
         }
     }
     private static TopologyChart Fixture() {
-        var chart = TopologyChart.Create().WithViewport(700, 520, 24).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithLayout(TopologyLayoutMode.Manual).AddNode("actor", "Release coordinator", 220, 50, width: 180, height: 110)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(700, 520, 24)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .LayoutMode(TopologyLayoutMode.Manual).AddNode("actor", "Release coordinator", 220, 50, width: 180, height: 110)
             .AddNode("work", "Publish", 220, 350, width: 180, height: 80)
             .AddEdge("publish", "actor", "work", routing: TopologyEdgeRouting.Straight);
         chart.Nodes[0].Shape = TopologyNodeShape.Actor;

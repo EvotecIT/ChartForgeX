@@ -34,9 +34,9 @@ public sealed class GaugeCombinedAnatomyTests {
     [Fact]
     public void BandConfigurationIsDetachedAtomicAndDescriptiveInterchangeKeepsStyleFacts() {
         var chart = CombinedGaugeRecipe.Create(); ChartGaugeOptions? captured = null;
-        chart.ConfigureGauge(options => captured = options); captured!.Bands.Clear(); captured.BandGap = 30;
+        chart.Gauge(options => captured = options); captured!.Bands.Clear(); captured.BandGap = 30;
         Assert.Equal(3, chart.Options.Gauge.Bands.Count); Assert.Equal(4, chart.Options.Gauge.BandGap);
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureGauge(options => { options.Bands.Clear(); throw new InvalidOperationException(); }));
+        Assert.Throws<InvalidOperationException>(() => chart.Gauge(options => { options.Bands.Clear(); throw new InvalidOperationException(); }));
         Assert.Equal(3, chart.Options.Gauge.Bands.Count);
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartGaugeBand(0, 1, ChartSeriesState.Success, opacity: double.NaN));
         var envelope = chart.ToVisualArtifact("gauge").ToInterchangeEnvelope(); var json = envelope.ToJson();

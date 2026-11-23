@@ -27,7 +27,7 @@ public sealed class VerticalIntervalAutoBoundsTests {
         var chart = Create(boxPlot, style, scale, reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var groups = Groups(prepared, 0);
         Capture(prepared, Name(boxPlot, style, scale, reversed) + "-primary", groups);
-        Assert.Null(chart.Options.YAxis.Minimum); Assert.Null(chart.Options.YAxis.Maximum);
+        Assert.Null(chart.Options.YAxis.Min); Assert.Null(chart.Options.YAxis.Max);
         AssertRawFacts(groups, boxPlot, scale, false);
         AssertCompletePaint(groups);
         Assert.All(groups, group => Assert.Equal(2, Number(Body(group, boxPlot), "height")));
@@ -41,8 +41,8 @@ public sealed class VerticalIntervalAutoBoundsTests {
         var chart = Create(boxPlot, style, ChartScaleKind.Logarithmic, reversed, secondary: true);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var groups = Groups(prepared, 1);
         Capture(prepared, Name(boxPlot, style, ChartScaleKind.Logarithmic, reversed) + "-secondary-mixed", groups);
-        Assert.Null(chart.Options.SecondaryYAxis.Minimum); Assert.Null(chart.Options.SecondaryYAxis.Maximum);
-        Assert.Equal(1, chart.Options.YAxis.Minimum); Assert.Equal(2, chart.Options.YAxis.Maximum);
+        Assert.Null(chart.Options.SecondaryYAxis.Min); Assert.Null(chart.Options.SecondaryYAxis.Max);
+        Assert.Equal(1, chart.Options.YAxis.Min); Assert.Equal(2, chart.Options.YAxis.Max);
         AssertRawFacts(groups, boxPlot, ChartScaleKind.Logarithmic, true);
         AssertCompletePaint(groups);
         Assert.All(groups, group => Assert.Equal(2, Number(Body(group, boxPlot), "height")));
@@ -57,8 +57,8 @@ public sealed class VerticalIntervalAutoBoundsTests {
     public void OneExplicitVerticalEndStillClipsWhileTheAutomaticEndContainsCompletePaint(bool boxPlot, ChartBarStyle style, bool reversed) {
         foreach (var explicitMaximum in new[] { false, true }) {
             var chart = Create(boxPlot, style, ChartScaleKind.Logarithmic, reversed);
-            if (explicitMaximum) chart.Options.YAxis.Maximum = 100;
-            else chart.Options.YAxis.Minimum = 10;
+            if (explicitMaximum) chart.Options.YAxis.Max = 100;
+            else chart.Options.YAxis.Min = 10;
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var groups = Groups(prepared, 0);
             Capture(prepared, Name(boxPlot, style, ChartScaleKind.Logarithmic, reversed) + "-explicit-" + (explicitMaximum ? "maximum" : "minimum"), groups);
             AssertRawFacts(groups, boxPlot, ChartScaleKind.Logarithmic, false);
@@ -70,26 +70,26 @@ public sealed class VerticalIntervalAutoBoundsTests {
             var body = Rectangle(Body(pinned, boxPlot));
             Close(Intersect(body, clip).Height, 1);
             Assert.Contains(Parts(pinned), part => !Contained(PaintBounds(part), EffectiveClip(part)));
-            if (explicitMaximum) { Assert.Null(chart.Options.YAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum); }
-            else { Assert.Equal(10, chart.Options.YAxis.Minimum); Assert.Null(chart.Options.YAxis.Maximum); }
+            if (explicitMaximum) { Assert.Null(chart.Options.YAxis.Min); Assert.Equal(100, chart.Options.YAxis.Max); }
+            else { Assert.Equal(10, chart.Options.YAxis.Min); Assert.Null(chart.Options.YAxis.Max); }
         }
     }
 
     private static Chart Create(bool boxPlot, ChartBarStyle style, ChartScaleKind scale, bool reversed, bool secondary = false) {
-        var chart = Chart.Create().WithSize(480, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(style).WithTheme(VisualTheme.Graphite()).WithFontFamily("Carlito")
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = Chart.Create().Size(480, 320).ShowHeader(false).Legend(false).DataLabels(false)
+            .Bars(b => b.Style(style)).Theme(VisualTheme.Graphite()).FontFamily("Carlito")
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         if (secondary) {
             chart.AddLine("Primary", new[] { new ChartPoint(1, 1.25), new ChartPoint(2, 1.75) });
-            chart.Series[0].Markers.Enabled = false; chart.Options.YAxis.WithBounds(1, 2);
+            chart.Series[0].Markers.Enabled = false; chart.Options.YAxis.Bounds(1, 2);
         }
         var values = Values(scale);
         if (boxPlot) chart.AddBoxPlot("Summary", values.Select((value, point) => new ChartBoxPlot(point + 1, value, value, value, value, value)));
         else chart.AddRangeBar("Interval", values.Select((value, point) => new ChartInterval(point + 1, value, value)));
-        var interval = chart.Series[secondary ? 1 : 0]; interval.WithStrokeWidth(2);
-        if (secondary) interval.UseSecondaryValueAxis();
-        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithScale(scale).WithReversal(reversed);
-        chart.Options.XAxis.WithBounds(0, 3);
+        var interval = chart.Series[secondary ? 1 : 0]; interval.StrokeWidth(2);
+        if (secondary) interval.SecondaryAxis();
+        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Scale(scale).Reversed(reversed);
+        chart.Options.XAxis.Bounds(0, 3);
         return chart;
     }
 

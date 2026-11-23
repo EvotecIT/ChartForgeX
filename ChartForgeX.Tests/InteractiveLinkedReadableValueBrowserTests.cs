@@ -19,7 +19,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
     public async Task ZonedPointTooltipsRetainCalendarDatesAndRawInstants(string zone, string expected, bool dark, int width) {
         if (!Enabled) return;
         var chart = ChartLinkedReadableValueContractsTests.ZonedTimeChart(zone)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
@@ -89,7 +89,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
     public async Task ScatterValueReadoutsAreFormattedWhileSelectionNumbersStayExact(HtmlChartTooltipMode mode) {
         if (!Enabled) return;
         const double x = 66.09458950219, y = 2.6130852767327268;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 100).WithYAxisBounds(0, 50)
+        var chart = Chart.Create().Size(640, 360).XAxis(xAxis => xAxis.Bounds(0, 100)).YAxis(yAxis => yAxis.Bounds(0, 50))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("samples"), "Samples", new[] { new ChartPoint(x, y) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = mode;

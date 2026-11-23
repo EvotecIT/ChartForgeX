@@ -44,11 +44,11 @@ public sealed partial class SourceAnnotationBrowserTests {
     }
 
     private static Chart Model(int width, ThemeMode mode, bool updated) {
-        var chart = Chart.Create().WithSize(width, 520).WithTheme(VisualTheme.Graphite(), mode)
-            .WithFontFamily(BrowserProofFonts.Family)
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .WithTitle("Source drawings").AddLine("Observed", new[] { new ChartPoint(0, 10), new ChartPoint(3, 40), new ChartPoint(10, 70) });
-        chart.Options.XAxis.WithBounds(0, 10); chart.Options.YAxis.WithBounds(0, 100);
+        var chart = Chart.Create().Size(width, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .FontFamily(BrowserProofFonts.Family)
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Title("Source drawings").AddLine("Observed", new[] { new ChartPoint(0, 10), new ChartPoint(3, 40), new ChartPoint(10, 70) });
+        chart.Options.XAxis.Bounds(0, 10); chart.Options.YAxis.Bounds(0, 100);
         chart.AddNote(new ChartPoint(updated ? 6 : 3, 40), updated ? "Reviewed" : "Review", id: new ChartAnnotationId("note"))
             .AddLineSegment(new ChartPoint(2, 20), new ChartPoint(8, updated ? 50 : 30), "Plan", id: new ChartAnnotationId("plan"))
             .AddParallelChannel(new ChartPoint(2, 65), new ChartPoint(8, 75), 10, "Target", id: new ChartAnnotationId("channel"));

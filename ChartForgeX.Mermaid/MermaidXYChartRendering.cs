@@ -20,29 +20,29 @@ public static class MermaidXYChartRendering {
         var settings = document.Configuration.XYChart;
         var orientation = document.HasExplicitOrientation ? document.Orientation : settings?.Orientation ?? document.Orientation;
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width ?? settings?.Width ?? 900, options.Height ?? settings?.Height ?? 520);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width ?? settings?.Width ?? 900, options.Height ?? settings?.Height ?? 520);
 
         var horizontal = orientation == ChartOrientation.Horizontal;
-        chart.Options.LineOrientation = orientation;
+        chart.Options.Lines.Orientation = orientation;
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
         if (!string.IsNullOrWhiteSpace(document.XAxis.Title)) {
-            if (horizontal) chart.WithYAxis(document.XAxis.Title!);
-            else chart.WithXAxis(document.XAxis.Title!);
+            if (horizontal) chart.YAxis(y => y.Title(document.XAxis.Title!));
+            else chart.XAxis(x => x.Title(document.XAxis.Title!));
         }
         if (!string.IsNullOrWhiteSpace(document.YAxis.Title)) {
-            if (horizontal) chart.WithXAxis(document.YAxis.Title!);
-            else chart.WithYAxis(document.YAxis.Title!);
+            if (horizontal) chart.XAxis(x => x.Title(document.YAxis.Title!));
+            else chart.YAxis(y => y.Title(document.YAxis.Title!));
         }
         for (var index = 0; index < document.XAxis.Labels.Count; index++)
             categoryAxis.Labels.Add(new ChartAxisLabel(index + 1, document.XAxis.Labels[index]));
-        if (document.XAxis.HasRange) { categoryAxis.Minimum = document.XAxis.Minimum; categoryAxis.Maximum = document.XAxis.Maximum; }
-        if (document.YAxis.HasRange) { valueAxis.Minimum = document.YAxis.Minimum; valueAxis.Maximum = document.YAxis.Maximum; }
-        if (options.ShowDataLabels.HasValue) chart.WithDataLabels(options.ShowDataLabels.Value);
+        if (document.XAxis.HasRange) { categoryAxis.Min = document.XAxis.Minimum; categoryAxis.Max = document.XAxis.Maximum; }
+        if (document.YAxis.HasRange) { valueAxis.Min = document.YAxis.Minimum; valueAxis.Max = document.YAxis.Maximum; }
+        if (options.ShowDataLabels.HasValue) chart.DataLabels(options.ShowDataLabels.Value);
         var showLegend = options.ShowLegend ?? settings?.ShowLegend;
-        if (showLegend.HasValue) chart.WithLegend(showLegend.Value);
+        if (showLegend.HasValue) chart.Legend(showLegend.Value);
 
         foreach (var series in document.Series) {
             var points = BuildPoints(document, series);
@@ -55,7 +55,7 @@ public static class MermaidXYChartRendering {
         MermaidPresentation.Apply(chart, document, options.Presentation);
         settings?.Apply(chart, horizontal, options.Presentation);
         var showTitle = options.ShowTitle ?? (options.Title != null ? true : settings?.ShowTitle ?? true);
-        if (!showTitle) chart.WithTitle(string.Empty);
+        if (!showTitle) chart.Title(string.Empty);
         return chart;
     }
 
@@ -70,7 +70,7 @@ public static class MermaidXYChartRendering {
         var artifact = chart.ToVisualArtifact(id, VisualArtifactKind.Mermaid, VisualArtifactSourceLanguage.Mermaid);
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
-        artifact.Metadata["mermaid.orientation"] = chart.Options.LineOrientation.ToString();
+        artifact.Metadata["mermaid.orientation"] = chart.Options.Lines.Orientation.ToString();
         artifact.Metadata["mermaid.series"] = document.Series.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.barSeries"] = CountSeries(document, MermaidXYChartSeriesKind.Bar).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.lineSeries"] = CountSeries(document, MermaidXYChartSeriesKind.Line).ToString(CultureInfo.InvariantCulture);
@@ -97,20 +97,20 @@ public static class MermaidXYChartRendering {
     private static void ApplyLabels(ChartSeries native, MermaidXYChartSeries source,
         MermaidXYChartRenderOptions host, MermaidXYChartSettings? settings) {
         if (source.Kind == MermaidXYChartSeriesKind.Bar) {
-            if (!host.ShowDataLabels.HasValue && settings?.ShowDataLabel is bool visible) native.WithDataLabels(visible);
+            if (!host.ShowDataLabels.HasValue && settings?.ShowDataLabel is bool visible) native.ShowDataLabels(visible);
             if (settings?.ShowDataLabelOutsideBar is bool outside)
-                native.WithDataLabelPlacement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside);
+                native.DataLabelPlacement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside);
             return;
         }
         if (source.PointLabels.Count == 0) return;
         // Unlabelled line points stay unlabelled unless the host explicitly asks for numeric labels.
         if (host.ShowDataLabels != true)
-            for (var index = 0; index < source.Values.Count; index++) native.WithPointLabel(index, string.Empty);
+            for (var index = 0; index < source.Values.Count; index++) native.PointLabel(index, string.Empty);
         foreach (var label in source.PointLabels) {
             if (label.PointIndex >= source.Values.Count) throw new ArgumentException("An XY point caption must reference a datum in its series.", nameof(source));
-            native.WithPointLabel(label.PointIndex, MermaidLabelText.DisplayCaption(label.Text));
+            native.PointLabel(label.PointIndex, MermaidLabelText.DisplayCaption(label.Text));
         }
-        if (host.ShowDataLabels != false) native.WithDataLabels();
+        if (host.ShowDataLabels != false) native.ShowDataLabels(true);
     }
 
     private static int CountPointLabels(MermaidXYChartDocument document) {

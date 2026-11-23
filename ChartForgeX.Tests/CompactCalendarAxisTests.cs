@@ -27,9 +27,9 @@ public sealed class CompactCalendarAxisTests {
             "timeline" => TimelineRecipe.Create(mode: mode),
             _ => GanttLaneRecipe.Create(mode: mode)
         };
-        chart.WithTheme(VisualTheme.Graphite(), mode).WithPngFont(Font()).WithSize(width, width == 400 ? 280 : 440)
-            .WithHeader(false).WithPadding(16, 16, 16, 16).ConfigureGridStyle(style => style.ShowVerticalLines = true);
-        if (width == 400) chart.ConfigureTickLabelStyle(style => style.WithFontSize(13.5));
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode).Png(p => p.FontPath(Font())).Size(width, width == 400 ? 280 : 440)
+            .ShowHeader(false).Padding(16, 16, 16, 16).GridLineStyle(style => style.ShowVerticalLines = true);
+        if (width == 400) chart.TickLabelStyle(style => style.FontSize(13.5));
         var prepared = Prepare(chart); var labels = Captions(prepared, "schedule-tick-label");
         Assert.InRange(labels.Length, minimum, 8);
         var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "schedule-grid").ToArray();
@@ -59,8 +59,8 @@ public sealed class CompactCalendarAxisTests {
     [InlineData(420, ThemeMode.Light)]
     public void NarrowFullIsoDatesUseARegularSourceDayStrideBeforeFallingBackToTwoLabels(int width, ThemeMode mode) {
         var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(width, 260).WithTransparentBackground().WithHeader(false).WithLegend(false)
-            .WithPadding(64, 14, 20, 46).WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithThemeMode(mode).WithPngFont(Font())
+        var chart = Chart.Create().Size(width, 260).TransparentBackground().ShowHeader(false).Legend(false)
+            .Padding(64, 14, 20, 46).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).ThemeMode(mode).Png(p => p.FontPath(Font()))
             .AddLine("Score", Enumerable.Range(0, 19).Select(index => new ChartPoint(start.AddDays(index), 50 + index % 5 * 4)));
         var prepared = Prepare(chart); var labels = Captions(prepared, "axis-x-label");
         Assert.InRange(labels.Length, 4, 8);
@@ -79,9 +79,9 @@ public sealed class CompactCalendarAxisTests {
     [InlineData(720, ThemeMode.Light)]
     public void ADateBesideAClockCaptionUsesTheirMeasuredMeanAndKeepsSixHourBoundaries(int width, ThemeMode mode) {
         var start = new DateTime(2026, 10, 13, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(width, 160).WithTransparentBackground().WithHeader(false).WithPadding(0, 10, 16, 0)
-            .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithThemeMode(mode).WithPngFont(Font())
-            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#2E7D32")));
+        var chart = Chart.Create().Size(width, 160).TransparentBackground().ShowHeader(false).Padding(0, 10, 16, 0)
+            .XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).ThemeMode(mode).Png(p => p.FontPath(Font()))
+            .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#2E7D32")));
         chart.AddStateTimelineLane("Nightly run", new[] { new ChartStateTimelineSegment(start, start.AddHours(24), "up") });
         chart.AddStateTimelineLane("Weekly run", new[] { new ChartStateTimelineSegment(start, start.AddHours(24), "up") });
         var prepared = Prepare(chart); var labels = Captions(prepared, "schedule-tick-label");
@@ -93,7 +93,7 @@ public sealed class CompactCalendarAxisTests {
     [Fact]
     public void WideMonthWindowRetainsWeeklyFullIsoLabelsRatherThanFillingEveryAvailableSlot() {
         var start = new DateTime(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(1440, 420).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(1440, 420).XAxis(x => x.TimeScale())
             .AddLine("Health", Enumerable.Range(0, 30).Select(index => new ChartPoint(start.AddDays(index), 75 + index % 7)));
         var prepared = Prepare(chart); var labels = Captions(prepared, "axis-x-label");
         Assert.Equal(new[] { "2026-09-14", "2026-09-21", "2026-09-28", "2026-10-05", "2026-10-12" }, labels.Select(label => label.Text.Lines.Single().Text));
@@ -107,9 +107,9 @@ public sealed class CompactCalendarAxisTests {
     [InlineData(true, ThemeMode.Dark)]
     public void UnresolvedFontsKeepNonMidnightTasksAndRegularDayCaptionsInTheSameMeasuredProjection(bool fixedDays, ThemeMode mode) {
         var start = new DateTime(2026, 3, 2, 10, 0, 0, DateTimeKind.Utc); var end = start.AddDays(17);
-        var chart = Chart.Create().WithSize(900, 300).WithHeader(false).WithLegend(false)
-            .WithThemeMode(mode).ConfigureGridStyle(style => style.ShowVerticalLines = true).AddGanttTask("Project", start, end);
-        if (fixedDays) chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false)
+            .ThemeMode(mode).GridLineStyle(style => style.ShowVerticalLines = true).AddGanttTask("Project", start, end);
+        if (fixedDays) chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
         var request = VisualExportRequest.ForChart(chart).Context;
         var context = new VisualRenderContext(request.Layout, request.Theme, request.ThemeMode, request.Frame,
             FontSpec.FromFamily("CFX Missing Calendar Regression 3A9859"));

@@ -10,10 +10,10 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void YAxisFormattingStaysIsolatedFromGenericValues() {
         var chart = Chart.Create()
-            .WithSize(420, 280)
-            .WithValueFormatter(_ => "generic-value")
-            .ConfigureYAxis(axis => axis.LabelFormatter = _ => "axis-only")
-            .WithDataLabels()
+            .Size(420, 280)
+            .FormatValuesBy(_ => "generic-value")
+            .YAxis(axis => axis.LabelFormatter = _ => "axis-only")
+            .DataLabels()
             .AddLine("Values", Points(10, 20, 30));
 
         var svg = chart.ToSvg();
@@ -22,13 +22,13 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng().Length > 64, "Independent y-axis and generic value formatters should render through the PNG path.");
 
         var secondary = Chart.Create()
-            .WithSize(700, 280)
-            .WithValueFormatter(_ => "generic-secondary")
-            .ConfigureYAxis(axis => axis.LabelFormatter = _ => "primary-fixed")
-            .ConfigureTickLabelStyle(style => style.WithWeight("650").WithItalic())
-            .WithSecondaryYAxis("Rate")
+            .Size(700, 280)
+            .FormatValuesBy(_ => "generic-secondary")
+            .YAxis(axis => axis.LabelFormatter = _ => "primary-fixed")
+            .TickLabelStyle(style => style.FontWeight("650").Italic())
+            .SecondaryYAxis(s => s.Title("Rate"))
             .AddLine("Rate", Points(20, 40, 60));
-        secondary.Series[0].UseSecondaryValueAxis();
+        secondary.Series[0].SecondaryAxis();
         var secondaryPrepared = PreparedFamily(secondary);
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label!.StartsWith("generic-secondary (", StringComparison.Ordinal)),
             "Secondary tick regions should retain the complete fallback-formatted value.");
@@ -36,14 +36,14 @@ internal static partial class SmokeTests {
         Assert(secondarySvg.Contains(">generic-secondary</text>", StringComparison.Ordinal), "Secondary y-axis ticks should fall back to the generic value formatter when the axis has no dedicated formatter.");
         Assert(secondarySvg.Contains("data-cfx-role=\"axis-secondary-y-label\"", StringComparison.Ordinal) && secondarySvg.Contains("font-weight=\"650\"", StringComparison.Ordinal) && secondarySvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Secondary SVG axis ticks should honor the shared tick-label typography style.");
         var secondaryPng = secondary.ToPng();
-        secondary.WithValueFormatter(_ => "changed-secondary");
+        secondary.FormatValuesBy(_ => "changed-secondary");
         Assert(!secondaryPng.AsSpan().SequenceEqual(secondary.ToPng()), "Secondary PNG ticks should use the same generic formatter fallback as SVG output.");
 
         var pieSvg = Chart.Create()
-            .WithValueFormatter(_ => "generic-pie-value")
-            .ConfigureYAxis(axis => axis.LabelFormatter = _ => "axis-only")
-            .WithDataLabels()
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Value)
+            .FormatValuesBy(_ => "generic-pie-value")
+            .YAxis(axis => axis.LabelFormatter = _ => "axis-only")
+            .DataLabels()
+            .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Value))
             .AddPie("Share", Points(70, 30))
             .ToSvg();
         Assert(pieSvg.Contains("generic-pie-value", StringComparison.Ordinal), "Non-axis chart values should keep the generic formatter.");
@@ -62,7 +62,7 @@ internal static partial class SmokeTests {
 
         const string sample = "MMMMMMMMiiiiiiii";
         foreach (var family in new[] { "serif", "monospace" }) {
-            var chart = FormattedAxisChart(_ => sample).WithSize(900, 280).ConfigureTickLabelStyle(style => style.WithFontFamily(family).WithItalic());
+            var chart = FormattedAxisChart(_ => sample).Size(900, 280).TickLabelStyle(style => style.FontFamily(family).Italic());
             var context = VisualExportRequest.ForChart(chart).Context;
             var scene = chart.Prepare(context).Scene;
             var rule = scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
@@ -84,11 +84,11 @@ internal static partial class SmokeTests {
         var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF00FF"); });
         var chart = Chart.Create()
-            .WithSize(420, 280)
-            .WithTheme(theme)
-            .WithGrid(false)
-            .WithLegend(false)
-            .ConfigureYAxis(axis => axis.LabelFormatter = formatter)
+            .Size(420, 280)
+            .Theme(theme)
+            .ShowGrid(false)
+            .Legend(false)
+            .YAxis(axis => axis.LabelFormatter = formatter)
             .AddLine("Latency", Points(1000000, 1120000, 1080000));
         chart.Options.XAxis.ShowLine = false;
         return chart;

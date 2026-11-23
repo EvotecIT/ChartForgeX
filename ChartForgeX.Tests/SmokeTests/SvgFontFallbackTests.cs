@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void SvgFontStacksEndWithGenericFamily() {
         const string Missing = "CFX Missing Proof Face 7C1D";
-        var chart = Chart.Create().WithTitle("Fallback").WithLegend(true).WithFontFamily(Missing).AddLine("Values", Points(1, 2, 3));
+        var chart = Chart.Create().Title("Fallback").Legend(true).FontFamily(Missing).AddLine("Values", Points(1, 2, 3));
         var svg = chart.ToSvg();
         var families = Regex.Matches(svg, "font-family=\"([^\"]*)\"").Cast<Match>().Select(match => match.Groups[1].Value).Distinct().ToArray();
         Assert(families.Length > 0 && families.All(EndsWithGenericFamily), "Every SVG font stack should end with a generic family: " + string.Join(" | ", families));

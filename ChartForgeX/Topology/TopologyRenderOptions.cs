@@ -170,102 +170,6 @@ public sealed class TopologyRenderOptions {
         set => _geography = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions. Defaults to static, script-free HTML.</summary>
-    public bool EnableHtmlInteractions { get; set; }
-
-    /// <summary>Gets or sets whether interactive HTML pages should include lightweight zoom and pan controls.</summary>
-    public bool EnableHtmlViewportControls { get; set; }
-
-    private double _htmlNarrowMinimumHeight;
-
-    /// <summary>Gets or sets the minimum drawing height in pixels for interactive viewports in containers up to 640 pixels wide. Zero preserves proportional sizing.</summary>
-    public double HtmlNarrowMinimumHeight {
-        get => _htmlNarrowMinimumHeight;
-        set {
-            if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(nameof(value));
-            _htmlNarrowMinimumHeight = value;
-        }
-    }
-
-    /// <summary>Gets or sets whether interactive HTML pages should include lightweight SVG and PNG export controls.</summary>
-    public bool EnableHtmlExportControls { get; set; }
-
-    /// <summary>Gets or sets whether force-directed HTML pages should include graph exploration controls.</summary>
-    public bool EnableHtmlForceGraphControls { get; set; }
-
-    /// <summary>Gets or sets whether interactive HTML pages render a find bar that highlights nodes by text, group or kind and moves the viewport to them.</summary>
-    /// <remarks>Force graph controls already carry their own search, so force-directed pages with those controls keep that panel instead.</remarks>
-    public bool EnableHtmlFindControls { get; set; }
-
-    /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
-    public bool EnableHtmlSynchronizedState { get; set; }
-
-    /// <summary>Gets or sets whether interactive HTML pages should render scenario picker controls when scenarios are present.</summary>
-    public bool EnableHtmlScenarioControls { get; set; } = true;
-
-    /// <summary>Gets or sets how interactive HTML pages should render scenario controls.</summary>
-    public TopologyHtmlScenarioControlMode HtmlScenarioControlMode {
-        get => _htmlScenarioControlMode;
-        set {
-            TopologyModelGuards.EnumDefined(value, nameof(value));
-            _htmlScenarioControlMode = value;
-        }
-    }
-    private TopologyHtmlScenarioControlMode _htmlScenarioControlMode = TopologyHtmlScenarioControlMode.Buttons;
-
-    /// <summary>Gets or sets whether interactive HTML pages should render a compact scenario detail panel when scenarios are present.</summary>
-    public bool EnableHtmlScenarioPanel { get; set; } = true;
-
-    /// <summary>Gets or sets whether interactive HTML pages show each scenario's matching sequence diagram and highlight the active step's message in it.</summary>
-    public bool EnableHtmlScenarioSequence { get; set; }
-
-    /// <summary>Gets or sets whether interactive HTML pages should render a compact selected-record panel for clicked nodes, edges, and groups.</summary>
-    public bool EnableHtmlSelectionPanel { get; set; }
-
-    /// <summary>Gets or sets whether interactive HTML pages should render a fullscreen viewport control.</summary>
-    public bool EnableHtmlFullscreenControl { get; set; }
-
-    /// <summary>Gets or sets where viewport, fullscreen, and export controls are placed in interactive HTML output.</summary>
-    public TopologyHtmlControlPlacement HtmlControlPlacement {
-        get => _htmlControlPlacement;
-        set {
-            TopologyModelGuards.EnumDefined(value, nameof(value));
-            _htmlControlPlacement = value;
-        }
-    }
-    private TopologyHtmlControlPlacement _htmlControlPlacement = TopologyHtmlControlPlacement.TopLeft;
-
-    /// <summary>Gets or sets the view an interactive HTML topology with viewport controls opens at.</summary>
-    public TopologyHtmlOpeningView HtmlOpeningView {
-        get => _htmlOpeningView;
-        set {
-            TopologyModelGuards.EnumDefined(value, nameof(value));
-            _htmlOpeningView = value;
-        }
-    }
-    private TopologyHtmlOpeningView _htmlOpeningView = TopologyHtmlOpeningView.Readable;
-
-    /// <summary>Gets or sets how the mouse wheel acts on an interactive HTML topology with viewport controls.</summary>
-    public TopologyHtmlWheelZoom HtmlWheelZoom {
-        get => _htmlWheelZoom;
-        set {
-            TopologyModelGuards.EnumDefined(value, nameof(value));
-            _htmlWheelZoom = value;
-        }
-    }
-    private TopologyHtmlWheelZoom _htmlWheelZoom = TopologyHtmlWheelZoom.Always;
-
-    /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
-    public bool EnableHtmlScenarioUrlState { get; set; }
-
-    /// <summary>Gets or sets the optional HTML synchronization group name used by topology wrappers on the same page.</summary>
-    public string? HtmlSyncGroupName { get; set; }
-
-    /// <summary>Gets or sets the content security policy nonce for topology HTML. When set, the HTML carries no <c>style</c>
-    /// attributes: every inline style and style element moves into one <c>style</c> element with this nonce
-    /// (see <see cref="ChartForgeX.Html.HtmlStrictStyles"/>), and interactive script elements carry it too.</summary>
-    public string? HtmlNonce { get; set; }
-
     /// <summary>Gets or sets the optional scenario id to activate when an interactive HTML page loads.</summary>
     /// <remarks>Ids are trimmed and may contain only letters, digits, dots, underscores and hyphens; null clears the selection.</remarks>
     public string? ActiveScenarioId {
@@ -273,27 +177,6 @@ public sealed class TopologyRenderOptions {
         set => _activeScenarioId = value == null ? null : TopologyRenderOptionsExtensions.RequiredScenarioToken(value, nameof(value));
     }
     private string? _activeScenarioId;
-
-    /// <summary>Gets or sets whether geographic topology layouts should render map callout summaries for coordinated groups.</summary>
-    public bool IncludeGeographicCallouts { get; set; }
-
-    /// <summary>Gets or sets whether geographic topology layouts should render soft status-colored region hulls around coordinated groups.</summary>
-    public bool IncludeGeographicRegionHulls { get; set; }
-
-    /// <summary>Gets or sets whether geographic callouts should prefer map-edge placements before near-anchor placement.</summary>
-    public bool PreferGeographicCalloutMapEdges { get; set; }
-
-    /// <summary>Gets or sets the maximum number of geographic callout summaries to render.</summary>
-    public int GeographicCalloutMaxItems { get; set; } = 4;
-
-    /// <summary>Gets or sets the padding added around nodes when calculating geographic region hull radius.</summary>
-    public double GeographicRegionHullPadding { get; set; } = 22;
-
-    /// <summary>Gets or sets the minimum geographic region hull radius.</summary>
-    public double GeographicRegionHullMinRadius { get; set; } = 52;
-
-    /// <summary>Gets or sets the maximum geographic region hull radius.</summary>
-    public double GeographicRegionHullMaxRadius { get; set; } = 96;
 
     /// <summary>Gets or sets whether links should open in a new tab.</summary>
     public bool OpenLinksInNewTab { get; set; }
@@ -543,7 +426,7 @@ public sealed class TopologyRenderOptions {
 
     internal TopologyRenderOptions ForInteractiveHtmlRendering() {
         var snapshot = Clone();
-        snapshot.EnableHtmlInteractions = true;
+        snapshot.Html.Interactions = true;
         return snapshot;
     }
 }

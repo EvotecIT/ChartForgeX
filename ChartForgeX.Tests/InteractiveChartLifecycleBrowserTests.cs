@@ -45,7 +45,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await using var session = await OpenAsync(Readings().ToInteractiveHtmlPage());
         var page = session.Page;
         await BindControllerAsync(page);
-        var other = Chart.Create().WithSize(640, 360).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("other-source"), "Other",
+        var other = Chart.Create().Size(640, 360).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("other-source"), "Other",
             new[] { new ChartPoint(1, 3), new ChartPoint(2, 4) })).ToInteractiveHtmlFragmentWithoutAssets();
         var result = await page.EvaluateAsync<JsonElement>("""
             other => {
@@ -128,7 +128,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await BindControllerAsync(page);
         await SelectAsync(page, explicitIdentity ? North : Point(0, 0));
         var next = Readings(updated: true, explicitIdentity: explicitIdentity);
-        if (explicitIdentity) next.Series[1].WithObservationId(1, new ChartObservationId("replacement"));
+        if (explicitIdentity) next.Series[1].ObservationId(1, new ChartObservationId("replacement"));
         await UpdateAsync(page, next.ToInteractiveHtmlFragmentWithoutAssets());
         Assert.Equal(0, await page.Locator("[aria-selected=true]").CountAsync());
         Assert.NotEqual("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
@@ -144,8 +144,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserFact]
     public async Task RelationshipReplacementRebindsNodeFactsWithoutBorrowingRemovedNodeIdentity() {
         if (!Enabled) return;
-        Chart Relationship(bool updated) => Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite())
-            .WithTitle("Requests by stage").AddSeries(ChartSeries.CreateSankey(new ChartSeriesId("traffic"), "Traffic",
+        Chart Relationship(bool updated) => Chart.Create().Size(640, 360).Theme(VisualTheme.Graphite())
+            .Title("Requests by stage").AddSeries(ChartSeries.CreateSankey(new ChartSeriesId("traffic"), "Traffic",
                 updated ? new[] { new ChartNode("output", "Resolved"), new ChartNode("input", "Received") }
                     : new[] { new ChartNode("input", "Received"), new ChartNode("output", "Processed") },
                 new[] { new ChartFlowLink("received", "input", "output", updated ? 19 : 5) }));
@@ -172,12 +172,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             ? new[] { new ChartBubble(2, 9, 25), new ChartBubble(1, 17, 64) }
             : new[] { new ChartBubble(1, 5, 9), new ChartBubble(2, 8, 25) };
         var samples = ChartSeries.CreateBubble(new ChartSeriesId("samples"), updated ? "Updated samples" : "Samples", observations);
-        if (explicitIdentity) samples.WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
-            .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
+        if (explicitIdentity) samples.ObservationId(updated ? 1 : 0, new ChartObservationId("north"))
+            .ObservationId(updated ? 0 : 1, new ChartObservationId("south"));
         var reference = ChartSeries.CreateLine(new ChartSeriesId("reference"), "Reference", new[] { new ChartPoint(0, 20), new ChartPoint(3, 20) });
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle(updated ? "Updated observations" : "Measured observations").WithLegend()
-            .WithXAxisBounds(0, 3).WithYAxisBounds(0, 25).WithDataLabels(false);
+        var chart = Chart.Create().Size(640, 360).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title(updated ? "Updated observations" : "Measured observations").Legend()
+            .XAxis(x => x.Bounds(0, 3)).YAxis(y => y.Bounds(0, 25)).DataLabels(false);
         return updated ? chart.AddSeries(reference).AddSeries(samples) : chart.AddSeries(samples).AddSeries(reference);
     }
 

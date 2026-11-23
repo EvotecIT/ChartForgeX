@@ -16,7 +16,7 @@ public sealed class ScalarBarCapacityTests {
     [InlineData(false)]
     [InlineData(true)]
     public void NearAdjacentNumericCategoriesRetainMinimumThicknessAndBothPublicExports(bool horizontal) {
-        var chart = Chart.Create().WithSize(480, 300).WithBarStyle(ChartBarStyle.Flat);
+        var chart = Chart.Create().Size(480, 300).Bars(b => b.Style(ChartBarStyle.Flat));
         Add(chart, horizontal, "Observations", 3);
 
         var document = XDocument.Parse(chart.ToSvg());
@@ -39,13 +39,13 @@ public sealed class ScalarBarCapacityTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void DenseGroupedAndStackedBarsKeepSlotOwnershipAndTotals(bool horizontal, bool stacked) {
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(ChartBarStyle.Flat);
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false)
+            .Bars(b => b.Style(ChartBarStyle.Flat));
         Add(chart, horizontal, "First", 2); Add(chart, horizontal, "Second", 5);
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        categoryAxis.WithBounds(-.5, 2.5); valueAxis.WithBounds(0, 20);
-        if (stacked) { chart.WithStackedBars(); chart.Options.ShowStackTotals = true; }
+        categoryAxis.Bounds(-.5, 2.5); valueAxis.Bounds(0, 20);
+        if (stacked) { chart.Bars(b => b.Stacked()); chart.Options.Bars.ShowTotals = true; }
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(480, 300), 0),
             frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true)));
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();

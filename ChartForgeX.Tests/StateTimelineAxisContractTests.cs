@@ -7,15 +7,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class StateTimelineAxisContractTests {
     private static readonly DateTime Day = new(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc);
-    private static Chart Create() => Chart.Create().WithSize(720, 300)
-        .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+    private static Chart Create() => Chart.Create().Size(720, 300)
+        .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
         .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
 
     [Fact]
     public void ExplicitOffGridLabelDefinesTickAndHighlight() {
         var value = Day.AddHours(3).AddMinutes(15).ToOADate();
-        var chart = Create().WithXLabels(new[] { new ChartAxisLabel(value, "Maintenance") })
-            .WithHighlightedXAxisLabel(value, ChartColor.FromHex("#e01234"));
+        var chart = Create().XLabels(new[] { new ChartAxisLabel(value, "Maintenance") })
+            .HighlightXAxisLabel(value, ChartColor.FromHex("#e01234"));
         var model = ChartStateTimelineModel.Build(chart);
         Assert.Equal(new[] { value }, model.Ticks);
         var svg = XDocument.Parse(chart.ToSvg());
@@ -29,10 +29,10 @@ public sealed class StateTimelineAxisContractTests {
     public void LegendBudgetIgnoresConfiguredPosition() {
         var chart = Create();
         var categories = Enumerable.Range(0, 12).Select(i => new ChartStateCategory("s" + i, "Long category " + i, ChartColor.FromHex("#1d8a52"))).ToArray();
-        chart.WithStateCategories(categories).WithLegendBudget(0.35);
-        chart.WithLegendPosition(ChartLegendPosition.Bottom);
+        chart.StateCategories(categories).Legend(l => l.MaxHeightFraction(0.35));
+        chart.Legend(l => l.Position(ChartLegendPosition.Bottom));
         var expected = ChartStateTimelineModel.Build(chart).LayoutLegend(text => text.Length * 8, 0, 200, 115).Select(x => (x.Row, x.Omitted)).ToArray();
-        chart.WithLegendPosition(ChartLegendPosition.Left);
+        chart.Legend(l => l.Position(ChartLegendPosition.Left));
         Assert.Equal(expected, ChartStateTimelineModel.Build(chart).LayoutLegend(text => text.Length * 8, 0, 200, 115).Select(x => (x.Row, x.Omitted)).ToArray());
     }
 
@@ -56,9 +56,9 @@ public sealed class StateTimelineAxisContractTests {
     [Fact]
     public void DateTimeAxisLabelAtSubmillisecondStart_RemainsVisible() {
         var start = Day.AddTicks(1_000);
-        var chart = Chart.Create().WithSize(720, 300)
-            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
-            .WithXLabels(new[] { new ChartAxisLabel(start, "Start") })
+        var chart = Chart.Create().Size(720, 300)
+            .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")))
+            .XLabels(new[] { new ChartAxisLabel(start, "Start") })
             .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, start.AddMinutes(1), "up") });
         Assert.Contains("Start", XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(e => (string?)e.Attribute("data-cfx-role") == "schedule-tick-label")
@@ -69,7 +69,7 @@ public sealed class StateTimelineAxisContractTests {
     public void RepeatedLocalHourMetadataIncludesDistinctOffsets() {
         var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
         var start = new DateTime(2026, 10, 25, 0, 30, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(zone)
+        var chart = Chart.Create().Size(720, 300).XAxis(x => x.TimeScale(timeZone: zone))
             .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, start.AddHours(1), "up") });
         var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-segment");
         Assert.Contains("+02:00", (string?)segment.Attribute("data-cfx-meta-start"));
@@ -80,7 +80,7 @@ public sealed class StateTimelineAxisContractTests {
     [InlineData(ChartScaleKind.Logarithmic)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic)]
     public void NonlinearTimeAxisIsRejected(ChartScaleKind scale) {
-        var chart = Create().ConfigureXAxis(axis => axis.Scale = scale);
+        var chart = Create().XAxis(axis => axis.Scale = scale);
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
         Assert.Throws<InvalidOperationException>(() => chart.ToPng());
     }
@@ -89,7 +89,7 @@ public sealed class StateTimelineAxisContractTests {
     [InlineData(-657434, -657433)]
     [InlineData(3000000, 3000000.01)]
     public void NumericFallbackMetadataPreservesEndpoints(double start, double end) {
-        var chart = Chart.Create().WithSize(720, 300).AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, end, "up") });
+        var chart = Chart.Create().Size(720, 300).AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, end, "up") });
         var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-segment");
         Assert.Equal(start, double.Parse((string)segment.Attribute("data-cfx-start")!, System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal(end, double.Parse((string)segment.Attribute("data-cfx-end")!, System.Globalization.CultureInfo.InvariantCulture));

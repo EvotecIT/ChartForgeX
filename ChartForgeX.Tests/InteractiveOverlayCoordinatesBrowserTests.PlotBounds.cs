@@ -18,16 +18,16 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     [InlineData(true, HtmlChartResponsiveLayout.Readable)]
     public async Task CompactHorizontalAndSecondaryAxisGuidesExcludeTheTitleAndContainLongLabels(bool horizontal, HtmlChartResponsiveLayout layout) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTitle("Guides stay below this heading")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(596, 338).Title("Guides stay below this heading")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var values = new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 9) };
         const string name = "Reading with a long observation label that must fit the plot";
-        chart.WithXLabels(values.Select(point => new ChartAxisLabel(point.X, name + " " + point.X)));
+        chart.XLabels(values.Select(point => new ChartAxisLabel(point.X, name + " " + point.X)));
         if (horizontal) chart.AddSeries(new ChartSeries(new ChartSeriesId("reading-source"), name, ChartSeriesKind.HorizontalBar, values));
         else {
             chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), name, values)).AddLine("Secondary", new[] { new ChartPoint(1, 2000), new ChartPoint(9, 8000) });
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.WithSecondaryYAxisBounds(0, 10000);
+            chart.Series[1].SecondaryAxis();
+            chart.SecondaryYAxis(s => s.Bounds(0, 10000));
         }
         await using var session = await OpenAsync(Host(false, layout, 340, 1, false, ChartInteractionFeatures.Crosshair, chart), 950, 760);
         var page = session.Page;

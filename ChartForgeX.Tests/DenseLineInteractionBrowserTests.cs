@@ -81,7 +81,7 @@ public sealed class DenseLineInteractionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static string Page() => Chart.Create().WithSize(1200, 600).WithLegend(false)
+    private static string Page() => Chart.Create().Size(1200, 600).Legend(false)
         .AddLine("Signal", Enumerable.Range(0, Points).Select(index => new ChartPoint(index, Math.Sin(index * .013) * 40 + index % 17)))
         .ToInteractiveHtmlPage(options => options.Interaction.Features =
             ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);

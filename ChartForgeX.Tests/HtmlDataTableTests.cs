@@ -12,7 +12,7 @@ public sealed class HtmlDataTableTests {
     [Fact]
     public void DefaultModeRetainsTheExistingFragmentBytesAndSvgPolicy() {
         // An explicit mode writes literal colours; Auto adds its scoped stylesheet (see AutoThemeHtmlTests).
-        var chart = Chart.Create().WithThemeMode(ThemeMode.Light).WithSize(640, 360).WithTitle("Requests").AddBar("Count", new[] { new ChartPoint(1, 12) });
+        var chart = Chart.Create().ThemeMode(ThemeMode.Light).Size(640, 360).Title("Requests").AddBar("Count", new[] { new ChartPoint(1, 12) });
         var renderer = new HtmlChartRenderer();
         var options = new VisualSvgOptions("requests", chart.Options.SvgColorVariables, responsive: true);
         var html = renderer.RenderFragment(chart, options);
@@ -32,16 +32,16 @@ public sealed class HtmlDataTableTests {
     [InlineData("sparkline")]
     public void NumericTablesPreserveAuthoredValuesFormattingLabelsAndSafeMarkup(string family) {
         var points = new[] { new ChartPoint(1, 12.5), new ChartPoint(3, -2) };
-        var chart = Chart.Create().WithTitle("Load <today> & yesterday").WithXLabels("One <1>", "Absent", "Three")
-            .WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).WithValueUnit("ms");
+        var chart = Chart.Create().Title("Load <today> & yesterday").XLabels("One <1>", "Absent", "Three")
+            .ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).ValueUnit("ms");
         switch (family) {
             case "bar": chart.AddBar("Service & API", points); break;
             case "horizontal-bar": chart.AddHorizontalBar("Service & API", points); break;
             case "stacked": chart.AddStackedArea("Service & API", points).AddStackedArea("Other", new[] { new ChartPoint(1, 5), new ChartPoint(3, 4) }); break;
             case "scatter": chart.AddScatter("Service & API", points); break;
-            default: chart.AddLine("Service & API", points).WithSparkline(); break;
+            default: chart.AddLine("Service & API", points).Sparkline(); break;
         }
-        chart.Series[0].WithPointLabel(0, "<script>unsafe & text</script>");
+        chart.Series[0].PointLabel(0, "<script>unsafe & text</script>");
         var html = new HtmlChartRenderer().RenderFragment(chart, new VisualSvgOptions("data"), ChartDataTableMode.Details);
         var root = XDocument.Parse(html).Root!;
         var details = Assert.Single(root.Elements("details"));
@@ -78,7 +78,7 @@ public sealed class HtmlDataTableTests {
 
     [Fact]
     public void GanttTablesExposeTaskMilestoneMarkerAndOpenEndWithoutProjectionValues() {
-        var chart = Chart.Create().WithXAxisBounds(0, 12).WithXAxisValueFormatter(value => "Day " + value.ToString(CultureInfo.InvariantCulture))
+        var chart = Chart.Create().XAxis(x => x.Bounds(0, 12).LabelBy(value => "Day " + value.ToString(CultureInfo.InvariantCulture)))
             .AddGanttTask("Build", 1, 5, .5).AddGanttMilestone("Launch", 6).AddGanttTask("Support", 7, 10);
         chart.Series[2].ReplaceGanttItems(new[] { ChartGanttItem.OpenEnded(7, .25) });
         chart.AddGanttTask("Review marker", 4, 4);
@@ -94,9 +94,9 @@ public sealed class HtmlDataTableTests {
     public void LaneAndTimelineTablesRetainStateLabelsDetailsAndUnknownEnds() {
         var from = new DateTime(2026, 1, 2);
         var until = from.AddDays(2);
-        var chart = Chart.Create().WithStateCategories(new ChartStateCategory("warn", "Warning & review", ChartColor.FromHex("#C00000")))
-            .WithXAxisValueFormatter(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
-            .WithGanttLaneNow(until)
+        var chart = Chart.Create().StateCategories(new ChartStateCategory("warn", "Warning & review", ChartColor.FromHex("#C00000")))
+            .XAxis(x => x.LabelBy(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))
+            .GanttLaneNow(until)
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(from, null, "warn", "Incident <7>", "Still & investigating"),
                 new ChartGanttLaneItem(from, until, "warn", "Closed") }, group: "Production", summary: "Two incidents");
         var lane = Assert.Single(Tables(chart));
@@ -104,11 +104,11 @@ public sealed class HtmlDataTableTests {
         var items = lane.Element("tbody")!.Elements("tr").ToArray();
         Assert.Equal(new[] { "2026-01-02", "2026-01-04", "Warning & review", "Closed", "" }, Cells(items[0]));
         Assert.Equal(new[] { "2026-01-02", "ongoing", "Warning & review", "Incident <7>", "Still & investigating" }, Cells(items[1]));
-        var state = Chart.Create().WithStateCategories(new ChartStateCategory("warn", "Warning & review", ChartColor.FromHex("#C00000")))
-            .WithXAxisValueFormatter(value => "T" + value.ToString(CultureInfo.InvariantCulture))
+        var state = Chart.Create().StateCategories(new ChartStateCategory("warn", "Warning & review", ChartColor.FromHex("#C00000")))
+            .XAxis(x => x.LabelBy(value => "T" + value.ToString(CultureInfo.InvariantCulture)))
             .AddStateTimelineLane("State", new[] { new ChartStateTimelineSegment(1, 4, "warn", "Check <source>") });
         Assert.Equal(new[] { "T1", "T4", "Warning & review", "Check <source>", "" }, OnlyRow(state));
-        var timeline = Chart.Create().WithXAxisValueFormatter(value => "T" + value.ToString(CultureInfo.InvariantCulture)).AddTimelineRange("Release", 2, 9);
+        var timeline = Chart.Create().XAxis(x => x.LabelBy(value => "T" + value.ToString(CultureInfo.InvariantCulture))).AddTimelineRange("Release", 2, 9);
         Assert.Equal(new[] { "T2", "T9", "" }, OnlyRow(timeline));
     }
 
@@ -118,7 +118,7 @@ public sealed class HtmlDataTableTests {
     [InlineData("band", "Lower", "Upper")]
     [InlineData("area", "Lower", "Upper")]
     public void PairedTablesReadBothAuthoredBoundsRatherThanEncodedRenderPoints(string family, string lower, string upper) {
-        var chart = Chart.Create().WithXLabels("North").WithValueFormatter(value => value.ToString("0.0", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XLabels("North").FormatValuesBy(value => value.ToString("0.0", CultureInfo.InvariantCulture));
         switch (family) {
             case "interval": chart.AddRangeBar("Window", new[] { new ChartInterval(1, 2, 8) }); break;
             case "dumbbell": chart.AddDumbbell("Window", new[] { new ChartDumbbell(1, 2, 8) }); break;
@@ -132,7 +132,7 @@ public sealed class HtmlDataTableTests {
 
     [Fact]
     public void CalendarTablesUseAuthoredDatesAndDateFormatterWithoutInventingMissingDays() {
-        var chart = Chart.Create().WithValueFormatter(value => value.ToString("0.0", CultureInfo.InvariantCulture))
+        var chart = Chart.Create().FormatValuesBy(value => value.ToString("0.0", CultureInfo.InvariantCulture))
             .AddCalendarHeatmap("Daily", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 0), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 3), 8) });
         chart.Options.Labels.DateFormatter = day => day.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
         var rows = Assert.Single(Tables(chart)).Element("tbody")!.Elements("tr").ToArray();
@@ -143,12 +143,12 @@ public sealed class HtmlDataTableTests {
 
     [Fact]
     public void MaskedHeatmapTablesKeepColumnPositionsAndDistinguishMissingFromZero() {
-        var chart = Chart.Create().WithXLabels("First", "Missing", "Third").AddHeatmapRow("Checks", new double?[] { 0, null, 3 });
+        var chart = Chart.Create().XLabels("First", "Missing", "Third").AddHeatmapRow("Checks", new double?[] { 0, null, 3 });
         var rows = Assert.Single(Tables(chart)).Element("tbody")!.Elements("tr").ToArray();
         Assert.Equal(new[] { "First", "0", "" }, Cells(rows[0]));
         Assert.Equal(new[] { "Missing", "No data", "" }, Cells(rows[1]));
         Assert.Equal(new[] { "Third", "3", "" }, Cells(rows[2]));
-        var states = Chart.Create().WithXLabels("First", "Second").WithStateCategories(new ChartStateCategory("ok", "Healthy", ChartColor.FromHex("#008000")))
+        var states = Chart.Create().XLabels("First", "Second").StateCategories(new ChartStateCategory("ok", "Healthy", ChartColor.FromHex("#008000")))
             .AddHeatmapCategoryRow("Checks", new ChartHeatmapCell?[] { null, new("ok", "3/3", "Complete <pass>") });
         var stateRows = Assert.Single(Tables(states)).Element("tbody")!.Elements("tr").ToArray();
         Assert.Equal(new[] { "First", "No data", "", "" }, Cells(stateRows[0]));
@@ -157,7 +157,7 @@ public sealed class HtmlDataTableTests {
 
     [Fact]
     public void EmptySeriesAreNamedAndUnsupportedTypedDataIsNotSilentlyLost() {
-        var empty = Chart.Create().WithTitle("Empty").AddLine("Readings", Array.Empty<ChartPoint>());
+        var empty = Chart.Create().Title("Empty").AddLine("Readings", Array.Empty<ChartPoint>());
         var table = Assert.Single(Tables(empty));
         Assert.Equal("Empty — Readings", table.Element("caption")!.Value);
         Assert.Equal("No data", table.Element("tbody")!.Value);

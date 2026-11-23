@@ -10,8 +10,8 @@ keep ChartAxis.WithLogarithmicScale -> LogarithmicScale  # sets scale, base and 
 keep ChartAxis.WithTickSpacing -> TickSpacing  # validates the minimum/maximum spacing pair
 keep ChartAxis.WithTickStep -> TickStep  # a numeric or calendar step; each clears the other tick policies
 keep ChartAxis.WithTickValues -> TickValues  # validates, orders and de-duplicates explicit ticks and clears the step
-call ChartAxis.WithTimeSessions -> Scale(ChartScaleKind.Time) ; TimeSessions({domain})
-call ChartAxis.WithTimeSpacing -> Scale(ChartScaleKind.Time) ; TimeSpacing({spacing})
+keep ChartAxis.WithTimeSessions -> TimeSessions  # selects the time scale only after checking the sessions against the spacing
+keep ChartAxis.WithTimeSpacing -> TimeSpacing  # selects the time scale only after checking the spacing against sessions and bounds
 call ChartAxis.ConfigureGrid -> !Grid({configure})
 
 # --- ChartSeries: indexed and keyed edits ---------------------------------------------------------

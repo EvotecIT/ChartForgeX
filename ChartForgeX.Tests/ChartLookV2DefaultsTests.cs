@@ -88,8 +88,8 @@ public sealed class ChartLookV2DefaultsTests {
     public void HistogramBinsStayContiguousSquareAndEmptyBinsHaveNoCaption() {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
         var series = ChartSeries.CreateHistogram(new ChartSeriesId("observations"), "Observations", new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout);
-        var chart = Chart.Create().WithDataLabels().AddSeries(series);
-        chart.Options.XAxis.WithBounds(0, 10);
+        var chart = Chart.Create().DataLabels().AddSeries(series);
+        chart.Options.XAxis.Bounds(0, 10);
         var prepared = Prepare(chart, 800, 440);
         var bars = BarBounds(prepared).Where(bounds => bounds.Height > 0).OrderBy(bounds => bounds.Left).ToArray();
         Assert.Equal(3, bars.Length);
@@ -166,7 +166,7 @@ public sealed class ChartLookV2DefaultsTests {
                 node => Assert.Single(node.Text.Lines).Text.EndsWith("…", StringComparison.Ordinal));
         }
         var authored = PieRecipe.Create(width < 480 ? "compact" : "wide", mode);
-        authored.Options.LegendPosition = ChartLegendPosition.TopLeft;
+        authored.Options.Legend.Position = ChartLegendPosition.TopLeft;
         var kept = Prepare(authored, width, height, mode);
         var keptSlice = kept.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role != null && node.Outer > 0);
         Assert.All(kept.Regions.Where(region => region.Role == "legend"), region =>

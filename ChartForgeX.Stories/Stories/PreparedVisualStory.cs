@@ -220,9 +220,9 @@ public sealed partial class PreparedVisualStory {
     }
 
     private static VisualStory Capture(VisualStory story, out long assetBytes) {
-        var copy = VisualStory.Create(story.Title).WithSize(story.Width, story.Height).WithTheme(story.Theme, story.ThemeMode).WithStyle(story.Style.Clone());
-        copy.WithPanelReflow(story.ReflowPanels);
-        if (story.Description.Length > 0) copy.WithDescription(story.Description);
+        var copy = VisualStory.Create(story.Title).Size(story.Width, story.Height).Theme(story.Theme).ThemeMode(story.ThemeMode).Style(story.Style.Clone());
+        copy.ReflowPanels(story.ReflowPanels);
+        if (story.Description.Length > 0) copy.Description(story.Description);
         var surfaces = new Dictionary<VisualStorySurface, VisualStorySurface>();
         assetBytes = 0;
         foreach (var scene in story.Scenes) {

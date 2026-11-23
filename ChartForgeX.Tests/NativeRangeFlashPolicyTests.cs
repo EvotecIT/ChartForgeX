@@ -4,6 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -51,7 +52,7 @@ public sealed class NativeRangeFlashPolicyTests {
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 5, peak); var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValueFlash, 5, peak);
         var payload = renderer.PrepareNativeTransitionJson(from, to, options); var savedSvg = frames.Select(row => row.ToSvg()).ToArray(); var savedPng = frames.Select(row => row.ToPng()).ToArray();
         before.Series[0].ReplaceRanges(Array.Empty<ChartForgeX.Core.ChartRangeBand>()); after.Series[1].ReplaceRanges(Array.Empty<ChartForgeX.Core.ChartRangeBand>());
-        before.WithFontFamily("changed caller font"); after.Series[0].WithColor(ChartColor.Black).UseSolidFill();
+        before.FontFamily("changed caller font"); after.Series[0].Color(ChartColor.Black).SolidFill();
         try {
             FontRegistry.Clear(); var repeat = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 5, peak);
             Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, options));

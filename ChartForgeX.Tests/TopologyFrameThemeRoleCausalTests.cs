@@ -21,9 +21,9 @@ public sealed class TopologyFrameThemeRoleCausalTests {
         });
         Write(name + ".diagnostics.json", JsonSerializer.Serialize(result.Diagnostics.Select(item => new { item.Code, item.Message })));
         var chart = result.Artifact?.Model as TopologyChart ?? throw new InvalidOperationException("The existing source control must produce topology.");
-        chart.WithTitle("Service topology").WithSubtitle("Frame subtitle measured with the source font")
-            .WithLegend(TopologyLegend.Create("Health").AddStatus("Available service", TopologyHealthStatus.Healthy))
-            .WithViewport(800, 500, 24).WithLayout(TopologyLayoutMode.Manual);
+        chart.Title("Service topology").Subtitle("Frame subtitle measured with the source font")
+            .Legend(TopologyLegend.Create("Health").AddStatus("Available service", TopologyHealthStatus.Healthy))
+            .Viewport(new TopologyViewport(800, 500, 24)).LayoutMode(TopologyLayoutMode.Manual);
         chart.Nodes[0].X = 200; chart.Nodes[0].Y = 170;
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = true, FitContentToViewport = false };
         var prepared = chart.Prepare(); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var json = prepared.ToInterchangeEnvelope().ToJson();

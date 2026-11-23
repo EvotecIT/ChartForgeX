@@ -135,7 +135,7 @@ public sealed class HtmlTooltipOptionsTests {
         } finally { CultureInfo.CurrentCulture = culture; }
     }
 
-    private static Chart Chart() => ChartForgeX.Core.Chart.Create().WithSize(520, 320).AddLine("Readings", ChartPoints.FromValues(1, 3, 2));
+    private static Chart Chart() => ChartForgeX.Core.Chart.Create().Size(520, 320).AddLine("Readings", ChartPoints.FromValues(1, 3, 2));
 
     private static void AssertModes(string html, string mode, int count) {
         var roots = Regex.Matches(html, "<section[^>]*class=\"cfx-interactive-chart\"[^>]*>");

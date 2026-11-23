@@ -14,8 +14,7 @@ public sealed class V2StackingTests {
     [Fact]
     public void HorizontalUlpEquivalentCategoriesShareReadableSlotsAndTotalsWithoutChangingRawCoordinates() {
         var category = 1.5; var peer = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(category) + 3);
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat)
-            .WithStackedBars().WithStackTotals().WithYAxisBounds(0, 3)
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false).Bars(b => b.Style(ChartBarStyle.Flat).Stacked().ShowTotals()).YAxis(y => y.Bounds(0, 3))
             .AddHorizontalBar("First", new[] { new ChartPoint(category, 2) })
             .AddHorizontalBar("Second", new[] { new ChartPoint(peer, 3) });
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));
@@ -38,9 +37,9 @@ public sealed class V2StackingTests {
     [InlineData(true)]
     public void NamedStacks_UseIndependentSlotsAndSignedBaselinesAlongsideStandaloneBars(bool horizontal) {
         var chart = Bars(horizontal, new[] { 4d, -2 }, new[] { 6d, -3 }, new[] { 8d, -4 }, new[] { 2d, -6 }, new[] { 5d, -5 });
-        chart.Series[0].WithStackGroup("First"); chart.Series[1].WithStackGroup("First");
-        chart.Series[2].WithStackGroup("Second"); chart.Series[3].WithStackGroup("Second");
-        chart.Options.ShowStackTotals = true;
+        chart.Series[0].StackGroup("First"); chart.Series[1].StackGroup("First");
+        chart.Series[2].StackGroup("Second"); chart.Series[3].StackGroup("Second");
+        chart.Options.Bars.ShowTotals = true;
         var prepared = Prepare(chart);
         var first = Bounds(prepared, 0, 0); var firstTop = Bounds(prepared, 1, 0);
         var second = Bounds(prepared, 2, 0); var secondTop = Bounds(prepared, 3, 0);
@@ -68,8 +67,8 @@ public sealed class V2StackingTests {
     public void NormalizedStacks_KeepSourceValuesWhileGeometryAndTotalsUseResolvedUnits(bool horizontal) {
         var chart = Bars(horizontal, new[] { 3d, -2 }, new[] { 9d, -6 });
         var red = ChartColor.FromHex("#C52E3C"); chart.Series[0].Color = red;
-        foreach (var series in chart.Series) series.WithStackGroup("Share").WithNormalization(100);
-        chart.Options.ShowStackTotals = true;
+        foreach (var series in chart.Series) series.StackGroup("Share").NormalizedTo(100);
+        chart.Options.Bars.ShowTotals = true;
         var prepared = Prepare(chart);
         var small = Bounds(prepared, 0, 0); var large = Bounds(prepared, 1, 0);
         Assert.Equal(3, horizontal ? large.Width / small.Width : large.Height / small.Height, 8);
@@ -92,17 +91,17 @@ public sealed class V2StackingTests {
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         var pixel = (((int)(small.Top + small.Height / 2)) * image.Width + (int)(small.Left + small.Width / 2)) * 4;
         Assert.Equal(red.R, image.Pixels[pixel]); Assert.Equal(red.G, image.Pixels[pixel + 1]); Assert.Equal(red.B, image.Pixels[pixel + 2]);
-        chart.Series[0].WithNormalization(1); chart.Series[0].Points.Clear();
+        chart.Series[0].NormalizedTo(1); chart.Series[0].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg());
     }
 
     [Fact]
     public void AxisAndGroupOwnership_KeepNormalizationAndRangeIndependent() {
         var chart = Bars(false, new[] { 3d }, new[] { 20d }, new[] { 9d }, new[] { 30d });
-        chart.Series[0].WithStackGroup("Shared name").WithNormalization(100);
-        chart.Series[2].WithStackGroup("Shared name").WithNormalization(100);
-        chart.Series[1].UseSecondaryValueAxis().WithStackGroup("Shared name").WithNormalization(1);
-        chart.Series[3].UseSecondaryValueAxis().WithStackGroup("Shared name").WithNormalization(1);
+        chart.Series[0].StackGroup("Shared name").NormalizedTo(100);
+        chart.Series[2].StackGroup("Shared name").NormalizedTo(100);
+        chart.Series[1].SecondaryAxis().StackGroup("Shared name").NormalizedTo(1);
+        chart.Series[3].SecondaryAxis().StackGroup("Shared name").NormalizedTo(1);
         var coordinates = ChartBarCoordinateMap.Create(chart); var stacks = ChartStackLayout.Create(chart, coordinates);
         Assert.Equal(25, stacks.Point(2, 0).Base); Assert.Equal(.4, stacks.Point(3, 0).Base, 8);
         var range = ChartRange.FromChart(chart, coordinates, stacks); var secondary = ChartRange.FromSecondaryValueAxis(chart, range, stacks);
@@ -118,10 +117,10 @@ public sealed class V2StackingTests {
     [InlineData(true)]
     public void ZeroOnlyNormalizedGroup_RemainsAtBaselineWithoutChangingAnotherGroup(bool horizontal) {
         var chart = Bars(horizontal, new[] { 0d }, new[] { 0d }, new[] { 8d });
-        chart.Series[0].WithStackGroup("Empty").WithNormalization(100);
-        chart.Series[1].WithStackGroup("Empty").WithNormalization(100);
-        chart.Series[2].WithStackGroup("Observed").WithNormalization(100);
-        chart.Options.ShowStackTotals = true;
+        chart.Series[0].StackGroup("Empty").NormalizedTo(100);
+        chart.Series[1].StackGroup("Empty").NormalizedTo(100);
+        chart.Series[2].StackGroup("Observed").NormalizedTo(100);
+        chart.Options.Bars.ShowTotals = true;
         var prepared = Prepare(chart);
         var diagnostic = Assert.Single(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.stack-zero-total");
         Assert.Contains("Empty", diagnostic.Message);
@@ -137,11 +136,11 @@ public sealed class V2StackingTests {
     public void NormalizedStackedArea_RetainsSegmentBreaksSourceMetadataAndNamedBases() {
         var points = new[] { new ChartPoint(1, 2), new ChartPoint(2, 3), new ChartPoint(4, 4, true), new ChartPoint(5, 2) };
         var chart = Chart.Create().AddStackedArea("First", points).AddStackedArea("Second", points)
-            .AddStackedArea("Independent", points).WithAxes(false);
+            .AddStackedArea("Independent", points).Axes(false);
         chart.Options.ShowGrid = false;
-        chart.Series[0].WithStackGroup("Pair").WithNormalization(100);
-        chart.Series[1].WithStackGroup("Pair").WithNormalization(100);
-        chart.Series[2].WithStackGroup("Separate").WithNormalization(100);
+        chart.Series[0].StackGroup("Pair").NormalizedTo(100);
+        chart.Series[1].StackGroup("Pair").NormalizedTo(100);
+        chart.Series[2].StackGroup("Separate").NormalizedTo(100);
         var prepared = Prepare(chart);
         Assert.Equal(6, prepared.Scene.Nodes.Count(node => node.Role == "area"));
         Assert.Equal("50", Point(prepared, 1, 2).Metadata["data-cfx-base"]);
@@ -158,15 +157,15 @@ public sealed class V2StackingTests {
     public void StackedArea_SharedBoundariesRequireMatchingInterpolationWithinEachGroupAndAxis(ChartInterpolation interpolation, ChartStepPosition position) {
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(2, 8) };
         var chart = Chart.Create().AddStackedArea("Lower", points).AddStackedArea("Upper", points)
-            .AddStackedArea("Other group", points).AddStackedArea("Other axis", points).WithAxes(false).WithGrid(false);
-        chart.Series[0].WithStackGroup("Pair").WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Start);
-        chart.Series[1].WithStackGroup("Pair").WithInterpolation(interpolation, position);
-        chart.Series[2].WithStackGroup("Separate").WithInterpolation(ChartInterpolation.Smooth);
-        chart.Series[3].UseSecondaryValueAxis().WithStackGroup("Pair").WithInterpolation(ChartInterpolation.Step, ChartStepPosition.End);
+            .AddStackedArea("Other group", points).AddStackedArea("Other axis", points).Axes(false).ShowGrid(false);
+        chart.Series[0].StackGroup("Pair").Interpolation(ChartInterpolation.Step, ChartStepPosition.Start);
+        chart.Series[1].StackGroup("Pair").Interpolation(interpolation, position);
+        chart.Series[2].StackGroup("Separate").Interpolation(ChartInterpolation.Smooth);
+        chart.Series[3].SecondaryAxis().StackGroup("Pair").Interpolation(ChartInterpolation.Step, ChartStepPosition.End);
         var exception = Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Contains("Interpolation and StepPosition", exception.Message);
 
-        chart.Series[1].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Start);
+        chart.Series[1].Interpolation(ChartInterpolation.Step, ChartStepPosition.Start);
         var prepared = Prepare(chart);
         var lowerLine = prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role == "line");
         var upperArea = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "area").ElementAt(1);
@@ -183,11 +182,11 @@ public sealed class V2StackingTests {
         var bins = ChartHistogramBinLayout.FromWidth(0, 2, 1, roundBounds: false);
         var chart = Chart.Create().AddHistogram("First", new[] { .2, .4, 1.2 }, bins)
             .AddHistogram("Second", new[] { .2, 1.2, 1.4 }, bins)
-            .AddHistogram("Separate", new[] { .2, 1.2 }, bins).WithAxes(false);
-        chart.Options.ShowGrid = false; chart.Options.ShowStackTotals = true;
-        chart.Series[0].WithStackGroup("Pair").WithNormalization(100);
-        chart.Series[1].WithStackGroup("Pair").WithNormalization(100);
-        chart.Series[2].WithStackGroup("Separate").WithNormalization(100);
+            .AddHistogram("Separate", new[] { .2, 1.2 }, bins).Axes(false);
+        chart.Options.ShowGrid = false; chart.Options.Bars.ShowTotals = true;
+        chart.Series[0].StackGroup("Pair").NormalizedTo(100);
+        chart.Series[1].StackGroup("Pair").NormalizedTo(100);
+        chart.Series[2].StackGroup("Separate").NormalizedTo(100);
         var prepared = Prepare(chart);
         Assert.Equal(Bounds(prepared, 0, 0).Left, Bounds(prepared, 1, 0).Left, 8);
         Assert.True(Bounds(prepared, 0, 0).Right < Bounds(prepared, 2, 0).Left);
@@ -201,24 +200,24 @@ public sealed class V2StackingTests {
     [Fact]
     public void StackConfiguration_RejectsConflictingTargetsAndUnsupportedArrangements() {
         var conflicting = Bars(false, new[] { 1d }, new[] { 2d });
-        conflicting.Series[0].WithStackGroup("Same").WithNormalization(100);
-        conflicting.Series[1].WithStackGroup("Same").WithNormalization(1);
+        conflicting.Series[0].StackGroup("Same").NormalizedTo(100);
+        conflicting.Series[1].StackGroup("Same").NormalizedTo(1);
         Assert.Throws<InvalidOperationException>(() => Prepare(conflicting));
-        conflicting.Series[1].WithNormalization(null);
+        conflicting.Series[1].NormalizedTo(null);
         Assert.Throws<InvalidOperationException>(() => Prepare(conflicting));
-        var grouped = Bars(false, new[] { 1d }); grouped.Series[0].WithNormalization();
+        var grouped = Bars(false, new[] { 1d }); grouped.Series[0].NormalizedTo(100);
         Assert.Throws<InvalidOperationException>(() => Prepare(grouped));
         var line = Chart.Create().AddLine("Line", new[] { new ChartPoint(1, 2) }).Series[0];
-        Assert.Throws<InvalidOperationException>(() => line.WithStackGroup("Unsupported"));
-        Assert.Throws<InvalidOperationException>(() => line.WithNormalization());
-        Assert.Throws<ArgumentException>(() => grouped.Series[0].WithStackGroup(" "));
-        Assert.Throws<ArgumentOutOfRangeException>(() => grouped.Series[0].WithNormalization(0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => grouped.Series[0].WithNormalization(double.NaN));
+        Assert.Throws<InvalidOperationException>(() => line.StackGroup("Unsupported"));
+        Assert.Throws<InvalidOperationException>(() => line.NormalizedTo(100));
+        Assert.Throws<ArgumentException>(() => grouped.Series[0].StackGroup(" "));
+        Assert.Throws<ArgumentOutOfRangeException>(() => grouped.Series[0].NormalizedTo(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => grouped.Series[0].NormalizedTo(double.NaN));
     }
 
     private static Chart Bars(bool horizontal, params double[][] observations) {
-        var chart = Chart.Create().WithAxes(false);
-        chart.Options.ShowGrid = false; chart.Options.BarStyle = ChartBarStyle.Flat;
+        var chart = Chart.Create().Axes(false);
+        chart.Options.ShowGrid = false; chart.Options.Bars.Style = ChartBarStyle.Flat;
         foreach (var values in observations) {
             var points = values.Select((value, index) => new ChartPoint(index + 1, value));
             var name = "Series " + chart.Series.Count.ToString(CultureInfo.InvariantCulture);

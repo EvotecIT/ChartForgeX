@@ -62,7 +62,7 @@ public sealed partial class ChartAxis {
     /// <summary>Places generated ticks at whole multiples of a positive step in data units.</summary>
     /// <param name="step">A finite step greater than zero. On logarithmic axes, a whole number of powers.</param>
     /// <returns>The current axis. A calendar step on the same axis is replaced.</returns>
-    public ChartAxis WithTickStep(double step) {
+    internal ChartAxis SetTickStep(double step) {
         if (!ChartMath.IsFinite(step) || step <= 0) throw new ArgumentOutOfRangeException(nameof(step), step, "Tick step must be finite and greater than zero.");
         RejectFixedConflict(values: false);
         _tickStep = step; _timeTickStep = null; return this;
@@ -71,7 +71,7 @@ public sealed partial class ChartAxis {
     /// <summary>Places time-axis ticks on fixed calendar boundaries, such as every month or every six hours.</summary>
     /// <param name="step">The calendar interval.</param>
     /// <returns>The current axis. A numeric step on the same axis is replaced.</returns>
-    public ChartAxis WithTickStep(ChartTimeTickInterval step) {
+    internal ChartAxis SetTickStep(ChartTimeTickInterval step) {
         if (step == null) throw new ArgumentNullException(nameof(step));
         RejectFixedConflict(values: false);
         _timeTickStep = step; _tickStep = null; return this;
@@ -80,12 +80,12 @@ public sealed partial class ChartAxis {
     /// <summary>Places ticks at exactly these values; captions still use the axis formatter.</summary>
     /// <param name="values">Up to <see cref="MaximumTickValues"/> finite values. Duplicates are merged and order does not matter.</param>
     /// <returns>The current axis.</returns>
-    public ChartAxis WithTickValues(params double[] values) => WithTickValues((IEnumerable<double>)values);
+    internal ChartAxis SetTickValues(params double[] values) => SetTickValues((IEnumerable<double>)values);
 
     /// <summary>Places ticks at exactly these values; captions still use the axis formatter.</summary>
     /// <param name="values">Up to <see cref="MaximumTickValues"/> finite values. Duplicates are merged and order does not matter.</param>
     /// <returns>The current axis.</returns>
-    public ChartAxis WithTickValues(IEnumerable<double> values) {
+    internal ChartAxis SetTickValues(IEnumerable<double> values) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         var sorted = new SortedSet<double>();
         foreach (var value in values) {
@@ -104,7 +104,7 @@ public sealed partial class ChartAxis {
     /// <param name="maximum">The largest preferred spacing, or null. Must not be smaller than <paramref name="minimum"/>.</param>
     /// <returns>The current axis.</returns>
     /// <remarks>Applies to generated Cartesian ticks. A fixed step or explicit values already decide the ticks, so they cannot be combined.</remarks>
-    public ChartAxis WithTickSpacing(double? minimum, double? maximum) {
+    public ChartAxis TickSpacing(double? minimum, double? maximum) {
         if (minimum.HasValue && (!ChartMath.IsFinite(minimum.Value) || minimum.Value <= 0))
             throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "Minimum tick spacing must be finite and greater than zero.");
         if (maximum.HasValue && (!ChartMath.IsFinite(maximum.Value) || maximum.Value <= 0))
@@ -116,23 +116,11 @@ public sealed partial class ChartAxis {
         _minimumTickSpacing = minimum; _maximumTickSpacing = maximum; return this;
     }
 
-    /// <summary>Migration shim removed by the fluent rewrite.</summary>
-    public ChartAxis WithMinorTicks(int count) { MinorTickCount = count; return this; }
-
     /// <summary>Clears the fixed step, explicit values and spacing bounds so the axis chooses its ticks again.</summary>
     /// <returns>The current axis. Minor ticks and grid styling are kept.</returns>
-    public ChartAxis WithAutomaticTicks() {
+    public ChartAxis AutomaticTicks() {
         _tickStep = null; _timeTickStep = null; _tickValues = Array.Empty<double>();
         _minimumTickSpacing = null; _maximumTickSpacing = null; return this;
-    }
-
-    /// <summary>Sets this axis's grid styling; null restores the chart grid style.</summary>
-    public ChartAxis WithGrid(ChartAxisGridStyle? style) { Grid = style; return this; }
-
-    /// <summary>Configures this axis's grid styling, creating it on first use.</summary>
-    public ChartAxis ConfigureGrid(Action<ChartAxisGridStyle> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Grid ??= new ChartAxisGridStyle()); return this;
     }
 
     private void RejectFixedConflict(bool values) {

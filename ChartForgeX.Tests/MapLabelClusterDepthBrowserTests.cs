@@ -66,7 +66,7 @@ public sealed class MapLabelClusterDepthBrowserTests {
             await svgDownload.SaveAsAsync(stem + ".export.svg"); await pngDownload.SaveAsAsync(stem + ".export.png");
             await File.WriteAllTextAsync(stem + ".selection.json", target.GetRawText());
         }
-        chart.Series[1].WithMapClustering(null);
+        chart.Series[1].MapClustering(null);
         await page.EvaluateAsync("html => mapDepth.update(html)", chart.ToInteractiveHtmlFragmentWithoutAssets(Options));
         Assert.Equal(0, await page.Locator("[data-cfx-role='dotted-map-cluster-source']").CountAsync());
         var raw = page.Locator("[data-cfx-role='dotted-map-point-source'][data-cfx-observation-id='intake']");

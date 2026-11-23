@@ -12,11 +12,11 @@ public sealed class KeyedTypedObservationChangesTests {
     public void BubbleRollingChangesKeepIndependentFactsAndSurvivingPresentationWithDetachedExports() {
         var series = ChartSeries.CreateBubble(new ChartSeriesId("bubbles"), "Requests", new[] {
             new ChartBubble(1, 10, 2).WithColorValue(-1), new ChartBubble(2, 20, 3).WithColorValue(4)
-        }).WithObservationIds(new[] { Id("a"), Id("b") }).WithPointLabel(1, "Retained request")
-            .WithPointColor(1, "#123456").WithPointFillPattern(1, ChartFillPattern.Crosshatch)
-            .ConfigurePointDataLabelStyle(1, options => options.FontSize = 13);
+        }).ObservationIds(new[] { Id("a"), Id("b") }).PointLabel(1, "Retained request")
+            .PointColor(1, "#123456").PointFillPattern(1, ChartFillPattern.Crosshatch)
+            .PointDataLabelStyle(1, options => options.FontSize = 13);
         series.PointSliceOffsets.AddRange(new[] { 0d, .2 });
-        var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
+        var chart = Chart.Create().Size(640, 360).AddSeries(series);
         var frozen = Prepare(chart); var svg = frozen.ToSvg(); var png = frozen.ToPng();
         var oldValues = series.Bubbles;
         series.ApplyBubbleChanges(new[] {
@@ -42,10 +42,10 @@ public sealed class KeyedTypedObservationChangesTests {
     [InlineData(ChartSeriesKind.Ohlc)]
     public void FinancialChangesRetainDatumStylesByIdentityAndGiveNewObservationsSeriesFallback(ChartSeriesKind kind) {
         var chart = FinancialMarkOptionsTests.Prices(kind);
-        var series = chart.Series[0].WithObservationIds(new[] { Id("a"), Id("b") }).WithPointLabel(1, "Retained quote");
+        var series = chart.Series[0].ObservationIds(new[] { Id("a"), Id("b") }).PointLabel(1, "Retained quote");
         var blue = ChartColor.FromHex("#3377CC"); var green = ChartColor.FromHex("#22AA66");
-        series.ConfigureFinancial(options => { options.Rising.Stroke = green; options.Falling.Stroke = green; });
-        series.ConfigureFinancialValue(1, options => { options.Stroke = blue; options.StrokeWidth = 7; });
+        series.Financial(options => { options.Rising.Stroke = green; options.Falling.Stroke = green; });
+        series.FinancialValue(1, options => { options.Stroke = blue; options.StrokeWidth = 7; });
         var frozen = Prepare(chart); var before = frozen.ToSvg();
         series.ApplyFinancialChanges(new[] {
             ChartObservationChange<ChartCandlestick>.Remove(Id("a")),
@@ -63,7 +63,7 @@ public sealed class KeyedTypedObservationChangesTests {
     [Fact]
     public void RangeAndDifferenceChangesKeepBothTupleMembersAndExplicitBreaks() {
         var ranges = ChartSeries.CreateRangeArea(new ChartSeriesId("ranges"), "Envelope", new[] { new ChartRangeBand(1, 2, 7), new ChartRangeBand(2, 3, 8) })
-            .WithObservationIds(new[] { Id("a"), Id("b") });
+            .ObservationIds(new[] { Id("a"), Id("b") });
         ranges.ApplyRangeChanges(new[] {
             ChartObservationChange<ChartRangeBand>.Remove(Id("a")),
             ChartObservationChange<ChartRangeBand>.Replace(Id("b"), new ChartRangeBand(2, -4, 20, true)),
@@ -71,7 +71,7 @@ public sealed class KeyedTypedObservationChangesTests {
         });
         Assert.Equal((-4d, 20d, true), (ranges.Ranges[0].Lower, ranges.Ranges[0].Upper, ranges.Ranges[0].BreakBefore));
         var differences = ChartSeries.CreateDifferenceArea(new ChartSeriesId("differences"), "Compared", new[] { new ChartDifferencePoint(1, 7, 2) })
-            .WithObservationIds(new[] { Id("a") });
+            .ObservationIds(new[] { Id("a") });
         differences.ApplyDifferenceChanges(new[] {
             ChartObservationChange<ChartDifferencePoint>.Replace(Id("a"), new ChartDifferencePoint(2, -9, 12, true)),
             ChartObservationChange<ChartDifferencePoint>.Append(Id("b"), new ChartDifferencePoint(3, 8, -3))
@@ -84,7 +84,7 @@ public sealed class KeyedTypedObservationChangesTests {
     [Fact]
     public void InvalidThrowingOverlongAndCanceledTypedBatchesDoNotInstallPartialData() {
         var series = ChartSeries.CreateBubble(new ChartSeriesId("live"), "Live", new[] { new ChartBubble(1, 2, 3) })
-            .WithObservationIds(new[] { Id("a") }).WithPointLabel(0, "Stable");
+            .ObservationIds(new[] { Id("a") }).PointLabel(0, "Stable");
         var chart = Chart.Create().AddSeries(series); var before = Prepare(chart).ToSvg(); var values = series.Bubbles;
         Assert.Throws<ArgumentException>(() => series.ApplyBubbleChanges(new[] {
             ChartObservationChange<ChartBubble>.Replace(Id("a"), new ChartBubble(2, 9, 4)),

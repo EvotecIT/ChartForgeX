@@ -25,7 +25,7 @@ public sealed class NativeTransitionExportDefaultControls {
         Assert.DoesNotContain("<script", section.Html, StringComparison.OrdinalIgnoreCase);
     }
     internal static HtmlChartSection Section(string scope, int width, bool dark, bool export) {
-        var chart = Chart.Create().WithTitle("Captured native export facts").WithSize(width, 400).WithDataLabels()
+        var chart = Chart.Create().Title("Captured native export facts").Size(width, 400).DataLabels()
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("reviewed"), "Reviewed", ChartPoints.FromValues(18, 70, 44)));
         chart.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         chart.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;

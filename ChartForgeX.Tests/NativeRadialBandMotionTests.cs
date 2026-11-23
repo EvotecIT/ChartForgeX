@@ -41,7 +41,7 @@ public sealed class NativeRadialBandMotionTests {
         var to = renderer.PrepareSection(NativeRadialBandBeforeControls.Model(automatic: automatic, inner: 80, outer: 55));
         var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialValues, 3)); var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null);
         NativeRadialValueMotionTests.Capture(from, to, frames, payload, "bands-detached-initial-" + automatic); var svg = frames[1].ToSvg(); var png = frames[1].ToPng();
-        chart.Series[0].Points.Clear(); chart.Series[1].PointColors.Add(ChartColor.Black); chart.Options.MaximumPieSlices = 2; chart.WithValueFormat(ChartValueFormat.Custom(_ => "mutated"));
+        chart.Series[0].Points.Clear(); chart.Series[1].PointColors.Add(ChartColor.Black); chart.Options.Pie.MaxSlices = 2; chart.ValueFormat(ChartValueFormat.Custom(_ => "mutated"));
         try { FontRegistry.Clear(); var repeat = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); Assert.Equal(svg, repeat[1].ToSvg()); Assert.Equal(png, repeat[1].ToPng());
             Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialValues, 3)));
         } finally { _ = BrowserProofFonts.Family; }
@@ -70,16 +70,16 @@ public sealed class NativeRadialBandMotionTests {
     public void IncompatibleNativeValueFactsRejectWhileOrdinaryNativeBandsRemainAvailable(string change) {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeRadialBandBeforeControls.Model(automatic: false, other: change == "aggregate"); var from = renderer.PrepareSection(chart);
         chart.Series[1].Points[0] = new ChartPoint(1, change == "zero" ? 0 : change == "order" ? 1 : 55);
-        if (change == "identity") chart.Series[1].WithObservationId(0, new ChartObservationId("changed"));
-        if (change == "band") chart.Series[1].WithRadialBand(new ChartRadialBand(.6, 1));
-        if (change == "callback") chart.Options.PieSliceLabelFormatter = _ => "custom";
+        if (change == "identity") chart.Series[1].ObservationId(0, new ChartObservationId("changed"));
+        if (change == "band") chart.Series[1].RadialBand(new ChartRadialBand(.6, 1));
+        if (change == "callback") chart.Options.Pie.SliceLabelFormatter = _ => "custom";
         var to = renderer.PrepareSection(chart); Exception? error = null; try { _ = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3)); } catch (Exception failure) { error = failure; }
         NativeRadialMotionBeforeControls.Capture(from, "bands-reject-" + change + "-from"); NativeRadialMotionBeforeControls.Capture(to, "bands-reject-" + change + "-to"); NativeRadialMotionBeforeControls.Save("bands-reject-" + change + ".facts.json", JsonSerializer.Serialize(new { error = error?.Message }));
         Assert.IsType<NotSupportedException>(error); Assert.NotEmpty(to.PreparedVisual.ToSvg());
     }
     [Theory] [InlineData("negative")] [InlineData("overlap")]
     public void HidingABandDoesNotLaunderAnInvalidFullNativeSource(string invalid) {
-        var chart = NativeRadialBandBeforeControls.Model(automatic: false); if (invalid == "negative") chart.Series[1].Points[0] = new ChartPoint(1, -1); else chart.Series[1].WithRadialBand(new ChartRadialBand(.3, 1));
+        var chart = NativeRadialBandBeforeControls.Model(automatic: false); if (invalid == "negative") chart.Series[1].Points[0] = new ChartPoint(1, -1); else chart.Series[1].RadialBand(new ChartRadialBand(.3, 1));
         var renderer = new HtmlInteractiveChartRenderer(); Exception? ordinary = null, hidden = null;
         try { _ = renderer.PrepareSection(chart); } catch (Exception failure) { ordinary = failure; }
         try { _ = renderer.PrepareVisibilitySection(chart, NativeRadialBandBeforeControls.View(ChartVisibilityTarget.Series(new ChartSeriesId("outer")))); } catch (Exception failure) { hidden = failure; }
@@ -100,8 +100,8 @@ public sealed class NativeRadialBandMotionTests {
     }
     [Fact]
     public void UnpaintedZeroObservationPolicyStillBindsTheCompleteBandSourceIdentity() {
-        Chart Model(bool changed) { var chart=NativeRadialBandBeforeControls.Model(labels:"hidden");chart.WithLegend(false);chart.Options.ShowDonutCenterLabel=false;
-            chart.Series[1].Points[2]=new ChartPoint(3,0);if(changed)chart.Series[1].WithPointColor(2,ChartColor.Black);return chart; }
+        Chart Model(bool changed) { var chart=NativeRadialBandBeforeControls.Model(labels:"hidden");chart.Legend(false);chart.Options.Pie.ShowCenterLabel=false;
+            chart.Series[1].Points[2]=new ChartPoint(3,0);if(changed)chart.Series[1].PointColor(2,ChartColor.Black);return chart; }
         var renderer=new HtmlInteractiveChartRenderer();var from=renderer.PrepareVisibilitySection(Model(false),NativeRadialBandBeforeControls.View());
         var other=renderer.PrepareVisibilitySection(Model(true),NativeRadialBandBeforeControls.View());
         var to=renderer.PrepareVisibilitySection(Model(true),NativeRadialBandBeforeControls.View(ChartVisibilityTarget.Series(new ChartSeriesId("outer"))));
@@ -114,10 +114,10 @@ public sealed class NativeRadialBandMotionTests {
     [Fact]
     public void LaterBandLabelAndValueContextsUseActualCapturedFormatterAndCaseObservations() {
         Chart Model(double outer) {
-            var chart=NativeRadialBandBeforeControls.Model(inner:600,outer:outer,labels:"outside").WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue)
-                .ConfigureDataLabelStyle(style=>style.TextCase=TextCaseTransform.ToggleCase);
+            var chart=NativeRadialBandBeforeControls.Model(inner:600,outer:outer,labels:"outside").Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndValue))
+                .DataLabelStyle(style=>style.TextCase=TextCaseTransform.ToggleCase);
             for(var index=0;index<chart.Series[1].Points.Count;index++){var point=chart.Series[1].Points[index];chart.Series[1].Points[index]=new ChartPoint(index+4,point.Y);}
-            chart.ConfigureXAxis(axis=>{axis.Labels.Add(new ChartAxisLabel(4,"outer-delta"));axis.Labels.Add(new ChartAxisLabel(5,"outer-epsilon"));axis.Labels.Add(new ChartAxisLabel(6,"outer-zeta"));});return chart;
+            chart.XAxis(axis=>{axis.Labels.Add(new ChartAxisLabel(4,"outer-delta"));axis.Labels.Add(new ChartAxisLabel(5,"outer-epsilon"));axis.Labels.Add(new ChartAxisLabel(6,"outer-zeta"));});return chart;
         }
         var renderer=new HtmlInteractiveChartRenderer();var from=renderer.PrepareSection(Model(800));var to=renderer.PrepareSection(Model(1200));var middle=renderer.PrepareSection(Model(1000));
         NativeRadialMotionBeforeControls.Capture(from,"bands-context-from");NativeRadialMotionBeforeControls.Capture(to,"bands-context-to");NativeRadialMotionBeforeControls.Capture(middle,"bands-context-independent");

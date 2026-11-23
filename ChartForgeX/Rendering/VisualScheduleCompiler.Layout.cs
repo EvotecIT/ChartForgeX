@@ -28,21 +28,21 @@ internal static partial class VisualScheduleCompiler {
         var nameWidth = names.Select(name => builder.MeasureText(name, rowStyle).Width).DefaultIfEmpty(0).Max() + (hasRowState ? 6 : 0) + leadingWidth;
         var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, rowStyle).Width).DefaultIfEmpty(0).Max();
         // A whole-pixel reserve keeps right-edge subtraction from undercutting fractional measured advances.
-        summaryWidth = Math.Ceiling(Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width));
+        summaryWidth = Math.Ceiling(Math.Max(summaryWidth, builder.MeasureText(chart.Options.StateTimeline.SummaryHeader ?? string.Empty, style).Width));
         var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var tickHeight = ticks.Select(tick => VisualAxisText.RotatedMetrics(builder.MeasureText(format(tick), style), angle).Height).DefaultIfEmpty(lineHeight).Max();
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
             Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground
         });
-        var axisTitle = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+        var axisTitle = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.Options.XAxis.Title);
         axisTitleStyle = VisualAxisText.FitOversized(builder, axisTitleStyle, new ChartRect(0, 0, viewport.Width, viewport.Height * .15), new[] { axisTitle });
         var axisTitleHeight = builder.MeasureText(axisTitle, axisTitleStyle).Height;
-        var top = now || chart.YAxisTitle.Length > 0 ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
+        var top = now || chart.Options.YAxis.Title.Length > 0 ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
         // A rotated ordinary caption needs its complete footprint, including the text beyond a quarter-width estimate.
         // Leave the title and a nonempty plotting lane intact; uncontainable captions retain semantics without clipped paint.
         var titleReserve = axisTitle.Length > 0 ? axisTitleHeight + gap : 0;
         var axisReserve = Math.Min(tickHeight + gap, Math.Max(0, viewport.Height - top - titleReserve - 1));
-        var plot = ChartStateTimelineModel.LanePlotArea(chart, viewport, hasSummary, chart.Options.LaneSummaryHeader,
+        var plot = ChartStateTimelineModel.LanePlotArea(chart, viewport, hasSummary, chart.Options.StateTimeline.SummaryHeader,
             nameWidth, summaryWidth, lineHeight, 0, top, axisReserve, axisTitleHeight + gap,
             // A leading section column shares the gutter with the row titles, so the gutter may grow a little.
             leadingWidth > 0 ? SectionedLabelShare : ChartStateTimelineModel.LabelColumnShare);
@@ -79,16 +79,16 @@ internal static partial class VisualScheduleCompiler {
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) {
             TickLabels(chart, context, builder, viewport, layout, ticks, project, format, style);
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, "schedule-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
-            var title = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+            var title = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.Options.XAxis.Title);
             var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
             VisualStateSceneTools.Text(builder, title, new ChartRect(plot.Left, plot.Bottom + layout.AxisReserve, plot.Width, Math.Max(0, viewport.Bottom - plot.Bottom - layout.AxisReserve)),
                 titleStyle, "schedule-x-axis-title", "schedule-x-title", TextAlignment.Center);
         }
-        if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0)
-            VisualStateSceneTools.Text(builder, chart.YAxisTitle, new ChartRect(viewport.Left, viewport.Top, Math.Max(0, plot.Left - viewport.Left), Math.Max(0, plot.Top - viewport.Top)),
+        if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && chart.Options.YAxis.Title.Length > 0)
+            VisualStateSceneTools.Text(builder, chart.Options.YAxis.Title, new ChartRect(viewport.Left, viewport.Top, Math.Max(0, plot.Left - viewport.Left), Math.Max(0, plot.Top - viewport.Top)),
                 chart.Options.AxisTitleStyle.Resolve(style), "schedule-y-axis-title", "schedule-y-title");
-        if (layout.HasSummary && !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader))
-            VisualStateSceneTools.Text(builder, chart.Options.LaneSummaryHeader!, new ChartRect(layout.SummaryLeft, viewport.Top,
+        if (layout.HasSummary && !string.IsNullOrWhiteSpace(chart.Options.StateTimeline.SummaryHeader))
+            VisualStateSceneTools.Text(builder, chart.Options.StateTimeline.SummaryHeader!, new ChartRect(layout.SummaryLeft, viewport.Top,
                 Math.Max(0, viewport.Right - layout.SummaryLeft), Math.Max(0, plot.Top - viewport.Top)), style, "lane-summary-header", "schedule-summary-header", TextAlignment.Right,
                 shrink: (chart.Options.TickLabelStyle.FontSize ?? context.Theme.Typography.AxisSize) > VisualTextFitting.MaximumOrdinaryFontSize);
     }
@@ -162,7 +162,7 @@ internal static partial class VisualScheduleCompiler {
 
     private static void Now(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ScheduleLayout layout, double x, double now) {
         var colors = context.Theme.Resolve(context.ThemeMode); var plot = layout.Plot;
-        var strokeStyle = chart.Options.GanttTodayStyle;
+        var strokeStyle = chart.Options.Gantt.TodayStyle;
         var stroke = VisualReferenceStroke.Paint(strokeStyle, colors.Status.Critical.Fill, SvgColorRole.Status, out var strokeColor);
         using (builder.PushGroup("schedule-now", "gantt-now", new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(now) }))
         using (builder.PushClip(plot))
@@ -180,10 +180,10 @@ internal static partial class VisualScheduleCompiler {
 
     private static void DataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
         string text, ChartRect bounds, ChartRect viewport, VisualThemeColors colors, ChartColor? fillOverride = null, ChartColorBlend? ink = null) {
-        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false))) return;
         var fill = fillOverride ?? VisualStateSceneTools.SeriesColor(series, chart.IndexOfSeries(series), colors);
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink?.Color ?? ChartColorMath.AccessibleTextOnBackground(fill));
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var measured = builder.MeasureText(text, style); var gap = context.Theme.Spacing / 2;
         if (placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside) {
             var inner = new ChartRect(bounds.Left + 3, bounds.Top, Math.Max(0, bounds.Width - 6), bounds.Height);

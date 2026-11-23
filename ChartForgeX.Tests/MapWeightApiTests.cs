@@ -27,11 +27,11 @@ public sealed class MapWeightApiTests {
         var invalid = Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapPoint("Invalid", 0, 50, weight: -1));
         Assert.Equal("weight", invalid.ParamName);
 
-        var chart = Chart.Create().WithSize(640, 420).WithLegend(false).WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().Size(640, 420).Legend(false).Map(m => m.Viewport(ChartMapViewport.Europe()))
             .AddDottedMap("Traffic", points);
         var series = chart.Series[0];
-        series.WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#2255CC"), ChartColor.FromHex("#22AA66")).WithValueRange(-8, 12));
-        series.ConfigureMapPointSize(size => { size.WithSizeDomain(0, 25); size.MinimumRadius = 2; size.MaximumRadius = 10; });
+        series.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#2255CC"), ChartColor.FromHex("#22AA66")).WithValueRange(-8, 12));
+        series.MapPointSize(size => { size.SizeDomain(0, 25); size.MinimumRadius = 2; size.MaximumRadius = 10; });
         var prepared = Prepare(chart);
         var source = Sources(prepared);
         Assert.Equal(new[] { "0", "", "25" }, source.Select(node => node.Metadata["data-cfx-value"]));

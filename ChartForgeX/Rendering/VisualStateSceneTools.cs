@@ -66,7 +66,7 @@ internal static class VisualStateSceneTools {
     }
 
     internal static Dictionary<string, string> StateMetadata(Chart chart, ChartStateCategory state) {
-        return StateMetadata(chart.Options.PinStateColorsInForcedColors, state);
+        return StateMetadata(chart.Options.StateTimeline.PinColorsInForcedColors, state);
     }
 
     internal static Dictionary<string, string> StateMetadata(bool pinStateColors, ChartStateCategory state) {
@@ -122,7 +122,7 @@ internal static class VisualStateSceneTools {
 
     internal static void Connector(VisualSceneBuilder builder, ChartOptions options, ChartPoint start, ChartPoint end, ChartColor fallback,
         ChartDataLabelConnectorStyle? defaultStyle = null) {
-        var style = options.HasDataLabelConnectorStyle ? options.DataLabelConnectorStyle : defaultStyle ?? options.DataLabelConnectorStyle;
+        var style = options.DataLabels.HasConnectorStyle ? options.DataLabels.ConnectorStyle : defaultStyle ?? options.DataLabels.ConnectorStyle;
         var middle = start.X + (end.X - start.X) / 2;
         var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(start.X, start.Y) };
         if (style == ChartDataLabelConnectorStyle.Curve)
@@ -133,9 +133,9 @@ internal static class VisualStateSceneTools {
             }
             commands.Add(ChartPathCommand.LineTo(end.X, end.Y));
         }
-        var source = options.DataLabelConnectorColor ?? fallback; var color = ChartColorMath.WithOpacity(source, options.DataLabelConnectorOpacity);
-        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: options.DataLabelConnectorStrokeWidth, role: "data-label-connector",
-            paint: VisualChartPaint.Stroke(SvgPaint.Of(source, options.DataLabelConnectorColor.HasValue ? SvgColorRole.Series : SvgColorRole.Text).WithOpacity(color, options.DataLabelConnectorOpacity)));
+        var source = options.DataLabels.ConnectorColor ?? fallback; var color = ChartColorMath.WithOpacity(source, options.DataLabels.ConnectorOpacity);
+        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: options.DataLabels.ConnectorStrokeWidth, role: "data-label-connector",
+            paint: VisualChartPaint.Stroke(SvgPaint.Of(source, options.DataLabels.ConnectorColor.HasValue ? SvgColorRole.Series : SvgColorRole.Text).WithOpacity(color, options.DataLabels.ConnectorOpacity)));
     }
 
     private sealed class MarkScope : IDisposable {

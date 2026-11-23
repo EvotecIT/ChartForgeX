@@ -9,11 +9,11 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyFitsRenderedTileAdornmentsIntoViewport() {
         var chart = TopologyChart.Create()
-            .WithId("tile-fit")
-            .WithViewport(280, 180, 20)
-            .WithLegend(TopologyLegend.Default())
+            .Id("tile-fit")
+            .Viewport(new TopologyViewport(280, 180, 20))
+            .Legend(TopologyLegend.Default())
             .AddNode("site", "Long Site Name", 108, 120, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, subtitle: "10.20.2.0/24", width: 64, height: 46, symbol: "S")
-            .WithNodeBadge("site", "WAN");
+            .UpdateNode("site", n => n.Badge("WAN"));
 
         var options = new TopologyRenderOptions {
             IncludeLegend = false,
@@ -30,9 +30,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyCanFitDenseContentIntoFixedViewport() {
         var chart = TopologyChart.Create()
-            .WithId("fixed-fit")
-            .WithViewport(320, 220, 20)
-            .WithLegend(null)
+            .Id("fixed-fit")
+            .Viewport(new TopologyViewport(320, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("region", "Very Wide Region", 40, 90, 620, 180, TopologyHealthStatus.Healthy, "many sites", symbol: "region")
             .AddNode("a", "Left Branch", 80, 156, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "region", width: 92, height: 52, symbol: "S")
             .AddNode("b", "Middle Branch", 304, 156, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, "region", width: 92, height: 52, symbol: "S")
@@ -40,8 +40,8 @@ internal static partial class SmokeTests {
             .AddEdge("a-c", "a", "c", "188 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "MPLS");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle()
-            .WithFitContentToViewport();
+            .MonitoringDashboardStyle()
+            .FitContentToViewport();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("width=\"320\"", StringComparison.Ordinal), "Fit-to-viewport topology should preserve the requested SVG width.");
@@ -61,10 +61,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyAutoPlacementHelpersBuildReusableRegionalLayouts() {
         var chart = TopologyChart.Create()
-            .WithId("auto-regional")
-            .WithViewport(820, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
+            .Id("auto-regional")
+            .Viewport(new TopologyViewport(820, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: "#16A34A")
             .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Healthy, "56 sites", symbol: "region", color: "#2563EB")
             .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: "#8B5CF6")

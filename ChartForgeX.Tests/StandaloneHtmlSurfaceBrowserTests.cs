@@ -49,16 +49,16 @@ public sealed class StandaloneHtmlSurfaceBrowserTests {
     }
 
     private static string Page(string producer, VisualTheme theme, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Observed work")
-            .WithTheme(theme, mode).WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Size(640, 360).Title("Observed work")
+            .Theme(theme).ThemeMode(mode).XLabels("Mon", "Tue", "Wed")
             .AddLine("Completed", new[] { new ChartPoint(1, 18), new ChartPoint(2, 32), new ChartPoint(3, 27) });
-        var card = MetricCard.Create().WithSize(640, 360).WithTheme(theme, mode)
-            .WithMetric("Readiness", "74%").WithStatus(Tone.Success).WithCaption("Completed checks");
+        var card = MetricCard.Create().Size(640, 360).Theme(theme).ThemeMode(mode)
+            .Metric("Readiness", "74%").Status(Tone.Success).Caption("Completed checks");
         return producer switch {
             "chart" => chart.ToHtmlPage(),
-            "chart-grid" => ChartGrid.Create().WithTheme(theme, mode).WithColumns(1).Add(chart).ToHtmlPage(),
+            "chart-grid" => ChartGrid.Create().Theme(theme).ThemeMode(mode).Columns(1).Add(chart).ToHtmlPage(),
             "metric-card" => card.ToHtmlPage(),
-            "visual-grid" => VisualGrid.Create().WithTheme(theme, mode).WithColumns(1).Add(card).ToHtmlPage(),
+            "visual-grid" => VisualGrid.Create().Theme(theme).ThemeMode(mode).Columns(1).Add(card).ToHtmlPage(),
             _ => throw new ArgumentOutOfRangeException(nameof(producer), producer, "Unknown standalone producer.")
         };
     }

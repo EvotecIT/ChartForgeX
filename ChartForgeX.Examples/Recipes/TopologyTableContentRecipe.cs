@@ -5,11 +5,11 @@ public static class TopologyTableContentRecipe {
     public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
-        var chart = TopologyChart.Create().WithId("linked-table-content").WithTitle("Approve a captured release")
-            .WithSubtitle("The source table remains part of its graph vertex")
-            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24)
-            .WithLayout(TopologyLayoutMode.Layered, compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
+        var chart = TopologyChart.Create().Id("linked-table-content").Title("Approve a captured release")
+            .Subtitle("The source table remains part of its graph vertex")
+            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
         chart.AddAutoNode("User", "Release coordinator", width: 180, height: 90);
         chart.AddAutoNode("Publish", "Approve release", width: 180, height: 70);
         chart.AddAutoNode("Details", "Details", width: 220, height: 130);

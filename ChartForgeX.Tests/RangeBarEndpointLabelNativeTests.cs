@@ -15,7 +15,7 @@ public sealed class RangeBarEndpointLabelNativeTests {
     public void ExecutableGalleryModelsPaintEndpointInkAndRetainDescendingCustomHeadings(string variant, bool dark) {
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, variant, dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Size(compact ? 360 : 800, compact ? 360 : 440).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = RangeBarEndpointLabelTests.Prepare(chart);
         var labels = RangeBarEndpointLabelTests.Labels(prepared);
@@ -31,7 +31,7 @@ public sealed class RangeBarEndpointLabelNativeTests {
         Assert.Equal(compact ? 360 : 800, rgba.Width); Assert.Equal(compact ? 360 : 440, rgba.Height);
         var bounds = labels.Select(RangeBarEndpointLabelTests.Bounds).ToArray();
         Assert.All(bounds, box => Assert.True(LabelPlacementService.Contains(new ChartRect(0, 0, rgba.Width, rgba.Height), box)));
-        var hidden = RangeBarEndpointLabelTests.Prepare(chart.WithDataLabels(false)).ToRgba(new VisualRenderOptions(supersampling: 1));
+        var hidden = RangeBarEndpointLabelTests.Prepare(chart.DataLabels(false)).ToRgba(new VisualRenderOptions(supersampling: 1));
         Assert.Contains(bounds, box => HasChangedInk(box, rgba, hidden));
         Assert.NotEmpty(prepared.ToPng());
     }

@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 public sealed class NativeHierarchyVisibilityReflowTests {
     [Theory] [InlineData(false, false)] [InlineData(true, false)] [InlineData(true, true)]
     public void SubtreeMembershipUsesNativeResolvedValuesAndRetainsOriginalCatalog(bool sunburst, bool authored) {
-        var chart = NativeHierarchyMotionBeforeControls.Model(sunburst, authored, 30).WithLegend(true); chart.Options.ShowPointLegend = !sunburst;
+        var chart = NativeHierarchyMotionBeforeControls.Model(sunburst, authored, 30).Legend(true); chart.Options.Legend.ShowPoints = !sunburst;
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareVisibilitySection(chart, View());
         var to = renderer.PrepareVisibilitySection(chart, View("branch")); var frames = VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5);
         var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5));
@@ -60,7 +60,7 @@ public sealed class NativeHierarchyVisibilityReflowTests {
     }
     [Fact]
     public void InvisibleRawPaintChangesStillChangeCanonicalSourceKeyWhileNativeSvgCanRemainEqual() {
-        var a = NativeHierarchyMotionBeforeControls.Model(false, false, 0); var b = NativeHierarchyMotionBeforeControls.Model(false, false, 0); b.Series[0].WithPointColor(2, ChartColor.Black);
+        var a = NativeHierarchyMotionBeforeControls.Model(false, false, 0); var b = NativeHierarchyMotionBeforeControls.Model(false, false, 0); b.Series[0].PointColor(2, ChartColor.Black);
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareVisibilitySection(a, View()); var other = renderer.PrepareVisibilitySection(b, View());
         NativeRadialMotionBeforeControls.Capture(first, "hierarchy-hidden-paint-a"); NativeRadialMotionBeforeControls.Capture(other, "hierarchy-hidden-paint-b");
         var keys = new[] { first.PreparedVisual.Scene.VisibilityCapture!.SourceKey, other.PreparedVisual.Scene.VisibilityCapture!.SourceKey }; NativeRadialMotionBeforeControls.Save("hierarchy-hidden-paint.keys.json", JsonSerializer.Serialize(keys));

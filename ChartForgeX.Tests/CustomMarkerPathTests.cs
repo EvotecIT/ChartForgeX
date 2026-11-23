@@ -24,11 +24,11 @@ public sealed class CustomMarkerPathTests {
     [Fact]
     public void TypedCubicsReachMarksAndLegendsWhilePreparationCapturesTheOriginalShape() {
         var shape = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1).CubicTo(-1, 1, -1, -1, 0, -1);
-        var chart = Bare().WithLegend().AddScatter("Glyph", new[] { new ChartPoint(5, 5) });
+        var chart = Bare().Legend().AddScatter("Glyph", new[] { new ChartPoint(5, 5) });
         ChartMarkerOptions? captured = null;
-        chart.Series[0].ConfigureMarkers(options => { captured = options; options.CustomPath = shape; options.Radius = 20; });
+        chart.Series[0].Markers(options => { captured = options; options.CustomPath = shape; options.Radius = 20; });
         captured!.CustomPath = null;
-        chart.Series[0].WithPointFillPattern(0, ChartFillPattern.DiagonalForward);
+        chart.Series[0].PointFillPattern(0, ChartFillPattern.DiagonalForward);
         var prepared = Prepare(chart);
         var mark = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "marker");
         var legend = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "legend-swatch");
@@ -55,11 +55,11 @@ public sealed class CustomMarkerPathTests {
             ? ChartMarkerPath.Start(-1, -1).LineTo(1, 1).LineTo(-1, 1).LineTo(1, -1)
             : ChartMarkerPath.Start(-1, -1).LineTo(1, -1).LineTo(1, 1).LineTo(-1, 1)
                 .MoveTo(-.5, -.5).LineTo(.5, -.5).LineTo(.5, .5).LineTo(-.5, .5);
-        var chart = Bare().AddBubble("Areas", new[] { new ChartBubble(5, 5, 100) }).ConfigureBubble(options => {
-            options.WithSizeDomain(0, 100); options.MinimumRadius = 0; options.MaximumRadius = 20;
+        var chart = Bare().AddBubble("Areas", new[] { new ChartBubble(5, 5, 100) }).Bubble(options => {
+            options.SizeDomain(0, 100); options.MinimumRadius = 0; options.MaximumRadius = 20;
             options.SizeEncoding = ChartBubbleSizeEncoding.Area;
         });
-        chart.Series[0].ConfigureMarkers(options => { options.CustomPath = shape; options.StrokeWidth = 0; options.Fill = ChartColor.Black; });
+        chart.Series[0].Markers(options => { options.CustomPath = shape; options.StrokeWidth = 0; options.Fill = ChartColor.Black; });
         var prepared = Prepare(chart);
         var mark = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "bubble");
         var expectedRadius = 20 * Math.Sqrt(Math.PI / (crossing ? 2 : 3));
@@ -77,18 +77,18 @@ public sealed class CustomMarkerPathTests {
     public void BubbleRadiusBoundsRemainUnitExtentsWhileAreaModeRejectsAnEmptyContour() {
         var shape = ChartMarkerPath.Start(-1, -1).LineTo(1, -1).LineTo(0, 1);
         var chart = Bare().AddBubble("Sizes", new[] { new ChartBubble(2, 5, 1), new ChartBubble(8, 5, 100) })
-            .ConfigureBubble(options => { options.WithSizeDomain(1, 100); options.MinimumRadius = 3; options.MaximumRadius = 20; });
-        chart.Series[0].ConfigureMarkers(options => { options.CustomPath = shape; options.StrokeWidth = 0; });
+            .Bubble(options => { options.SizeDomain(1, 100); options.MinimumRadius = 3; options.MaximumRadius = 20; });
+        chart.Series[0].Markers(options => { options.CustomPath = shape; options.StrokeWidth = 0; });
         var marks = Prepare(chart).Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "bubble").ToArray();
         Assert.Equal(new[] { 6d, 40d }, marks.Select(mark => mark.Commands.Max(command => command.X) - mark.Commands.Min(command => command.X)));
-        chart.ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
+        chart.Bubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
         chart.Series[0].Markers.CustomPath = ChartMarkerPath.Start(-1, 0).LineTo(1, 0);
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
     }
 
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithAxes(false).WithGrid(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).DataLabels(false)
+            .Axes(false).ShowGrid(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true;
         return chart;
     }

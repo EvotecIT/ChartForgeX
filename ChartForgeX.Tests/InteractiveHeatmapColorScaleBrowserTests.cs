@@ -17,8 +17,8 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
         if (!Enabled) return;
         var theme = VisualTheme.Graphite();
         Chart Ramp(bool diverging, ThemeMode mode) {
-            var chart = Chart.Create().WithSize(600, 200).WithTheme(theme, mode).WithDataLabels();
-            if (diverging) chart.WithHeatmapColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0))
+            var chart = Chart.Create().Size(600, 200).Theme(theme).ThemeMode(mode).DataLabels();
+            if (diverging) chart.Heatmap(h => h.ColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0)))
                 .AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
             else chart.AddHeatmapRow("Intensity", new double?[] { 0, 1, 2, 3, 4 });
             return chart;
@@ -80,13 +80,13 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
     [InlineData(ChartSeriesKind.CalendarHeatmap, 800, false, false)]
     public async Task PointerKeyboardAndSelectionKeepObservedValuesAndMissingIdentities(ChartSeriesKind kind, int width, bool dark, bool explicitScale) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, 400).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithHeatmapColorScale(explicitScale ? ChartColorScale.Discrete(new[] {
+        var chart = Chart.Create().Size(width, 400).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Heatmap(h => h.ColorScale(explicitScale ? ChartColorScale.Discrete(new[] {
                 new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Low"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Middle"),
                 new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "High")
-            }) : null);
+            }) : null));
         if (kind == ChartSeriesKind.CalendarHeatmap) chart.AddCalendarHeatmap("Observed", new[] {
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 0), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 7), 10),
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 8), 20)

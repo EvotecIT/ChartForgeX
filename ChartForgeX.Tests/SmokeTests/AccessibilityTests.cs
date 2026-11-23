@@ -2,21 +2,22 @@ using System;
 using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Topology;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void SharedAccessibilityMetadataReachesSvgRenderers() {
         var chartSvg = Chart.Create()
-            .WithTitle("Internal title")
-            .ConfigureAccessibility(a => a.WithTextAlternative("Revenue trend", "Revenue rose each quarter.", "en-GB"))
+            .Title("Internal title")
+            .Accessibility(a => a.TextAlternative("Revenue trend", "Revenue rose each quarter.", "en-GB"))
             .AddLine("Revenue", Points(4, 7, 11))
             .ToSvg();
         var canvasSvg = VisualCanvas.CreateSocialPreview()
-            .ConfigureAccessibility(a => a.WithTextAlternative("Release card", "Version 1.0 release artwork.", "en"))
+            .Accessibility(a => a.TextAlternative("Release card", "Version 1.0 release artwork.", "en"))
             .ToSvg();
         var topologySvg = TopologyChart.Create()
-            .ConfigureAccessibility(a => a.WithTextAlternative("Service topology", "API connected to storage.", "en-US"))
+            .Accessibility(a => a.TextAlternative("Service topology", "API connected to storage.", "en-US"))
             .AddNode("api", "API", 100, 100)
             .ToSvg();
 
@@ -26,9 +27,9 @@ internal static partial class SmokeTests {
     }
 
     private static void DecorativeVisualsStayHiddenFromAssistiveTechnology() {
-        var chartSvg = Chart.Create().AsDecorative().AddLine("Values", Points(1, 2)).ToSvg();
-        var canvasSvg = VisualCanvas.Create(320, 180).AsDecorative().ToSvg();
-        var topologySvg = TopologyChart.Create().AsDecorative().AddNode("node", "Node", 100, 100).ToSvg();
+        var chartSvg = Chart.Create().Accessibility(a => a.Decorative()).AddLine("Values", Points(1, 2)).ToSvg();
+        var canvasSvg = VisualCanvas.Create(320, 180).Accessibility(a => a.Decorative()).ToSvg();
+        var topologySvg = TopologyChart.Create().Accessibility(a => a.Decorative()).AddNode("node", "Node", 100, 100).ToSvg();
 
         foreach (var svg in new[] { chartSvg, canvasSvg, topologySvg }) {
             Assert(svg.Contains("aria-hidden=\"true\"", StringComparison.Ordinal), "Decorative SVG should be hidden from assistive technology.");

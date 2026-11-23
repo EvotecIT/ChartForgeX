@@ -11,7 +11,7 @@ public sealed class ProgressTransitionDefaultOutputControls {
     [InlineData(760, false)] [InlineData(760, true)]
     public void ExistingIndependentProgressRecipeKeepsOrdinaryNativeAndAssetFreeOutputs(int width, bool dark) {
         var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily(BrowserProofFonts.Family);
+            .FontFamily(BrowserProofFonts.Family);
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart);
         Assert.DoesNotContain("native-motion", section.Html); Assert.DoesNotContain("update-frame", section.Html);
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

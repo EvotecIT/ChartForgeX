@@ -180,21 +180,12 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     public static MetricCard Create() => new();
 
     /// <summary>Sets the primary metric label and value.</summary>
-    public MetricCard WithMetric(string label, object? value, string? format = null, string? unit = null) {
+    public MetricCard Metric(string label, object? value, string? format = null, string? unit = null) {
         Label = label ?? throw new ArgumentNullException(nameof(label));
         Value = ChartTableCell.FromValue(value, format).Text;
         Unit = unit ?? string.Empty;
         return this;
     }
-
-    /// <summary>Sets an optional metric unit rendered beside the value.</summary>
-    public MetricCard WithUnit(string unit) { Unit = unit ?? throw new ArgumentNullException(nameof(unit)); return this; }
-
-    /// <summary>Sets optional supporting text.</summary>
-    public MetricCard WithCaption(string caption) { Caption = caption ?? throw new ArgumentNullException(nameof(caption)); return this; }
-
-    /// <summary>Sets optional trend text.</summary>
-    public MetricCard WithTrend(string trend) { Trend = trend ?? throw new ArgumentNullException(nameof(trend)); return this; }
 
     /// <summary>Adds a compact detail row to the card.</summary>
     public MetricCard AddDetail(string label, object? value, Tone? status = null, string? format = null) {
@@ -202,16 +193,8 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         return this;
     }
 
-    /// <summary>Sets an optional compact symbol rendered as a badge.</summary>
-    public MetricCard WithSymbol(string symbol) { Symbol = symbol ?? throw new ArgumentNullException(nameof(symbol)); return this; }
-
-
-
-    /// <summary>Sets an optional built-in icon rendered as a badge.</summary>
-    public MetricCard WithIcon(Icon icon) { Icon = icon; return this; }
-
     /// <summary>Replaces compact bar values rendered inside the metric card.</summary>
-    public MetricCard WithMiniBars(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null, ChartColor? mutedColor = null, int? highlightIndex = null) {
+    internal MetricCard SetMiniBars(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null, ChartColor? mutedColor = null, int? highlightIndex = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         _miniBars.Clear();
         foreach (var value in values) {
@@ -225,12 +208,12 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         MiniBarColor = color;
         MiniBarMutedColor = mutedColor;
         MiniBarHighlightIndex = highlightIndex;
-        WithoutMiniSparkline();
+        ClearMiniSparkline();
         return this;
     }
 
     /// <summary>Clears compact bar values from the metric card.</summary>
-    public MetricCard WithoutMiniBars() {
+    public MetricCard ClearMiniBars() {
         _miniBars.Clear();
         MiniBarMinimum = null;
         MiniBarMaximum = null;
@@ -241,7 +224,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     }
 
     /// <summary>Replaces compact sparkline values rendered inside the metric card.</summary>
-    public MetricCard WithMiniSparkline(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null, ChartColor? fillColor = null) {
+    internal MetricCard SetMiniSparkline(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null, ChartColor? fillColor = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         SparklineData = null;
         _miniSparkline.Clear();
@@ -256,12 +239,12 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         MiniSparklineMaximum = maximum;
         MiniSparklineColor = color;
         MiniSparklineFillColor = fillColor;
-        WithoutMiniBars();
+        ClearMiniBars();
         return this;
     }
 
     /// <summary>Clears compact sparkline values from the metric card.</summary>
-    public MetricCard WithoutMiniSparkline() {
+    public MetricCard ClearMiniSparkline() {
         SparklineData = null; SecondarySparklineData = null;
         _miniSparkline.Clear();
         _secondaryMiniSparkline.Clear();
@@ -273,32 +256,8 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         return this;
     }
 
-    /// <summary>Sets the metric status.</summary>
-    public MetricCard WithStatus(Tone status) {
-        Status = status;
-        return this;
-    }
-
-    /// <summary>Sets the badge placement when an icon or symbol is configured.</summary>
-    public MetricCard WithBadgePlacement(MetricCardBadgePlacement placement) {
-        BadgePlacement = placement;
-        return this;
-    }
-
-    /// <summary>Sets where compact mini charts are rendered inside the metric card.</summary>
-    public MetricCard WithMicroVisualPlacement(MetricCardMicroVisualPlacement placement) {
-        MicroVisualPlacement = placement;
-        return this;
-    }
-
-    /// <summary>Sets the mini sparkline presentation style.</summary>
-    public MetricCard WithMiniSparklineStyle(ChartLineAreaForm style) {
-        MiniSparklineStyle = style;
-        return this;
-    }
-
     /// <summary>Replaces optional secondary sparkline values rendered with the primary sparkline.</summary>
-    public MetricCard WithSecondaryMiniSparkline(IEnumerable<double> values, ChartColor? color = null) {
+    internal MetricCard SetSecondaryMiniSparkline(IEnumerable<double> values, ChartColor? color = null) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         SecondarySparklineData = null;
         _secondaryMiniSparkline.Clear();
@@ -310,12 +269,6 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         if (_secondaryMiniSparkline.Count < 2) throw new ArgumentException("Metric card secondary mini sparklines require at least two values.", nameof(values));
         if (SparklineCount > 0 && _secondaryMiniSparkline.Count != SparklineCount) throw new InvalidOperationException("Metric card secondary mini sparklines must match the primary sparkline count.");
         SecondaryMiniSparklineColor = color;
-        return this;
-    }
-
-    /// <summary>Sets the optional surface treatment for compact mini visuals.</summary>
-    public MetricCard WithMicroVisualSurface(MetricCardMicroVisualSurface surface) {
-        MicroVisualSurface = surface;
         return this;
     }
 

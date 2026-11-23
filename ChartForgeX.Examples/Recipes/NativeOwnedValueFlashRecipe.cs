@@ -9,13 +9,13 @@ internal static class NativeOwnedValueFlashRecipe {
             var radial=kind.Contains("pie",StringComparison.Ordinal)||kind.Contains("donut",StringComparison.Ordinal);var raw=kind.StartsWith("raw-",StringComparison.Ordinal);
             var values=raw?new[]{value,25d,10d,4d,1d}:new[]{value,25d,10d};
             series=new ChartSeries(new ChartSeriesId("work"),"Work",radial?kind.Contains("donut",StringComparison.Ordinal)?ChartSeriesKind.Donut:ChartSeriesKind.Pie:kind=="line"?ChartSeriesKind.Line:kind=="scatter"?ChartSeriesKind.Scatter:ChartSeriesKind.Bar,values.Select((reading,index)=>new ChartPoint(index+1,reading)))
-                .WithObservationIds(values.Select((_,index)=>new ChartObservationId("part-"+index)));
+                .ObservationIds(values.Select((_,index)=>new ChartObservationId("part-"+index)));
             series.FillPattern=ChartFillPattern.DiagonalForward;
         }
-        var chart=Chart.Create().WithTitle("Captured native value ink").WithSize(width,420).WithTheme(VisualTheme.Graphite().WithFontFamily(family),mode).WithLegend(false).WithDataLabels(false).AddSeries(series);
-        if(kind=="line")chart.WithLineMarkers(ChartLineMarkerMode.All).WithLuminousLineStyle();
-        if(kind=="bar-gradient")chart.WithBarVisualStyle(ChartBarVisualStyle.Solid());if(kind=="bar-capsule")chart.WithBarVisualStyle(ChartBarVisualStyle.DashboardCapsule());
-        if(kind is "line" or "scatter" or "bar-gradient" or "bar-capsule") {chart.ConfigureXAxis(axis=>{axis.Minimum=.5;axis.Maximum=3.5;});chart.ConfigureYAxis(axis=>{axis.Minimum=0;axis.Maximum=100;});}
-        if(kind.StartsWith("raw-",StringComparison.Ordinal))chart.Options.MaximumPieSlices=3;return chart;
+        var chart=Chart.Create().Title("Captured native value ink").Size(width,420).Theme(VisualTheme.Graphite().WithFontFamily(family)).ThemeMode(mode).Legend(false).DataLabels(false).AddSeries(series);
+        if(kind=="line")chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.All).LuminousStyle());
+        if(kind=="bar-gradient")chart.Bars(b => b.VisualStyle(ChartBarVisualStyle.Solid()));if(kind=="bar-capsule")chart.Bars(b => b.VisualStyle(ChartBarVisualStyle.DashboardCapsule()));
+        if(kind is "line" or "scatter" or "bar-gradient" or "bar-capsule") {chart.XAxis(axis=>{axis.Min=.5;axis.Max=3.5;});chart.YAxis(axis=>{axis.Min=0;axis.Max=100;});}
+        if(kind.StartsWith("raw-",StringComparison.Ordinal))chart.Options.Pie.MaxSlices=3;return chart;
     }
 }

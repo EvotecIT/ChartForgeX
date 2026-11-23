@@ -13,7 +13,7 @@ public sealed class TopologyCompartmentGeometryTests {
     [InlineData(TopologyNodeShape.Rectangle)]
     [InlineData(TopologyNodeShape.Rounded)]
     public void NativeSectionsStayInsideTheirContourWithoutAnUnrelatedFittingOverride(TopologyNodeShape shape) {
-        var chart = TopologyChart.Create().WithViewport(420, 360, 20);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 360, 20));
         var node = new TopologyNode { Id = "type", Label = "Order", X = 60, Y = 60, Width = 240, Height = 220,
             Shape = shape, ShowStatusBadge = false, PreserveDisplayModeSize = true };
         node.Details.Add(new TopologyNodeDetail { Text = "+string Id" });
@@ -39,7 +39,7 @@ public sealed class TopologyCompartmentGeometryTests {
     [InlineData(TopologyEdgePort.Right, TopologyEdgePort.Bottom, 220, 50)]
     [InlineData(TopologyEdgePort.Top, TopologyEdgePort.Auto, 345, 300)]
     public void CurvedRoutesLeaveAndApproachEachAuthoredSideAlongItsOwnOutwardNormal(TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double targetY, double sourceHeight) {
-        var chart = TopologyChart.Create().WithViewport(700, 500, 20);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(700, 500, 20));
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 100, Y = 120, Width = 100, Height = sourceHeight, Shape = TopologyNodeShape.Rectangle });
         chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = 350, Y = targetY, Width = 100, Height = 50, Shape = TopologyNodeShape.Rectangle });
         chart.AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Curved);

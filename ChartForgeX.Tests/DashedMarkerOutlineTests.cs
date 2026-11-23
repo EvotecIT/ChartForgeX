@@ -17,7 +17,7 @@ public sealed class DashedMarkerOutlineTests {
         if (kind == ChartSeriesKind.Line) chart.AddLine("Series", points); else chart.AddScatter("Series", points);
         var dash = new[] { 5d, 3d };
         var series = chart.Series[0];
-        series.ConfigureMarkers(options => {
+        series.Markers(options => {
             options.Enabled = true; options.Radius = 20; options.Stroke = ChartColor.FromRgb(255, 0, 0); options.StrokeWidth = 1;
             options.OutlineStroke = new ChartStrokeStyle(ChartColor.Black, 4, .5, dash); options.StrokeDashOffset = 2;
         });
@@ -43,7 +43,7 @@ public sealed class DashedMarkerOutlineTests {
     [Fact]
     public void RasterOutlinesContainActualDashGapsRatherThanOnlySvgAttributes() {
         var chart = Bare().AddScatter("Glyph", new[] { new ChartPoint(5, 5) });
-        chart.Series[0].ConfigureMarkers(options => {
+        chart.Series[0].Markers(options => {
             options.Radius = 35; options.Fill = ChartColor.Transparent;
             options.OutlineStroke = new ChartStrokeStyle(ChartColor.Black, 4, dash: new[] { 6d, 6d });
         });
@@ -55,8 +55,8 @@ public sealed class DashedMarkerOutlineTests {
 
     private static double Ink(byte[] png) => RasterImageDecoder.Decode(png).Pixels.Where((_, index) => index % 4 == 3).Sum(alpha => (double)alpha);
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithAxes(false).WithGrid(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).DataLabels(false)
+            .Axes(false).ShowGrid(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true;
         return chart;
     }

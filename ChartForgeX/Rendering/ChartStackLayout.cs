@@ -28,7 +28,7 @@ internal sealed partial class ChartStackLayout {
         ? _points[seriesIndex][pointIndex] : new ChartStackPoint(_sourceValues[seriesIndex][pointIndex]);
     internal bool IsStacked(int seriesIndex) => _seriesGroups[seriesIndex]?.Stacked == true;
     internal static bool Participates(Chart chart, ChartSeries series) => Supports(series.Kind)
-        && (series.Kind == ChartSeriesKind.StackedArea || series.StackGroup != null || chart.Options.BarMode == ChartBarMode.Stacked);
+        && (series.Kind == ChartSeriesKind.StackedArea || series.StackGroup != null || chart.Options.Bars.Mode == ChartBarMode.Stacked);
 
     internal static ChartStackLayout Create(Chart chart, ChartBarCoordinateMap coordinates) {
         var points = chart.Series.Select(_ => Array.Empty<ChartStackPoint>()).ToArray();

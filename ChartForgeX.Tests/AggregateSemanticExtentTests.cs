@@ -12,7 +12,7 @@ public sealed class AggregateSemanticExtentTests {
     [InlineData(ChartSeriesKind.BoxPlot, 1)]
     public void RawAggregatesDescribeTheirRenderedExtentsAndRetainTypedSourceFacts(ChartSeriesKind kind, int extents) {
         var observations = Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)).ToArray();
-        var chart = Chart.Create().WithAxes(false).WithGrid(false);
+        var chart = Chart.Create().Axes(false).ShowGrid(false);
         switch (kind) {
             case ChartSeriesKind.Bar:
                 chart.AddHistogram("Measurements", observations,

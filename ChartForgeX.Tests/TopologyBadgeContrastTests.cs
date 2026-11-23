@@ -14,7 +14,7 @@ public sealed class TopologyBadgeContrastTests {
     [InlineData(true, ThemeMode.Light)]
     [InlineData(true, ThemeMode.Dark)]
     public void DefaultWarningBadgeUsesReadableNativeInkAndRetainsItsPairedSvgPaint(bool enclosed, ThemeMode mode) {
-        var chart = TopologyChart.Create().WithViewport(400, 280, 20);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 280, 20));
         chart.Nodes.Add(new TopologyNode { Id = "approval", Label = "Approved?", Badge = "?", Status = TopologyHealthStatus.Warning,
             X = 40, Y = 40, Width = 220, Height = enclosed ? 120 : 80, PreserveDisplayModeSize = true,
             Shape = enclosed ? TopologyNodeShape.Diamond : TopologyNodeShape.Rectangle,

@@ -17,9 +17,9 @@ public sealed class MermaidGanttDisplayZoneTests {
     public async Task DefaultLabelsUseTheZoneThatAlignedTheTicks(int minutes, params string[] expected) {
         var chart = new MermaidParser().ParseGantt("gantt\ntickInterval 1day\nTask :2026-01-01, 3d").Document!
             .ToChart(new MermaidGanttRenderOptions { Width = 900, Height = 360 });
-        chart.WithXAxisTimeScale(Zone(minutes)).ConfigureXAxis(axis => {
-            axis.Minimum = new DateTime(2026, 1, 1).ToOADate();
-            axis.Maximum = new DateTime(2026, 1, 3).ToOADate();
+        chart.XAxis(x => x.TimeScale(timeZone: Zone(minutes))).XAxis(axis => {
+            axis.Min = new DateTime(2026, 1, 1).ToOADate();
+            axis.Max = new DateTime(2026, 1, 3).ToOADate();
         });
         Assert.Equal(expected, Labels(chart));
         var png = chart.ToPng();
@@ -43,12 +43,12 @@ public sealed class MermaidGanttDisplayZoneTests {
     public void AuthoredFieldsAndCompositeFormatsFollowHostZoneChanges(int minutes, string expected) {
         var chart = new MermaidParser().ParseGantt("gantt\naxisFormat %Y-%m-%d %H:%M %Z|%c\nTask :2026-01-01, 3d").Document!.ToChart();
         var instant = new DateTime(2026, 1, 1, 19, 0, 0).ToOADate();
-        var original = chart.Options.XAxisValueFormatter!(instant);
-        chart.WithXAxisTimeScale(Zone(minutes));
-        Assert.Equal(expected, chart.Options.XAxisValueFormatter!(instant));
-        chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
-        Assert.Equal(original, chart.Options.XAxisValueFormatter!(instant));
-        chart.WithXAxisValueFormatter(_ => "Host caption");
+        var original = chart.Options.XAxis.LabelFormatter!(instant);
+        chart.XAxis(x => x.TimeScale(timeZone: Zone(minutes)));
+        Assert.Equal(expected, chart.Options.XAxis.LabelFormatter!(instant));
+        chart.XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc));
+        Assert.Equal(original, chart.Options.XAxis.LabelFormatter!(instant));
+        chart.XAxis(x => x.LabelBy(_ => "Host caption"));
         Assert.All(Labels(chart), value => Assert.Equal("Host caption", value));
     }
 
@@ -60,12 +60,12 @@ public sealed class MermaidGanttDisplayZoneTests {
             TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1, 1, 1, 2, 0, 0), 11, 1, DayOfWeek.Sunday));
         var zone = TimeZoneInfo.CreateCustomTimeZone("Gantt daylight", TimeSpan.FromHours(-5), "Gantt daylight", "Standard", "Daylight", new[] { daylight });
         var chart = new MermaidParser().ParseGantt("gantt\naxisFormat %Y-%m-%d %H:%M %Z|%s|%Q\nTask :2026-03-08, 2d").Document!.ToChart();
-        chart.WithXAxisTimeScale(zone);
+        chart.XAxis(x => x.TimeScale(timeZone: zone));
         foreach (var hour in new[] { 6, 7 }) {
             var instant = new DateTimeOffset(2026, 3, 8, hour, 0, 0, TimeSpan.Zero);
             var local = hour == 6 ? "2026-03-08 01:00 -0500" : "2026-03-08 03:00 -0400";
             Assert.Equal(local + "|" + instant.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture) + "|" +
-                instant.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture), chart.Options.XAxisValueFormatter!(instant.UtcDateTime.ToOADate()));
+                instant.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture), chart.Options.XAxis.LabelFormatter!(instant.UtcDateTime.ToOADate()));
         }
     }
 

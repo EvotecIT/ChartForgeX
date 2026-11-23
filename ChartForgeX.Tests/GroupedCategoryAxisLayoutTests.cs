@@ -71,7 +71,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     public void NativeWindowClipsBeforeProjectionAndRetainsFullSourceSpansUnderReversal(bool reversed) {
         var chart = Bare().AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(4, 5), new ChartPoint(8, 3), new ChartPoint(12, 7) });
         chart.Series[0].Markers.Enabled = false;
-        chart.WithXLabels(Enumerable.Range(0, 7).Select(index => new ChartAxisLabel(index * 2, "Leaf " + index,
+        chart.XLabels(Enumerable.Range(0, 7).Select(index => new ChartAxisLabel(index * 2, "Leaf " + index,
             "Year", index <= 3 ? "First" : "Second")));
         chart.Options.XAxis.Reversed = reversed;
         var full = Prepare(chart);
@@ -96,7 +96,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     [InlineData(true)]
     public void ExplicitBoundsDeliberatelyClipMissingEdgeLeavesWithoutChangingMembership(bool horizontal) {
         var chart = CatalogChart(horizontal);
-        if (horizontal) chart.WithYAxisBounds(1, 12); else chart.WithXAxisBounds(1, 12);
+        if (horizontal) chart.YAxis(y => y.Bounds(1, 12)); else chart.XAxis(x => x.Bounds(1, 12));
         var prepared = Prepare(chart);
         var projection = prepared.Scene.DataProjection!;
         Assert.Equal(1, horizontal ? projection.Y!.Minimum : projection.X.Minimum);
@@ -122,9 +122,9 @@ public sealed class GroupedCategoryAxisLayoutTests {
         var flatLabels = flatAxis.Labels.Select(label => new ChartAxisLabel(label.Value, label.Text)).ToArray();
         flatAxis.Labels.Clear(); flatAxis.Labels.AddRange(flatLabels);
         // Match the explicitly chosen domain so automatic grouped catalog inclusion is not part of this comparison.
-        if (horizontal) { grouped.WithYAxisBounds(0, 16); flat.WithYAxisBounds(0, 16); }
-        else { grouped.WithXAxisBounds(0, 16); flat.WithXAxisBounds(0, 16); }
-        if (policy == "axes") { grouped.WithAxes(false); flat.WithAxes(false); }
+        if (horizontal) { grouped.YAxis(y => y.Bounds(0, 16)); flat.YAxis(y => y.Bounds(0, 16)); }
+        else { grouped.XAxis(x => x.Bounds(0, 16)); flat.XAxis(x => x.Bounds(0, 16)); }
+        if (policy == "axes") { grouped.Axes(false); flat.Axes(false); }
         else if (policy == "axis") { axis.Visible = false; flatAxis.Visible = false; }
         else { axis.ShowLine = false; flatAxis.ShowLine = false; }
         var prepared = Prepare(grouped);
@@ -142,7 +142,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     public void TinyBandsOmitOrdinaryCaptionsWithoutLosingFullPathsOrConsumingThePlot() {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
-        var chart = CatalogChart(false).WithSize(150, 130).WithPngFont(font).ConfigureTickLabelStyle(style => style.FontSize = 18);
+        var chart = CatalogChart(false).Size(150, 130).Png(p => p.FontPath(font)).TickLabelStyle(style => style.FontSize = 18);
         var prepared = Prepare(chart);
         Assert.True(Plot(prepared).Width > 0); Assert.True(Plot(prepared).Height > 0);
         Assert.Equal(5, Groups(prepared).Length);
@@ -158,7 +158,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     [Fact]
     public void SingletonAndMarkerPaddingRetainSourceCellsIndependentOfOutputSize() {
         var singleton = Bare().AddBar("Observed", new[] { new ChartPoint(2.5, 4) })
-            .WithXLabels(new[] { new ChartAxisLabel(2.5, "Only leaf", "Parent") });
+            .XLabels(new[] { new ChartAxisLabel(2.5, "Only leaf", "Parent") });
         var one = Prepare(singleton);
         var group = Assert.Single(Groups(one));
         var range = ChartRange.FromChart(singleton);
@@ -166,9 +166,9 @@ public sealed class GroupedCategoryAxisLayoutTests {
         Assert.Equal(range.MaxX, Parse(group.Metadata["data-cfx-group-end"]));
         Assert.Single(ParentCaptions(one));
         var line = Bare().AddLine("Observed", new[] { new ChartPoint(1.5, 2), new ChartPoint(7.5, 3) })
-            .WithXLabels(new[] { new ChartAxisLabel(1.5, "First", "Parent"), new ChartAxisLabel(7.5, "Last", "Parent") });
-        line.Series[0].ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 16; });
-        var wide = Prepare(line); line.WithSize(390, 450); var compact = Prepare(line);
+            .XLabels(new[] { new ChartAxisLabel(1.5, "First", "Parent"), new ChartAxisLabel(7.5, "Last", "Parent") });
+        line.Series[0].Markers(markers => { markers.Enabled = true; markers.Radius = 16; });
+        var wide = Prepare(line); line.Size(390, 450); var compact = Prepare(line);
         var wideGroup = Assert.Single(Groups(wide)); var compactGroup = Assert.Single(Groups(compact));
         // A line over named categories keeps half-band outer padding (design rule 3); the group spans that padded domain.
         Assert.Equal("-1.5", wideGroup.Metadata["data-cfx-group-start"]); Assert.Equal("10.5", wideGroup.Metadata["data-cfx-group-end"]);
@@ -178,7 +178,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
 
     [Fact]
     public void PreparedParentInkAndContextStayDetachedForSvgAndNativeRaster() {
-        var chart = CatalogChart(false).ConfigureTickLabelStyle(style => style.Color = new ChartColor(190, 20, 210));
+        var chart = CatalogChart(false).TickLabelStyle(style => style.Color = new ChartColor(190, 20, 210));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var image = prepared.ToRgba();
         var ink = 0;
@@ -206,13 +206,13 @@ public sealed class GroupedCategoryAxisLayoutTests {
             new ChartAxisLabel(3.25, "Missing middle", "2026", "Q1"), new ChartAxisLabel(7.5, "Apr", "2026", "Q2"),
             new ChartAxisLabel(11, "Jan", "2027", "Q1"), new ChartAxisLabel(14.75, "Missing last", "2027", "Q1")
         };
-        if (horizontal) chart.ConfigureYAxis(axis => { axis.Labels.AddRange(labels); axis.LabelDensity = ChartLabelDensity.All; });
-        else { chart.WithXLabels(labels); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All; }
+        if (horizontal) chart.YAxis(axis => { axis.Labels.AddRange(labels); axis.LabelDensity = ChartLabelDensity.All; });
+        else { chart.XLabels(labels); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All; }
         return chart;
     }
 
-    private static Chart Bare() => Chart.Create().WithSize(960, 520).WithHeader(false).WithLegend(false).WithDataLabels(false)
-        .WithTheme(VisualTheme.Graphite(), ThemeMode.Light).ConfigureTickLabelStyle(style => style.FontSize = 12);
+    private static Chart Bare() => Chart.Create().Size(960, 520).ShowHeader(false).Legend(false).DataLabels(false)
+        .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light).TickLabelStyle(style => style.FontSize = 12);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static ChartRect Plot(PreparedVisual prepared) => Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
     private static string GroupRole(bool horizontal) => horizontal ? "axis-y-category-group" : "axis-x-category-group";

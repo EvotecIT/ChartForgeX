@@ -7,20 +7,20 @@ internal static partial class TopologyVisualExamples {
         Directory.CreateDirectory(target);
         var artifacts = new List<VisualArtifact>();
         var options = new TopologyRenderOptions { IncludeLegend = true }
-            .WithForceGraphStyle()
-            .WithHtmlForceGraphControls();
+            .ForceGraphStyle()
+            .HtmlForceGraphControls();
         WriteForceGraphArtifact(target, artifacts, "visual-force-relationship-graph", "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", BuildForceRelationshipGraph(), options);
         WriteForceGraphArtifact(target, artifacts, "visual-force-busy-relationship-graph", "Busy Force Relationship Graph", "Busy force-directed relationship graph using the relationship solver profile for degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", BuildBusyForceRelationshipGraph(), options);
         var radialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
-            .WithForceGraphStyle()
-            .WithHtmlForceGraphControls()
-            .WithRelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9);
+            .ForceGraphStyle()
+            .HtmlForceGraphControls()
+            .RelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9);
         radialOptions.IncludeEdgeLabels = true;
         WriteForceGraphArtifact(target, artifacts, "visual-relationship-radial-ego-graph", "Relationship Radial Ego Graph", "Selected application relationship graph with the root in the center, direct conversations around it, second-hop conversations farther out, and capped expansion for large networks.", BuildRelationshipRadialEgoGraph(), radialOptions);
         var largeRadialOptions = new TopologyRenderOptions { IncludeLegend = false }
-            .WithForceGraphStyle()
-            .WithHtmlForceGraphControls()
-            .WithRelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40);
+            .ForceGraphStyle()
+            .HtmlForceGraphControls()
+            .RelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40);
         WriteForceGraphArtifact(target, artifacts, "visual-relationship-radial-500-ego-graph", "Relationship Radial 500 Ego Graph", "Large 500-node relationship ego graph: all nodes remain present as dots, first-hop conversations spread around the root, second-hop conversations fan out farther, and HTML focus reveals labels on demand.", BuildLargeRelationshipRadialEgoGraph(), largeRadialOptions);
         WriteManifest(target, artifacts);
         WriteCoverageIndex(target, artifacts);
@@ -38,12 +38,12 @@ internal static partial class TopologyVisualExamples {
 
     private static TopologyChart BuildForceRelationshipGraph() {
         var chart = TopologyChart.Create()
-            .WithId("visual-force-relationship-graph")
-            .WithTitle("Force Relationship Graph")
-            .WithSubtitle("Force-directed identity, endpoint, application, data, and owner relationships with graph-first static defaults and interactive HTML filtering.")
-            .WithViewport(1280, 760, 28)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
-            .WithLegend(TopologyLegend.Default()
+            .Id("visual-force-relationship-graph")
+            .Title("Force Relationship Graph")
+            .Subtitle("Force-directed identity, endpoint, application, data, and owner relationships with graph-first static defaults and interactive HTML filtering.")
+            .Viewport(new TopologyViewport(1280, 760, 28))
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
+            .Legend(TopologyLegend.Default()
                 .AddNodeKind("Identity", TopologyNodeKind.Person, symbol: "ID")
                 .AddNodeKind("Endpoint", TopologyNodeKind.Endpoint, symbol: "PC")
                 .AddNodeKind("Application", TopologyNodeKind.Service, symbol: "APP")
@@ -71,21 +71,21 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("force-warning-id-app", "identity-07", "application-08", "privileged path", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
             .AddEdge("force-warning-endpoint-data", "endpoint-06", "data-01", "direct data path", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
             .AddEdge("force-owner-data", "owner-02", "data-06", "steward", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .WithEdgeEmphasis("force-critical-app-data", TopologyEdgeEmphasis.Strong)
-            .WithEdgeEmphasis("force-warning-id-app", TopologyEdgeEmphasis.Strong)
-            .WithEdgeEmphasis("force-warning-endpoint-data", TopologyEdgeEmphasis.Strong);
+            .UpdateEdge("force-critical-app-data", e => e.Emphasis(TopologyEdgeEmphasis.Strong))
+            .UpdateEdge("force-warning-id-app", e => e.Emphasis(TopologyEdgeEmphasis.Strong))
+            .UpdateEdge("force-warning-endpoint-data", e => e.Emphasis(TopologyEdgeEmphasis.Strong));
 
         return chart;
     }
 
     private static TopologyChart BuildBusyForceRelationshipGraph() {
         var chart = TopologyChart.Create()
-            .WithId("visual-force-busy-relationship-graph")
-            .WithTitle("Busy Force Relationship Graph")
-            .WithSubtitle("Large identity, endpoint, application, data, network, control, and ownership relationship graph using degree-weighted force layout diagnostics.")
-            .WithViewport(1800, 1120, 32)
-            .WithLayout(TopologyLayoutMode.ForceDirected)
-            .WithLegend(TopologyLegend.Default()
+            .Id("visual-force-busy-relationship-graph")
+            .Title("Busy Force Relationship Graph")
+            .Subtitle("Large identity, endpoint, application, data, network, control, and ownership relationship graph using degree-weighted force layout diagnostics.")
+            .Viewport(new TopologyViewport(1800, 1120, 32))
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
+            .Legend(TopologyLegend.Default()
                 .AddNodeKind("Identity", TopologyNodeKind.Person, symbol: "ID")
                 .AddNodeKind("Endpoint", TopologyNodeKind.Endpoint, symbol: "PC")
                 .AddNodeKind("Application", TopologyNodeKind.Service, symbol: "APP")
@@ -122,21 +122,21 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("busy-warning-endpoint-data", "endpoint-16", "data-01", "direct data path", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
             .AddEdge("busy-critical-control-network", "control-05", "network-12", "policy gap", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
             .AddEdge("busy-owner-data", "owner-11", "data-06", "steward", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .WithEdgeEmphasis("busy-critical-app-data", TopologyEdgeEmphasis.Strong)
-            .WithEdgeEmphasis("busy-warning-id-app", TopologyEdgeEmphasis.Strong)
-            .WithEdgeEmphasis("busy-warning-endpoint-data", TopologyEdgeEmphasis.Strong)
-            .WithEdgeEmphasis("busy-critical-control-network", TopologyEdgeEmphasis.Strong);
+            .UpdateEdge("busy-critical-app-data", e => e.Emphasis(TopologyEdgeEmphasis.Strong))
+            .UpdateEdge("busy-warning-id-app", e => e.Emphasis(TopologyEdgeEmphasis.Strong))
+            .UpdateEdge("busy-warning-endpoint-data", e => e.Emphasis(TopologyEdgeEmphasis.Strong))
+            .UpdateEdge("busy-critical-control-network", e => e.Emphasis(TopologyEdgeEmphasis.Strong));
 
         return chart;
     }
 
     private static TopologyChart BuildRelationshipRadialEgoGraph() {
         var chart = TopologyChart.Create()
-            .WithId("visual-relationship-radial-ego-graph")
-            .WithTitle("Relationship Radial Ego Graph")
-            .WithSubtitle("Start from one application, show direct conversations in different directions, then push second-hop conversations farther away with capped expansion.")
-            .WithViewport(1320, 820, 32)
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .Id("visual-relationship-radial-ego-graph")
+            .Title("Relationship Radial Ego Graph")
+            .Subtitle("Start from one application, show direct conversations in different directions, then push second-hop conversations farther away with capped expansion.")
+            .Viewport(new TopologyViewport(1320, 820, 32))
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoGroup("application", "Applications", TopologyHealthStatus.Healthy, "root", color: "#7C3AED")
             .AddAutoGroup("identity", "Identity", TopologyHealthStatus.Healthy, "users", color: "#2563EB")
             .AddAutoGroup("endpoint", "Endpoints", TopologyHealthStatus.Healthy, "devices", color: "#0891B2")
@@ -154,8 +154,8 @@ internal static partial class TopologyVisualExamples {
             .AddEdge("radial-api-db", "application-03", "data-payroll", "reads", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
             .AddEdge("radial-policy-api", "application-03", "control-mfa", "governs", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
             .AddEdge("radial-owner-api", "application-03", "owner-hr", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .WithEdgeEmphasis("radial-api-db", TopologyEdgeEmphasis.Strong)
-            .WithEdgeEmphasis("radial-admins-api", TopologyEdgeEmphasis.Strong);
+            .UpdateEdge("radial-api-db", e => e.Emphasis(TopologyEdgeEmphasis.Strong))
+            .UpdateEdge("radial-admins-api", e => e.Emphasis(TopologyEdgeEmphasis.Strong));
 
         AddRadialSecondHop(chart, "identity-admins", "identity-breakglass", "Breakglass", TopologyNodeKind.Person, "identity", "member", "#2563EB");
         AddRadialSecondHop(chart, "identity-admins", "identity-service", "Service account", TopologyNodeKind.Person, "identity", "delegates", "#2563EB");
@@ -176,11 +176,11 @@ internal static partial class TopologyVisualExamples {
     private static TopologyChart BuildLargeRelationshipRadialEgoGraph() {
         var colors = new[] { "#2563EB", "#0891B2", "#059669", "#7C3AED", "#EA580C", "#DC2626", "#0F766E", "#9333EA", "#0284C7" };
         var chart = TopologyChart.Create()
-            .WithId("visual-relationship-radial-500-ego-graph")
-            .WithTitle("Relationship Radial 500 Ego Graph")
-            .WithSubtitle("500-node ego graph: first-hop conversations radiate from the root, second-hop conversations fan outward, labels stay hidden until HTML focus.")
-            .WithViewport(1680, 1060, 32)
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .Id("visual-relationship-radial-500-ego-graph")
+            .Title("Relationship Radial 500 Ego Graph")
+            .Subtitle("500-node ego graph: first-hop conversations radiate from the root, second-hop conversations fan outward, labels stay hidden until HTML focus.")
+            .Viewport(new TopologyViewport(1680, 1060, 32))
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoGroup("root", "Root", TopologyHealthStatus.Warning, "1 app", color: "#7C3AED")
             .AddAutoNode("app-root", "Application Root", TopologyNodeKind.Service, TopologyHealthStatus.Warning, "root", "selected", width: 42, height: 42, symbol: "APP", color: "#7C3AED");
 
@@ -275,10 +275,10 @@ internal static partial class TopologyVisualExamples {
             var status = i % 9 == 4 ? TopologyHealthStatus.Critical : i % 5 == 2 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy;
             chart.AddAutoNode(id, label + " " + (i + 1).ToString(CultureInfo.InvariantCulture), kind, status, groupId, status.ToString(), width: 32, height: 32, symbol: label.Substring(0, 1).ToUpperInvariant(), color: color);
             chart.AddEdge(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-hub", id, "cluster", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, VisualLinkDirection.None)
-                .WithEdgeEmphasis(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), TopologyEdgeEmphasis.Subtle);
+                .UpdateEdge(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
             if (i > 0 && i % 3 != 0) {
                 chart.AddEdge(groupId + "-peer-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-" + (i - 1).ToString("00", CultureInfo.InvariantCulture), id, "peer", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.None)
-                    .WithEdgeEmphasis(groupId + "-peer-" + i.ToString("00", CultureInfo.InvariantCulture), TopologyEdgeEmphasis.Subtle);
+                    .UpdateEdge(groupId + "-peer-" + i.ToString("00", CultureInfo.InvariantCulture), e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
             }
         }
     }

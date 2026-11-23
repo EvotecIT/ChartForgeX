@@ -30,10 +30,10 @@ internal static class WellnessDashboardExamples {
 
     public static void WritePowerBgInfoSocialPreview(string output, int outputScale) {
         var canvas = VisualCanvas.CreateSocialPreview()
-            .WithTitle("PowerBGInfo social preview")
-            .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
-            .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
-            .WithPngOutputScale(outputScale)
+            .Title("PowerBGInfo social preview")
+            .BackgroundTop(ChartColor.FromHex("#020713")).BackgroundBottom(ChartColor.FromHex("#071A35"))
+            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
+            .PngOutputScale(outputScale)
             .AddInfoTile(48, 92, 300, 82, "PC", "HOSTNAME", "DEV-WKS-01", accent: ChartColor.FromHex("#2F80FF"))
             .AddInfoTile(48, 190, 300, 82, "IP", "IP ADDRESS", "10.0.0.42", "192.168.1.42", ChartColor.FromHex("#2F80FF"))
             .AddInfoTile(48, 288, 300, 82, "OS", "OS", "Windows 11", "24H2", ChartColor.FromHex("#2F80FF"))
@@ -60,25 +60,25 @@ internal static class WellnessDashboardExamples {
 
     private static void SaveLayeredRadial(string output, ChartPngOutputScale pngOutputScale) {
         var chart = Chart.Create()
-            .WithTitle("Layered Radial Progress")
-            .WithSubtitle("Generic radial layers with independent radius, stroke, color, and value scale.")
-            .WithSize(600, 600)
-            .WithPadding(48, 48, 48, 48)
-            .WithTheme(WellnessTheme())
-            .WithPlotBackground(false)
-            .WithLegend(false)
-            .WithPngOutputScale(pngOutputScale)
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " kcal")
+            .Title("Layered Radial Progress")
+            .Subtitle("Generic radial layers with independent radius, stroke, color, and value scale.")
+            .Size(600, 600)
+            .Padding(48, 48, 48, 48)
+            .Theme(WellnessTheme())
+            .ShowPlotBackground(false)
+            .Legend(false)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " kcal")
             .AddLayeredRadial("Calories left", layers => layers
                 .Add("Available area", 100, color: Track, configure: layer => layer
-                    .WithGeometry(1.00, 0.18)
-                    .WithLineCap(ChartRadialLayerCap.Butt))
+                    .RadiusRatio(1.00).StrokeRatio(0.18)
+                    .LineCap(ChartRadialLayerCap.Butt))
                 .Add("Target ring", 100, color: Yellow, configure: layer => layer
-                    .WithGeometry(0.93, 0.035)
-                    .WithLineCap(ChartRadialLayerCap.Butt))
+                    .RadiusRatio(0.93).StrokeRatio(0.035)
+                    .LineCap(ChartRadialLayerCap.Butt))
                 .Add("Current", 1240, maximum: 2700, color: Orange, configure: layer => layer
-                    .WithGeometry(0.93, 0.14)
-                    .WithAngles(-90, 360)));
+                    .RadiusRatio(0.93).StrokeRatio(0.14)
+                    .StartAngleDegrees(-90).SweepAngleDegrees(360)));
 
         chart.SaveSvg(Path.Combine(output, "wellness-layered-radial-progress.svg"));
         chart.SaveHtml(Path.Combine(output, "wellness-layered-radial-progress.html"));
@@ -87,19 +87,19 @@ internal static class WellnessDashboardExamples {
 
     private static void SaveWeightCard(string output, int outputScale) {
         var card = RadialMetricCard.Create()
-            .WithTitle("Weight Data")
-            .WithSubtitle("Goal progress as reusable radial metric layers.")
-            .WithSize(600, 450)
-            .WithTheme(WellnessTheme())
-            .WithPngOutputScale(outputScale)
-            .WithMetric("Current Weight", "78 kg")
+            .Title("Weight Data")
+            .Subtitle("Goal progress as reusable radial metric layers.")
+            .Size(600, 450)
+            .Theme(WellnessTheme())
+            .PngOutputScale(outputScale)
+            .Metric("Current Weight", "78 kg")
             .AddLayer("Current weight progress", 100, color: Orange, configure: layer => layer
-                .WithGeometry(1.00, 0.265)
-                .WithAngles(184, 74))
+                .RadiusRatio(1.00).StrokeRatio(0.265)
+                .StartAngleDegrees(184).SweepAngleDegrees(74))
             .AddLayer("Remaining weight range", 100, color: Yellow, configure: layer => layer
-                .WithGeometry(1.00, 0.265)
-                .WithAngles(279, 77)
-                .WithSeparators(8, Card, 3, 0));
+                .RadiusRatio(1.00).StrokeRatio(0.265)
+                .StartAngleDegrees(279).SweepAngleDegrees(77)
+                .SeparatorCount(8).SeparatorColor(Card).SeparatorStrokeWidth(3).SeparatorInsetRatio(0));
 
         card.SaveSvg(Path.Combine(output, "wellness-weight-data-gauge.svg"));
         card.SaveHtml(Path.Combine(output, "wellness-weight-data-gauge.html"));
@@ -108,46 +108,44 @@ internal static class WellnessDashboardExamples {
 
     private static void SaveCaloriesCard(string output, int outputScale) {
         var radial = RadialMetricCard.Create()
-            .WithTitle("Calories left")
-            .WithSize(360, 438)
-            .WithTheme(WellnessTheme())
-            .WithIcon(Icons.Lightning)
-            .WithMetric("Calories left", "1240 kcal")
+            .Title("Calories left")
+            .Size(360, 438)
+            .Theme(WellnessTheme())
+            .Icon(Icons.Lightning)
+            .Metric("Calories left", "1240 kcal")
             .AddLayer("Available area", 100, color: Track, configure: layer => layer
-                .WithGeometry(1.00, 0.18)
-                .WithLineCap(ChartRadialLayerCap.Butt))
+                .RadiusRatio(1.00).StrokeRatio(0.18)
+                .LineCap(ChartRadialLayerCap.Butt))
             .AddLayer("Target ring", 100, color: Yellow, configure: layer => layer
-                .WithGeometry(0.93, 0.035)
-                .WithLineCap(ChartRadialLayerCap.Butt))
+                .RadiusRatio(0.93).StrokeRatio(0.035)
+                .LineCap(ChartRadialLayerCap.Butt))
             .AddLayer("Current", 1240, maximum: 2700, color: Orange, configure: layer => layer
-                .WithGeometry(0.93, 0.14)
-                .WithAngles(-90, 360));
+                .RadiusRatio(0.93).StrokeRatio(0.14)
+                .StartAngleDegrees(-90).SweepAngleDegrees(360));
 
         var eaten = MetricCard.Create()
-            .WithSize(360, 210)
-            .WithTheme(WellnessTheme())
-            .WithIcon(Icons.ForkKnife)
-            .WithMetric("Eaten calories", "1750 kcal")
-            .WithMiniBars(new[] { 42d, 56d, 49d, 64d, 71d }, maximum: 100, color: Orange, mutedColor: Muted.WithAlpha(72))
-            .WithCaption("Logged intake");
+            .Size(360, 210)
+            .Theme(WellnessTheme())
+            .Icon(Icons.ForkKnife)
+            .Metric("Eaten calories", "1750 kcal")
+            .MiniBars(new[] { 42d, 56d, 49d, 64d, 71d }, maximum: 100, color: Orange, mutedColor: Muted.WithAlpha(72))
+            .Caption("Logged intake");
 
         var burned = MetricCard.Create()
-            .WithSize(360, 210)
-            .WithTheme(WellnessTheme())
-            .WithIcon(Icons.Flame)
-            .WithMetric("Burned calories", "510 kcal")
-            .WithMiniBars(new[] { 22d, 34d, 39d, 32d, 46d }, maximum: 60, color: Green, mutedColor: Muted.WithAlpha(72))
-            .WithCaption("Activity estimate");
+            .Size(360, 210)
+            .Theme(WellnessTheme())
+            .Icon(Icons.Flame)
+            .Metric("Burned calories", "510 kcal")
+            .MiniBars(new[] { 22d, 34d, 39d, 32d, 46d }, maximum: 60, color: Green, mutedColor: Muted.WithAlpha(72))
+            .Caption("Activity estimate");
 
         var macros = Chart.Create()
-            .WithTitle("Macro Balance")
-            .WithSize(800, 228)
-            .WithPadding(26, 48, 26, 24)
-            .WithTheme(WellnessTheme())
-            .WithLegend(false)
-            .WithProgressValues(true)
-            .WithProgressHandles(false)
-            .WithProgressBarThickness(0.46)
+            .Title("Macro Balance")
+            .Size(800, 228)
+            .Padding(26, 48, 26, 24)
+            .Theme(WellnessTheme())
+            .Legend(false)
+            .Progress(p => p.ShowValues(true).ShowHandles(false).BarThicknessRatio(0.46))
             .AddProgressBars("Macros", new[] {
                 new ChartProgressItem("Carbohydrates", 37, Green),
                 new ChartProgressItem("Proteins", 93, Orange),
@@ -155,14 +153,14 @@ internal static class WellnessDashboardExamples {
             });
 
         var grid = VisualGrid.Create()
-            .WithTitle("Calories Intake")
-            .WithSubtitle("Built from public visual blocks, icons, radial layers, and progress bars.")
-            .WithColumns(3)
-            .WithPanelSize(360, 210)
-            .WithGap(18)
-            .WithPadding(24)
-            .WithTheme(WellnessTheme())
-            .WithPngOutputScale(outputScale)
+            .Title("Calories Intake")
+            .Subtitle("Built from public visual blocks, icons, radial layers, and progress bars.")
+            .Columns(3)
+            .PanelSize(360, 210)
+            .Gap(18)
+            .Padding(24)
+            .Theme(WellnessTheme())
+            .PngOutputScale(outputScale)
             .Add(radial, rowSpan: 2)
             .Add(eaten)
             .Add(burned)
@@ -189,27 +187,27 @@ internal static class WellnessDashboardExamples {
 
         MetricCard Card(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color) =>
             MetricCard.Create()
-                .WithSize(320, 176)
-                .WithTheme(theme)
-                .WithMetric(label, value)
-                .WithTrend(trend)
-                .WithCaption(caption)
-                .WithSymbol(symbol)
-                .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .WithStatus(status)
-                .WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#64748B").WithAlpha(112));
+                .Size(320, 176)
+                .Theme(theme)
+                .Metric(label, value)
+                .Trend(trend)
+                .Caption(caption)
+                .Symbol(symbol)
+                .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+                .Status(status)
+                .MiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#64748B").WithAlpha(112));
 
         MetricCard SparkCard(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color) =>
             MetricCard.Create()
-                .WithSize(320, 176)
-                .WithTheme(theme)
-                .WithMetric(label, value)
-                .WithTrend(trend)
-                .WithCaption(caption)
-                .WithSymbol(symbol)
-                .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .WithStatus(status)
-                .WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(42));
+                .Size(320, 176)
+                .Theme(theme)
+                .Metric(label, value)
+                .Trend(trend)
+                .Caption(caption)
+                .Symbol(symbol)
+                .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+                .Status(status)
+                .MiniSparkline(history, color: color, fillColor: color.WithAlpha(42));
 
         var cards = new[] {
             SparkCard("CPU Load", "38%", "-6%", "5 minute trend", "CPU", Tone.Success, new[] { 52d, 48d, 44d, 41d, 38d }, Emerald),
@@ -219,9 +217,9 @@ internal static class WellnessDashboardExamples {
         };
 
         var grid = VisualGrid.CreateMetricStrip("Endpoint Snapshot", cards)
-            .WithSubtitle("PowerBGInfo-style reusable metric cards with embedded micro visuals.")
-            .WithTheme(theme)
-            .WithPngOutputScale(outputScale);
+            .Subtitle("PowerBGInfo-style reusable metric cards with embedded micro visuals.")
+            .Theme(theme)
+            .PngOutputScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "powerbginfo-endpoint-snapshot.svg"));
         grid.SaveHtml(Path.Combine(output, "powerbginfo-endpoint-snapshot.html"));
@@ -244,17 +242,17 @@ internal static class WellnessDashboardExamples {
 
         MetricCard Card(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color, bool sparkline) {
             var card = MetricCard.Create()
-                .WithSize(300, 170)
-                .WithTheme(theme)
-                .WithMetric(label, value)
-                .WithTrend(trend)
-                .WithCaption(caption)
-                .WithSymbol(symbol)
-                .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .WithStatus(status);
+                .Size(300, 170)
+                .Theme(theme)
+                .Metric(label, value)
+                .Trend(trend)
+                .Caption(caption)
+                .Symbol(symbol)
+                .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+                .Status(status);
             return sparkline
-                ? card.WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(36))
-                : card.WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#CBD5E1").WithAlpha(160));
+                ? card.MiniSparkline(history, color: color, fillColor: color.WithAlpha(36))
+                : card.MiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#CBD5E1").WithAlpha(160));
         }
 
         var cards = new[] {
@@ -264,9 +262,9 @@ internal static class WellnessDashboardExamples {
         };
 
         var grid = VisualGrid.CreateMetricStrip("Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
-            .WithSubtitle("Light-theme metric strip for generated reports, email, and document surfaces.")
-            .WithTheme(theme)
-            .WithPngOutputScale(outputScale);
+            .Subtitle("Light-theme metric strip for generated reports, email, and document surfaces.")
+            .Theme(theme)
+            .PngOutputScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "report-summary-metric-strip.svg"));
         grid.SaveHtml(Path.Combine(output, "report-summary-metric-strip.html"));
@@ -290,17 +288,17 @@ internal static class WellnessDashboardExamples {
 
         MetricCard Card(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color, bool sparkline) {
             var card = MetricCard.Create()
-                .WithSize(300, 170)
-                .WithTheme(theme)
-                .WithMetric(label, value)
-                .WithTrend(trend)
-                .WithCaption(caption)
-                .WithSymbol(symbol)
-                .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .WithStatus(status);
+                .Size(300, 170)
+                .Theme(theme)
+                .Metric(label, value)
+                .Trend(trend)
+                .Caption(caption)
+                .Symbol(symbol)
+                .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+                .Status(status);
             return sparkline
-                ? card.WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(46))
-                : card.WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromRgba(148, 163, 184, 70));
+                ? card.MiniSparkline(history, color: color, fillColor: color.WithAlpha(46))
+                : card.MiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromRgba(148, 163, 184, 70));
         }
 
         var cards = new[] {
@@ -310,9 +308,9 @@ internal static class WellnessDashboardExamples {
         };
 
         var grid = VisualGrid.CreateMetricStrip("Transparent Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
-            .WithSubtitle("Section and cards render as overlay chrome with transparent surfaces.")
-            .WithTheme(theme)
-            .WithPngOutputScale(outputScale);
+            .Subtitle("Section and cards render as overlay chrome with transparent surfaces.")
+            .Theme(theme)
+            .PngOutputScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "transparent-report-summary-metric-strip.svg"));
         grid.SaveHtml(Path.Combine(output, "transparent-report-summary-metric-strip.html"));
@@ -345,10 +343,10 @@ internal static class WellnessDashboardExamples {
         var orange = ChartColor.FromHex("#FF7A1A");
 
         var week = DateStripBlock.Create()
-            .WithSize(800, 166)
-            .WithTheme(theme)
-            .WithPadding(18)
-            .WithHeader("May 9, 2026")
+            .Size(800, 166)
+            .Theme(theme)
+            .Padding(18)
+            .Header("May 9, 2026")
             .AddItem("s", "9", selected: true, color: blue)
             .AddItem("s", "10")
             .AddItem("m", "10")
@@ -358,56 +356,56 @@ internal static class WellnessDashboardExamples {
             .AddItem("f", "15");
 
         var water = MetricCard.Create()
-            .WithSize(360, 140)
-            .WithTheme(theme)
-            .WithIcon(Icons.Droplet)
-            .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithMetric("Litres of water", "4.5", unit: "Litres");
+            .Size(360, 140)
+            .Theme(theme)
+            .Icon(Icons.Droplet)
+            .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Metric("Litres of water", "4.5", unit: "Litres");
 
         var calories = MetricCard.Create()
-            .WithSize(360, 140)
-            .WithTheme(warmTheme)
-            .WithIcon(Icons.Flame)
-            .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithMetric("Calories", "2.3k", unit: "Kcal");
+            .Size(360, 140)
+            .Theme(warmTheme)
+            .Icon(Icons.Flame)
+            .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Metric("Calories", "2.3k", unit: "Kcal");
 
         var running = MetricCard.Create()
-            .WithSize(360, 300)
-            .WithTheme(coolActivityTheme)
-            .WithMetric("Running", "30 mins")
-            .WithMiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d }, minimum: 0, maximum: 62, color: blue)
-            .WithSecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d }, blue.WithAlpha(210))
-            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
-            .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithCaption("7-day trend");
+            .Size(360, 300)
+            .Theme(coolActivityTheme)
+            .Metric("Running", "30 mins")
+            .MiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d }, minimum: 0, maximum: 62, color: blue)
+            .SecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d }, blue.WithAlpha(210))
+            .MiniSparklineStyle(ChartLineAreaForm.Line)
+            .MicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Caption("7-day trend");
 
         var cycling = MetricCard.Create()
-            .WithSize(360, 300)
-            .WithTheme(warmTheme)
-            .WithMetric("Cycling", "40 mins")
-            .WithMiniSparkline(new[] { 16d, 25d, 28d, 21d, 22d, 35d, 38d, 37d, 42d }, minimum: 0, maximum: 62, color: orange)
-            .WithSecondaryMiniSparkline(new[] { 13d, 22d, 25d, 18d, 19d, 32d, 35d, 34d, 39d }, orange.WithAlpha(210))
-            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
-            .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithCaption("7-day trend");
+            .Size(360, 300)
+            .Theme(warmTheme)
+            .Metric("Cycling", "40 mins")
+            .MiniSparkline(new[] { 16d, 25d, 28d, 21d, 22d, 35d, 38d, 37d, 42d }, minimum: 0, maximum: 62, color: orange)
+            .SecondaryMiniSparkline(new[] { 13d, 22d, 25d, 18d, 19d, 32d, 35d, 34d, 39d }, orange.WithAlpha(210))
+            .MiniSparklineStyle(ChartLineAreaForm.Line)
+            .MicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Caption("7-day trend");
 
         var goalsHeader = SectionHeaderBlock.Create()
-            .WithTitle("Today's Goals")
-            .WithSize(800, 46)
-            .WithTheme(theme)
-            .WithPadding(0, 4, 0, 0)
-            .WithTransparentBackground()
-            .WithCard(false);
+            .Title("Today's Goals")
+            .Size(800, 46)
+            .Theme(theme)
+            .Padding(0, 4, 0, 0)
+            .TransparentBackground()
+            .ShowCard(false);
 
         var friends = EntityStripBlock.Create()
-            .WithTitle("Duel with friends")
-            .WithSize(800, 152)
-            .WithTheme(theme)
-            .WithPadding(18)
+            .Title("Duel with friends")
+            .Size(800, 152)
+            .Theme(theme)
+            .Padding(18)
             .AddItem("Karrem", color: blue)
             .AddItem("Peter", color: orange)
             .AddItem("Pasel", color: ChartColor.FromHex("#E72CEB"))
@@ -415,13 +413,13 @@ internal static class WellnessDashboardExamples {
             .AddItem("Hakem", color: ChartColor.FromHex("#C98A52"));
 
         var grid = VisualGrid.Create()
-            .WithTitle("Your Weekly Progress")
-            .WithColumns(2)
-            .WithAdaptiveRowHeights()
-            .WithGap(20)
-            .WithPadding(30)
-            .WithTheme(theme)
-            .WithPngOutputScale(outputScale)
+            .Title("Your Weekly Progress")
+            .Columns(2)
+            .AdaptiveRowHeights()
+            .Gap(20)
+            .Padding(30)
+            .Theme(theme)
+            .PngOutputScale(outputScale)
             .Add(week, columnSpan: 2)
             .Add(water)
             .Add(calories)

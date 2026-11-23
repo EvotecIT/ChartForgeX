@@ -368,7 +368,7 @@ line [25, 50, 80]
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid XY chart artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid XY chart fence size attributes should map to artifact natural size.");
         var chart = result.Artifacts[0].Model as Chart ?? throw new InvalidOperationException("Mermaid XY chart artifact should carry a Chart model.");
-        Assert(chart.Options.ShowDataLabels == true, "Mermaid XY chart fence dataLabels attribute should map to chart rendering options.");
+        Assert(chart.Options.DataLabels.Visible == true, "Mermaid XY chart fence dataLabels attribute should map to chart rendering options.");
     }
 
     private static void MermaidVisualMarkupParserMapsSankeyFencesToArtifacts() {
@@ -465,7 +465,7 @@ Ship : milestone, ship, after impl, 0d
         Assert(result.Artifacts[0].Metadata["render.model"] == nameof(Chart), "Mermaid Gantt fence artifacts should expose the chart render model.");
         Assert(result.Artifacts[0].Metadata["mermaid.tasks"] == "3", "Mermaid Gantt fence artifacts should expose task counts.");
         var chart = result.Artifacts[0].Model as Chart ?? throw new InvalidOperationException("Mermaid Gantt artifact should carry a Chart model.");
-        Assert(chart.Options.GanttToday.HasValue, "Mermaid Gantt fence today attributes should map to chart rendering options.");
+        Assert(chart.Options.Gantt.Today.HasValue, "Mermaid Gantt fence today attributes should map to chart rendering options.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid Gantt artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height > 0 && naturalSize.Height < 420, "Mermaid Gantt fences should retain requested width and fit their task rows.");
     }
@@ -623,7 +623,7 @@ Task A : a, 2026-01-01, 2d
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid Gantt artifacts should expose natural size.");
         Assert(naturalSize.Width == 680 && naturalSize.Height > 0 && naturalSize.Height < 390, "Bundled Mermaid Gantt width should apply while task rows determine natural height.");
         var chart = result.Artifacts[0].Model as Chart ?? throw new InvalidOperationException("Mermaid Gantt artifact should carry a Chart model.");
-        Assert(chart.Options.GanttToday == new DateTime(2026, 1, 2).ToOADate(), "Bundled Mermaid Gantt today values should flow into the render model.");
+        Assert(chart.Options.Gantt.Today == new DateTime(2026, 1, 2).ToOADate(), "Bundled Mermaid Gantt today values should flow into the render model.");
     }
 
     private static void MermaidVisualMarkupParserMapsPreScannedBlocksToArtifacts() {

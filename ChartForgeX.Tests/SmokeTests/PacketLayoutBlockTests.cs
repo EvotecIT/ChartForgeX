@@ -7,9 +7,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void PacketLayoutBlockRendersStaticSvgAndPng() {
         var block = PacketLayoutBlock.Create()
-            .WithTitle("TCP Header")
-            .WithSize(720, 260)
-            .WithBitsPerRow(32)
+            .Title("TCP Header")
+            .Size(720, 260)
+            .BitsPerRow(32)
             .AddField(0, 15, "Source Port")
             .AddField(16, 31, "Destination Port")
             .AddField(32, 63, "Sequence Number");
@@ -33,7 +33,7 @@ internal static partial class SmokeTests {
 
     private static void PacketLayoutBlockRejectsOversizedTotalBits() {
         var block = PacketLayoutBlock.Create()
-            .WithBitsPerRow(1)
+            .BitsPerRow(1)
             .AddField(0, VisualBlockRendering.MaximumPacketBits, "Too large");
 
         AssertThrows<InvalidOperationException>(() => block.ToSvg(), "Packet layout blocks should reject oversized total bit lengths before materializing slices.");

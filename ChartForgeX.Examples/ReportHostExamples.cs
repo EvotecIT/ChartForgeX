@@ -26,16 +26,16 @@ internal static class ReportHostExamples {
             .ToArray();
         string[] checks = { "Replication", "DNS", "Time", "SYSVOL", "LDAP", "Backup" };
         var chart = Chart.Create()
-            .WithTitle("Checks per site")
-            .WithSubtitle("Counts take the card or text colour by role, not a fixed contrast colour")
-            .WithTheme(new VisualTheme(tokens, tokens))
-            .WithSize(800, 379)
-            .WithPngOutputScale(pngOutputScale)
-            .WithMarkBackdrop(ChartMarkBackdrop.Card)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
-            .WithSvgColorVariables(tokens.ToSvgColorVariables())
-            .WithStateCategories(states)
-            .WithXLabels(checks);
+            .Title("Checks per site")
+            .Subtitle("Counts take the card or text colour by role, not a fixed contrast colour")
+            .Theme(new VisualTheme(tokens, tokens))
+            .Size(800, 379)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .MarkBackdrop(ChartMarkBackdrop.Card)
+            .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always))
+            .SvgColorVariables(tokens.ToSvgColorVariables())
+            .StateCategories(states)
+            .XLabels(checks);
         string[] sites = { "Warsaw", "Berlin", "Madrid", "Oslo" };
         for (var row = 0; row < sites.Length; row++) {
             var cells = new ChartHeatmapCell?[checks.Length];
@@ -58,12 +58,12 @@ internal static class ReportHostExamples {
         var tokens = VisualDesignTokens.Dark();
         var items = Enumerable.Range(0, 70).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 7, 6).AddDays(day), day % 5 == 0 ? 0 : (day * 7) % 11)).ToArray();
         var chart = Chart.Create()
-            .WithTitle("Changes per day")
-            .WithSubtitle("SVG colours are the custom properties of the design tokens")
-            .WithTheme(new VisualTheme(tokens, tokens))
-            .WithSize(800, 316)
-            .WithPngOutputScale(pngOutputScale)
-            .WithSvgColorVariables(tokens.ToSvgColorVariables())
+            .Title("Changes per day")
+            .Subtitle("SVG colours are the custom properties of the design tokens")
+            .Theme(new VisualTheme(tokens, tokens))
+            .Size(800, 316)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .SvgColorVariables(tokens.ToSvgColorVariables())
             .AddCalendarHeatmap("Changes", items);
 
         chart.SaveSvg(Path.Combine(output, "report-host-themed-calendar.svg"));
@@ -75,14 +75,14 @@ internal static class ReportHostExamples {
         // A histogram in a report card: flat bars are exactly the series colour, with no derived gradient or highlight.
         var latencies = Enumerable.Range(0, 400).Select(i => 18 + (i * 37 % 23) + (i * 11 % 7) * 1.5 + (i % 41 == 0 ? 28 : 0)).ToArray();
         var chart = Chart.Create()
-            .WithTitle("LDAP bind latency")
-            .WithSubtitle("Flat bars: one colour per bar")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 379)
-            .WithPngOutputScale(pngOutputScale)
-            .WithBarStyle(ChartBarStyle.Flat)
-            .WithXAxis("Latency (ms)")
-            .WithYAxis("Samples")
+            .Title("LDAP bind latency")
+            .Subtitle("Flat bars: one colour per bar")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 379)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Bars(b => b.Style(ChartBarStyle.Flat))
+            .XAxis(x => x.Title("Latency (ms)"))
+            .YAxis(y => y.Title("Samples"))
             .AddHistogram("Samples", latencies, 14, ChartColor.FromHex("#2a78d6"));
 
         chart.SaveSvg(Path.Combine(output, "report-host-flat-histogram.svg"));
@@ -98,18 +98,18 @@ internal static class ReportHostExamples {
             .Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 7, 1).AddDays(day), (day * 7 + day / 7) % 6 == 0 ? 0 : (day * 5) % 9))
             .ToArray();
         var chart = Chart.Create()
-            .WithTitle("Changements par jour")
-            .WithHeader(false)
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 242)
-            .WithPngOutputScale(pngOutputScale)
-            .ConfigureCalendar(options => {
+            .Title("Changements par jour")
+            .ShowHeader(false)
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 242)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Calendar(options => {
                 options.MaximumCellSize = 18;
                 options.FirstDayOfWeek = french.DateTimeFormat.FirstDayOfWeek;
                 options.DayNames = french.DateTimeFormat.AbbreviatedDayNames;
                 options.MonthNames = french.DateTimeFormat.AbbreviatedMonthNames.Take(12).ToArray();
             })
-            .ConfigureLabels(labels => {
+            .Labels(labels => {
                 labels.Less = "Moins";
                 labels.More = "Plus";
                 labels.NoData = "Aucune donnée";
@@ -129,18 +129,18 @@ internal static class ReportHostExamples {
             "Certificate expiry", "Backup age", "Service accounts", "Disk space", "Event log size", "Secure channel"
         };
         var chart = Chart.Create()
-            .WithTitle("Checks by domain controller")
-            .WithSubtitle("Column labels follow the x-axis label angle")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(600, 426)
-            .WithPngOutputScale(pngOutputScale)
-            .WithXAxisLabelAngle(-45)
-            .WithStateCategories(
+            .Title("Checks by domain controller")
+            .Subtitle("Column labels follow the x-axis label angle")
+            .Theme(VisualTheme.Graphite())
+            .Size(600, 426)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .XAxis(x => x.LabelAngle(-45))
+            .StateCategories(
                 new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52"), emphasis: ChartStateEmphasis.Quiet),
                 new ChartStateCategory("medium", "Medium", ChartColor.FromHex("#c78404")),
                 new ChartStateCategory("critical", "Critical", ChartColor.FromHex("#d4302f")),
                 new ChartStateCategory("couldNotEvaluate", "Could not evaluate", ChartColor.FromHex("#7c818a"), ChartStatePattern.Outlined))
-            .WithXLabels(checks);
+            .XLabels(checks);
         string[] states = { "pass", "pass", "medium", "pass", "critical", "pass", "couldNotEvaluate" };
         for (var row = 0; row < 5; row++) {
             var cells = new ChartHeatmapCell?[checks.Length];

@@ -59,12 +59,12 @@ public sealed class ChordAuthoringTests {
     public void NodeStatesValidateIdentityAndEnumBeforeMutationAndExposeAReadonlyView() {
         var first = Chart.Create().AddChord("One", new[] { new ChartNode("a", "Support") }, new[] { new ChartFlowLink("self", "a", "a", 1) }).Series[0];
         var second = Chart.Create().AddChord("Two", new[] { new ChartNode("a", "Support") }, new[] { new ChartFlowLink("self", "a", "a", 1) }).Series[0];
-        first.WithNodeState("a", ChartSeriesState.Warning);
-        Assert.Throws<ArgumentException>(() => first.WithNodeState("Support", ChartSeriesState.Danger));
-        Assert.Throws<ArgumentOutOfRangeException>(() => first.WithNodeState("a", (ChartSeriesState)999));
+        first.NodeState("a", ChartSeriesState.Warning);
+        Assert.Throws<ArgumentException>(() => first.NodeState("Support", ChartSeriesState.Danger));
+        Assert.Throws<ArgumentOutOfRangeException>(() => first.NodeState("a", (ChartSeriesState)999));
         Assert.Equal(ChartSeriesState.Warning, Assert.Single(first.NodeStates).Value); Assert.Empty(second.NodeStates);
         Assert.Throws<NotSupportedException>(() => ((IDictionary<string, ChartSeriesState>)first.NodeStates).Clear());
-        Assert.Throws<ArgumentException>(() => new ChartSeries(new ChartSeriesId("fixture-series"), "Points", ChartSeriesKind.Line, new[] { new ChartPoint(1, 1) }).WithNodeState("1", ChartSeriesState.Warning));
+        Assert.Throws<ArgumentException>(() => new ChartSeries(new ChartSeriesId("fixture-series"), "Points", ChartSeriesKind.Line, new[] { new ChartPoint(1, 1) }).NodeState("1", ChartSeriesState.Warning));
     }
 
     [Fact]

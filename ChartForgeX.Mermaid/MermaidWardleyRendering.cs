@@ -17,18 +17,18 @@ public static class MermaidWardleyRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidWardleyRenderOptions();
         var block = WardleyMapBlock.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(ResolveWidth(document, options), ResolveHeight(document, options))
-            .WithPadding(document.Configuration.Wardley?.Padding ?? options.Padding);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(ResolveWidth(document, options), ResolveHeight(document, options))
+            .Padding(document.Configuration.Wardley?.Padding ?? options.Padding);
 
         block.ShowGrid = document.Configuration.Wardley?.ShowGrid ?? false;
         block.SetStages(document.Stages);
         if (document.Stages.Count > 0) {
-            if (document.StageBoundaries.Count == document.Stages.Count) block.WithStageBoundaries(document.StageBoundaries);
+            if (document.StageBoundaries.Count == document.Stages.Count) block.StageBoundaries(document.StageBoundaries);
             else {
                 var equal = new double[document.Stages.Count]; for (var index = 0; index < equal.Length; index++) equal[index] = (double)(index + 1) / equal.Length;
-                block.WithStageBoundaries(equal);
+                block.StageBoundaries(equal);
             }
         }
         foreach (var node in document.Nodes) {
@@ -43,7 +43,7 @@ public static class MermaidWardleyRendering {
         foreach (var evolution in document.Evolutions) block.AddEvolution(evolution.NodeId, evolution.TargetEvolution);
         foreach (var note in document.Notes) block.AddNote(note.Text, note.Visibility, note.Evolution);
         foreach (var annotation in document.Annotations) block.AddAnnotation(annotation.Number, annotation.Text, annotation.Visibility, annotation.Evolution);
-        if (document.AnnotationsBox != null) block.WithAnnotationsBox(document.AnnotationsBox.Visibility, document.AnnotationsBox.Evolution);
+        if (document.AnnotationsBox != null) block.AnnotationsBox(document.AnnotationsBox.Visibility, document.AnnotationsBox.Evolution);
         foreach (var marker in document.Markers) block.AddMarker(marker.Label, marker.Visibility, marker.Evolution, marker.Kind);
         foreach (var pipeline in document.Pipelines) {
             var mapped = block.AddPipeline(pipeline.ParentId);
@@ -56,7 +56,7 @@ public static class MermaidWardleyRendering {
         }
 
         MermaidPresentation.Apply(block, document, options.Presentation);
-        if (options.Presentation?.Theme == null) block.WithStyle(document.Configuration.Wardley?.Style());
+        if (options.Presentation?.Theme == null) block.Style(document.Configuration.Wardley?.Style());
         return block;
     }
 

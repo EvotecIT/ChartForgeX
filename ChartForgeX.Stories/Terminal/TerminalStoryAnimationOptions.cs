@@ -62,34 +62,4 @@ public sealed class TerminalStoryAnimationOptions {
 
     /// <summary>Creates animation options with Discord-friendly defaults.</summary>
     public static TerminalStoryAnimationOptions Create() => new();
-
-    /// <summary>Sets the maximum sampling frame rate.</summary>
-    public TerminalStoryAnimationOptions WithFramesPerSecond(int framesPerSecond) {
-        FramesPerSecond = framesPerSecond;
-        return this;
-    }
-
-    /// <summary>Configures whether the animation repeats.</summary>
-    public TerminalStoryAnimationOptions WithLoop(bool loop = true) {
-        Loop = loop;
-        return this;
-    }
-
-    /// <summary>Sets how long the completed state remains visible from the first completed sample.</summary>
-    public TerminalStoryAnimationOptions WithEndHold(double seconds) {
-        EndHoldSeconds = seconds;
-        return this;
-    }
-
-    /// <summary>Sets the raster output density multiplier.</summary>
-    public TerminalStoryAnimationOptions WithOutputScale(int scale) {
-        OutputScale = scale;
-        return this;
-    }
-
-    /// <summary>Sets the frame budget used to bound memory and file size.</summary>
-    public TerminalStoryAnimationOptions WithMaximumFrames(int maximumFrames) {
-        MaximumFrames = maximumFrames;
-        return this;
-    }
 }

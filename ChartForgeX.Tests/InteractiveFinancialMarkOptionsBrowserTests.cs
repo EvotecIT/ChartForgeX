@@ -33,8 +33,8 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var variant = dashed ? width == 360 ? "compact-dashed" : "dashed" : width == 360 ? "compact-options" : "options";
         var chart = V2GalleryModels.Create(kind, variant, mode)
-            .WithSize(width, width == 360 ? 360 : 440).WithTitle(V2GalleryModels.Title(kind))
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true);
+            .Size(width, width == 360 ? 360 : 440).Title(V2GalleryModels.Title(kind))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(true);
         var name = "financial-" + (dashed ? "dash-" : "") + kind.ToString().ToLowerInvariant() + "-" + width + "-" + (dark ? "dark" : "light");
         var directory = CaptureDirectory();
         if (directory != null) {
@@ -105,9 +105,9 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     [InlineData(true)]
     public async Task HollowCandleFragmentRetainsTheHostBackdropAndInteriorTarget(bool dark) {
         if (!Enabled) return;
-        var chart = FinancialMarkOptionsTests.Prices(ChartSeriesKind.Candlestick).WithAxes(false).WithGrid(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithOverlay();
-        chart.Series[0].ConfigureFinancial(financial => financial.Rising.FillOpacity = 0);
+        var chart = FinancialMarkOptionsTests.Prices(ChartSeriesKind.Candlestick).Axes(false).ShowGrid(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Overlay();
+        chart.Series[0].Financial(financial => financial.Rising.FillOpacity = 0);
         var fragment = chart.ToInteractiveHtmlFragment(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         var html = "<!doctype html><html><head><style>body{margin:0;padding:12px;background:repeating-linear-gradient(90deg,#a7b7bd 0 12px,#d5dfdc 12px 24px)}.report{width:320px}.report .cfx-interactive-chart,.report .cfx-stage,.report svg{background:transparent;border:0;padding:0}</style></head><body><main class='report'>"
             + fragment + "</main></body></html>";
@@ -129,10 +129,10 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     [InlineData(ChartSeriesKind.Ohlc, HtmlChartTooltipMode.SharedX)]
     public async Task FinancialReadoutAndPinnedDetailsPreserveAllZeroPricesWithoutGenericY(ChartSeriesKind kind, HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(400, 280).WithTitle("Zero prices").WithLegend(false);
+        var chart = Chart.Create().Size(400, 280).Title("Zero prices").Legend(false);
         var source = new[] { new ChartCandlestick(1, 0, 0, 0, 0) };
         if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Price", source); else chart.AddOhlc("Price", source);
-        chart.Series[0].ConfigureFinancial(financial => {
+        chart.Series[0].Financial(financial => {
             financial.Rising.StrokeWidth = 3;
             if (kind == ChartSeriesKind.Candlestick) financial.Rising.FillOpacity = 0;
         });
@@ -166,8 +166,8 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     [InlineData(ChartSeriesKind.Ohlc, true)]
     public async Task FinancialPointLegendUsesTheReferencedObservationPrices(ChartSeriesKind kind, bool zero) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(360, 320).WithPointLegend().WithDataLabels().WithTitle("Financial legend facts")
-            .WithTheme(VisualTheme.Graphite(), zero ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(360, 320).Legend(l => l.ShowPoints()).DataLabels().Title("Financial legend facts")
+            .Theme(VisualTheme.Graphite()).ThemeMode(zero ? ThemeMode.Dark : ThemeMode.Light);
         var source = new[] { new ChartCandlestick(1, 44, 58, 38, 53),
             zero ? new ChartCandlestick(2, 0, 0, 0, 0) : new ChartCandlestick(2, 100, 120, 80, 110) };
         if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Prices", source);

@@ -36,8 +36,8 @@ public sealed class MultiRingDepthTests {
     [InlineData(false, 900)]
     [InlineData(true, 900)]
     public void SharedExplosionFrameRetainsExactBandRatiosOffsetsSourceIdentityAndNativePaint(bool dark, int width) {
-        var chart = Fixture(dark, width, false).WithDataLabels(false);
-        chart.Series[0].WithPointSliceOffset(0, .3); chart.Series[1].WithPointSliceOffset(1, .15);
+        var chart = Fixture(dark, width, false).DataLabels(false);
+        chart.Series[0].PointSliceOffset(0, .3); chart.Series[1].PointSliceOffset(1, .15);
         var prepared = Prepare(chart); var slices = prepared.Scene.Nodes.OfType<VisualSceneSlice>().ToArray(); Assert.Equal(4, slices.Length);
         var center = slices.Single(mark => mark.Id == "series-1-point-0"); var full = center.Outer;
         foreach (var mark in slices) {
@@ -63,11 +63,11 @@ public sealed class MultiRingDepthTests {
     public void AuthoredOverlapUsesActualSectorGeometryAndExistingSourcePaintOrder(bool dark) {
         var innerColor = ChartColor.FromHex("#C4342B"); var outerColor = ChartColor.FromHex("#286BB3");
         var inner = new ChartSeries(new ChartSeriesId("inner"), "Inner", ChartSeriesKind.Donut, new[] { new ChartPoint(1, 1) })
-            .WithRadialBand(new ChartRadialBand(.2, .65)).WithPointSliceOffset(0, .35).WithColor(innerColor);
+            .RadialBand(new ChartRadialBand(.2, .65)).PointSliceOffset(0, .35).Color(innerColor);
         var outer = new ChartSeries(new ChartSeriesId("outer"), "Outer", ChartSeriesKind.Donut, new[] { new ChartPoint(1, 1) })
-            .WithRadialBand(new ChartRadialBand(.7, 1)).WithColor(outerColor);
-        var chart = Chart.Create().WithSize(620, 500).WithHeader(false).WithLegend(false).WithDataLabels(false).WithDonutCenterLabel(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(inner).AddSeries(outer);
+            .RadialBand(new ChartRadialBand(.7, 1)).Color(outerColor);
+        var chart = Chart.Create().Size(620, 500).ShowHeader(false).Legend(false).DataLabels(false).Pie(p => p.ShowCenterLabel(false))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(inner).AddSeries(outer);
         var before = Prepare(chart); var mark = before.Scene.Nodes.OfType<VisualSceneSlice>().Single(slice => slice.Id == "series-1-point-0");
         var innerMark = before.Scene.Nodes.OfType<VisualSceneSlice>().Single(slice => slice.Id == "series-0-point-0");
         Assert.Equal(.65 * mark.Outer, innerMark.Outer, 9); Assert.Equal(mark.Cy + innerMark.Outer * .35, innerMark.Cy, 9);
@@ -88,8 +88,8 @@ public sealed class MultiRingDepthTests {
     [InlineData(ChartDataLabelPlacement.Above, ChartDataLabelConnectorStyle.Curve)]
     [InlineData(ChartDataLabelPlacement.Below, ChartDataLabelConnectorStyle.Elbow)]
     public void InnerAndOuterExternalCaptionsUseOneCollisionOwnerAndActualConnectorOrigins(ChartDataLabelPlacement placement, ChartDataLabelConnectorStyle style) {
-        var chart = Fixture(false, 900, false); chart.Options.DataLabelConnectorStyle = style;
-        foreach (var series in chart.Series) { series.DataLabelPlacement = placement; series.WithDataLabels(); }
+        var chart = Fixture(false, 900, false); chart.Options.DataLabels.ConnectorStyle = style;
+        foreach (var series in chart.Series) { series.DataLabelPlacement = placement; series.ShowDataLabels(true); }
         var prepared = Prepare(chart); AssertCalloutAssociations(prepared);
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Metadata.ContainsKey("data-cfx-radial-callout")).ToArray();
         Assert.Equal(4, groups.Length);
@@ -104,13 +104,13 @@ public sealed class MultiRingDepthTests {
     [InlineData(true, 900)]
     public void MixedPlacementAutomaticBandsRetainBoundedCalloutsAndDetachedFullSourceFacts(bool dark, int width) {
         var chart = Fixture(dark, width, true); chart.Series[0].DataLabelPlacement = ChartDataLabelPlacement.Outside;
-        chart.Series[1].DataLabelPlacement = ChartDataLabelPlacement.Above; chart.Series[0].WithPointSliceOffset(0, .12);
+        chart.Series[1].DataLabelPlacement = ChartDataLabelPlacement.Above; chart.Series[0].PointSliceOffset(0, .12);
         var prepared = Prepare(chart); AssertCalloutAssociations(prepared);
         var savedSvg = prepared.ToSvg(); var savedPng = prepared.ToPng(); var envelope = chart.ToVisualArtifact().ToInterchangeEnvelope();
         using var facts = JsonDocument.Parse(envelope.Extensions["chart.series.0.radial.sourceFacts"]);
         Assert.Equal(.12, facts.RootElement[0].GetProperty("offsetRatio").GetDouble()); Assert.Equal("alpha", facts.RootElement[0].GetProperty("observationId").GetString());
         Assert.Equal(2, facts.RootElement.GetArrayLength()); Assert.Null(chart.Series[0].RadialBand);
-        chart.Series[0].WithPointSliceOffset(0, .35); chart.Series[0].Points[0] = new ChartPoint(1, 20);
+        chart.Series[0].PointSliceOffset(0, .35); chart.Series[0].Points[0] = new ChartPoint(1, 20);
         Assert.Equal(savedSvg, prepared.ToSvg()); Assert.Equal(savedPng, prepared.ToPng());
         Assert.Equal(2, facts.RootElement[0].GetProperty("value").GetDouble());
         NumericRadialEncodedGeometryTests.Capture(chart, "multiring-mixed-lanes-" + width + (dark ? "-dark" : "-light"));
@@ -122,36 +122,36 @@ public sealed class MultiRingDepthTests {
     [InlineData(ChartSeriesKind.Donut, ChartDataLabelConnectorStyle.Curve)]
     public void RemovingNewCompositionOptInsRestoresTheExactOrdinaryOneRingExports(ChartSeriesKind kind, ChartDataLabelConnectorStyle style) {
         var source = new ChartSeries(new ChartSeriesId("original"), "Original", kind, new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) });
-        var chart = Chart.Create().WithSize(700, 480).WithHeader(false).WithLegend(false).WithDataLabels()
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithXLabels("Alpha", "Beta").AddSeries(source);
-        chart.Options.DataLabelConnectorStyle = style; source.DataLabelPlacement = ChartDataLabelPlacement.Outside;
+        var chart = Chart.Create().Size(700, 480).ShowHeader(false).Legend(false).DataLabels()
+            .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)).XLabels("Alpha", "Beta").AddSeries(source);
+        chart.Options.DataLabels.ConnectorStyle = style; source.DataLabelPlacement = ChartDataLabelPlacement.Outside;
         var original = Prepare(chart); var svg = original.ToSvg(); var png = original.ToPng();
-        source.RadialBand = new ChartRadialBand(.18, .48); source.WithPointSliceOffset(0, .15);
-        var second = new ChartSeries(new ChartSeriesId("second"), "Second", kind, new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }).WithRadialBand(new ChartRadialBand(.62, 1));
+        source.RadialBand = new ChartRadialBand(.18, .48); source.PointSliceOffset(0, .15);
+        var second = new ChartSeries(new ChartSeriesId("second"), "Second", kind, new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }).RadialBand(new ChartRadialBand(.62, 1));
         chart.AddSeries(second); Assert.NotEqual(svg, Prepare(chart).ToSvg());
-        chart.RemoveSeries(second); source.RadialBand = null; source.UseDefaultSliceOffset(0);
+        chart.RemoveSeries(second); source.RadialBand = null; source.PointSliceOffset(0, 0);
         Assert.Equal(svg, Prepare(chart).ToSvg()); Assert.Equal(png, Prepare(chart).ToPng());
         Assert.Equal(svg, original.ToSvg()); Assert.Equal(png, original.ToPng());
     }
 
     [Fact]
     public void OffsetSourceFactsFollowExistingInsertRemoveIdentityLifecycleAndClearWithoutStaleMetadata() {
-        var chart = Fixture(false, 700, false); var series = chart.Series[0]; series.WithPointSliceOffset(0, .2);
+        var chart = Fixture(false, 700, false); var series = chart.Series[0]; series.PointSliceOffset(0, .2);
         var artifact = chart.ToVisualArtifact(); var captured = artifact.ToInterchangeEnvelope();
         series.Points.Insert(0, new ChartPoint(-1, 1)); Assert.Equal(.2, series.PointSliceOffsets[1]); Assert.Equal("alpha", series.ObservationIds[1].Value);
         series.Points.RemoveAt(0); Assert.Equal(.2, series.PointSliceOffsets[0]);
         using var facts = JsonDocument.Parse(artifact.ToInterchangeEnvelope().Extensions["chart.series.0.radial.sourceFacts"]);
         Assert.Equal(.2, facts.RootElement[0].GetProperty("offsetRatio").GetDouble());
-        series.UseDefaultSliceOffset(0); Assert.DoesNotContain("chart.series.0.radial.sourceFacts", artifact.ToInterchangeEnvelope().Extensions.Keys);
+        series.PointSliceOffset(0, 0); Assert.DoesNotContain("chart.series.0.radial.sourceFacts", artifact.ToInterchangeEnvelope().Extensions.Keys);
         Assert.Contains("offsetRatio", captured.Extensions["chart.series.0.radial.sourceFacts"]);
     }
 
     [Fact]
     public void AggregateOtherKeepsDefaultPositionAndEveryRawContributorOffset() {
-        var chart = Fixture(false, 800, false).WithDataLabels(false); var series = chart.Series[0];
+        var chart = Fixture(false, 800, false).DataLabels(false); var series = chart.Series[0];
         series.Points.Clear(); foreach (var value in new[] { 10d, 3, 2, 1 }) series.Points.Add(new ChartPoint(series.Points.Count + 1, value));
-        for (var point = 1; point < 4; point++) series.WithPointSliceOffset(point, point * .08);
-        chart.Options.MaximumPieSlices = 2; var prepared = Prepare(chart);
+        for (var point = 1; point < 4; point++) series.PointSliceOffset(point, point * .08);
+        chart.Options.Pie.MaxSlices = 2; var prepared = Prepare(chart);
         Assert.Contains(prepared.Scene.Diagnostics, diagnostic => diagnostic.Code == "radial.aggregate-offsets");
         var other = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Single(mark => mark.Id == "series-0-point-other");
         var outer = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Id!.StartsWith("series-1-", StringComparison.Ordinal));
@@ -165,11 +165,11 @@ public sealed class MultiRingDepthTests {
 
     [Fact]
     public void HiddenAndSubpixelSourcesDoNotInventOffsetsOrStealAnotherRingsEnvelope() {
-        var chart = Fixture(false, 800, false).WithDataLabels(false); chart.Series[0].WithPointSliceRadiusRatio(0, 0).WithPointSliceOffset(0, .35);
+        var chart = Fixture(false, 800, false).DataLabels(false); chart.Series[0].PointSliceRadiusRatio(0, 0).PointSliceOffset(0, .35);
         var prepared = Prepare(chart); Assert.Equal(3, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count());
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "radial-point" && group.Metadata["data-cfx-series"] == "0" && group.Metadata["data-cfx-point"] == "0");
         var source = chart.Series[0].Points.ToArray(); var bounds = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Single(mark => mark.Id == "series-1-point-0");
-        chart.Series[0].UseDefaultSliceOffset(0); var restored = Prepare(chart);
+        chart.Series[0].PointSliceOffset(0, 0); var restored = Prepare(chart);
         var same = restored.Scene.Nodes.OfType<VisualSceneSlice>().Single(mark => mark.Id == "series-1-point-0");
         Assert.Equal(bounds.Cx, same.Cx); Assert.Equal(bounds.Cy, same.Cy); Assert.Equal(bounds.Outer, same.Outer, 9); Assert.Equal(source, chart.Series[0].Points);
     }
@@ -194,15 +194,15 @@ public sealed class MultiRingDepthTests {
     }
 
     internal static Chart Fixture(bool dark, int width, bool automatic) {
-        var chart = Chart.Create().WithSize(width, 540).WithHeader(false).WithLegend(false).WithDonutCenterLabel(false)
-            .WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithXLabels("Alpha", "Beta")
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
-        if (automatic) chart.WithAutomaticRadialBands(new ChartRadialBandAllocation(.18, .14));
+        var chart = Chart.Create().Size(width, 540).ShowHeader(false).Legend(false).Pie(p => p.ShowCenterLabel(false))
+            .DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)).XLabels("Alpha", "Beta")
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        if (automatic) chart.RadialBandAllocation(new ChartRadialBandAllocation(.18, .14));
         for (var index = 0; index < 2; index++) {
             var series = new ChartSeries(new ChartSeriesId("ring-" + index), "Ring " + index, ChartSeriesKind.Donut,
                 index == 0 ? new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) } : new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
-                .WithObservationIds(new[] { new ChartObservationId("alpha"), new ChartObservationId("beta") });
-            if (!automatic) series.WithRadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
+                .ObservationIds(new[] { new ChartObservationId("alpha"), new ChartObservationId("beta") });
+            if (!automatic) series.RadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
             series.DataLabelPlacement = ChartDataLabelPlacement.Outside; chart.AddSeries(series);
         }
         return chart;

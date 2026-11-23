@@ -38,8 +38,8 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
 
     [Fact]
     public void DefaultPaddingAndCompactScaleKeepAnOmittedPaddingFieldAndExactPaint() {
-        var chart = TopologyChart.Create().WithTitle("Native default frame").WithLegend(null).WithViewport(320, 240, new TopologyViewport().Padding);
-        chart.LayoutMode = TopologyLayoutMode.Manual; chart.WithTheme(VisualTheme.Graphite());
+        var chart = TopologyChart.Create().Title("Native default frame").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(320, 240, new TopologyViewport().Padding));
+        chart.LayoutMode = TopologyLayoutMode.Manual; chart.Theme(VisualTheme.Graphite());
         chart.Nodes.Add(new TopologyNode { Id = "plain", Label = "Native caption", X = 40, Y = 40, Width = 100, Height = 50,
             Kind = TopologyNodeKind.Generic, ShowStatusBadge = false, PreserveDisplayModeSize = true });
         var direct = chart.Prepare(); var svg = direct.ToSvg(); var png = direct.ToPng(); var envelope = direct.ToInterchangeEnvelope(); var json = envelope.ToJson();
@@ -54,7 +54,7 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
 
     [Fact]
     public void ATableNullFittedActorRecipeStillCarriesItsRequiredVersionTwoActorBasis() {
-        var chart = TopologyTableContentRecipe.Create("wide").WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+        var chart = TopologyTableContentRecipe.Create("wide").Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
         chart.Nodes.Single(node => node.Id == "Details").TableContent = null;
         var prepared = chart.Prepare(); var envelope = prepared.ToInterchangeEnvelope(); var json = envelope.ToJson();
         Capture("actor-frame-fitted-table-null-v2", prepared.ToSvg(), prepared.ToPng(), json);
@@ -69,7 +69,7 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
     [InlineData("null")]
     [InlineData("\"32\"")]
     public void InvalidViewportPaddingFailsAtTheExistingPortableValidationBoundary(string invalid) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(320, 240, 32).WithLegend(null);
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 32)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Node", X = 40, Y = 40, Width = 100, Height = 50, Shape = TopologyNodeShape.Rectangle, ShowStatusBadge = false });
         var json = chart.ToVisualArtifact().ToInterchangeJson();
         var candidate = json.Replace("\"left\":32", "\"left\":" + invalid, StringComparison.Ordinal);
@@ -81,7 +81,7 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
 
     [Fact]
     public void PaddingIsDetachedDuringPreparationAndCannotBeDowngradedOrMutatedThroughAReader() {
-        var chart = TopologyChart.Create().WithTitle("Captured frame").WithViewport(320, 240, 32).WithLegend(null);
+        var chart = TopologyChart.Create().Title("Captured frame").Viewport(new TopologyViewport(320, 240, 32)).Legend((TopologyLegend?)null);
         chart.LayoutMode = TopologyLayoutMode.Manual;
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Node", X = 70, Y = 60, Width = 100, Height = 50, Shape = TopologyNodeShape.Rectangle, ShowStatusBadge = false });
         var prepared = chart.Prepare(); var json = prepared.ToInterchangeEnvelope().ToJson(); var svg = prepared.ToSvg(); var png = prepared.ToPng();
@@ -135,7 +135,7 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
             new VisualFrame(showLegend: false), FontSpec.FromFamily(BrowserProofFonts.Family));
         var changed = imported.Prepare(context, new TopologyRenderOptions { IncludeLegend = false });
         var changedEnvelope = changed.ToArtifact().ToInterchangeEnvelope(); Capture("actor-frame-explicit-context", changed.ToSvg(), changed.ToPng(), changedEnvelope.ToJson());
-        var plain = TopologyPathDecorationRecipe.Create("plain").WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+        var plain = TopologyPathDecorationRecipe.Create("plain").Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
         var original = plain.Prepare(); var envelope = original.ToInterchangeEnvelope(); var json = envelope.ToJson();
         Capture("actor-frame-real-padding-28-direct", original.ToSvg(), original.ToPng(), json);
         var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart().Prepare();
@@ -147,7 +147,7 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
 
     [Fact]
     public void RawHierarchyPaddingRetainsItsExistingUniformOwnerAndRejectsContradictoryFourInsetFacts() {
-        var chart = TopologyChart.Create().WithViewport(640, 400, 32).WithLegend(null).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 400, 32)).Legend((TopologyLegend?)null).AddHierarchy(new[] {
             new TopologyHierarchyItem("root", "Root"), new TopologyHierarchyItem("child", "Child", "root")
         });
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, HierarchyView = new TopologyHierarchyView(new[] { "root" }) });
@@ -161,8 +161,8 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
     }
 
     private static (TopologyChart Chart, PreparedVisual Prepared) Asymmetric() {
-        var chart = TopologyChart.Create().WithTitle("Four captured insets").WithViewport(520, 340, new TopologyViewport().Padding).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)); chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("Four captured insets").Viewport(new TopologyViewport(520, 340, new TopologyViewport().Padding)).Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)); chart.LayoutMode = TopologyLayoutMode.Manual;
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Direct context", X = 90, Y = 100, Width = 140, Height = 70,
             Shape = TopologyNodeShape.Rectangle, ShowStatusBadge = false, PreserveDisplayModeSize = true });
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(520, 340), new ChartPadding(13, 31, 47, 19)), chart.Theme, chart.ThemeMode,

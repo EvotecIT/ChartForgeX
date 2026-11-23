@@ -181,19 +181,19 @@ public sealed partial class NativePhysicalViewportBrowserTests {
             var primary = new ChartSeries(new ChartSeriesId("dated"), "Dated values", ChartSeriesKind.Line,
                 RawInstants.Select((date, index) => new ChartPoint(date, 2 + index * 2)));
             var secondary = new ChartSeries(new ChartSeriesId("companion"), "Secondary values", ChartSeriesKind.Line,
-                RawInstants.Select((date, index) => new ChartPoint(date, 100 + index * 200))).UseSecondaryValueAxis();
+                RawInstants.Select((date, index) => new ChartPoint(date, 100 + index * 200))).SecondaryAxis();
             for (var index = 0; index < dates.Length; index++) {
-                primary.WithObservationId(index, new ChartObservationId("dated-" + index));
-                secondary.WithObservationId(index, new ChartObservationId("companion-" + index));
+                primary.ObservationId(index, new ChartObservationId("dated-" + index));
+                secondary.ObservationId(index, new ChartObservationId("companion-" + index));
             }
-            _source = Chart.Create().WithSize(width, 460).WithTitle(unit ? "Calendar month bands" : "Ordinal observation dates")
-                .WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).WithDataLabels(false)
-                .WithLineMarkers(ChartLineMarkerMode.All).WithYAxisBounds(0, 10).WithSecondaryYAxisBounds(0, 1000)
+            _source = Chart.Create().Size(width, 460).Title(unit ? "Calendar month bands" : "Ordinal observation dates")
+                .FontFamily(BrowserProofFonts.Family).Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(false).DataLabels(false)
+                .Lines(l => l.MarkerMode(ChartLineMarkerMode.All)).YAxis(y => y.Bounds(0, 10)).SecondaryYAxis(s => s.Bounds(0, 1000))
                 .AddSeries(primary).AddSeries(secondary);
-            _source.Options.XAxis.WithTimeSpacing(unit ? ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)) : ChartTimeSpacing.Ordinal)
-                .WithLabelFormatter(value => DateTime.FromOADate(value).ToString("MMM dd", CultureInfo.InvariantCulture));
+            _source.Options.XAxis.TimeSpacing(unit ? ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)) : ChartTimeSpacing.Ordinal)
+                .LabelBy(value => DateTime.FromOADate(value).ToString("MMM dd", CultureInfo.InvariantCulture));
             _source.Options.XAxis.Reversed = reversed;
-            if (!unit) _source.WithXAxisBounds(RawInstants[0], RawInstants[RawInstants.Length - 1]);
+            if (!unit) _source.XAxis(x => x.Bounds(RawInstants[0], RawInstants[RawInstants.Length - 1]));
             Last = _renderer.PrepareSection(_source, configure: Configure);
             _sections.Add("initial", Last);
             FullMinimum = Last.PreparedVisual.XProjection!.FullMinimum; FullMaximum = Last.PreparedVisual.XProjection.FullMaximum;

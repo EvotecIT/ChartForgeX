@@ -14,12 +14,11 @@ public sealed partial class ExplorerLocalizationBrowserTests {
     public async Task TopologyMessagesStayScopedAcrossNativeSelectionFilteringAndCanonicalAssetDelivery(int width, bool external) {
         if (!Enabled) return;
         var chart = TopologyFixture();
-        var options = new TopologyRenderOptions { EnableHtmlSelectionPanel = true, EnableHtmlViewportControls = true,
-            EnableHtmlExportControls = true, EnableHtmlForceGraphControls = true };
+        var options = new TopologyRenderOptions { Html = { SelectionPanel = true, ViewportControls = true, ExportControls = true, ForceGraphControls = true } };
         var renderer = new HtmlInteractiveTopologyRenderer();
         Arabic(renderer.Localization);
         var asset = HtmlInteractiveAssetFiles.TopologyScript(options);
-        var englishPeer = new HtmlInteractiveTopologyRenderer().RenderFragmentWithoutAssets(TopologyFixture().WithId("english-topology"), options);
+        var englishPeer = new HtmlInteractiveTopologyRenderer().RenderFragmentWithoutAssets(TopologyFixture().Id("english-topology"), options);
         // The host route deliberately registers only the public canonical asset, not a test-only prelude.
         var html = external ? renderer.RenderPage(chart, options, new HtmlAssetReferences("https://assets.example.test/"))
             : "<!doctype html><html lang=ar dir=rtl><head><meta charset=utf-8></head><body>" + renderer.RenderFragmentWithoutAssets(chart, options)
@@ -86,8 +85,8 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static TopologyChart TopologyFixture() => TopologyChart.Create().WithId("translated-topology").WithViewport(720, 360)
-        .WithTitle("Authored topology").WithLayout(TopologyLayoutMode.RelationshipRadial).ConfigureAccessibility(options => options.Language = "pl-PL")
+    private static TopologyChart TopologyFixture() => TopologyChart.Create().Id("translated-topology").Viewport(new TopologyViewport(720, 360))
+        .Title("Authored topology").LayoutMode(TopologyLayoutMode.RelationshipRadial).Accessibility(options => options.Language = "pl-PL")
         .AddNode("source-a", "Authored source {count}", 70, 130, status: TopologyHealthStatus.Healthy)
         .AddNode("source-b", "Authored destination", 450, 130)
         .AddEdge("link", "source-a", "source-b", "Authored relationship")

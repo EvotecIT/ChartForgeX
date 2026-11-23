@@ -93,7 +93,7 @@ public sealed class TopologyAutomaticIconResolutionCausalTests {
     }
 
     private static TopologyChart Chart(TopologyNodeDisplayMode mode, TopologyIconShape? shape, string? iconId) {
-        var chart = TopologyChart.Create().WithViewport(600, 300, 20).WithLayout(TopologyLayoutMode.Manual);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 300, 20)).LayoutMode(TopologyLayoutMode.Manual);
         chart.Nodes.Add(new TopologyNode { Id = "service", Label = "Service", X = 80, Y = 80, Width = 180, Height = 90,
             IconId = iconId, IconShape = shape, DisplayMode = mode });
         return chart;

@@ -14,7 +14,7 @@ public sealed class WardleyDefaultOutputControls {
         if (fromSource) block = new MermaidParser().ParseWardley("wardley-beta\nanchor User [0.9,0.3]\ncomponent API [0.6,0.4]\ncomponent Compute [0.3,0.7]\nUser -> API\nAPI -> Compute").Document!
             .ToWardleyMapBlock(new MermaidWardleyRenderOptions { Title = "", Width = 900, Height = 600 });
         else {
-            block = WardleyMapBlock.Create().WithSize(900, 600).WithPadding(30);
+            block = WardleyMapBlock.Create().Size(900, 600).Padding(30);
             block.AddNode("User", "User", .9, .3, WardleyMapNodeKind.Anchor);
             block.AddNode("API", "API", .6, .4); block.AddNode("Compute", "Compute", .3, .7);
             block.AddLink("User", "API"); block.AddLink("API", "Compute");

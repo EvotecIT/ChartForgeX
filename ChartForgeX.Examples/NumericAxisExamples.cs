@@ -6,12 +6,12 @@ using ChartForgeX.Themes;
 public static class NumericAxisExamples {
     /// <summary>Creates a numeric observation axis with an independent capacity series.</summary>
     public static Chart Create(int width, ThemeMode mode, bool longLabels = false) {
-        var chart = Chart.Create().WithSize(width, 360).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Service capacity").WithSubtitle("Events per minute · six observation intervals")
+        var chart = Chart.Create().Size(width, 360).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Service capacity").Subtitle("Events per minute · six observation intervals")
             .AddLine("Observed", new[] { new ChartPoint(1, 42), new ChartPoint(2, 58), new ChartPoint(3, 73),
                 new ChartPoint(4, 91), new ChartPoint(5, 67), new ChartPoint(6, 82) })
             .AddLine("Capacity", new[] { new ChartPoint(1, 100), new ChartPoint(6, 100) });
-        if (longLabels) chart.WithXAxisValueFormatter(value => "Observation interval " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+        if (longLabels) chart.XAxis(x => x.LabelBy(value => "Observation interval " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture)));
         return chart;
     }
 

@@ -83,9 +83,9 @@ public sealed class CartesianLabelLaneBrowserTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    private static Chart Recipe(int width, ThemeMode mode) => BarRecipe.Create("compact-options", mode).WithSize(width, 360)
-        .WithTitle("Completed orders").WithSubtitle("Normalized grouped stacks")
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+    private static Chart Recipe(int width, ThemeMode mode) => BarRecipe.Create("compact-options", mode).Size(width, 360)
+        .Title("Completed orders").Subtitle("Normalized grouped stacks")
+        .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
 
     private static ChartRect[] CaptionInk(PreparedVisual prepared, RgbaImage image, VisualRenderOptions options, string role, int count) {
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == role)

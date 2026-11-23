@@ -18,7 +18,7 @@ internal static class ChartContentFit {
                     ? ChartGanttLaneModel.Build(chart, mixed: ChartSeriesKindTraits.IsMixedSchedule(chart)).Units
                     : chart.Series.Count(series => series.HasSourceData && (series.RenderPoints.Count > 0 || series.GanttItems.Count > 0));
             axisRows = chart.Options.ShowAxes && chart.Options.XAxis.Visible ? 1 : 0;
-            if (chart.Options.GanttToday.HasValue) axisRows++;
+            if (chart.Options.Gantt.Today.HasValue) axisRows++;
             if (chart.Series.Any(series => series.ResolveDataLabels(chart.Options, defaultVisible: true))) axisRows++;
         } else if (kind == ChartSeriesKind.ProgressBar) rows = chart.Series[0].RenderPoints.Count;
         else if (kind == ChartSeriesKind.Bullet && chart.Options.Bullet.Orientation == ChartOrientation.Horizontal) {
@@ -41,7 +41,7 @@ internal static class ChartContentFit {
         var entries = VisualChartCompiler.LegendEntries(family, chart, colors);
         var frame = new VisualFrame(source.Title ?? chart.Title, source.Subtitle ?? chart.Subtitle,
             source.HasExplicitLegend ? source.ShowLegend : ChartLegendVisibility.ForPreparedContent(chart, entries.Count),
-            source.HasExplicitLegendPosition ? source.LegendPosition : chart.Options.LegendPosition,
+            source.HasExplicitLegendPosition ? source.LegendPosition : chart.Options.Legend.Position,
             source.ShowSurface, source.TransparentBackground,
             Chart.ResolveFrameTextStyle(context, source.TitleStyle, chart.Options.TitleStyle, type.TitleSize, colors.Foreground, 700),
             Chart.ResolveFrameTextStyle(context, source.SubtitleStyle, chart.Options.SubtitleStyle, type.SubtitleSize, colors.MutedForeground, 400),
@@ -52,7 +52,7 @@ internal static class ChartContentFit {
         var content = VisualFrameLayout.Build(builder, probeContext, entries, out var legendHeight);
         var axisStyle = VisualStateSceneTools.TickStyle(chart, context);
         var axisHeight = axisRows * (builder.MeasureText("Mg", axisStyle).Height + context.Theme.Spacing);
-        if (chart.XAxisTitle.Length > 0) axisHeight += type.AxisTitleSize * 1.5 + context.Theme.Spacing;
+        if (chart.Options.XAxis.Title.Length > 0) axisHeight += type.AxisTitleSize * 1.5 + context.Theme.Spacing;
         var bottomLegend = frame.LegendPosition is ChartLegendPosition.Bottom or ChartLegendPosition.BottomLeft or ChartLegendPosition.BottomRight ? legendHeight : 0;
         var height = Math.Min(context.Layout.Size.Height,
             Math.Ceiling(content.Top + rows * pitch + axisHeight + bottomLegend + context.Layout.PaddingEdges.Bottom));

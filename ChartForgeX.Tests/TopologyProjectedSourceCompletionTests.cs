@@ -21,10 +21,10 @@ public sealed class TopologyProjectedSourceCompletionTests {
 
     [Fact]
     public void PendingPortableCompletionKeepsItsNativeSnapshotDetachedAndRetainsCollisionPrecedence() {
-        var chart=TopologyChart.Create().WithId("projected-completion").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
+        var chart=TopologyChart.Create().Id("projected-completion").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("shared","Group",20,20,500,250).AddNode("shared","Node",60,80,groupId:"shared");
         chart.Nodes[0].Metadata["chartforgex.sourceId"]="caller-owned";
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false});var prepared=chart.Prepare();
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false});var prepared=chart.Prepare();
         var svg=prepared.ToSvg();var png=prepared.ToPng();var first=prepared.ToInterchangeEnvelope();var json=first.ToJson();Capture("projected-source-precedence",svg,png,json);
         var node=Assert.Single(first.Nodes);Assert.Equal("shared",node.Extensions["chartforgex.sourceId"]);Assert.Contains("caller-owned",node.Extensions.Values);
         node.Extensions["chartforgex.sourceId"]="changed caller";Assert.Equal(json,prepared.ToInterchangeEnvelope().ToJson());Assert.Equal(svg,prepared.ToSvg());Assert.Equal(png,prepared.ToPng());

@@ -38,13 +38,6 @@ public sealed class WorkloadListBlock : FactualVisualBlock<WorkloadListBlock> {
         return this;
     }
 
-    /// <summary>Sets whether progress rails are shown.</summary>
-    public WorkloadListBlock WithProgressRails(bool enabled = true) { ShowProgressRails = enabled; return this; }
-
-
-    /// <summary>Sets whether row dividers are shown.</summary>
-    public WorkloadListBlock WithDividers(bool enabled = true) { ShowDividers = enabled; return this; }
-
 }
 
 /// <summary>
@@ -129,12 +122,6 @@ public sealed class ActivityTimelineBlock : FactualVisualBlock<ActivityTimelineB
 
     /// <summary>Creates a new activity timeline block.</summary>
     public static ActivityTimelineBlock Create() => new();
-
-    /// <summary>Sets whether primary events render as card-like surfaces or compact inline rows.</summary>
-    public ActivityTimelineBlock WithEventSurfaces(bool enabled = true) {
-        ShowEventSurfaces = enabled;
-        return this;
-    }
 
     /// <summary>Adds a section label.</summary>
     public ActivityTimelineBlock AddSection(string label) {

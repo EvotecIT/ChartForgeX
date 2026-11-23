@@ -12,18 +12,18 @@ public sealed class V2CartesianTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void ExplicitGridStyleSurvivesThemeAndModeChanges(ThemeMode mode) {
-        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Graphite(), mode);
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         var defaults = Compile(chart);
         Assert.DoesNotContain(defaults.Nodes, node => node.Role == "grid-x");
         Assert.Contains(defaults.Nodes, node => node.Role == "grid-y");
         chart.Options.GridLineStyle = new ChartGridLineStyle { ShowVerticalLines = true, StrokeWidth = 3, Dash = 2, Gap = 4 };
-        chart.WithTheme(VisualTheme.Graphite(), mode);
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode);
         var configured = Compile(chart).Nodes.OfType<VisualSceneLine>().Where(line => line.Role is "grid-x" or "grid-y").ToArray();
         Assert.Contains(configured, line => line.Role == "grid-x");
         Assert.All(configured, line => { Assert.Equal(3, line.StrokeWidth); Assert.Equal(new[] { 2d, 4d }, line.Dash); });
         chart.Options.GridLineStyle.ShowHorizontalLines = false;
         chart.Options.GridLineStyle.StrokeWidth = 4;
-        chart.WithTheme(VisualTheme.Graphite(), mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role == "grid-y");
         Assert.Equal(4, chart.Options.GridLineStyle.StrokeWidth);
     }
@@ -33,9 +33,9 @@ public sealed class V2CartesianTests {
     [InlineData(true)]
     public void DroppedPointLabels_RetainFullTextAndOneFormatterResult_InDetachedSemantics(bool bars) {
         var chart = bars ? Chart.Create().AddBar("Observed", Points(3, 8)) : Chart.Create().AddScatter("Observed", Points(3, 8));
-        chart.WithAxes(false).WithDataLabels(); chart.Options.ShowGrid = false;
+        chart.Axes(false).DataLabels(); chart.Options.ShowGrid = false;
         const string explicitLabel = "Complete operator supplied observation label that cannot fit this tiny viewport";
-        chart.Series[0].WithPointLabel(0, explicitLabel);
+        chart.Series[0].PointLabel(0, explicitLabel);
         var calls = 0;
         chart.Options.ValueFormatter = value => "formatted value " + value + ", call " + ++calls;
         var scene = Compile(chart, new ChartRect(70, 30, 18, 5));
@@ -59,9 +59,9 @@ public sealed class V2CartesianTests {
     [Fact]
     public void ShortenedPointLabel_RetainsItsCompleteDisplayTextInSemanticMetadata() {
         const string full = "A complete long observation label with details that do not fit the bar";
-        var chart = Chart.Create().AddBar("Observed", Points(8)).WithAxes(false).WithDataLabels();
+        var chart = Chart.Create().AddBar("Observed", Points(8)).Axes(false).DataLabels();
         chart.Options.ShowGrid = false;
-        chart.Series[0].WithPointLabel(0, full).WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        chart.Series[0].PointLabel(0, full).DataLabelPlacement(ChartDataLabelPlacement.Inside);
         var scene = Compile(chart, new ChartRect(70, 30, 90, 80));
         var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label");
         Assert.EndsWith("…", label.Text.Lines[0].Text);
@@ -75,11 +75,11 @@ public sealed class V2CartesianTests {
     public void FittedOrDroppedAxisText_RetainsCompleteDescriptions_AndFormatsEachTickOnce(bool dropped) {
         const string title = "Complete axis title with operational context beyond the available width";
         const string prefix = "Complete formatted axis value with additional operational details ";
-        var chart = Chart.Create().AddScatter("Observed", new[] { new ChartPoint(0, 3), new ChartPoint(1, 8) }).WithXAxis(title);
-        chart.Options.XAxis.WithBounds(0, 1);
+        var chart = Chart.Create().AddScatter("Observed", new[] { new ChartPoint(0, 3), new ChartPoint(1, 8) }).XAxis(x => x.Title(title));
+        chart.Options.XAxis.Bounds(0, 1);
         chart.Options.YAxis.Visible = false;
         var calls = new Dictionary<double, int>();
-        chart.Options.XAxis.WithLabelFormatter(value => {
+        chart.Options.XAxis.LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return prefix + value.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
         });
@@ -102,8 +102,8 @@ public sealed class V2CartesianTests {
         else Assert.All(visible.SelectMany(text => text.Text.Lines).Where(line => line.Text.EndsWith("…", StringComparison.Ordinal)),
             line => Assert.True(ChartTextFitting.KeepsShortenedMinimum(line.Text.TrimEnd('…'))));
         var svg = VisualSceneSvgRenderer.Render(scene);
-        chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Prepared export must not format again."));
-        chart.WithXAxis("Changed after preparation");
+        chart.Options.XAxis.LabelBy(_ => throw new InvalidOperationException("Prepared export must not format again."));
+        chart.XAxis(x => x.Title("Changed after preparation"));
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
         Assert.Equal(title, Assert.Single(scene.Regions, region => region.Role == "axis-x-title").Label);
     }
@@ -122,9 +122,9 @@ public sealed class V2CartesianTests {
     [Fact]
     public void MeasuredAxisGutters_StayInsideTheFrame_AndHiddenAxesRecoverTheViewport() {
         var chart = Chart.Create().AddScatter("Measured", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) })
-            .WithXAxis("Observed time").WithYAxis("Measured value");
-        chart.Options.XAxis.WithBounds(0, 10);
-        chart.Options.YAxis.WithBounds(0, 10);
+            .XAxis(x => x.Title("Observed time")).YAxis(y => y.Title("Measured value"));
+        chart.Options.XAxis.Bounds(0, 10);
+        chart.Options.YAxis.Bounds(0, 10);
         var viewport = new ChartRect(150, 80, 330, 230);
         var context = new VisualRenderContext();
         var builder = new VisualSceneBuilder(new VisualSize(640, 400), context.Font);
@@ -136,7 +136,7 @@ public sealed class V2CartesianTests {
             Assert.True(text.Baseline - text.Text.Ascent >= viewport.Top - .000001);
             Assert.True(text.Baseline - text.Text.Ascent + text.Text.Metrics.Height <= viewport.Bottom + .000001);
         });
-        chart.WithAxes(false);
+        chart.Axes(false);
         builder = new VisualSceneBuilder(new VisualSize(640, 400), context.Font);
         VisualCartesianCompiler.BuildInViewport(chart, context, builder, viewport);
         var hidden = builder.Build().Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
@@ -149,11 +149,11 @@ public sealed class V2CartesianTests {
     [Fact]
     public void GroupedBars_OccupyAdjacentSlots_WhileStacksSeparatePositiveAndNegativeTotals() {
         var chart = Chart.Create().AddBar("A", Points(4, -3)).AddBar("B", Points(6, -7));
-        chart.Options.YAxis.WithBounds(-10, 10);
+        chart.Options.YAxis.Bounds(-10, 10);
         var grouped = Compile(chart).Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bar").ToArray();
         Assert.Equal(4, grouped.Length);
         Assert.True(grouped[0].Bounds.Right < grouped[2].Bounds.Left);
-        chart.Options.BarMode = ChartBarMode.Stacked;
+        chart.Options.Bars.Mode = ChartBarMode.Stacked;
         var stacked = Compile(chart).Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bar").ToArray();
         Assert.Equal(stacked[0].Bounds.Left, stacked[2].Bounds.Left, 10);
         Assert.Equal(stacked[1].Bounds.Left, stacked[3].Bounds.Left, 10);
@@ -169,10 +169,10 @@ public sealed class V2CartesianTests {
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().AddLine("Primary", new[] { new ChartPoint(start, 0), new ChartPoint(start.AddDays(2), 100) })
             .AddScatter("Secondary", new[] { new ChartPoint(start, 1), new ChartPoint(start.AddDays(1), 10), new ChartPoint(start.AddDays(2), 100) });
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.Options.XAxis.WithTimeScale().WithBounds(start.ToOADate(), start.AddDays(2).ToOADate());
-        chart.Options.YAxis.WithBounds(0, 100);
-        chart.Options.SecondaryYAxis.WithScale(ChartScaleKind.Logarithmic).WithBounds(1, 100).WithLabelFormatter(value => "L" + value);
+        chart.Series[1].SecondaryAxis();
+        chart.Options.XAxis.TimeScale().Bounds(start.ToOADate(), start.AddDays(2).ToOADate());
+        chart.Options.YAxis.Bounds(0, 100);
+        chart.Options.SecondaryYAxis.Scale(ChartScaleKind.Logarithmic).Bounds(1, 100).LabelBy(value => "L" + value);
         var scene = Compile(chart);
         var markers = scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "marker").TakeLast(3).ToArray();
         Assert.Equal(3, markers.Length);
@@ -201,12 +201,12 @@ public sealed class V2CartesianTests {
     public void CompiledScene_KeepsExplicitPointColorAndSourceIdentity_AfterModelMutation() {
         var color = ChartColor.FromHex("#F17A42");
         var chart = Chart.Create().AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("measurements"), "Measured", Points(5, 8)));
-        chart.Series[0].WithPointColor(0, color);
+        chart.Series[0].PointColor(0, color);
         var scene = Compile(chart);
         var svg = VisualSceneSvgRenderer.Render(scene);
         chart.Series[0].Points.Clear();
         chart.Series[0].PointColors.Clear();
-        chart.Series[0].WithName("Changed");
+        chart.Series[0].Name("Changed");
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
         Assert.Equal(color, scene.Nodes.OfType<VisualSceneEllipse>().First(node => node.Role == "marker").Fill);
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.TryGetValue("data-cfx-series-key", out var key) && key == "measurements");
@@ -216,7 +216,7 @@ public sealed class V2CartesianTests {
 
     [Fact]
     public void CrowdedDataLabels_AvoidOverlap_AndReportOmissions() {
-        var chart = Chart.Create().AddScatter("Dense", Enumerable.Range(0, 30).Select(index => new ChartPoint(index, 1))).WithDataLabels();
+        var chart = Chart.Create().AddScatter("Dense", Enumerable.Range(0, 30).Select(index => new ChartPoint(index, 1))).DataLabels();
         var scene = Compile(chart, new ChartRect(70, 30, 120, 55));
         var labels = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "data-label").ToArray();
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");

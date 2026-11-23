@@ -14,7 +14,7 @@ public sealed class FishboneDefaultOutputControls {
         if (fromSource) block = new MermaidParser().ParseIshikawa("ishikawa-beta\nAPI\n  People\n    Data\n  Process\n    Review").Document!
             .ToFishboneDiagramBlock(new MermaidIshikawaRenderOptions { Title = "", Width = 900, Height = 520 });
         else {
-            block = FishboneDiagramBlock.Create("API").WithSize(900, 520).WithPadding(30);
+            block = FishboneDiagramBlock.Create("API").Size(900, 520).Padding(30);
             block.AddCause("People").AddChild("Data"); block.AddCause("Process").AddChild("Review");
         }
         var svg = block.RenderSvg("fishbone-default-control"); var png = block.ToPng(); var html = block.ToHtmlPage();

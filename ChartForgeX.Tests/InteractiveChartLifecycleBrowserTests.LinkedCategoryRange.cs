@@ -15,11 +15,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task HorizontalCategoryRangeReplaysTheAuthoredNumericOrTimeDomain(bool time) {
         if (!Enabled) return;
         var start = time ? new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 100).WithYAxisBounds(start, start + 10)
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(start, start + 10))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("horizontal-readings"), "Readings",
                 new[] { new ChartPoint(start, 0), new ChartPoint(start + 5, 50), new ChartPoint(start + 10, 100) })
-                .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }));
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+                .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         if (time) chart.Options.YAxis.Scale = ChartScaleKind.Time;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), 820, 650);
         await BindLinkedEventsAsync(session.Page);

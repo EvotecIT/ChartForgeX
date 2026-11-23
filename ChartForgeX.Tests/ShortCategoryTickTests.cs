@@ -13,8 +13,8 @@ public sealed class ShortCategoryTickTests {
     [Fact]
     public void ToSvg_NarrowNamedCategories_ShortenEveryNameInsteadOfSkippingAndKeepTheFullNameAsTooltip() {
         // The bundled Carlito face has Calibri's metrics, so the fit is the same on every platform.
-        var chart = Chart.Create().WithSize(360, 300).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXLabels(Steps)
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+        var chart = Chart.Create().Size(360, 300).ShowHeader(false).Legend(false).DataLabels(false).XLabels(Steps)
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .AddBar("Licences", Steps.Select((_, index) => new ChartPoint(index + 1, 100 + index * 10)).ToArray());
 
         var svg = XDocument.Parse(chart.ToSvg());
@@ -41,10 +41,10 @@ public sealed class ShortCategoryTickTests {
     [InlineData(1120, false)]
     [InlineData(320, true)]
     public void NarrowCategoryAxesKeepWholeShortCaptionsAndBothEndpoints(int width, bool horizontal) {
-        var chart = Chart.Create().WithSize(width, 280).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXLabels(Months);
+        var chart = Chart.Create().Size(width, 280).ShowHeader(false).Legend(false).DataLabels(false).XLabels(Months);
         var points = Enumerable.Range(1, 12).Select(index => new ChartPoint(index, index % 4 + 1)).ToArray();
-        if (horizontal) chart.AddHorizontalBar("Count", points).WithXAxisIntegerTicks();
-        else chart.AddBar("Count", points).WithYAxisIntegerTicks();
+        if (horizontal) chart.AddHorizontalBar("Count", points).XAxis(x => x.IntegerTicks());
+        else chart.AddBar("Count", points).YAxis(y => y.IntegerTicks());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = horizontal ? "axis-y-label" : "axis-x-label";
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role).ToArray();

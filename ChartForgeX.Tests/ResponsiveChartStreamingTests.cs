@@ -11,7 +11,7 @@ public sealed class ResponsiveChartStreamingTests {
     [InlineData(true)]
     public async Task ParserAddedChartsWaitForCompleteLayoutDataAndDynamicChartsStillMount(bool compressed) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Chart.Create().WithSize(320, 160).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(320, 160).ShowHeader(false).Legend(false)
             .AddLine("Count", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
         string fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 480, compressLayouts: compressed);
         string marker = compressed ? "data-cfx-spec-gzip>" : "data-cfx-spec>";

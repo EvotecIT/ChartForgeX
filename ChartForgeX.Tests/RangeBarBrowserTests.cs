@@ -16,11 +16,11 @@ public sealed class RangeBarBrowserTests {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, "compact-horizontal")
-            .WithSize(360, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithDataLabels(false).WithFontFamily("Carlito")
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        chart.Options.XAxis.WithBounds(0, 60);
-        chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
-        chart.Series[0].WithPointLabel(1, "Promised delivery");
+            .Size(360, 440).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).DataLabels(false).FontFamily("Carlito")
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        chart.Options.XAxis.Bounds(0, 60);
+        chart.Labels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
+        chart.Series[0].PointLabel(1, "Promised delivery");
         chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
             label.Value == 2 ? "Express delivery" : label.Text)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -28,7 +28,7 @@ public sealed class RangeBarBrowserTests {
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         }), 384, 600);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
-        var fontDirectory = Path.GetDirectoryName(chart.Options.PngFontPath)!;
+        var fontDirectory = Path.GetDirectoryName(chart.Options.Png.FontPath)!;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content =
             "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Regular.ttf"))) + ") format('truetype');font-weight:400}"
             + "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Bold.ttf"))) + ") format('truetype');font-weight:700}" });

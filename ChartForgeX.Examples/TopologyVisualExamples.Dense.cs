@@ -27,11 +27,11 @@ internal static partial class TopologyVisualExamples {
         var suffix = DirectionSuffix(direction);
         var horizontal = direction is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
         return TopologyChart.Create()
-            .WithId("visual-nested-user-hierarchy" + suffix)
-            .WithTitle("Nested User Hierarchy" + DirectionTitleSuffix(direction))
-            .WithSubtitle("Parent-child directory hierarchy with wrapped user rows and obstacle-checked exterior trunks.")
-            .WithViewport(horizontal ? 1540 : 1600, horizontal ? 760 : 1120, 28)
-            .WithLegend(TopologyLegend.Default()
+            .Id("visual-nested-user-hierarchy" + suffix)
+            .Title("Nested User Hierarchy" + DirectionTitleSuffix(direction))
+            .Subtitle("Parent-child directory hierarchy with wrapped user rows and obstacle-checked exterior trunks.")
+            .Viewport(new TopologyViewport(horizontal ? 1540 : 1600, horizontal ? 760 : 1120, 28))
+            .Legend(TopologyLegend.Default()
                 .AddNodeKind("Namespace", TopologyNodeKind.Namespace, symbol: "DOM")
                 .AddNodeKind("Group", TopologyNodeKind.Team, symbol: "G")
                 .AddNodeKind("User", TopologyNodeKind.Person, symbol: "U"))

@@ -22,9 +22,9 @@ public sealed class NumericRadialAxisBrowserTests {
     public async Task RadialAxisCaptionsRemainReadableInActualHosts(string name, int start, int width, bool dark, bool reversed, bool dual) {
         if (!Enabled) return;
         var chart = dual ? NumericRadialAxisLabelTests.DualAxes(width, reversed) : NumericRadialAxisLabelTests.Categories(start, width, reversed);
-        if (name.StartsWith("gallery-", StringComparison.Ordinal)) chart = V2GalleryModels.CreateRadialBarScales().WithSize(width, width == 360 ? 360 : 440)
-            .WithTitle("Requests and resolution rate").WithSubtitle("Request counts and percentages use independent scales");
-        chart.WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        if (name.StartsWith("gallery-", StringComparison.Ordinal)) chart = V2GalleryModels.CreateRadialBarScales().Size(width, width == 360 ? 360 : 440)
+            .Title("Requests and resolution rate").Subtitle("Request counts and percentages use independent scales");
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 40, width == 360 ? 420 : 510);
         await CaptureAsync(session, chart, name);
         var displayed = await session.Page.Locator(dual ? "[data-cfx-role='radial-value-label']" : "[data-cfx-role='radial-category-label']").CountAsync();
@@ -66,7 +66,7 @@ public sealed class NumericRadialAxisBrowserTests {
     [InlineData(-90)]
     public async Task FullTurnCategoryOverflowRetainsItsDescriptionsInActualHosts(int start) {
         if (!Enabled) return;
-        var chart = NumericRadialAxisLabelTests.Categories(start, 800, false).WithRadialGeometry(new(start, start + 360, .1, .25, .1));
+        var chart = NumericRadialAxisLabelTests.Categories(start, 800, false).RadialGeometry(new(start, start + 360, .1, .25, .1));
         for (var point = 0; point < chart.Series[0].Points.Count; point++) chart.Series[0].Points[point] = new ChartForgeX.Primitives.ChartPoint(point + 1, 100);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 840, 510);
         await CaptureAsync(session, chart, start == 0 ? "full-turn-right" : "full-turn-top");

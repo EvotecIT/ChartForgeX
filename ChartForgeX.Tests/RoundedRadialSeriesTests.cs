@@ -13,12 +13,12 @@ public sealed class RoundedRadialSeriesTests {
     [InlineData(ChartSeriesKind.RadialColumn)]
     [InlineData(ChartSeriesKind.Sunburst)]
     public void DefaultAndExplicitZeroKeepTheSameSharpSceneAndNativePixels(ChartSeriesKind kind) {
-        var chart = V2GalleryModels.Create(kind).WithSize(400, 300).WithHeader(false).WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels(false);
+        var chart = V2GalleryModels.Create(kind).Size(400, 300).ShowHeader(false).Axes(false).ShowGrid(false).Legend(false).DataLabels(false);
         UseFixtureFont(chart);
         var original = Prepare(chart); var options = chart.Options.RadialGeometry;
         Assert.Equal(0, kind == ChartSeriesKind.Sunburst ? chart.Options.Sunburst.CornerRadius : options.CornerRadius);
-        if (kind == ChartSeriesKind.Sunburst) chart.ConfigureSunburst(sunburst => sunburst.CornerRadius = 0);
-        else chart.WithRadialGeometry(new(options.StartAngleDegrees, options.EndAngleDegrees, options.InnerRadiusRatio, options.CategorySpacing, options.SeriesSpacing, cornerRadius: 0));
+        if (kind == ChartSeriesKind.Sunburst) chart.Sunburst(sunburst => sunburst.CornerRadius = 0);
+        else chart.RadialGeometry(new(options.StartAngleDegrees, options.EndAngleDegrees, options.InnerRadiusRatio, options.CategorySpacing, options.SeriesSpacing, cornerRadius: 0));
         var explicitZero = Prepare(chart);
         Assert.Equal(original.ToSvg(), explicitZero.ToSvg());
         Assert.Equal(original.ToPng(), explicitZero.ToPng());
@@ -31,13 +31,13 @@ public sealed class RoundedRadialSeriesTests {
     public void SignedReversedClippedStacksRoundEveryPaintedSegmentWithoutChangingSourceSemantics(bool bars) {
         var chart = NumericRadialSeriesTests.Add(Frame(), bars, "First", new ChartPoint(1, 200), new ChartPoint(2, -150));
         NumericRadialSeriesTests.Add(chart, bars, "Second", new ChartPoint(1, 300), new ChartPoint(2, -50));
-        foreach (var series in chart.Series) series.WithStackGroup("work").WithNormalization(100);
-        chart.WithYAxisBounds(-100, 75);
+        foreach (var series in chart.Series) series.StackGroup("work").NormalizedTo(100);
+        chart.YAxis(y => y.Bounds(-100, 75));
         chart.Options.XAxis.Reversed = true; chart.Options.YAxis.Reversed = true;
-        chart.WithRadialGeometry(new(-75, 195, .2, .2, .1));
-        chart.Series[1].WithPointFillPattern(0, ChartFillPattern.DiagonalForward);
+        chart.RadialGeometry(new(-75, 195, .2, .2, .1));
+        chart.Series[1].PointFillPattern(0, ChartFillPattern.DiagonalForward);
         var sharp = Prepare(chart); var sharpSvg = XDocument.Parse(sharp.ToSvg());
-        chart.WithRadialGeometry(new(-75, 195, .2, .2, .1, cornerRadius: 6));
+        chart.RadialGeometry(new(-75, 195, .2, .2, .1, cornerRadius: 6));
         var rounded = Prepare(chart); var roundedSvg = XDocument.Parse(rounded.ToSvg());
         Assert.Equal(SourceFacts(sharpSvg, "point"), SourceFacts(roundedSvg, "point"));
         Assert.Equal(4, rounded.Scene.Nodes.OfType<VisualScenePath>().Count(mark => mark.Role is "radial-bar" or "radial-column"));
@@ -46,7 +46,7 @@ public sealed class RoundedRadialSeriesTests {
         Assert.Equal(sharp.Regions.Select(region => region.Label), rounded.Regions.Select(region => region.Label));
         Assert.NotEqual(sharp.ToPng(), rounded.ToPng());
         var expected = rounded.ToSvg();
-        chart.WithRadialGeometry(new(cornerRadius: 100));
+        chart.RadialGeometry(new(cornerRadius: 100));
         Assert.Equal(expected, rounded.ToSvg());
     }
 
@@ -57,7 +57,7 @@ public sealed class RoundedRadialSeriesTests {
     [InlineData(ChartSeriesKind.RadialColumn, true)]
     public void RoundedGalleryInsideLabelsStayInTheirOwnPaintedOutline(ChartSeriesKind kind, bool compact) {
         var chart = V2GalleryModels.Create(kind, compact ? "compact-options" : "options");
-        chart.WithSize(compact ? 360 : 800, compact ? 360 : 440).WithHeader(false).WithLegend(false);
+        chart.Size(compact ? 360 : 800, compact ? 360 : 440).ShowHeader(false).Legend(false);
         UseFixtureFont(chart);
         var scene = Prepare(chart).Scene;
         var marks = scene.Nodes.OfType<VisualScenePath>().Where(mark => mark.Role is "radial-bar" or "radial-column").ToDictionary(mark => mark.Id!);
@@ -75,10 +75,10 @@ public sealed class RoundedRadialSeriesTests {
 
     [Fact]
     public void RoundedSunburstPreservesAuthoredTotalsRemaindersColorsAndFullLabelFacts() {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "authored-total").WithSize(800, 440).WithLegend(false);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "authored-total").Size(800, 440).Legend(false);
         UseFixtureFont(chart);
         var rounded = Prepare(chart); var roundedSvg = XDocument.Parse(rounded.ToSvg());
-        chart.ConfigureSunburst(options => options.CornerRadius = 0);
+        chart.Sunburst(options => options.CornerRadius = 0);
         var sharp = Prepare(chart); var sharpSvg = XDocument.Parse(sharp.ToSvg());
         Assert.Equal(SourceFacts(sharpSvg, "sunburst-segment"), SourceFacts(roundedSvg, "sunburst-segment"));
         Assert.Equal(sharp.Regions.Select(region => region.Label), rounded.Regions.Select(region => region.Label));
@@ -90,12 +90,12 @@ public sealed class RoundedRadialSeriesTests {
     }
 
     internal static Chart Frame() {
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).Axes(false).ShowGrid(false).Legend(false).DataLabels(false);
         UseFixtureFont(chart); return chart;
     }
     internal static void UseFixtureFont(Chart chart) {
-        chart.WithFontFamily("Carlito");
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.FontFamily("Carlito");
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
     }
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static string[] SourceFacts(XDocument svg, string role) => svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == role)

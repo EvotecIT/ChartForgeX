@@ -63,7 +63,7 @@ public sealed partial class ExampleRecipeTests {
         Assert.Contains("new ChartRadialBand(.66, 1)", source);
         Assert.DoesNotContain("DonutRecipe.Create", source);
         var width = variant.StartsWith("compact-", StringComparison.Ordinal) ? 360 : 800;
-        chart.WithSize(width, 440).WithTheme(VisualTheme.Graphite(), mode);
+        chart.Size(width, 440).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(4, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count());
         Assert.NotEmpty(prepared.ToPng());
@@ -82,7 +82,7 @@ public sealed partial class ExampleRecipeTests {
         Assert.Equal(new[] { 18d, 30, 24, 44, 32 }, observations.Points.Select(point => point.Y));
         Assert.Equal("Temperature", observations.ColorDimension.Name);
         Assert.Equal(string.Empty, observations.ColorDimension.ValueFormat!.Culture.Name);
-        Assert.Equal("Processing time (minutes)", chart.YAxisTitle);
+        Assert.Equal("Processing time (minutes)", chart.Options.YAxis.Title);
     }
 
     [Theory]
@@ -97,10 +97,10 @@ public sealed partial class ExampleRecipeTests {
     public void MapColorRecipesKeepSignedTemperaturesZeroAndMissingRegions(ChartSeriesKind kind, bool compact, ThemeMode mode) {
         var variant = compact ? "compact-color-dimension" : "color-dimension";
         var recipe = ExampleRecipes.ForKind(kind, variant);
-        var chart = Assert.IsType<Chart>(recipe.Create(variant, mode)).WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Temperature by state")
-            .WithSubtitle("Temperature captions use their own format and culture");
-        Assert.Equal("Temperature", chart.Options.MapColorDimension.Name);
+        var chart = Assert.IsType<Chart>(recipe.Create(variant, mode)).Size(compact ? 360 : 800, compact ? 360 : 440)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Temperature by state")
+            .Subtitle("Temperature captions use their own format and culture");
+        Assert.Equal("Temperature", chart.Options.Map.ColorDimension.Name);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
         var role = kind == ChartSeriesKind.RegionMap ? "region-map-region-source" : "tile-map-region-source";

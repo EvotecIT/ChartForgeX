@@ -18,7 +18,7 @@ public sealed class NativePreparedDefaultMarkupTests {
         var series = ChartSeries.CreateLine(new ChartSeriesId("default2-line"), "Observed", new[] {
             new ChartPoint(0, 4), new ChartPoint(1, 6), new ChartPoint(2, 5)
         });
-        var chart = Chart.Create().WithTitle("Ordinary chart control").WithSize(640, 400).WithLegend(false).WithDataLabels(false).AddSeries(series);
+        var chart = Chart.Create().Title("Ordinary chart control").Size(640, 400).Legend(false).DataLabels(false).AddSeries(series);
         chart.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family); chart.Options.ThemeMode = ThemeMode.Light;
         var renderer = new HtmlInteractiveChartRenderer();
         void Configure(HtmlChartInteractionOptions options) {
@@ -38,7 +38,7 @@ public sealed class NativePreparedDefaultMarkupTests {
 
     [Fact]
     public void OrdinaryTopologyFragmentRetainsDeterministicExistingNativeMarkup() {
-        var chart = TopologyChart.Create().WithId("default2-topology").WithViewport(640, 400).WithLegend(null).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Id("default2-topology").Viewport(new TopologyViewport(640, 400)).Legend((TopologyLegend?)null).AddHierarchy(new[] {
             new TopologyHierarchyItem("lead", "Example lead"), new TopologyHierarchyItem("member", "Example member", "lead")
         }, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Card });
         chart.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family); chart.ThemeMode = ThemeMode.Light;

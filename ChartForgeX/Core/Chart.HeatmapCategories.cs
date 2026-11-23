@@ -5,8 +5,8 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>
-    /// Adds a categorical heatmap row. Each cell's state is coloured through <see cref="ChartOptions.StateCategories"/>
-    /// (see <see cref="WithStateCategories(ChartStateCategory[])"/>), so status colours never come from a numeric ramp.
+    /// Adds a categorical heatmap row. Each cell's state is coloured through <see cref="ChartStateTimelineOptions.Categories"/>
+    /// (see <see cref="StateCategories(ChartStateCategory[])"/>), so status colours never come from a numeric ramp.
     /// Cells are assigned to columns one through N; null cells are masked and keep their column position. A row may
     /// have no visible cells, for an entity nothing is known about: it keeps its label and an empty row.
     /// </summary>

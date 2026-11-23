@@ -9,7 +9,7 @@ public sealed class StoryChapterPlayerBrowserTests {
     [BrowserFact]
     public async Task AutomaticChaptersUseAuthoredBoundariesWhileButtonsSeekReadableSamples() {
         if (!Enabled) return;
-        var story = VisualStory.Create("Chapter clocks").WithSize(480, 320);
+        var story = VisualStory.Create("Chapter clocks").Size(480, 320);
         story.Scene("first", "First", .6).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("middle", "Middle", .35).Panel("middle", new VisualStoryTextSurface("Middle"));
         story.Scene("last", "Last", .5).Panel("last", new VisualStoryTextSurface("Last"));

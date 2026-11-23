@@ -13,7 +13,7 @@ internal static partial class VisualMapCompiler {
     private static double TileGap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartTileMapDefinition definition, ChartRect plot, double strokeWidth) {
         var gap = Math.Min(context.Theme.Spacing / 2, Math.Min(plot.Width / definition.ColumnCount, plot.Height / definition.RowCount) / 6);
-        if (!chart.Options.ShowMapLabels) return gap;
+        if (!chart.Options.Map.ShowLabels) return gap;
         var style = TickStyle(chart, context);
         style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
         var requiredSize = 0d;
@@ -39,7 +39,7 @@ internal static partial class VisualMapCompiler {
     /// </summary>
     private static double TileWidth(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartTileMapDefinition definition, ChartRect plot, double strokeWidth, double gap, double size) {
-        if (!chart.Options.ShowMapLabels || size <= 0) return size;
+        if (!chart.Options.Map.ShowLabels || size <= 0) return size;
         var available = (plot.Width - strokeWidth - gap * (definition.ColumnCount - 1)) / definition.ColumnCount;
         if (available <= size) return size;
         var style = TickStyle(chart, context);

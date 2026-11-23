@@ -37,14 +37,14 @@ public sealed class FamilyLabelLayoutRegressionTests {
     [Fact]
     public void MatrixWordCaptionsWrapBeforeRotationAndDenseColumnsThinUniformly() {
         var captions = new[] { "Access policy", "Backup health", "Network state" };
-        var wrapped = Prepare(Chart.Create().WithXLabels(captions).AddHeatmapRow("Service", new[] { 1d, 2, 3 }), 280, 280);
+        var wrapped = Prepare(Chart.Create().XLabels(captions).AddHeatmapRow("Service", new[] { 1d, 2, 3 }), 280, 280);
         var labels = Texts(wrapped, "heatmap-column-label");
         Assert.Equal(captions, labels.Select(label => string.Join(" ", label.Text.Lines.Select(line => line.Text))));
         Assert.Contains(labels, label => label.Text.Lines.Count == 2);
         Assert.All(LabelGeometry(wrapped, "heatmap-column-label"), corners => Assert.Equal(corners[0].Y, corners[1].Y));
 
         var denseCaptions = Enumerable.Range(1, 60).Select(index => "Check " + index).ToArray();
-        var dense = Prepare(Chart.Create().WithXLabels(denseCaptions).AddHexbinHeatmapRow("Service", Enumerable.Range(1, 60).Select(index => (double)index).ToArray()), 400, 380);
+        var dense = Prepare(Chart.Create().XLabels(denseCaptions).AddHexbinHeatmapRow("Service", Enumerable.Range(1, 60).Select(index => (double)index).ToArray()), 400, 380);
         var drawn = Texts(dense, "heatmap-column-label");
         Assert.InRange(drawn.Length, 2, denseCaptions.Length - 1);
         var indices = drawn.Select(text => int.Parse(text.Id!.Substring("matrix-column-".Length))).ToArray();
@@ -122,7 +122,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
             Assert.All(tileLabels, text => {
                 Assert.Equal(13.5, text.Text.Size);
                 var tile = prepared.Regions.Single(region => region.Id + "-label" == text.Id && region.Role == "tile-map-region").Bounds;
-                var stroke = chart.Options.MapRegionStrokeWidth;
+                var stroke = chart.Options.Map.RegionStrokeWidth;
                 Assert.True(text.Text.Metrics.Height + stroke <= tile.Height);
                 Assert.True(text.Text.Metrics.Width + stroke + .44 * (text.Text.Metrics.Height + stroke) <= tile.Width,
                     "Every complete code must clear its hexagon's slanted edges and stroke.");
@@ -157,8 +157,8 @@ public sealed class FamilyLabelLayoutRegressionTests {
         var chart = TileMapRecipe.Create();
         VisualFrame? frame = null;
         if (control == "frame-position") frame = new VisualFrame("", "", showLegend: true, legendPosition: ChartLegendPosition.TopLeft);
-        else if (control == "model-position") chart.Options.LegendPosition = ChartLegendPosition.TopLeft;
-        else if (control == "scale-position") chart.Options.MapScaleLegendPosition = ChartMapScaleLegendPosition.Bottom;
+        else if (control == "model-position") chart.Options.Legend.Position = ChartLegendPosition.TopLeft;
+        else if (control == "scale-position") chart.Options.Map.ScaleLegendPosition = ChartMapScaleLegendPosition.Bottom;
         else {
             var source = chart.Series[0].TileMapDefinition!;
             var regions = source.Regions.ToList(); var added = 0;
@@ -169,7 +169,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
                         regions.Add(new ChartTileMapRegion(code, "Additional region " + code, column, row));
                     }
             chart = Chart.Create().AddTileMap("Observations", new ChartTileMapDefinition("filled", "Occupied grid", regions),
-                new[] { new ChartRegionMapItem("CA", 39), new ChartRegionMapItem("NY", 91) }).WithMapLabels();
+                new[] { new ChartRegionMapItem("CA", 39), new ChartRegionMapItem("NY", 91) }).Map(m => m.ShowLabels());
         }
         var prepared = Prepare(chart, 400, 280, frame: frame);
         var tiles = prepared.Regions.Where(region => region.Role == "tile-map-region").ToArray();
@@ -192,11 +192,11 @@ public sealed class FamilyLabelLayoutRegressionTests {
         var minimum = precisionRefinement ? 100000000000001d : 39;
         var maximum = precisionRefinement ? 100000100000001d : 91;
         var chart = Chart.Create().AddTileMap("Observations", definition,
-            new[] { new ChartRegionMapItem("CA", minimum), new ChartRegionMapItem("NY", maximum) }).WithMapLabels();
+            new[] { new ChartRegionMapItem("CA", minimum), new ChartRegionMapItem("NY", maximum) }).Map(m => m.ShowLabels());
         var calls = new Dictionary<double, int>();
         if (!precisionRefinement) {
-            chart.Options.HeatmapRelativeScale = true;
-            chart.WithValueFormat(ChartValueFormat.Custom(value => {
+            chart.Options.Heatmap.RelativeScale = true;
+            chart.ValueFormat(ChartValueFormat.Custom(value => {
                 calls[value] = calls.GetValueOrDefault(value) + 1;
                 return value == 0 ? "No recorded observations" : value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
             }));
@@ -221,7 +221,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
             Assert.All(calls.Values, count => Assert.Equal(1, count));
         }
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-        chart.WithValueFormat(ChartValueFormat.Custom(_ => throw new InvalidOperationException("Prepared export must retain its captured captions.")));
+        chart.ValueFormat(ChartValueFormat.Custom(_ => throw new InvalidOperationException("Prepared export must retain its captured captions.")));
         chart.Options.Labels.NoData = "Changed missing";
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));

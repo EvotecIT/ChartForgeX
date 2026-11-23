@@ -34,7 +34,7 @@ public sealed class NativeTopologyCatalogSurfaceTests {
         var caption=TopologyNodeShapeGeometry.CaptionBounds(node,14);
         Assert.True(caption.Width>0&&caption.Height>0);
         Assert.True(caption.Left>=node.X&&caption.Top>=node.Y&&caption.Right<=node.X+node.Width&&caption.Bottom<=node.Y+node.Height);
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(380,230,12).WithLegend(null);chart.Nodes.Add(node);
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(380, 230, 12)).Legend((TopologyLegend?)null);chart.Nodes.Add(node);
         var prepared=chart.Prepare(new TopologyRenderOptions{IncludeLegend=false,IncludeTitle=false,IncludeStatusBadges=false});
         var svg=prepared.ToSvg();Assert.Contains("data-node-shape=\""+name+"\"",svg,StringComparison.Ordinal);Assert.NotEmpty(prepared.ToPng());
         if(name=="TextBlock")Assert.DoesNotContain(prepared.Visual.Scene.Nodes.OfType<VisualScenePath>(),part=>part.Role=="topology-node-surface");

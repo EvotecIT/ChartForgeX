@@ -21,15 +21,15 @@ public sealed class ChartXZoomSourceAdmissionTests {
     [InlineData(true, false, true)]
     [InlineData(true, true, true)]
     public void SourceAdmissionRejectsOutsideMarkerInkAndCaptionsButKeepsInclusiveBoundaries(bool step, bool reversed, bool ulp) {
-        var chart = Bare().WithDataLabels();
+        var chart = Bare().DataLabels();
         chart.Options.XAxis.Reversed = reversed;
         var xs = new[] { ulp ? Math.BitDecrement(3) : 2.99, 3, 7, ulp ? Math.BitIncrement(7) : 7.01 };
         var labels = new[] { "Outside lower", "L", "R", "Outside upper" };
         for (var i = 0; i < xs.Length; i++) {
             if (step) chart.AddStepLine(labels[i], new[] { new ChartPoint(xs[i], 2 + i * 2, true) }, Blue);
             else chart.AddLine(labels[i], new[] { new ChartPoint(xs[i], 2 + i * 2, true) }, Blue);
-            chart.Series[i].ConfigureMarkers(marker => { marker.Enabled = true; marker.Radius = 4; });
-            chart.Series[i].WithPointLabel(0, labels[i]);
+            chart.Series[i].Markers(marker => { marker.Enabled = true; marker.Radius = 4; });
+            chart.Series[i].PointLabel(0, labels[i]);
             chart.Series[i].DataLabelPlacement = (i < 2) != reversed ? ChartDataLabelPlacement.Right : ChartDataLabelPlacement.Left;
         }
         var context = Context();
@@ -47,9 +47,9 @@ public sealed class ChartXZoomSourceAdmissionTests {
             Assert.Contains(Facts(view, "x-zoom-caption"), node => (string?)node.Attribute("data-cfx-label") == text
                 && (string?)node.Attribute("data-cfx-label-visibility") == "anchor-outside-window");
         var pixels = view.ToPng();
-        foreach (var i in new[] { 0, 3 }) { chart.Series[i].Markers.Enabled = false; chart.Series[i].WithPointLabel(0, ""); }
+        foreach (var i in new[] { 0, 3 }) { chart.Series[i].Markers.Enabled = false; chart.Series[i].PointLabel(0, ""); }
         Assert.Equal(pixels, chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2.5)).At(1, .5).ToPng());
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         Assert.Equal(chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))).ToPng(),
             chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2.5)).At(1, .5).ToPng());
     }
@@ -58,9 +58,9 @@ public sealed class ChartXZoomSourceAdmissionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CaptionUsesSourceAnchorWhenOutsideValueRoundsToVisiblePixels(bool reversed) {
-        var chart = Bare().WithDataLabels().AddLine("Observed", new[] { new ChartPoint(Math.BitDecrement(5 * .173), 5) }, Blue);
+        var chart = Bare().DataLabels().AddLine("Observed", new[] { new ChartPoint(Math.BitDecrement(5 * .173), 5) }, Blue);
         chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
-        chart.Series[0].WithPointLabel(0, "Outside");
+        chart.Series[0].PointLabel(0, "Outside");
         chart.Series[0].DataLabelPlacement = reversed ? ChartDataLabelPlacement.Left : ChartDataLabelPlacement.Right;
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2)); var view = bank.At(1, .173);
         Assert.Single(Facts(view, "point"));
@@ -74,8 +74,8 @@ public sealed class ChartXZoomSourceAdmissionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void XTickGridAndCaptionKeepRawSourceEligibilityAndFullTickFacts(bool reversed) {
-        var chart = Bare().WithAxes().WithGrid().AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue);
-        chart.ConfigureGridStyle(grid => { grid.ShowVerticalLines = true; grid.ShowHorizontalLines = false; });
+        var chart = Bare().Axes().ShowGrid().AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue);
+        chart.GridLineStyle(grid => { grid.ShowVerticalLines = true; grid.ShowHorizontalLines = false; });
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Visible = false; chart.Series[0].Markers.Enabled = false;
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(Math.BitDecrement(5 * .173), "Outside"));
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2)); var view = bank.At(1, .173);
@@ -90,7 +90,7 @@ public sealed class ChartXZoomSourceAdmissionTests {
     [Fact]
     public void SuppressedOutsideMarkerCannotHideAFixedCaptionThroughItsClearanceIntervals() {
         var chart = Bare().AddLine("Observed", new[] { new ChartPoint(2.99, 5) }, Blue).AddHorizontalLine(5, "Fixed");
-        chart.Series[0].ConfigureMarkers(marker => { marker.Enabled = true; marker.Radius = 20; });
+        chart.Series[0].Markers(marker => { marker.Enabled = true; marker.Radius = 20; });
         var view = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2.5)).At(1, .5);
         Assert.Single(view.Regions, region => region.Role == "point");
         Assert.Single(view.Scene.Nodes, node => node.Role == "annotation-label");
@@ -104,12 +104,12 @@ public sealed class ChartXZoomSourceAdmissionTests {
     public void NonpresetPanMatchesOrdinarySourceMarkerAdmissionAndRetainsCrossingsGapsAndCallbacks(bool reversed) {
         const double pan = .173;
         var minimum = 5 * pan; var maximum = minimum + 5;
-        var chart = Bare().WithDataLabels(); chart.Options.XAxis.Reversed = reversed;
+        var chart = Bare().DataLabels(); chart.Options.XAxis.Reversed = reversed;
         chart.AddStepLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8),
             new ChartPoint(minimum - .005, 3, true), new ChartPoint(maximum + .005, 7, true),
             new ChartPoint(minimum, 4, true), new ChartPoint(maximum, 6, true) }, Blue);
-        chart.Series[0].ConfigureMarkers(marker => { marker.Enabled = true; marker.Radius = 4; });
-        for (var i = 0; i < 6; i++) chart.Series[0].WithPointLabel(i, "");
+        chart.Series[0].Markers(marker => { marker.Enabled = true; marker.Radius = 4; });
+        for (var i = 0; i < 6; i++) chart.Series[0].PointLabel(i, "");
         var calls = 0; chart.Options.ValueFormatter = value => { calls++; return value.ToString(); };
         chart.Options.XAxis.LabelFormatter = value => { calls++; return value.ToString(); };
         var context = Context(); var bank = chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2)); var after = calls;
@@ -170,7 +170,7 @@ public sealed class ChartXZoomSourceAdmissionTests {
         Assert.Equal(png, chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2.5)).At(1, .5).ToPng());
     }
 
-    private static Chart Bare() => Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+    private static Chart Bare() => Chart.Create().Axes(false).ShowGrid(false).Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(420, 280)), VisualTheme.Graphite(),
         frame: new VisualFrame(showLegend: false), font: FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
     private static XElement[] Facts(PreparedVisual visual, string role) => XDocument.Parse(visual.ToSvg()).Descendants()

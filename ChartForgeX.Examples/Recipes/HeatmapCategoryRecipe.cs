@@ -10,10 +10,10 @@ public static class HeatmapCategoryRecipe {
         var secondary = ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId("secondary"), "Secondary", new ChartHeatmapCell?[] {
             new("pass"), new("pass"), new("warning"), new("pass")
         }, "Production");
-        return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+        return Chart.Create().StateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
                 new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
-            .WithXLabels("Identity", "Network", "Storage", "Backup")
+            .XLabels("Identity", "Network", "Storage", "Backup")
             .AddSeries(primary).AddSeries(secondary);
     }
 }

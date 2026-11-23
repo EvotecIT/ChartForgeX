@@ -15,12 +15,12 @@ public sealed class ScatterBubbleColorLegendTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OffsetPlotKeepsFullEdgeMarkersAndClippedLineInkAboveTheNumericKey(bool withLine) {
-        var chart = Chart.Create().WithXAxisBounds(0, 3).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().XAxis(xAxis => xAxis.Bounds(0, 3)).YAxis(yAxis => yAxis.Bounds(0, 100))
             .AddScatter("Samples", new[] { new ChartPoint(1, 0).WithColorValue(0), new ChartPoint(2, 100).WithColorValue(10) });
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High));
         if (withLine) {
             chart.AddLine("Outside", new[] { new ChartPoint(.5, -100), new ChartPoint(1.5, 200), new ChartPoint(2.5, -100) }, ChartColor.FromHex("#FF00FF"));
-            chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
+            chart.Series[1].Markers(markers => markers.Enabled = false);
         }
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 320)));
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
@@ -60,11 +60,11 @@ public sealed class ScatterBubbleColorLegendTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ContinuousAndDiscreteColorCaptionsStayIndependentOfTheYValueFormatter(bool discrete) {
-        var chart = Create(false, .0000001, .0000002, .0000003).WithValueFormatter(value => value + " kWh");
-        chart.Series[0].WithColorScale(discrete ? ChartColorScale.Discrete(new[] {
+        var chart = Create(false, .0000001, .0000002, .0000003).FormatValuesBy(value => value + " kWh");
+        chart.Series[0].ColorScale(discrete ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(.0000002, Low, "Low"), new ChartColorBand(.0000003, High, "Middle"), new ChartColorBand(null, Empty, "High")
         }) : ChartColorScale.Sequential(Low, High));
-        chart.ConfigureLabels(labels => labels.Value = "reading");
+        chart.Labels(labels => labels.Value = "reading");
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var key = Role(document, "color-scale-0").Single();
         Assert.DoesNotContain("kWh", key.Value);
@@ -79,7 +79,7 @@ public sealed class ScatterBubbleColorLegendTests {
             Assert.Equal("true", (string?)steps[1].Attribute("data-cfx-upper-exclusive"));
         }
         var matrix = Chart.Create().AddHeatmapRow("Samples", new[] { 1d, 2, 3 })
-            .WithHeatmapColorScale(ChartColorScale.Sequential(Low, High)).WithValueFormatter(value => value + " kWh");
+            .Heatmap(h => h.ColorScale(ChartColorScale.Sequential(Low, High))).FormatValuesBy(value => value + " kWh");
         Assert.Contains("kWh", Role(XDocument.Parse(Prepare(matrix).ToSvg()), "heatmap-scale").Single().Value);
     }
 
@@ -89,7 +89,7 @@ public sealed class ScatterBubbleColorLegendTests {
     [InlineData("discrete", true)]
     public void AllMissingColorHasNoInventedInferredExtentButKeepsAuthoredKeys(string mode, bool hasSteps) {
         var chart = Create(true, null, null);
-        chart.Series[0].WithColorScale(mode == "discrete" ? ChartColorScale.Discrete(new[] { new ChartColorBand(null, Low, "Any") })
+        chart.Series[0].ColorScale(mode == "discrete" ? ChartColorScale.Discrete(new[] { new ChartColorBand(null, Low, "Any") })
             : mode == "fixed" ? ChartColorScale.Sequential(Low, High).WithValueRange(-10, 10) : ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var key = Role(document, "color-scale-0").Single();
@@ -105,14 +105,14 @@ public sealed class ScatterBubbleColorLegendTests {
 
     [Fact]
     public void KeysRespectFrameAndNumericVisibilityWhilePointLegendUsesMappedPaint() {
-        var chart = Create(false, 0, 10).WithPointLegend();
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        var chart = Create(false, 0, 10).Legend(l => l.ShowPoints());
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var swatches = Role(document, "legend-swatch");
         Assert.Equal(new[] { Low.ToHex(), High.ToHex() }, swatches.Select(swatch => (string?)swatch.Attribute("fill")));
-        chart.WithLegend(false);
+        chart.Legend(false);
         Assert.Empty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
-        chart.WithLegend(); chart.Series[0].ShowInLegend = false;
+        chart.Legend(); chart.Series[0].ShowInLegend = false;
         Assert.NotEmpty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
         chart.Series[0].ColorDimension.ShowLegend = false;
         Assert.Empty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
@@ -133,8 +133,8 @@ public sealed class ScatterBubbleColorLegendTests {
         FontRegistry.Register(family, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         var scale = mode == "asymmetric" ? ChartColorScale.Diverging(new[] { Low }, ChartColor.White, new[] { Empty, High, ChartColor.Black }, 0).WithValueRange(-10, 30)
             : ChartColorScale.Diverging(Low, ChartColor.White, High, mode == "lower" ? -10 : mode == "upper" ? 20 : 3.2).WithValueRange(0, 10);
-        var chart = Create(false, 0, 3.2, 10).WithSize(360, 400).WithFontFamily(family);
-        chart.Series[0].WithColorScale(scale.WithLabels(null, "Target", null));
+        var chart = Create(false, 0, 3.2, 10).Size(360, 400).FontFamily(family);
+        chart.Series[0].ColorScale(scale.WithLabels(null, "Target", null));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "color-scale-0-swatch").ToArray();
         var center = swatches[0].Bounds.Left + (midpointStep + .5) * swatches[0].Bounds.Width;
@@ -159,9 +159,9 @@ public sealed class ScatterBubbleColorLegendTests {
 
     [Fact]
     public void SeveralKeysShareABoundedLaneAndRetainCompleteSemanticDomainsOnOverflow() {
-        var chart = Create(false, -10, 10).WithSize(360, 360);
+        var chart = Create(false, -10, 10).Size(360, 360);
         for (var index = 1; index < 3; index++) chart.AddScatter("Samples " + index, new[] { new ChartPoint(1, index).WithColorValue(index * 100) });
-        foreach (var series in chart.Series) series.WithColorScale(ChartColorScale.Sequential(Low, High).WithLabels(null, "Target", null));
+        foreach (var series in chart.Series) series.ColorScale(ChartColorScale.Sequential(Low, High).WithLabels(null, "Target", null));
         var prepared = Prepare(chart);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.color-scale-overflow");
         var document = XDocument.Parse(prepared.ToSvg());

@@ -74,9 +74,9 @@ internal static partial class VisualMatrixCompiler {
                     metadata["data-cfx-formatted-value"] = label;
                     metadata["data-cfx-label-value"] = presentation.Name;
                 }
-                if (empty && chart.Options.PinStateColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
+                if (empty && chart.Options.StateTimeline.PinColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
                 using (VisualStateSceneTools.Mark(builder, "calendar-scale-" + index++, "calendar-scale-step", box, label, metadata))
-                    if (height > 0 && empty && chart.Options.HeatmapColorScale?.NoDataColor == null) ChartMissingData.Paint(builder, box, 1, colors, "calendar-scale-empty-swatch");
+                    if (height > 0 && empty && chart.Options.Heatmap.ColorScale?.NoDataColor == null) ChartMissingData.Paint(builder, box, 1, colors, "calendar-scale-empty-swatch");
                     else if (height > 0) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
             }
         }

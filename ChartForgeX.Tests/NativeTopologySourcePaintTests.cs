@@ -42,7 +42,7 @@ public sealed class NativeTopologySourcePaintTests {
             Color = Paint("icon", "#22BB4480")
         };
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("source-paint", "Source paint").AddIcon(icon));
-        var chart = TopologyChart.Create().WithViewport(920, 440, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(920, 440, 20)).Legend((TopologyLegend?)null)
             .AddGroup("region", "Region", 30, 30, 850, 350, color: Paint("group", "#2244CC80"))
             .AddNode("card", "Card", 60, 120, groupId: "region", width: 190, height: 110,
                 color: Paint("node", "#CC224480"), backgroundColor: Paint("background", "#11223380"))

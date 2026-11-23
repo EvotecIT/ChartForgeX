@@ -9,10 +9,10 @@ internal static partial class VisualCartesianCompiler {
     /// <summary>Closed native bar paint policy shared by ordinary and detached value rendering.</summary>
     private sealed class BarSurfacePolicy {
         internal BarSurfacePolicy(Chart chart, VisualRenderContext context, ChartSeries series, int pointIndex, VisualThemeColors colors, SvgColorRole? sourceRole = null) {
-            Style = chart.Options.ResolvePreparedBarVisualStyle().Clone();
+            Style = chart.Options.Bars.ResolvePreparedVisualStyle().Clone();
             // Sparkline bars are micro marks on a sample grid: square, unless a radius is authored.
             // Histogram bins are contiguous intervals, so they stay square too.
-            CornerRadius = chart.Options.HasPreparedBarCornerRadius ? Style.CornerRadius
+            CornerRadius = chart.Options.Bars.HasPreparedCornerRadius ? Style.CornerRadius
                 : chart.Options.IsSparkline || series.HistogramBinLayout != null ? 0 : series.ThemeCornerRadius ?? context.Theme.BarRadius;
             Role = sourceRole ?? VisualChartPaint.SeriesRole(series, pointIndex);
             Pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue

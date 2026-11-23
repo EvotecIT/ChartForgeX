@@ -18,16 +18,16 @@ public sealed class RemainingValueTransitionDefaultControls {
         var renderer = new HtmlInteractiveChartRenderer(); var family = BrowserProofFonts.Family;
         foreach (var kind in Families) foreach (var visibility in new[] { "default", "hidden" }) {
             var chart = Model(kind, width, dark, 40, family);
-            if (visibility == "hidden") foreach (var series in chart.Series) series.WithDataLabels(false);
+            if (visibility == "hidden") foreach (var series in chart.Series) series.ShowDataLabels(false);
             Capture(renderer.PrepareSection(chart), kind + "-" + visibility, width, dark);
         }
         foreach (var kind in new[] { "rings", "gauge-arc", "bullet-legacy", "bullet-horizontal" }) {
-            var chart = Model(kind, width, dark, 40, family).WithValueFormat(ChartValueFormat.Custom(value => value.ToString("0.000", CultureInfo.InvariantCulture) + " units"));
-            if (kind == "bullet-horizontal") chart.Series[1].ConfigureBulletAxis(axis => axis.WithValueFormat(ChartValueFormat.Custom(value => value.ToString("0.000", CultureInfo.InvariantCulture) + " tasks")));
+            var chart = Model(kind, width, dark, 40, family).ValueFormat(ChartValueFormat.Custom(value => value.ToString("0.000", CultureInfo.InvariantCulture) + " units"));
+            if (kind == "bullet-horizontal") chart.Series[1].BulletAxis(axis => axis.ValueFormat(ChartValueFormat.Custom(value => value.ToString("0.000", CultureInfo.InvariantCulture) + " tasks")));
             Capture(renderer.PrepareSection(chart), kind + "-callback", width, dark);
         }
         foreach (var kind in new[] { "bullet-legacy", "bullet-horizontal" }) {
-            var chart = Model(kind, width, dark, 40, family); chart.Series[1].WithPointLabel(0, "Accepted count");
+            var chart = Model(kind, width, dark, 40, family); chart.Series[1].PointLabel(0, "Accepted count");
             Capture(renderer.PrepareSection(chart), kind + "-authored", width, dark);
         }
     }
@@ -39,21 +39,21 @@ public sealed class RemainingValueTransitionDefaultControls {
         File.WriteAllText(stem + ".html", section.Html); File.WriteAllText(stem + ".svg", section.PreparedVisual.ToSvg()); File.WriteAllBytes(stem + ".png", section.PreparedVisual.ToPng());
     }
     internal static Chart Model(string kind, int width, bool dark, double reading, string family, bool identified = true) {
-        var chart = Chart.Create().WithSize(width, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily(family).WithLegend(false).WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().Size(width, 440).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .FontFamily(family).Legend(false).ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         if (kind == "rings") {
-            chart.WithXLabels("Received", "Verified", "Complete").WithProgressRingCenterLabel();
+            chart.XLabels("Received", "Verified", "Complete").Progress(p => p.ShowRingCenterLabel());
             var series = new ChartSeries(new ChartSeriesId("completion"), "Completion", ChartSeriesKind.ProgressRing,
                 new[] { new ChartPoint(0, 25), new ChartPoint(1, reading), new ChartPoint(2, 85) });
-            if (identified) for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("stage-" + index));
+            if (identified) for (var index = 0; index < 3; index++) series.ObservationId(index, new ChartObservationId("stage-" + index));
             chart.AddSeries(series); return chart;
         }
         if (kind.StartsWith("gauge-", StringComparison.Ordinal)) {
             var series = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(reading, targets: new[] { new ChartGaugeTarget(75, "Goal") }));
-            if (identified) series.WithObservationId(0, new ChartObservationId("current"));
+            if (identified) series.ObservationId(0, new ChartObservationId("current"));
             chart.AddSeries(series);
-            chart.ConfigureGauge(options => {
+            chart.Gauge(options => {
                 options.Form = kind == "gauge-needle" ? ChartGaugeForm.Needle : kind == "gauge-combined" ? ChartGaugeForm.ArcWithNeedle
                     : kind is "gauge-horizontal" or "gauge-vertical" ? ChartGaugeForm.Linear : ChartGaugeForm.Arc;
                 options.Orientation = kind == "gauge-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
@@ -67,14 +67,14 @@ public sealed class RemainingValueTransitionDefaultControls {
         }
         var first = ChartSeries.CreateBullet(new ChartSeriesId("reviewed"), "Reviewed", new ChartBulletValue(35, 75, rangeEnds: new[] { 50d, 80 }));
         var second = ChartSeries.CreateBullet(new ChartSeriesId("verified"), "Verified", new ChartBulletValue(reading, 75, rangeEnds: new[] { 50d, 80 }));
-        if (identified) { first.WithObservationId(0, new ChartObservationId("current")); second.WithObservationId(0, new ChartObservationId("current")); }
-        chart.AddSeries(first).AddSeries(second).ConfigureBullet(options => {
+        if (identified) { first.ObservationId(0, new ChartObservationId("current")); second.ObservationId(0, new ChartObservationId("current")); }
+        chart.AddSeries(first).AddSeries(second).Bullet(options => {
             options.IndependentAxes = kind is "bullet-horizontal" or "bullet-vertical";
             options.Orientation = kind is "bullet-vertical" or "bullet-shared-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
         });
         if (kind is "bullet-horizontal" or "bullet-vertical") {
-            first.ConfigureBulletAxis(axis => { axis.TickCount = 3; axis.WithValueFormat(ChartValueFormat.Number("0.0' items'")); });
-            second.ConfigureBulletAxis(axis => { axis.Reversed = true; axis.TickCount = 3; axis.WithValueFormat(ChartValueFormat.Number("0.00' tasks'")); });
+            first.BulletAxis(axis => { axis.TickCount = 3; axis.ValueFormat(ChartValueFormat.Number("0.0' items'")); });
+            second.BulletAxis(axis => { axis.Reversed = true; axis.TickCount = 3; axis.ValueFormat(ChartValueFormat.Number("0.00' tasks'")); });
         }
         return chart;
     }

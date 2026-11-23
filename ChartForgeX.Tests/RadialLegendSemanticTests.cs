@@ -12,7 +12,7 @@ public sealed class RadialLegendSemanticTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void UnpaintedRadialSlicesRetainTheirSourceCollectionInNativeLegends(bool donut, bool allZero) {
-        var chart = Chart.Create().WithSize(640, 360).WithXLabels("A", "B");
+        var chart = Chart.Create().Size(640, 360).XLabels("A", "B");
         var points = new[] { new ChartPoint(1, 0), new ChartPoint(2, allZero ? 0 : 4) };
         if (donut) chart.AddDonut("Values", points); else chart.AddPie("Values", points);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -25,7 +25,7 @@ public sealed class RadialLegendSemanticTests {
         Assert.DoesNotContain(XDocument.Parse(svg).Descendants(), node =>
             (string?)node.Attribute("data-cfx-role") == "radial-point" && (string?)node.Attribute("data-cfx-point") == "0");
         chart.Series[0].Points[0] = new ChartPoint(1, 20);
-        chart.Options.MaximumPieSlices = 2;
+        chart.Options.Pie.MaxSlices = 2;
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng());
     }

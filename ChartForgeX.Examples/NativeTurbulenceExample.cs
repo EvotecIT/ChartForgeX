@@ -16,8 +16,8 @@ public static class NativeTurbulenceExample {
 
     public static PreparedVisual MaskSource(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var width = Width(variant);
-        var chart = Chart.Create().WithSize(width, 160).WithTheme(VisualTheme.Graphite(), mode)
-            .WithLegend(false).WithDataLabels(false).AddLine("Signal", new[] {
+        var chart = Chart.Create().Size(width, 160).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Legend(false).DataLabels(false).AddLine("Signal", new[] {
                 new ChartPoint(1, 2), new ChartPoint(2, 8), new ChartPoint(3, 5), new ChartPoint(4, 9)
             });
         var source = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 160), 16),

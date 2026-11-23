@@ -13,7 +13,7 @@ public sealed class V2CartesianSemanticTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AllAnnotationKindsRetainRawFactsAndRegionsAfterSourceMutation(bool annotationOnly) {
-        var chart = Chart.Create().WithAxes(false).WithGrid(false)
+        var chart = Chart.Create().Axes(false).ShowGrid(false)
             .AddHorizontalLine(2.5, "Target <5 & \"safe\"")
             .AddVerticalLine(1.5)
             .AddHorizontalBand(2.5, 3.5, "Full interval label")
@@ -54,11 +54,11 @@ public sealed class V2CartesianSemanticTests {
     [Fact]
     public void PointCalloutAndCustomScatterRolesSurvivePreparationWithPointIdentity() {
         const string customRole = "operator-observation<&\"";
-        var chart = Chart.Create().WithAxes(false).WithGrid(false)
+        var chart = Chart.Create().Axes(false).ShowGrid(false)
             .AddScatter("Ordinary", new[] { new ChartPoint(0, 1) })
             .AddPointCallout("Full callout caption", 1, 2)
             .AddScatter("Authored", new[] { new ChartPoint(2, 3) });
-        chart.Series[2].WithSemanticRole(customRole);
+        chart.Series[2].SemanticRole(customRole);
         var prepared = chart.Prepare(Context());
         var svg = prepared.ToSvg();
         var markers = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "ellipse"
@@ -85,8 +85,8 @@ public sealed class V2CartesianSemanticTests {
     public void NonScatterSeriesRetainAuthoredRolesWithoutReplacingStructuralMarkRoles(ChartSeriesKind kind) {
         var points = new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) };
         var chart = kind == ChartSeriesKind.Line ? Chart.Create().AddLine("Observed", points) : Chart.Create().AddBar("Observed", points);
-        chart.WithAxes(false).WithGrid(false);
-        chart.Series[0].WithSemanticRole("host-observation");
+        chart.Axes(false).ShowGrid(false);
+        chart.Series[0].SemanticRole("host-observation");
         var xml = XDocument.Parse(chart.Prepare(Context()).ToSvg());
         var series = Assert.Single(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "series");
         Assert.Equal("host-observation", (string?)series.Attribute("data-cfx-semantic-role"));

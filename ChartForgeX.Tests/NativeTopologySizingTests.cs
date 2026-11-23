@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 public sealed class NativeTopologySizingTests {
     [Fact]
     public void NaturalCanvasRemeasuresHeadingAfterItsContentExpandsAnInitiallyNarrowFrame() {
-        var chart = TopologyChart.Create().WithId("narrow-frame").WithTitle("Narrow").WithViewport(120, 180, 80)
+        var chart = TopologyChart.Create().Id("narrow-frame").Title("Narrow").Viewport(new TopologyViewport(120, 180, 80))
             .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 64, height: 42);
         var prepared = chart.Prepare(new TopologyRenderOptions { HeaderStyle = TopologyHeaderStyle.CenterBanner, IncludeLegend = false });
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -84,12 +84,12 @@ public sealed class NativeTopologySizingTests {
     }
 
     private static TopologyChart Diagram(double width, double height, double targetX) {
-        var chart = TopologyChart.Create().WithId("sizing").WithViewport(width, height, 24);
+        var chart = TopologyChart.Create().Id("sizing").Viewport(new TopologyViewport(width, height, 24));
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 24, Y = 64, Width = 120, Height = 64, PreserveDisplayModeSize = true });
         chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = targetX, Y = 64, Width = 120, Height = 64, PreserveDisplayModeSize = true });
         chart.Edges.Add(new TopologyEdge { Id = "route", SourceNodeId = "source", TargetNodeId = "target", Routing = TopologyEdgeRouting.Straight,
             Color = "#ff0000", StrokeWidth = 4, SourceMarker = TopologyMarkerKind.None, TargetMarker = TopologyMarkerKind.None });
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeNodeLabels = false, IncludeStatusBadges = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeNodeLabels = false, IncludeStatusBadges = false });
         return chart;
     }
 }

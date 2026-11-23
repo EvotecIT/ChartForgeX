@@ -75,8 +75,8 @@ public sealed class RadialLabelTargetBrowserTests {
     [BrowserFact]
     public async Task DashboardCaptionsResolveRepeatedPointIdsWithinTheirOwnScopedChart() {
         if (!Enabled) return;
-        var first = Create(ChartSeriesKind.Pie, true).WithTitle("First chart");
-        var second = Create(ChartSeriesKind.Pie, true).WithTitle("Second chart");
+        var first = Create(ChartSeriesKind.Pie, true).Title("First chart");
+        var second = Create(ChartSeriesKind.Pie, true).Title("Second chart");
         second.Series[0].Points[0] = new ChartPoint(1, 850);
         var html = new[] { first, second }.ToInteractiveHtmlDashboardPage(options => {
             options.IdScope = "caption-dashboard";
@@ -124,17 +124,17 @@ public sealed class RadialLabelTargetBrowserTests {
     }
 
     internal static Chart Create(ChartSeriesKind kind, bool outside) {
-        var chart = Chart.Create().WithSize(outside ? 640 : 360, outside ? 420 : 360)
-            .WithTheme(VisualTheme.Graphite(), outside ? ThemeMode.Light : ThemeMode.Dark)
-            .WithFontFamily("Carlito").WithLegend(false).WithXLabels("North", "South", "East")
-            .WithDataLabels().WithDataLabelPlacement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside);
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        var chart = Chart.Create().Size(outside ? 640 : 360, outside ? 420 : 360)
+            .Theme(VisualTheme.Graphite()).ThemeMode(outside ? ThemeMode.Light : ThemeMode.Dark)
+            .FontFamily("Carlito").Legend(false).XLabels("North", "South", "East")
+            .DataLabels().DataLabels(d => d.Placement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside));
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         // A full column's radial end can leave no collision-free room for a centred Outside candidate.
-        if (outside && kind == ChartSeriesKind.RadialColumn) chart.WithDataLabelPlacement(ChartDataLabelPlacement.Right);
+        if (outside && kind == ChartSeriesKind.RadialColumn) chart.DataLabels(d => d.Placement(ChartDataLabelPlacement.Right));
         var points = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 300), new ChartPoint(3, 750) };
         chart.AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", kind, points));
-        return chart.WithYAxisBounds(0, 1500);
+        return chart.YAxis(y => y.Bounds(0, 1500));
     }
 
     private static async Task CaptureAsync(IPage page, Chart chart, ChartSeriesKind kind, bool outside, object state) {

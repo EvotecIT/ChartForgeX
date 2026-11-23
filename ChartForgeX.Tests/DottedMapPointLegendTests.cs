@@ -71,7 +71,7 @@ public sealed class DottedMapPointLegendTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void SeriesKeyUsesItsDefaultDotPaintWithoutBorrowingAnObservationOverride(bool dark, bool explicitColor) {
-        var chart = Create(dark).WithPointLegend(false).WithLegend();
+        var chart = Create(dark).Legend(l => l.ShowPoints(false)).Legend();
         if (explicitColor) chart.Series[0].Color = ChartColor.FromRgb(17, 53, 97);
         var context = VisualExportRequest.ForChart(chart).Context;
         var expected = chart.Series[0].Color ?? context.Theme.Resolve(context.ThemeMode).Palette[0];
@@ -97,11 +97,11 @@ public sealed class DottedMapPointLegendTests {
     [Fact]
     public void ExplicitSingletonAndEmptyRetainedMapsRespectLegendVisibility() {
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("locations"), "Locations", new[] { new ChartMapPoint("North", 21, 52) });
-        var chart = Chart.Create().WithPointLegend().WithLegend().AddSeries(series);
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).Legend().AddSeries(series);
         Assert.Equal("North", Assert.Single(Entries(XDocument.Parse(chart.ToSvg()))).Descendants().Single(node => Role(node) == "legend-label").Value);
-        chart.WithLegend(false);
+        chart.Legend(false);
         Assert.Empty(Entries(XDocument.Parse(chart.ToSvg())));
-        chart.WithLegend();
+        chart.Legend();
         series.ReplaceMapPoints(Array.Empty<ChartMapPoint>());
         Assert.Empty(Entries(XDocument.Parse(chart.ToSvg())));
     }
@@ -115,12 +115,12 @@ public sealed class DottedMapPointLegendTests {
         var ordered = (reversed ? Enumerable.Reverse(input) : input.AsEnumerable()).Where(item => !removeNorth || item.Label != "North").ToArray();
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("locations"), "Locations", ordered);
         for (var index = 0; index < ordered.Length; index++) {
-            series.WithObservationId(index, new ChartObservationId(ordered[index].Label.ToLowerInvariant()));
-            if (ordered[index].Label == "North") series.WithPointColor(index, ChartColor.FromRgb(220, 70, 80));
+            series.ObservationId(index, new ChartObservationId(ordered[index].Label.ToLowerInvariant()));
+            if (ordered[index].Label == "North") series.PointColor(index, ChartColor.FromRgb(220, 70, 80));
         }
-        return Chart.Create().WithSize(width, 420).WithTitle("Observed locations")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithMapViewport(ChartMapViewport.Europe()).WithPointLegend().WithDataLabels(false).AddSeries(series);
+        return Chart.Create().Size(width, 420).Title("Observed locations")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Map(m => m.Viewport(ChartMapViewport.Europe())).Legend(l => l.ShowPoints()).DataLabels(false).AddSeries(series);
     }
 
     private static XElement[] Entries(XDocument xml) => xml.Descendants().Where(node => Role(node) == "legend-entry").ToArray();

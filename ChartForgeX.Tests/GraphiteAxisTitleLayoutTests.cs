@@ -14,11 +14,11 @@ public sealed class GraphiteAxisTitleLayoutTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void RequestedYAxisTitleSurvivesHeaderAndTopLegendInSvgAndPng(bool dark, bool legend) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(900, 520).WithTitle("Mermaid XY chart").WithSubtitle("xychart")
-            .WithYAxis("Revenue").WithYAxisBounds(0, 50).WithXLabels("Jan", "Feb", "Mar")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(900, 520).Title("Mermaid XY chart").Subtitle("xychart")
+            .YAxis(yAxis => yAxis.Title("Revenue").Bounds(0, 50)).XLabels("Jan", "Feb", "Mar")
             .AddLine("Revenue", new[] { new ChartPoint(1, 10), new ChartPoint(2, 25), new ChartPoint(3, 40) });
-        chart.WithLegend(legend).WithLegendPosition(ChartLegendPosition.Top);
+        chart.Legend(legend).Legend(l => l.Position(ChartLegendPosition.Top));
         var request = VisualExportRequest.ForChart(chart); var prepared = chart.Prepare(request.Context);
         var title = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "axis-y-title");
         Assert.Equal("Revenue", Assert.Single(title.Text.Lines).Text);

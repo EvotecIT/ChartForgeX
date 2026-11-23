@@ -10,10 +10,10 @@ namespace ChartForgeX.Tests;
 public sealed class V2RadialOptionTests {
     [Fact]
     public void PatternsRespectTheDonutHoleAndChangeOnlyTheFilledMark() {
-        var chart = Chart.Create().AddDonut("Load", new[] { new ChartPoint(1, 100) }).WithDonutCenterLabel(false);
+        var chart = Chart.Create().AddDonut("Load", new[] { new ChartPoint(1, 100) }).Pie(p => p.ShowCenterLabel(false));
         chart.Series[0].ShowDataLabels = false;
         var plain = Compile(chart);
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         var patterned = Compile(chart);
         Assert.Contains(patterned.Nodes, node => node.Role == "radial-fill-pattern");
         var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(patterned));
@@ -36,7 +36,7 @@ public sealed class V2RadialOptionTests {
     public void StateAndPointPaintResolveBeforeAggregationAndLegendLayout() {
         var chart = Chart.Create().AddPie("Load", new[] { new ChartPoint(1, 60), new ChartPoint(2, 40) });
         chart.Series[0].StateRole = ChartSeriesState.Danger;
-        var explicitColor = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(1, explicitColor);
+        var explicitColor = ChartColor.FromHex("#123456"); chart.Series[0].PointColor(1, explicitColor);
         var scene = Compile(chart); var colors = new VisualRenderContext().Theme.Resolve(ThemeMode.Light);
         var slices = scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         Assert.Equal(colors.Status.Critical.Fill, slices[0].Fill); Assert.Equal(explicitColor, slices[1].Fill);
@@ -49,10 +49,10 @@ public sealed class V2RadialOptionTests {
     public void FormattingRunsOncePerSliceAndMixedAggregatePatternsRemainExplicit() {
         var calls = 0; var contexts = new List<ChartPieSliceLabelContext>();
         var chart = Chart.Create().AddDonut("Load", new[] { new ChartPoint(1, 70), new ChartPoint(2, 20), new ChartPoint(3, 10) })
-            .WithDonutCenterLabel(false).WithDataLabels().WithPieSliceLabelFormatter(context => { contexts.Add(context); return context.FormattedValue; });
-        chart.Options.MaximumPieSlices = 2;
+            .Pie(p => p.ShowCenterLabel(false)).DataLabels().Pie(p => p.SliceLabelBy(context => { contexts.Add(context); return context.FormattedValue; }));
+        chart.Options.Pie.MaxSlices = 2;
         chart.Options.ValueFormatter = value => "Resolved " + (++calls) + ": " + value;
-        chart.Series[0].WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        chart.Series[0].PointFillPattern(1, ChartFillPattern.Crosshatch);
         var scene = Compile(chart);
         Assert.Equal(2, calls); Assert.Equal(2, contexts.Count);
         Assert.All(contexts, context => Assert.Contains(scene.Regions, region => region.Role == "radial-data-label" && region.Label == context.FormattedValue));

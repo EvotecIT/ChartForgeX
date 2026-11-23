@@ -235,7 +235,7 @@ public static partial class VisualArtifactRendering {
         if (UsesPreparedNaturalSize(artifact)) return topology;
         if (topology.Viewport.Width == naturalSize.Width && topology.Viewport.Height == naturalSize.Height) return topology;
         var copy = TopologyLayoutEngine.Clone(topology);
-        copy.WithViewport(naturalSize.Width, naturalSize.Height, topology.Viewport.Padding);
+        copy.Viewport(new TopologyViewport(naturalSize.Width, naturalSize.Height, topology.Viewport.Padding));
         return copy;
     }
 

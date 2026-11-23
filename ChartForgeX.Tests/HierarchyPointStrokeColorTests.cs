@@ -14,10 +14,10 @@ public sealed class HierarchyPointStrokeColorTests {
     [InlineData(ChartSeriesKind.Sunburst)]
     public void AuthoredNodeBorderUsesSharedSceneAndPreparedOutputIsDetached(ChartSeriesKind kind) {
         var items = new[] { new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("leaf", "Leaf", "root", 3) };
-        var chart = Chart.Create().WithDataLabels(false);
+        var chart = Chart.Create().DataLabels(false);
         if (kind == ChartSeriesKind.Treemap) chart.AddTreemap("Work", items); else chart.AddSunburst("Work", items);
         var series = chart.Series[0]; var before = chart.ToSvg();
-        series.WithPointStrokeColor(1, ChartColor.FromHex("#FC0349")).WithStrokeWidth(3);
+        series.PointStrokeColor(1, ChartColor.FromHex("#FC0349")).StrokeWidth(3);
         var prepared = TreemapHierarchyTests.Prepare(chart); var svg = prepared.ToSvg();
         var role = kind == ChartSeriesKind.Treemap ? "treemap-tile-mark" : "sunburst-segment-mark";
         var mark = Assert.Single(XDocument.Parse(svg).Descendants(), item => (string?)item.Attribute("data-cfx-role") == role
@@ -31,10 +31,10 @@ public sealed class HierarchyPointStrokeColorTests {
             if (pixels.Pixels[offset] == pink.R && pixels.Pixels[offset + 1] == pink.G && pixels.Pixels[offset + 2] == pink.B && pixels.Pixels[offset + 3] == pink.A) { paintedBorder = true; break; }
         Assert.True(paintedBorder, "The authored node border must reach native PNG paint.");
         Assert.Throws<NotSupportedException>(() => ((IList<ChartColor?>)series.PointStrokeColors)[1] = ChartColor.Black);
-        series.UseSeriesStrokeColor(1);
+        series.PointStrokeColor(1, null);
         Assert.Null(series.PointStrokeColors[1]); Assert.Equal(before, chart.ToSvg());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
-        series.WithPointStrokeColor(1, ChartColor.White);
+        series.PointStrokeColor(1, ChartColor.White);
         series.ReplaceHierarchyItems(Enumerable.Reverse(items));
         Assert.Empty(series.PointStrokeColors);
         Assert.Equal(new[] { "leaf", "root" }, series.HierarchyItems.Select(item => item.Id));
@@ -44,12 +44,12 @@ public sealed class HierarchyPointStrokeColorTests {
     public void HierarchyStrokeIndicesAndUnsupportedFamilyRejectWithoutGrowingAnOrdinalList() {
         var chart = Chart.Create().AddTreemap("One", new[] { new ChartHierarchyItem("only", "Only", value: 1) });
         var series = chart.Series[0];
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.WithPointStrokeColor(-1, ChartColor.Black));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.WithPointStrokeColor(1, ChartColor.Black));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.UseSeriesStrokeColor(1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.PointStrokeColor(-1, ChartColor.Black));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.PointStrokeColor(1, ChartColor.Black));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.PointStrokeColor(1, null));
         Assert.Empty(series.PointStrokeColors);
         var line = Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).Series[0];
-        Assert.Throws<NotSupportedException>(() => line.WithPointStrokeColor(0, ChartColor.Black));
+        Assert.Throws<NotSupportedException>(() => line.PointStrokeColor(0, ChartColor.Black));
         Assert.Empty(line.PointStrokeColors);
     }
 }

@@ -19,10 +19,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task NativePeerSelectionReconcilesRepresentedIdentitiesWithoutClearingUnrelatedRawOrDerivedFacts(ChartSelectionMode mode, bool compare) {
         if (!Enabled) return;
         var values = new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3), new ChartPoint(3, 7) };
-        Chart Raw() => Chart.Create().WithSize(640, 360).AddSeries(
+        Chart Raw() => Chart.Create().Size(640, 360).AddSeries(
             ChartSeries.CreateLine(new ChartSeriesId("observations"), "Raw", values)
-                .WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south"), new ChartObservationId("west"), new ChartObservationId("east") }));
-        Chart Summary() => Chart.Create().WithSize(640, 360).AddSeries(
+                .ObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south"), new ChartObservationId("west"), new ChartObservationId("east") }));
+        Chart Summary() => Chart.Create().Size(640, 360).AddSeries(
             ChartSeries.CreateTrendLine(new ChartSeriesId("observations"), "Summary", values));
         var html = new[] { Raw(), Raw(), Summary(), Summary() }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.Interaction.GroupName = "scoped-native-selection";

@@ -385,25 +385,25 @@ internal static partial class MermaidExamples {
                 && block is not ChartForgeX.VisualBlocks.JourneyDiagramBlock && block is not ChartForgeX.VisualBlocks.TimelineDiagramBlock)
                 block.Options.ShowCard = false;
             if (item.Key == "mermaid-source-font-size-wardley-boundaries" && result.Artifact.Model is ChartForgeX.VisualBlocks.WardleyMapBlock wardley) {
-                wardley.WithSize(420, 320);
+                wardley.Size(420, 320);
             }
             if (item.Key == "mermaid-source-font-size-packet-narrow-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.PacketLayoutBlock packet)
-                packet.WithSize(600, 262);
+                packet.Size(600, 262);
             if (item.Key == "mermaid-source-font-size-group-header-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart grouped)
                 grouped.Groups[0].Subtitle = "Group description";
             if (item.Key.StartsWith("mermaid-source-font-size-icon-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.Topology.TopologyChart icons) {
                 icons.Title = ""; icons.Subtitle = "";
                 icons.DefaultRenderOptions = new ChartForgeX.Topology.TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
                 icons.Nodes[0].DisplayMode = ChartForgeX.Topology.TopologyNodeDisplayMode.Icon;
-                ChartForgeX.Topology.TopologyChartExtensions.WithViewport(icons, 360, 240, 16);
+                icons.Viewport = new ChartForgeX.Topology.TopologyViewport(360, 240, 16);
             }
             if (item.Key == "mermaid-source-font-size-axis-rotated-fit" && result.Artifact.Model is Chart rotated) {
-                rotated.WithSize(360, 420); rotated.Options.XAxis.LabelAngle = 90;
+                rotated.Size(360, 420); rotated.Options.XAxis.LabelAngle = 90;
             }
             if (item.Key == "mermaid-source-font-size-actor-compact-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart actors) {
                 actors.Title = ""; actors.Subtitle = ""; actors.LayoutMode = ChartForgeX.Topology.TopologyLayoutMode.Manual;
                 actors.DefaultRenderOptions = new ChartForgeX.Topology.TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
-                ChartForgeX.Topology.TopologyChartExtensions.WithViewport(actors, 360, 240, 16);
+                actors.Viewport = new ChartForgeX.Topology.TopologyViewport(360, 240, 16);
                 for (var index = 0; index < actors.Nodes.Count; index++) {
                     var node = actors.Nodes[index]; node.X = 60 + index * 160; node.Y = 70;
                     node.PreserveDisplayModeSize = false;
@@ -412,14 +412,14 @@ internal static partial class MermaidExamples {
                 }
             }
             if (item.Key == "mermaid-source-font-size-git-cherry-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.GitGraphBlock git) {
-                git.WithTitle("").WithSubtitle("").WithSize(320, 460).WithCommitLabels(false);
+                git.Title("").Subtitle("").Size(320, 460).ShowCommitLabels(false);
                 git.ShowBranchLabels = false;
             }
             if ((item.Key == "mermaid-source-font-size-actor-fit" || item.Key == "mermaid-source-font-size-tile-fit") &&
                 result.Artifact.Model is ChartForgeX.Topology.TopologyChart topology) {
                 topology.Title = ""; topology.Subtitle = ""; topology.LayoutMode = ChartForgeX.Topology.TopologyLayoutMode.Manual;
                 topology.DefaultRenderOptions = new ChartForgeX.Topology.TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeTileSubtitles = true };
-                ChartForgeX.Topology.TopologyChartExtensions.WithViewport(topology, 320, 360, 16);
+                topology.Viewport = new ChartForgeX.Topology.TopologyViewport(320, 360, 16);
                 for (var index = 0; index < topology.Nodes.Count; index++) {
                     var node = topology.Nodes[index]; node.X = 32 + index * 176; node.Y = 90; node.Width = 80;
                     node.Height = item.Key == "mermaid-source-font-size-tile-fit" ? 48 : 108;

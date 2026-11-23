@@ -164,15 +164,6 @@ public sealed partial class SequenceArtifact {
     /// <summary>Creates a sequence artifact.</summary>
     public static SequenceArtifact Create(string id) => new() { Id = id ?? throw new ArgumentNullException(nameof(id)) };
 
-    /// <summary>Sets the title.</summary>
-    public SequenceArtifact WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets the subtitle.</summary>
-    public SequenceArtifact WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>Sets the natural preview size.</summary>
-    public SequenceArtifact WithSize(double width, double height) { Width = width; Height = height; return this; }
-
     /// <summary>Adds or updates a participant.</summary>
     public SequenceArtifact AddParticipant(string id, string? label = null, SequenceArtifactParticipantKind kind = SequenceArtifactParticipantKind.Participant) {
         var existing = FindParticipant(id);

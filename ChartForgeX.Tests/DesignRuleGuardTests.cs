@@ -42,12 +42,12 @@ public sealed class DesignRuleGuardTests {
             var verticalGrid = lines.Where(line => line.Role == "grid-x").ToArray();
             var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
             var axis = ChartCartesianOrientation.ValueAxis(chart, ChartAxisSide.Primary);
-            if (!ChartValueAxisRange.Applies(horizontal ? Clean(axis) : axis) || axis.Maximum.HasValue || chart.Options.IsSparkline) continue;
+            if (!ChartValueAxisRange.Applies(horizontal ? Clean(axis) : axis) || axis.Max.HasValue || chart.Options.IsSparkline) continue;
             if (chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary)) continue;
             if (!horizontal && horizontalGrid.Length > 1)
                 Assert.True(Math.Abs(horizontalGrid.Min(line => line.Start.Y) - plot.Top) < .75,
                     $"{kind}/{variant}/{mode}: the top gridline ({horizontalGrid.Min(line => line.Start.Y):0.##}) is not the plot top ({plot.Top:0.##}); the value axis ends between ticks.");
-            if (horizontal && verticalGrid.Length > 1 && axis.Maximum == null) {
+            if (horizontal && verticalGrid.Length > 1 && axis.Max == null) {
                 var right = verticalGrid.Max(line => line.Start.X); var left = verticalGrid.Min(line => line.Start.X);
                 Assert.True(Math.Abs(right - plot.Right) < .75 || Math.Abs(left - plot.Left) < .75 && chart.Options.XAxis.Reversed,
                     $"{kind}/{variant}/{mode}: the outer value gridline ({right:0.##}) is not the plot edge ({plot.Right:0.##}).");
@@ -112,7 +112,7 @@ public sealed class DesignRuleGuardTests {
     [MemberData(nameof(GalleryFamilies))]
     public void StatusRoles_OnlyPaintStatusEncodedData(ChartSeriesKind kind, string variant) {
         foreach (var mode in Modes) {
-            var svg = V2GalleryModels.Create(kind, variant, mode).WithThemeMode(mode).WithSvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
+            var svg = V2GalleryModels.Create(kind, variant, mode).ThemeMode(mode).SvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
             foreach (var element in XDocument.Parse(svg).Descendants()) {
                 var paint = string.Join(" ", element.Attributes().Where(attribute => attribute.Name.LocalName is "fill" or "stroke").Select(attribute => attribute.Value));
                 if (!StatusVariable.IsMatch(paint)) continue;
@@ -217,7 +217,7 @@ public sealed class DesignRuleGuardTests {
         foreach (var surface in new[] { colors.Surface, colors.ElevatedSurface })
             Assert.True(ChartColorMath.ContrastRatio(ramp[0], surface) >= 1.5, mode + ": the weakest ramp step nearly vanishes into the surface.");
         Assert.True(ChartColorMath.ContrastRatio(ramp[0], ramp[ramp.Count - 1]) >= 3, mode + ": the ramp's ends are too close to tell apart.");
-        var chart = Chart.Create().WithXLabels("A", "B", "C", "D", "E", "F")
+        var chart = Chart.Create().XLabels("A", "B", "C", "D", "E", "F")
             .AddHeatmapRow("R1", new[] { 1d, 4, 7, 10, 13, 17 }).AddHeatmapRow("R2", new[] { 2d, 5, 8, 11, 14, 16 });
         var cells = Prepare(chart, mode).Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-cell-shape")
             .Select(node => node.Fill!.Value).ToArray();
@@ -269,6 +269,6 @@ public sealed class DesignRuleGuardTests {
     }
 
     private static PreparedVisual Prepare(Chart chart, ThemeMode mode) =>
-        chart.WithThemeMode(mode).Prepare(new VisualRenderContext(theme: chart.Options.Theme, themeMode: mode));
+        chart.ThemeMode(mode).Prepare(new VisualRenderContext(theme: chart.Options.Theme, themeMode: mode));
 
 }

@@ -17,17 +17,17 @@ public sealed class ChartAxisWindowLabelTests {
     [InlineData(true, true, false)]
     [InlineData(true, true, true)]
     public void OffWindowLabelsCannotMoveIntoThePlotButInclusiveBoundaryLabelsRemain(bool step, bool reversed, bool markers) {
-        var chart = Chart.Create().WithSize(420, 280).WithAxes(false).WithGrid(false).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels();
+        var chart = Chart.Create().Size(420, 280).Axes(false).ShowGrid(false).Legend(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).DataLabels();
         var points = new[] {
             new ChartPoint(2.99, 2), new ChartPoint(3, 4, true), new ChartPoint(5, 5, true),
             new ChartPoint(7, 6, true), new ChartPoint(7.01, 8, true)
         };
         if (step) chart.AddStepLine("Observed", points); else chart.AddLine("Observed", points);
         var series = chart.Series[0];
-        series.ConfigureMarkers(options => { options.Enabled = markers; options.Radius = 4; });
+        series.Markers(options => { options.Enabled = markers; options.Radius = 4; });
         var captions = new[] { "HiddenLeft", "L", "M", "R", "HiddenRight" };
-        for (var index = 0; index < captions.Length; index++) series.WithPointLabel(index, captions[index]);
+        for (var index = 0; index < captions.Length; index++) series.PointLabel(index, captions[index]);
         chart.Options.XAxis.Reversed = reversed;
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7)));
@@ -42,9 +42,9 @@ public sealed class ChartAxisWindowLabelTests {
         Assert.Equal(5, prepared.Regions.Count(region => region.Role == "point"));
 
         var raster = prepared.ToPng();
-        series.WithPointLabel(0, "").WithPointLabel(4, "");
+        series.PointLabel(0, "").PointLabel(4, "");
         Assert.Equal(raster, chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))).ToPng());
-        series.WithPointLabel(0, captions[0]).WithPointLabel(4, captions[4]);
+        series.PointLabel(0, captions[0]).PointLabel(4, captions[4]);
         var ordinary = chart.Prepare(context).Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role == "data-label").Select(node => node.Text.Lines.Single().Text);
         Assert.Contains("HiddenLeft", ordinary);
@@ -59,11 +59,11 @@ public sealed class ChartAxisWindowLabelTests {
     [InlineData(true, true)]
     public void SourceAdmissionPreventsOffWindowGuidesAndMarkersRoundingOntoTheBoundary(bool step, bool reversed) {
         const double outside = 2.9999999999999996;
-        var chart = Chart.Create().WithSize(420, 280).WithAxes(false).WithGrid(false).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(420, 280).Axes(false).ShowGrid(false).Legend(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(outside, 5), new ChartPoint(10, 8) };
         if (step) chart.AddStepLine("Observed", points); else chart.AddLine("Observed", points);
-        chart.Series[0].ConfigureMarkers(options => { options.Enabled = true; options.Radius = 4; });
+        chart.Series[0].Markers(options => { options.Enabled = true; options.Radius = 4; });
         chart.Options.XAxis.Reversed = reversed;
         var context = VisualExportRequest.ForChart(chart).Context;
         var viewport = new ChartAxisWindow(3, 7);

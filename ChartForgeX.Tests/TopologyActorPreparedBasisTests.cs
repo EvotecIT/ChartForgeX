@@ -40,7 +40,7 @@ public sealed class TopologyActorPreparedBasisTests {
     public void PositionOnlyEditTranslatesTheCapturedGlyphAndPolicyEditsResumeNativeGeometry(TopologyIconShape glyph) {
         var direct = Chart(glyph, false).Prepare(); var svg = direct.ToSvg(); var png = direct.ToPng(); var envelope = direct.ToInterchangeEnvelope();
         var json = envelope.ToJson(); var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();
-        var first = GlyphSurface(svg); restored.WithViewport(1200, 900, 0); restored.Nodes[0].X += 37; restored.Nodes[0].Y += 29;
+        var first = GlyphSurface(svg); restored.Viewport(new TopologyViewport(1200, 900, 0)); restored.Nodes[0].X += 37; restored.Nodes[0].Y += 29;
         var moved = restored.Prepare(); var movedSvg = moved.ToSvg(); var movedJson = moved.ToInterchangeEnvelope().ToJson();
         Capture(movedSvg, moved.ToPng(), movedJson, "actor-basis-" + glyph + "-translated");
         var translated = GlyphSurface(movedSvg);
@@ -60,7 +60,7 @@ public sealed class TopologyActorPreparedBasisTests {
         var changed = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); changed.Nodes[0].IconShape = TopologyIconShape.Badge;
         Assert.DoesNotContain("preparedNodeBasis", changed.Prepare().ToInterchangeEnvelope().ToJson(), StringComparison.Ordinal);
         var automatic = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); automatic.LayoutMode = TopologyLayoutMode.Layered;
-        automatic.WithViewport(1600, 1200, 0); automatic.WithRenderOptions(new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false });
+        automatic.Viewport(new TopologyViewport(1600, 1200, 0)); automatic.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false });
         Assert.DoesNotContain("preparedNodeBasis", automatic.Prepare().ToInterchangeEnvelope().ToJson(), StringComparison.Ordinal);
         Assert.Equal(svg, direct.ToSvg()); Assert.Equal(png, direct.ToPng()); Assert.Equal(json, envelope.ToJson());
     }
@@ -68,7 +68,7 @@ public sealed class TopologyActorPreparedBasisTests {
     [Fact]
     public void CapturedActorNamedContourKeepsTheExistingConnectorGapInTheCapturedUnits() {
         var json = Chart(TopologyIconShape.Router, false).Prepare().ToInterchangeEnvelope().ToJson();
-        var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); restored.WithViewport(1600, 1200, 0);
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); restored.Viewport(new TopologyViewport(1600, 1200, 0));
         restored.AddNode("target", "Target", 1100, 50, width: 80, height: 80)
             .AddEdge("connector", "actor", "target", routing: TopologyEdgeRouting.Straight);
         restored.Nodes[1].Kind = TopologyNodeKind.Generic; restored.Nodes[1].ShowStatusBadge = false;
@@ -88,7 +88,7 @@ public sealed class TopologyActorPreparedBasisTests {
     [InlineData("display")] [InlineData("padding")] [InlineData("wrapping")]
     public void NativeGeometryAndShapePolicyEditsDiscardThePrivateCapturedBasis(string policy) {
         var json = Chart(TopologyIconShape.Router, false).Prepare().ToInterchangeEnvelope().ToJson();
-        var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); restored.WithViewport(1600, 1200, 0);
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart(); restored.Viewport(new TopologyViewport(1600, 1200, 0));
         var node = restored.Nodes[0];
         switch (policy) {
             case "height": node.Height += 10; break;

@@ -35,13 +35,13 @@ public sealed class NumericRadialOwnerClosureTests {
     [InlineData(true)]
     [InlineData(false)]
     public void TransparentPaintDoesNotDeclareNumericGeometryCollapseAndLogarithmicZerosRemainInvalid(bool bars) {
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440), bars, "Observed", new ChartPoint(1, 50));
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#2468AC").WithAlpha(0));
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440), bars, "Observed", new ChartPoint(1, 50));
+        chart.Series[0].PointColor(0, ChartColor.FromHex("#2468AC").WithAlpha(0));
         var point = XDocument.Parse(chart.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point");
         Assert.Contains(point.Descendants(), node => (string?)node.Attribute("data-cfx-role") == (bars ? "radial-bar" : "radial-column"));
         Assert.Null(point.Attribute("data-cfx-geometry-status"));
         chart.Series[0].Points[0] = new ChartPoint(1, 0);
-        chart.Options.YAxis.WithScale(ChartScaleKind.Logarithmic);
+        chart.Options.YAxis.Scale(ChartScaleKind.Logarithmic);
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
     }
 
@@ -70,7 +70,7 @@ public sealed class NumericRadialOwnerClosureTests {
         var single = NumericRadialSeriesTests.Marks(NumericRadialSeriesTests.Compile(first))[0];
         Assert.Equal(2, bars ? (single.Outer - single.Inner) / (grouped.Outer - grouped.Inner) : single.Sweep / grouped.Sweep, 10);
         var partial = EmptyAxisChart(bars, emptyPrimary, false);
-        (emptyPrimary ? partial.Options.YAxis : partial.Options.SecondaryYAxis).Minimum = 10;
+        (emptyPrimary ? partial.Options.YAxis : partial.Options.SecondaryYAxis).Min = 10;
         Assert.Single(partial.Prepare(VisualExportRequest.ForChart(partial).Context).Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "radial-value-axis");
     }
 
@@ -79,7 +79,7 @@ public sealed class NumericRadialOwnerClosureTests {
     [InlineData(false)]
     public void ExplicitEmptyAxisBoundsRemainVisibleAndAllEmptyChartsKeepNoData(bool bars) {
         var chart = EmptyAxisChart(bars, false, false);
-        chart.Options.SecondaryYAxis.WithBounds(10, 100);
+        chart.Options.SecondaryYAxis.Bounds(10, 100);
         var scene = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
         var axis = scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Role == "radial-value-axis" && group.Metadata["data-cfx-axis"] == "secondary");
         Assert.Equal("10", axis.Metadata["data-cfx-min"]); Assert.Equal("100", axis.Metadata["data-cfx-max"]);
@@ -96,14 +96,14 @@ public sealed class NumericRadialOwnerClosureTests {
     [InlineData(true, ChartScaleKind.SymmetricLogarithmic)]
     [InlineData(false, ChartScaleKind.SymmetricLogarithmic)]
     public void AutomaticSignedDomainsIncludeTheirFirstTickWhileExplicitBoundsAndLabelsStayAuthoritative(bool bars, ChartScaleKind kind) {
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(800, 520).WithLegend(false).WithDataLabels(false)
-            .WithRadialGeometry(new(-75, 195)), bars, "Observed", new(1, -1), new(2, 100));
-        chart.Options.YAxis.WithScale(kind);
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(800, 520).Legend(false).DataLabels(false)
+            .RadialGeometry(new(-75, 195)), bars, "Observed", new(1, -1), new(2, 100));
+        chart.Options.YAxis.Scale(kind);
         var scale = RadialValueScale.Create(chart.Options.YAxis, new[] { -1d, 0d, 100d }, "Numeric radial", true);
         Assert.True(scale.Minimum < -1); Assert.Equal(scale.Ticks[0], scale.Minimum); Assert.Contains(scale.Ticks, tick => tick < 0);
         var scene = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
         Assert.Contains(scene.Regions, region => region.Role == "radial-value-label" && region.Label!.StartsWith("-", StringComparison.Ordinal));
-        chart.Options.YAxis.WithBounds(-1, 100);
+        chart.Options.YAxis.Bounds(-1, 100);
         scale = RadialValueScale.Create(chart.Options.YAxis, new[] { -1d, 0d, 100d }, "Numeric radial", true);
         Assert.Equal(-1, scale.Minimum); Assert.Equal(100, scale.Maximum); Assert.All(scale.Ticks, tick => Assert.InRange(tick, -1, 100));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(-20, "outside"));
@@ -113,25 +113,25 @@ public sealed class NumericRadialOwnerClosureTests {
     }
 
     internal static (Chart Chart, int Series) RetainedFact(bool bars, string status) {
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithDataLabels(false).WithAxes(false).WithGrid(false).WithLegend();
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).DataLabels(false).Axes(false).ShowGrid(false).Legend();
         if (status == "precision-collapse") {
             NumericRadialSeriesTests.Add(chart, bars, "Large", new ChartPoint(1, 1e20));
             NumericRadialSeriesTests.Add(chart, bars, "Retained", new ChartPoint(1, 1));
-            foreach (var series in chart.Series) series.WithStackGroup("same");
+            foreach (var series in chart.Series) series.StackGroup("same");
             return (chart, 1);
         }
         NumericRadialSeriesTests.Add(chart, bars, "Retained", new(1, status is "zero" or "clipped-zero" ? 0 : 50), new(2, 100));
-        if (status.StartsWith("clipped", StringComparison.Ordinal)) chart.WithYAxisBounds(100, 200);
+        if (status.StartsWith("clipped", StringComparison.Ordinal)) chart.YAxis(y => y.Bounds(100, 200));
         return (chart, 0);
     }
 
     private static Chart EmptyAxisChart(bool bars, bool emptyPrimary, bool longText) {
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithDataLabels(false).WithLegend()
-            .WithRadialGeometry(new(-75, 195)), bars, "Observed", new ChartPoint(1, 100));
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440).DataLabels(false).Legend()
+            .RadialGeometry(new(-75, 195)), bars, "Observed", new ChartPoint(1, 100));
         NumericRadialSeriesTests.Add(chart, bars, "Pending");
-        chart.Series[emptyPrimary ? 0 : 1].UseSecondaryValueAxis();
+        chart.Series[emptyPrimary ? 0 : 1].SecondaryAxis();
         var axis = emptyPrimary ? chart.Options.YAxis : chart.Options.SecondaryYAxis;
-        axis.WithLabelFormatter(_ => longText ? "empty-caption-that-must-not-reserve-a-radius-lane" : "empty-x");
+        axis.LabelBy(_ => longText ? "empty-caption-that-must-not-reserve-a-radius-lane" : "empty-x");
         return chart;
     }
 }

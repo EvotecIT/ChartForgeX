@@ -25,7 +25,7 @@ public sealed class GitGraphLayoutPolicyTests {
     [Theory]
     [InlineData(GitGraphDirection.LeftToRight)] [InlineData(GitGraphDirection.TopToBottom)] [InlineData(GitGraphDirection.BottomToTop)]
     public void ParallelAncestryUsesFurthestParentAndKeepsSameLaneRootsDistinct(GitGraphDirection direction) {
-        var graph = GitGraphBlock.Create().WithDirection(direction).WithParallelCommits().WithSize(760, 500).WithBranchLabels(false).WithCommitLabels(false)
+        var graph = GitGraphBlock.Create().Direction(direction).ParallelCommits().Size(760, 500).ShowBranchLabels(false).ShowCommitLabels(false)
             .AddBranch("main").AddBranch("work").AddCommit("root", "main")
             .AddCommit("work1", "work", new[] { "root" }).AddCommit("work2", "work", new[] { "work1" })
             .AddCommit("main1", "main", new[] { "root" }).AddCommit("merged", "main", new[] { "main1", "work2" }, GitGraphCommitType.Merge)

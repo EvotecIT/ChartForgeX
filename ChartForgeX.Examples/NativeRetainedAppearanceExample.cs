@@ -2,7 +2,7 @@
 public static class NativeRetainedAppearanceExample {
     public static PreparedVisual PrepareSource(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var width = Width(variant);
-        var model = SequenceArtifact.Create("retained-appearance").WithSize(width, 420)
+        var model = SequenceArtifact.Create("retained-appearance").Width(width).Height(420)
             .AddParticipant("review", "Review").AddParticipant("archive", "Archive")
             .AddMessage("review", "archive", "Save").AddMessage("archive", "review", "Stored");
         model.Participants[0].Href = "#guide";

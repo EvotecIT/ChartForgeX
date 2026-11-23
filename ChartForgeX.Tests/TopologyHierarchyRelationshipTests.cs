@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyHierarchyRelationshipTests {
     [Fact]
     public void ParentEdgeLabelsAndHealthReachStaticAndBrowserContracts() {
-        var chart = TopologyChart.Create().WithViewport(640, 480).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 480)).AddHierarchy(new[] {
             new TopologyHierarchyItem("reference", "Reference") { Status = TopologyHealthStatus.Healthy, ParentEdgeLabel = "No incoming edge" },
             new TopologyHierarchyItem("relay", "Relay", "reference") { ParentEdgeLabel = "+0.2 ms < 1 ms", Badge = "REF", ShowHealthRing = true },
             new TopologyHierarchyItem("leaf", "Leaf", "relay") { ParentEdgeLabel = "+84 ms", ParentEdgeStatus = TopologyHealthStatus.Warning, Status = TopologyHealthStatus.Warning }

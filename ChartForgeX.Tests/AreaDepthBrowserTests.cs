@@ -20,8 +20,8 @@ public sealed class AreaDepthBrowserTests {
         if (!Enabled) return;
         var chart = ExampleRecipes.ForKind(kind, variant).Create(variant, compactDark ? ThemeMode.Dark : ThemeMode.Light) as Chart;
         Assert.NotNull(chart);
-        chart!.WithSize(800, 440).WithTheme(VisualTheme.Graphite(), compactDark ? ThemeMode.Dark : ThemeMode.Light);
-        foreach (var series in chart.Series) series.ConfigureMarkers(markers => markers.Radius = 3);
+        chart!.Size(800, 440).Theme(VisualTheme.Graphite()).ThemeMode(compactDark ? ThemeMode.Dark : ThemeMode.Light);
+        foreach (var series in chart.Series) series.Markers(markers => markers.Radius = 3);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; options.Tooltip.Mode = HtmlChartTooltipMode.Single;
         }), compactDark ? 390 : 880, 620);

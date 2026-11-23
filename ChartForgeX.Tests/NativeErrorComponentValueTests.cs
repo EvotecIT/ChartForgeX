@@ -42,9 +42,9 @@ public sealed class NativeErrorComponentValueTests {
         var renderer = new HtmlInteractiveChartRenderer(); var from = Section(renderer, "xy", true); var chart = NativeErrorComponentBeforeControls.Model("xy", true, 50, .25, 1.75, 40, 60);
         if (condition == "shape") chart.Series[0].UpdateErrorBar(0, new ChartErrorBar(1, 50, yBounds: new ChartErrorBounds(40, 60)));
         if (condition == "x") chart.Series[0].UpdateErrorBar(0, new ChartErrorBar(1.25, 50, new ChartErrorBounds(.25, 1.75), new ChartErrorBounds(40, 60)));
-        if (condition == "id") chart.Series[0].WithObservationId(0, new ChartObservationId("foreign"));
-        if (condition == "auto-axis") chart.ConfigureXAxis(axis => { axis.Minimum = null; axis.Maximum = null; });
-        if (condition == "callback") chart.WithValueFormat(ChartValueFormat.Custom(_ => "callback"));
+        if (condition == "id") chart.Series[0].ObservationId(0, new ChartObservationId("foreign"));
+        if (condition == "auto-axis") chart.XAxis(axis => { axis.Min = null; axis.Max = null; });
+        if (condition == "callback") chart.ValueFormat(ChartValueFormat.Custom(_ => "callback"));
         HtmlChartSection? to = null; var error = Record.Exception(() => { to = NativeErrorComponentBeforeControls.Section(renderer, chart); _ = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); });
         NativeRadialMotionBeforeControls.Capture(from, "error-reject-" + condition + "-from"); if (to != null) NativeRadialMotionBeforeControls.Capture(to, "error-reject-" + condition + "-to"); NativeRadialMotionBeforeControls.Save("error-reject-" + condition + ".facts.json", JsonSerializer.Serialize(new { error = error?.ToString() })); Assert.IsType<NotSupportedException>(error);
     }
@@ -52,7 +52,7 @@ public sealed class NativeErrorComponentValueTests {
     public void CopiedNullableTuplesAndCapturedFacesSurviveCallerMutationAndOrdinaryOutputStaysExact() {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeErrorComponentBeforeControls.Model("xy", true); var ordinary = renderer.PrepareSection(chart); var from = NativeErrorComponentBeforeControls.Section(renderer, chart); var to = Section(renderer, "xy", true, true);
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); Capture(from, to, ordinary, frames, payload, null, "error-detached");
-        Assert.Equal(ordinary.PreparedVisual.ToSvg(), from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(), from.PreparedVisual.ToPng()); chart.Series[0].ReplaceErrorBars(Array.Empty<ChartErrorBar>()); chart.WithFontFamily("mutated caller");
+        Assert.Equal(ordinary.PreparedVisual.ToSvg(), from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(), from.PreparedVisual.ToPng()); chart.Series[0].ReplaceErrorBars(Array.Empty<ChartErrorBar>()); chart.FontFamily("mutated caller");
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)));
             for (var index = 0; index < frames.Count; index++) { Assert.Equal(frames[index].ToSvg(), repeated[index].ToSvg()); Assert.Equal(frames[index].ToPng(), repeated[index].ToPng()); }
         } finally { _ = BrowserProofFonts.Family; }

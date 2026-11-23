@@ -29,7 +29,7 @@ public sealed class VisualThemeBuilder {
     /// <param name="kind">The series kind.</param>
     /// <param name="configure">Edits the kind's defaults; settings that do not apply to the kind fail in <see cref="Build"/>.</param>
     /// <returns>The current builder.</returns>
-    public VisualThemeBuilder ConfigureSeries(ChartSeriesKind kind, Action<VisualSeriesDefaults> configure) {
+    public VisualThemeBuilder Series(ChartSeriesKind kind, Action<VisualSeriesDefaults> configure) {
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var defaults = _series.TryGetValue(kind, out var current) ? current.Clone() : new VisualSeriesDefaults();

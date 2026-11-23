@@ -12,7 +12,7 @@ public sealed class CartesianAxisRuleCrossingTests {
     public void BothPhysicalAxesCrossAtTheAuthoredPivotAndKeepSourceMarksAndCaptionGutters(bool horizontal, bool reversed) {
         var chart = Fixture(horizontal); chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var before = Prepare(chart); var oldLabels = AxisText(before); var oldPoints = Marks(before); var plot = Plot(before);
-        chart.Options.XAxis.WithRuleCrossAt(4); chart.Options.YAxis.WithRuleCrossAt(3);
+        chart.Options.XAxis.RuleCrossAt(4); chart.Options.YAxis.RuleCrossAt(3);
         var after = Prepare(chart); var x = Rule(after, "axis-x"); var y = Rule(after, "axis-y");
         Assert.Equal(plot.Left, x.Start.X); Assert.Equal(plot.Right, x.End.X);
         // A horizontal chart's named categories read top-down (design rule 2).
@@ -23,7 +23,7 @@ public sealed class CartesianAxisRuleCrossingTests {
         Assert.Equal(oldLabels, AxisText(after)); Assert.Equal(oldPoints, Marks(after)); Assert.Equal(plot, Plot(after));
         Assert.Equal(3, chart.Options.YAxis.RuleCrossAt); Assert.Equal(4, chart.Options.XAxis.RuleCrossAt);
         var svg = after.ToSvg(); var png = after.ToPng();
-        chart.Options.XAxis.WithRuleCrossAt(null); chart.Options.YAxis.WithRuleCrossAt(null);
+        chart.Options.XAxis.RuleCrossAt(null); chart.Options.YAxis.RuleCrossAt(null);
         Assert.Equal(before.ToSvg(), Prepare(chart).ToSvg()); Assert.Equal(before.ToPng(), Prepare(chart).ToPng());
         Assert.Equal(svg, after.ToSvg()); Assert.Equal(png, after.ToPng());
     }
@@ -32,9 +32,9 @@ public sealed class CartesianAxisRuleCrossingTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public void SecondaryRulesUseTheOppositePrimaryPhysicalDomainInsteadOfTheirOwnValueScale(bool horizontal, bool reversed) {
         var chart = Fixture(horizontal); var secondary = new[] { new ChartPoint(2, 100), new ChartPoint(8, 900) };
-        if (horizontal) { chart.AddHorizontalBar("Secondary", secondary); chart.WithSecondaryXAxisBounds(0, 1000); }
-        else { chart.AddLine("Secondary", secondary); chart.WithSecondaryYAxisBounds(0, 1000); }
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
+        if (horizontal) { chart.AddHorizontalBar("Secondary", secondary); chart.SecondaryXAxis(s => s.Bounds(0, 1000)); }
+        else { chart.AddLine("Secondary", secondary); chart.SecondaryYAxis(s => s.Bounds(0, 1000)); }
+        chart.Series[1].SecondaryAxis(); chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var before = Prepare(chart); var plot = Plot(before);
         if (horizontal) chart.Options.SecondaryXAxis.RuleCrossAt = 4; else chart.Options.SecondaryYAxis.RuleCrossAt = 3;
         var prepared = Prepare(chart); var rule = Rule(prepared, horizontal ? "axis-secondary-x" : "axis-secondary-y");
@@ -48,7 +48,7 @@ public sealed class CartesianAxisRuleCrossingTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic, false)] [InlineData(ChartScaleKind.SymmetricLogarithmic, true)]
     public void NonlinearAndReversedPivotsUseTheCanonicalOppositeAxisTransform(ChartScaleKind scale, bool reversed) {
         var minimum = scale == ChartScaleKind.Logarithmic ? 1 : -100d; var maximum = 100d;
-        var chart = Fixture(false).WithXAxisBounds(minimum, maximum).WithYAxisBounds(minimum, maximum);
+        var chart = Fixture(false).XAxis(x => x.Bounds(minimum, maximum)).YAxis(y => y.Bounds(minimum, maximum));
         chart.Options.XAxis.Scale = scale; chart.Options.YAxis.Scale = scale;
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         const double pivot = 10;
@@ -61,10 +61,10 @@ public sealed class CartesianAxisRuleCrossingTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void NegativeLogarithmicCrossingRetainsItsSourceSign(bool reversed) {
-        var chart = Chart.Create().WithSize(600, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(600, 400).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false)
             .AddScatter("Negative", new[] { new ChartPoint(-80, -80), new ChartPoint(-2, -2) });
-        chart.Options.XAxis.WithLogarithmicScale(10, ChartLogarithmicDomain.Negative).WithBounds(-100, -1).WithReversal(reversed);
-        chart.Options.YAxis.WithLogarithmicScale(10, ChartLogarithmicDomain.Negative).WithBounds(-100, -1).WithReversal(reversed);
+        chart.Options.XAxis.LogarithmicScale(10, ChartLogarithmicDomain.Negative).Bounds(-100, -1).Reversed(reversed);
+        chart.Options.YAxis.LogarithmicScale(10, ChartLogarithmicDomain.Negative).Bounds(-100, -1).Reversed(reversed);
         chart.Options.XAxis.RuleCrossAt = -10; chart.Options.YAxis.RuleCrossAt = -10;
         var prepared = Prepare(chart); var plot = Plot(prepared);
         Assert.Equal(plot.Left + plot.Width / 2, Rule(prepared, "axis-y").Start.X, 7);
@@ -91,9 +91,9 @@ public sealed class CartesianAxisRuleCrossingTests {
     [Fact]
     public void TimePivotsUseIncludedInstantsAndRejectClosedSessionAliases() {
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToOADate();
-        var chart = Fixture(false).WithXAxisBounds(start, start + 4);
+        var chart = Fixture(false).XAxis(x => x.Bounds(start, start + 4));
         chart.ClearSeries(); chart.AddLine("Time", new[] { new ChartPoint(start, 2), new ChartPoint(start + 4, 8) });
-        chart.Options.XAxis.WithTimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(start, start + 1), new ChartTimeSession(start + 3, start + 4) }));
+        chart.Options.XAxis.TimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(start, start + 1), new ChartTimeSession(start + 3, start + 4) }));
         chart.Options.YAxis.RuleCrossAt = start + 1;
         var prepared = Prepare(chart); var plot = Plot(prepared);
         Assert.Equal(plot.Left + plot.Width / 2, Rule(prepared, "axis-y").Start.X, 7);
@@ -105,7 +105,7 @@ public sealed class CartesianAxisRuleCrossingTests {
     public void InvalidAndForeignCrossingsRejectAtTheOwningBoundary() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis { RuleCrossAt = double.NaN });
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis { RuleCrossAt = double.PositiveInfinity });
-        var logarithmic = Fixture(false).WithXAxisBounds(1, 10); logarithmic.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
+        var logarithmic = Fixture(false).XAxis(x => x.Bounds(1, 10)); logarithmic.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
         logarithmic.Options.YAxis.RuleCrossAt = 0; Assert.Throws<InvalidOperationException>(() => Prepare(logarithmic));
         var pie = Chart.Create().AddPie("Parts", new[] { new ChartPoint(1, 1) }); pie.Options.XAxis.RuleCrossAt = 0;
         Assert.Throws<NotSupportedException>(() => Prepare(pie));
@@ -114,8 +114,8 @@ public sealed class CartesianAxisRuleCrossingTests {
     }
 
     internal static Chart Fixture(bool horizontal) {
-        var chart = Chart.Create().WithSize(600, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(600, 400).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var points = new[] { new ChartPoint(2, 2), new ChartPoint(8, 8) };
         return horizontal ? chart.AddHorizontalBar("Observed", points) : chart.AddScatter("Observed", points);
     }

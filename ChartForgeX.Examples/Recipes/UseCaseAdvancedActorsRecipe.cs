@@ -5,10 +5,10 @@ public static class UseCaseAdvancedActorsRecipe {
     public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
-        var chart = TopologyChart.Create().WithId("native-usecase-advanced-actors").WithTitle("Participants in a request")
-            .WithSubtitle("Plain, hollow, business, silhouette and finite native icon actors")
-            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28)
-            .WithLayout(TopologyLayoutMode.Layered, compact ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom);
+        var chart = TopologyChart.Create().Id("native-usecase-advanced-actors").Title("Participants in a request")
+            .Subtitle("Plain, hollow, business, silhouette and finite native icon actors")
+            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
             WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };
         var ids = new[] { "Plain", "Hollow", "Business", "BusinessHollow", "Silhouette", "Icon" };

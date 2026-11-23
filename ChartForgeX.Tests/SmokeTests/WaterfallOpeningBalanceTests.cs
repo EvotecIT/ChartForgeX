@@ -40,7 +40,7 @@ public sealed class WaterfallOpeningBalanceTests {
     [InlineData(0d)]
     [InlineData(100d)]
     public void AnOpeningBalanceAloneIsDataWithNoInventedChangeOrTotal(double value) {
-        var chart = Chart.Create().WithDataLabels().AddWaterfall("Opening", new[] { ChartWaterfallItem.OpeningBalance(1, value) });
+        var chart = Chart.Create().DataLabels().AddWaterfall("Opening", new[] { ChartWaterfallItem.OpeningBalance(1, value) });
         Assert.Equal(1, chart.Series[0].SourcePointCount);
         var step = Assert.Single(ChartWaterfallSteps.Create(chart.Series[0]));
         Assert.Equal(0, step.Start); Assert.Equal(value, step.End); Assert.Equal(value, step.Value);
@@ -86,11 +86,11 @@ public sealed class WaterfallOpeningBalanceTests {
     [InlineData(false, 100d)]
     [InlineData(true, -100d)]
     public void OpeningMarksLegendsAndDetachedArtifactsShareLocalizedSourceFactsAndPointPaint(bool secondary, double value) {
-        var chart = Chart.Create().WithSize(700, 420).WithPointLegend().WithDataLabels().WithBarStyle(ChartBarStyle.Flat)
+        var chart = Chart.Create().Size(700, 420).Legend(l => l.ShowPoints()).DataLabels().Bars(b => b.Style(ChartBarStyle.Flat))
             .AddWaterfall("Movement", new[] { ChartWaterfallItem.OpeningBalance(1, value), ChartWaterfallItem.Delta(2, -value / 2), ChartWaterfallItem.Total(3) });
-        chart.ConfigureLabels(labels => labels.OpeningBalance = "Initial balance");
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
-        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithReversal(); chart.Options.XAxis.WithReversal();
+        chart.Labels(labels => labels.OpeningBalance = "Initial balance");
+        if (secondary) chart.Series[0].SecondaryAxis();
+        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Reversed(); chart.Options.XAxis.Reversed();
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Metadata.ContainsKey("data-cfx-waterfall-kind")
@@ -108,20 +108,20 @@ public sealed class WaterfallOpeningBalanceTests {
         Assert.Equal(groups[0].Metadata["data-cfx-source-point"], legends[0].Metadata!["data-cfx-source-point"]);
         Assert.Equal(colors.Palette[0], prepared.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "waterfall-bar").Fill);
         var accent = ChartColor.FromHex("#A5358A");
-        chart.Series[0].WithPointColor(0, accent).WithPointFillPattern(0, ChartFillPattern.Crosshatch).WithPointLabel(0, "Opening caption")
-            .ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFFFF"));
+        chart.Series[0].PointColor(0, accent).PointFillPattern(0, ChartFillPattern.Crosshatch).PointLabel(0, "Opening caption")
+            .PointDataLabelStyle(0, style => style.Color(ChartColor.FromHex("#FFFFFF")));
         var overridden = chart.Prepare(context);
         Assert.Equal(accent, overridden.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "waterfall-bar").Fill);
         Assert.Contains(overridden.Scene.Nodes, node => node.Role == "waterfall-bar-pattern");
         Assert.Contains(overridden.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "point" && group.Metadata["data-cfx-label"] == "Opening caption");
         var calls = 0;
-        chart.Options.XAxis.WithLabelFormatter(x => { calls++; return "Position " + x; });
+        chart.Options.XAxis.LabelBy(x => { calls++; return "Position " + x; });
         var detached = chart.Prepare(context); var callbackCalls = calls;
         Assert.True(callbackCalls > 0);
         var svg = detached.ToSvg(); var png = detached.ToPng();
         var artifact = detached.ToArtifact("opening", VisualArtifactKind.Chart);
         var artifactSvg = artifact.ToSvg(); var artifactPng = artifact.ToPng(); var interchange = artifact.ToInterchangeJson();
-        chart.ClearSeries(); chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed");
+        chart.ClearSeries(); chart.Labels(labels => labels.OpeningBalance = "Changed");
         Assert.Equal(svg, detached.ToSvg()); Assert.Equal(png, detached.ToPng()); Assert.Equal(callbackCalls, calls);
         Assert.Equal(artifactSvg, artifact.ToSvg()); Assert.Equal(artifactPng, artifact.ToPng()); Assert.Equal(interchange, artifact.ToInterchangeJson());
     }

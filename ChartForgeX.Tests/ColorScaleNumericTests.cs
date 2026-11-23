@@ -92,7 +92,7 @@ public sealed class ColorScaleNumericTests {
     }
 
     private static Chart Map(ChartColorScale scale, double low, double midpoint, double high) => Chart.Create()
-        .WithSize(760, 420).WithMapLabels(false).WithMapColorScale(scale)
+        .Size(760, 420).Map(m => m.ShowLabels(false).ColorScale(scale))
         .AddTileMap("Dimension", ChartTileMapCatalog.Get("us-states"), new[] {
             new ChartRegionMapItem("CA", low), new ChartRegionMapItem("NY", midpoint), new ChartRegionMapItem("TX", high)
         });

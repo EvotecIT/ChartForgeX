@@ -119,7 +119,7 @@ internal static class MaskBlendFixture {
         builder.AddRegion(new VisualSemanticRegion("native-input", "sample", new ChartRect(0, 0, 8, 6), "Unassociated RGB"));
         return new PreparedVisual(builder.Build());
     }
-    internal static PreparedVisual PublicSource() => Chart.Create().WithSize(160, 100).WithTitle("Requests")
+    internal static PreparedVisual PublicSource() => Chart.Create().Size(160, 100).Title("Requests")
         .AddLine("Ready", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(2, 2) })
         .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(160, 100), 8),
             frame: new VisualFrame(showLegend: false, transparentBackground: true)));

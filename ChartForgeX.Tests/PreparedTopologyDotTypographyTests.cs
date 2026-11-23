@@ -14,16 +14,16 @@ public sealed class PreparedTopologyDotTypographyTests {
     [InlineData(22, 11, 8)]
     [InlineData(11, 6, 48d / 11)]
     public void DotSymbolsRetainReadableDefaultAndScaleWithinTheirOwnBudget(double labelSize, double diameter, double expectedSize) {
-        var chart = TopologyChart.Create().WithViewport(240, 160, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(240, 160, 20)).Legend((TopologyLegend?)null)
             .AddNode("dc", "Directory server", 90, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy,
                 width: diameter, height: diameter, symbol: "DC")
-            .WithNodeDisplay("dc", TopologyNodeDisplayMode.Dot);
+            .UpdateNode("dc", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
         var theme = new VisualTheme(new VisualDesignTokens(), new VisualDesignTokens(),
             typography: new VisualTypography(dataLabelSize: labelSize));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(240, 160), 20), theme,
             frame: new VisualFrame(showLegend: false), font: CarlitoFont());
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var prepared = chart.Prepare(context, options);
         var symbol = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "topology-node-symbol");
         Assert.Equal(expectedSize, symbol.Text.Size, 8);
@@ -49,9 +49,9 @@ public sealed class PreparedTopologyDotTypographyTests {
                 ['D'] = OpenTypeTestFonts.Flex, ['C'] = OpenTypeTestFonts.Flex
             }, weight: 700), weight: 700);
             var font = new FontSpec { Family = family };
-            var chart = TopologyChart.Create().WithViewport(240, 160, 20).WithLegend(null)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(240, 160, 20)).Legend((TopologyLegend?)null)
                 .AddNode("dc", "Directory server", 90, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy,
-                    width: 11, height: 11, symbol: "DC").WithNodeDisplay("dc", TopologyNodeDisplayMode.Dot);
+                    width: 11, height: 11, symbol: "DC").UpdateNode("dc", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
             chart.Nodes[0].Badge = "DC";
             var preferred = new VisualSceneTextFace(font, 700).Prepare("DC", 8);
             Assert.True(preferred.Metrics.Width > 11);

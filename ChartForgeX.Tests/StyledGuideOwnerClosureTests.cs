@@ -11,7 +11,7 @@ public sealed class StyledGuideOwnerClosureTests {
     [InlineData(1)]
     [InlineData(1024)]
     public void QuarterPixelDashesRenderAtTheMaximumAcceptedChartWidth(double strokeWidth) {
-        var chart = Chart.Create().WithSize(1000000, 16).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(1000000, 16).ShowHeader(false).Legend(false)
             .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddHorizontalLine(1.5, "");
         chart.Options.ShowAxes = false;
         chart.Options.ShowGrid = false;
@@ -22,7 +22,7 @@ public sealed class StyledGuideOwnerClosureTests {
 
     [Fact]
     public void QuarterPixelDashesRenderOnAnAcceptedWideCanvas() {
-        var chart = Chart.Create().WithSize(100000, 100).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(100000, 100).ShowHeader(false).Legend(false)
             .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddHorizontalLine(1.5, "");
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 1, dash: new[] { .25, .25 });
         Assert.Contains("stroke-dasharray=\"0.25 0.25\"", chart.ToSvg());
@@ -31,8 +31,8 @@ public sealed class StyledGuideOwnerClosureTests {
 
     [Fact]
     public void GuideThatBecomesOversizedAfterTotalGuttersKeepsTheUnexpandedProjection() {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-            .WithStackedBars().WithStackTotals().WithValueFormatter(value => "A complete stack total " + value)
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
+            .Bars(b => b.Stacked().ShowTotals()).FormatValuesBy(value => "A complete stack total " + value)
             .AddHorizontalBar("First", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60) })
             .AddHorizontalBar("Second", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) }).AddVerticalLine(0, "");
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 0);
@@ -50,8 +50,8 @@ public sealed class StyledGuideOwnerClosureTests {
 
     [Fact]
     public void GuideSkippedAfterVerticalTotalGuttersKeepsTheDataRangeTickSpacing() {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-            .WithStackedBars().WithStackTotals()
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
+            .Bars(b => b.Stacked().ShowTotals())
             .AddBar("First", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60) })
             .AddBar("Second", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) }).AddHorizontalLine(0, "");
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(0, "Baseline"));

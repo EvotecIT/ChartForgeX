@@ -35,7 +35,7 @@ public sealed partial class Chart {
 
     private bool VisibilityAdmission(ChartVisibilityView visibility) {
         if (visibility == null) throw new ArgumentNullException(nameof(visibility));
-        if (Options.ShowPointLegend) throw new NotSupportedException("Native visibility does not target point or derived legends.");
+        if (Options.Legend.ShowPoints) throw new NotSupportedException("Native visibility does not target point or derived legends.");
         if (Series.Count == 0 || Series.Any(series => series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.Bar))
             throw new NotSupportedException("Native visibility currently requires authored Line/Bar series; other families and point/group views are unsupported.");
         if (Series.Any(series => series.Id.IsAutomatic)) throw new NotSupportedException("Native visibility requires authored series identities.");

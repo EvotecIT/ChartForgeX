@@ -26,7 +26,7 @@ public sealed class TimeProjectionFeedbackTests {
     [MemberData(nameof(DiscontinuousBuckets))]
     public void CalendarBucketsRejectDiscontinuousNegativeOleIntervals(string caseName, double start, ChartTimeTickUnit unit, int offsetHours) {
         var zone = TimeZoneInfo.CreateCustomTimeZone(caseName, TimeSpan.FromHours(offsetHours), caseName, caseName);
-        var chart = BucketChart(start, new ChartTimeTickInterval(unit)).WithXAxisTimeScale(zone);
+        var chart = BucketChart(start, new ChartTimeTickInterval(unit)).XAxis(x => x.TimeScale(timeZone: zone));
         var error = Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
         Assert.Contains("negative OLE date must remain within one UTC day", error.Message, StringComparison.Ordinal);
     }
@@ -99,7 +99,7 @@ public sealed class TimeProjectionFeedbackTests {
     [InlineData(false)]
     [InlineData(true)]
     public void HorizontalProjectionInvertsTheActualCategoryMarkCenters(bool reversed) {
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 10).WithYAxisBounds(0, 4)
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 4))
             .AddHorizontalBar("Readings", new[] { new ChartPoint(1, 3), new ChartPoint(2, 7), new ChartPoint(3, 5) });
         chart.Options.YAxis.Reversed = reversed;
         var prepared = chart.Prepare(new VisualRenderContext());
@@ -114,9 +114,9 @@ public sealed class TimeProjectionFeedbackTests {
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "point"));
     }
 
-    private static Chart BucketChart(double start, ChartTimeTickInterval interval) => Chart.Create().WithSize(640, 360).WithXAxisTimeScale()
+    private static Chart BucketChart(double start, ChartTimeTickInterval interval) => Chart.Create().Size(640, 360).XAxis(x => x.TimeScale())
         .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("bucket"), "Bucket", new[] { new ChartPoint(start, 5) })
-            .WithTimeBuckets(interval).WithObservationIds(new[] { new ChartObservationId("first") }));
+            .TimeBuckets(interval).ObservationIds(new[] { new ChartObservationId("first") }));
     private static double Number(XElement node, string name) => double.Parse(node.Attribute(name)!.Value, CultureInfo.InvariantCulture);
     private static object[] Case(string name, DateTime start, ChartTimeTickUnit unit, int offsetHours = 0) => new object[] { name, start.ToOADate(), unit, offsetHours };
 }

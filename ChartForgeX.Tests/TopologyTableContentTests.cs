@@ -97,7 +97,7 @@ public sealed class TopologyTableContentTests {
         chart.LayoutMode = TopologyLayoutMode.Manual;
         chart.Title = null; chart.Subtitle = null;
         chart.Viewport.Padding = new TopologyViewport().Padding;
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
         var user = chart.Nodes.Single(node => node.Id == "User"); user.X = 80; user.Y = 130;
         var publish = chart.Nodes.Single(node => node.Id == "Publish"); publish.X = 360; publish.Y = 140;
         var details = chart.Nodes.Single(node => node.Id == "Details"); details.X = 650; details.Y = 110;
@@ -119,5 +119,5 @@ public sealed class TopologyTableContentTests {
         Assert.Throws<NotSupportedException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"version\":2", "\"version\":1", StringComparison.Ordinal)));
     }
     private static TopologyChart Source(int width, bool dark) => TopologyTableContentRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light)
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
 }

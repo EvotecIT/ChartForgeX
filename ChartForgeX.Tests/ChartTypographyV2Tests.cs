@@ -23,10 +23,10 @@ public sealed class ChartTypographyV2Tests {
         Chart Model(double value) => layered ? NativeLayeredValueTransitionTests.Model(760, false, 2, value, family)
             : NativeRemainingValueTransitionTests.Model("rings", 760, false, value, family);
         var renderer = new HtmlInteractiveChartRenderer();
-        var first = renderer.PrepareSection(Model(20).WithTheme(theme));
-        var ordinary = renderer.PrepareSection(Model(80).WithTheme(VisualTheme.FromJson(theme.ToJson())));
+        var first = renderer.PrepareSection(Model(20).Theme(theme));
+        var ordinary = renderer.PrepareSection(Model(80).Theme(VisualTheme.FromJson(theme.ToJson())));
         Assert.NotEmpty(renderer.PrepareValueTransitionJson(first, ordinary, 3));
-        var last = renderer.PrepareSection(Model(80).WithTheme(VisualTheme.FromJson(json.ToJsonString())));
+        var last = renderer.PrepareSection(Model(80).Theme(VisualTheme.FromJson(json.ToJsonString())));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(first, last, 3));
         Assert.NotEmpty(first.PreparedVisual.ToPng());
         Assert.NotEmpty(last.PreparedVisual.ToPng());
@@ -37,10 +37,10 @@ public sealed class ChartTypographyV2Tests {
     [InlineData(ChartSeriesKind.ProgressRing)]
     [InlineData(ChartSeriesKind.LayeredRadial)]
     public void RadialCentresUseTheSharedRadiusScaleAndKeepAuthoredTypography(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(600, 600).WithHeader(false).WithLegend(false).WithDataLabels();
+        var chart = Chart.Create().Size(600, 600).ShowHeader(false).Legend(false).DataLabels();
         if (kind == ChartSeriesKind.Donut) chart.AddDonut("Done", new[] { new ChartPoint(1, 25), new ChartPoint(2, 75) });
         else if (kind == ChartSeriesKind.ProgressRing) chart.AddProgressRing("Done", new[] { new ChartPoint(1, 75) });
-        else chart.AddLayeredRadial("Done", new[] { ChartRadialLayer.Create("Progress", 75).WithGeometry(1, .12) });
+        else chart.AddLayeredRadial("Done", new[] { ChartRadialLayer.Create("Progress", 75).RadiusRatio(1).StrokeRatio(.12) });
         var role = kind == ChartSeriesKind.Donut ? "donut-total-label" : kind == ChartSeriesKind.ProgressRing ? "progress-ring-value" : "layered-radial-value";
         var captionRole = kind == ChartSeriesKind.Donut ? "donut-title" : kind == ChartSeriesKind.ProgressRing ? "progress-ring-title" : "layered-radial-title";
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -50,7 +50,7 @@ public sealed class ChartTypographyV2Tests {
         Assert.Equal(Math.Max(20, Math.Min(40, .16 * radius)), value.Text.Size, 6);
         Assert.Equal(12, caption.Text.Size);
         Assert.Equal(4, caption.Baseline - caption.Text.Ascent - (value.Baseline - value.Text.Ascent + value.Text.Metrics.Height), 6);
-        chart.WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(centerValueSize: 28, dataLabelSize: 13.5)));
+        chart.Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(centerValueSize: 28, dataLabelSize: 13.5)));
         var authored = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(28, Assert.Single(authored.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == role).Text.Size);
         Assert.Equal(13.5, Assert.Single(authored.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == captionRole).Text.Size);
@@ -60,8 +60,8 @@ public sealed class ChartTypographyV2Tests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void PublicChartPaintsSemanticWeightsAndKeepsAuthoredWeights(ThemeMode mode) {
-        var chart = Chart.Create().WithSize(800, 520).WithTheme(VisualTheme.Graphite(), mode).WithTitle("Typography")
-            .WithXLabels("First", "Second").AddPie("Allocation", new[] { new ChartPoint(1, 40), new ChartPoint(2, 60) });
+        var chart = Chart.Create().Size(800, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Typography")
+            .XLabels("First", "Second").AddPie("Allocation", new[] { new ChartPoint(1, 40), new ChartPoint(2, 60) });
         var document = XDocument.Parse(chart.ToSvg());
         var text = document.Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Equal("600", text.Single(element => element.Value == "Typography").Attribute("font-weight")!.Value);
@@ -69,7 +69,7 @@ public sealed class ChartTypographyV2Tests {
         Assert.Equal(2, text.Count(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-percentage"));
         Assert.All(text.Where(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-value"), element => Assert.Equal("500", element.Attribute("font-weight")!.Value));
         Assert.All(text.Where(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-percentage"), element => Assert.Equal("400", element.Attribute("font-weight")!.Value));
-        chart.ConfigureTitleStyle(style => style.FontWeight = "800").ConfigureLegendStyle(style => style.FontWeight = "600");
+        chart.TitleStyle(style => style.FontWeight = "800").LegendStyle(style => style.FontWeight = "600");
         var authored = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Equal("800", authored.Single(element => element.Value == "Typography").Attribute("font-weight")!.Value);
         Assert.Equal(2, authored.Count(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-value"));
@@ -99,8 +99,8 @@ public sealed class ChartTypographyV2Tests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void SubMinimumAuthoredChartTextIsHiddenButItsSemanticTitleSurvives(ThemeMode mode) {
-        var chart = Chart.Create().WithSize(390, 320).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Revenue forecast").ConfigureTitleStyle(style => style.FontSize = 9)
+        var chart = Chart.Create().Size(390, 320).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Revenue forecast").TitleStyle(style => style.FontSize = 9)
             .AddLine("Revenue", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg());

@@ -14,20 +14,20 @@ internal static partial class TopologyVisualExamples {
     // Interactive HTML only: a dense estate opens at a readable scale with find, group and kind filters.
     private static void WriteDenseEstateNavigator(string target) {
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-            .WithHtmlFindControls();
-        options.EnableHtmlSelectionPanel = true;
+            .HtmlFindControls();
+        options.Html.SelectionPanel = true;
         BuildDenseServiceEstate().SaveInteractiveHtml(Path.Combine(target, "visual-dense-service-estate-navigator.html"), options);
-        BuildDenseServiceEstate().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
+        BuildDenseServiceEstate().Theme(VisualTheme.Graphite(), ThemeMode.Dark)
             .SaveInteractiveHtml(Path.Combine(target, "visual-dense-service-estate-navigator-dark.html"), options);
     }
 
     private static TopologyChart BuildDenseServiceEstate() {
-        var chart = TopologyChart.Create().WithId("visual-dense-service-estate")
-            .WithTitle("Service estate")
-            .WithSubtitle("Twelve sites and their services. Find a service, or narrow by site or kind.")
-            .WithViewport(1600, 900, 24)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-            .WithLegend(TopologyLegend.Default());
+        var chart = TopologyChart.Create().Id("visual-dense-service-estate")
+            .Title("Service estate")
+            .Subtitle("Twelve sites and their services. Find a service, or narrow by site or kind.")
+            .Viewport(new TopologyViewport(1600, 900, 24))
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .Legend(TopologyLegend.Default());
         for (var site = 0; site < 12; site++) {
             var groupId = "site-" + (site + 1).ToString("00", CultureInfo.InvariantCulture);
             var count = 6 + site % 5;

@@ -17,10 +17,10 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
         var source = new[] { new ChartPoint(.2, 5), new ChartPoint(1.2, 8), new ChartPoint(2, 3) };
         Chart Histogram(string name, double[] boundaries, ChartHistogramAggregation aggregation = ChartHistogramAggregation.Count,
             ChartHistogramEncoding encoding = ChartHistogramEncoding.Value, bool pointLegend = false) {
-            var chart = Chart.Create().WithSize(640, 360).WithTitle(name)
-                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            var chart = Chart.Create().Size(640, 360).Title(name)
+                .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("shared-observations"), "Observations", source, ChartHistogramBinLayout.FromBoundaries(boundaries), aggregation, encoding));
-            if (pointLegend) chart.WithPointLegend();
+            if (pointLegend) chart.Legend(l => l.ShowPoints());
             return chart;
         }
         var charts = new[] {
@@ -67,9 +67,9 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
     public async Task OtherSlicesMatchTheirContributorSetAcrossGroupingPolicies() {
         if (!Enabled) return;
         Chart Pie(int slices) {
-            var chart = Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C", "D")
+            var chart = Chart.Create().Size(640, 360).XLabels("A", "B", "C", "D")
                 .AddSeries(new ChartSeries(new ChartSeriesId("shared-parts"), "Parts", ChartSeriesKind.Pie, new[] { new ChartPoint(0, 8), new ChartPoint(1, 4), new ChartPoint(2, 2), new ChartPoint(3, 1) }));
-            chart.Options.MaximumPieSlices = slices; return chart;
+            chart.Options.Pie.MaxSlices = slices; return chart;
         }
         await using var session = await OpenAsync(Dashboard(new[] { Pie(2), Pie(3), Pie(2) }), 700, 1000);
         var roots = session.Page.Locator(".cfx-interactive-chart");
@@ -89,7 +89,7 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
         if (!Enabled) return;
         var day = new DateTime(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc);
         Chart Timeline(int hours) {
-            var chart = Chart.Create().WithSize(640, 240).AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("shared-availability"), "Availability", Enumerable.Range(0, hours)
+            var chart = Chart.Create().Size(640, 240).AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("shared-availability"), "Availability", Enumerable.Range(0, hours)
                 .Select(index => new ChartStateTimelineSegment(day.AddHours(index), day.AddHours(index + 1), "up"))));
             return chart;
         }

@@ -14,30 +14,30 @@ using ChartForgeX.VisualBlocks;
 /// <summary>Exercises peer presentation-package entrypoints in the existing native AOT executable.</summary>
 internal static class PresentationPackageSmoke {
     internal static void Run() {
-        var canvas = VisualCanvas.Create(240, 160).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        var canvas = VisualCanvas.Create(240, 160).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddInfoTile(12, 12, 216, 136, "CPU", "Processor", "42%", progress: .42,
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, miniChartKind: VisualCanvasInfoTileMiniChartKind.Bars,
                 miniChartValues: new[] { 18d, 28d, 42d }, miniChartMaximum: 100);
         Require(canvas.ToSvg().Contains("visual-canvas-info-tile-mini-chart", StringComparison.Ordinal), "Visuals canvas SVG failed.");
         Require(canvas.ToPng().Length > 64, "Visuals canvas PNG failed.");
         var artifact = canvas.ToVisualArtifact("aot-canvas");
-        artifact.WithWatermarks(VisualWatermark.FromText("AOT"));
+        artifact.AddWatermarks(VisualWatermark.FromText("AOT"));
         Require(artifact.ToSvg().Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Visuals watermark attachment failed.");
         Require(artifact.ToPng().Length > 64, "Visuals watermark raster failed.");
 
-        var metric = MetricCard.Create().WithMetric("Ready", "42").WithSize(240, 140);
+        var metric = MetricCard.Create().Metric("Ready", "42").Size(240, 140);
         var grid = VisualGrid.Create().Add("metric", metric);
         var motion = VisualMotionPresentation.Create(grid, VisualMotionTimeline.Create().Fade("metric"));
         Require(motion.ToSvg().Contains("@keyframes", StringComparison.Ordinal), "Stories motion SVG failed.");
         Require(motion.ToPng().SequenceEqual(grid.ToPng()), "Stories motion completed raster differs from the static source.");
-        var story = VisualStory.Create("AOT story").WithSize(480, 320);
+        var story = VisualStory.Create("AOT story").Size(480, 320);
         story.Scene("ready", "Ready").Panel("result", new VisualStoryTextSurface("Ready", emphasized: true));
         story.Outcome("ready", "Ready", "result");
         Require(story.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories scene SVG failed.");
         Require(story.ToPng().Length > 64, "Stories scene raster failed.");
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
             .Type("Ready", TimeSpan.FromSeconds(.5));
-        var editing = VisualStory.Create("AOT editing").WithSize(480, 320);
+        var editing = VisualStory.Create("AOT editing").Size(480, 320);
         editing.Scene("edit", "Edit", 1).Panel("source", new VisualStorySourceSurface(editor));
         editing.Outcome("source", "Ready", "source");
         var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
@@ -49,11 +49,11 @@ internal static class PresentationPackageSmoke {
             prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, sampling);
             Require(stream.Length > 64 && stream.CanWrite, "Stories streaming APNG failed.");
         }
-        var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
-            .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
+        var terminal = TerminalStory.Create().Title("Completed terminal").Width(480)
+            .PngOutputScale(1).ShowFinalPrompt(false).Command("status", .1).Output("Ready");
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
             .Output(TimeSpan.FromSeconds(10), "Captured result").CompressPauses(TimeSpan.FromSeconds(1));
-        var replayStory = VisualStory.Create("AOT replay").WithSize(480, 320);
+        var replayStory = VisualStory.Create("AOT replay").Size(480, 320);
         replayStory.Scene("run", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));
         replayStory.Outcome("terminal", "Result", "terminal");
         Require(replayStory.Prepare().ToSvg().Contains("Captured result", StringComparison.Ordinal), "Stories replay failed.");
@@ -61,10 +61,10 @@ internal static class PresentationPackageSmoke {
         var terminalArtifact = terminal.ToVisualArtifact();
         Require(ReferenceEquals(terminal, terminalArtifact.Model) && terminalArtifact.ToSvg().Contains("Ready", StringComparison.Ordinal),
             "Stories completed terminal artifact lost its model or transcript.");
-        var topology = TopologyChart.Create().WithViewport(240, 160).WithLegend(null)
+        var topology = TopologyChart.Create().Viewport(new TopologyViewport(240, 160)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 20, 60, width: 60, height: 40).AddNode("b", "B", 160, 60, width: 60, height: 40)
             .AddEdge("route", "a", "b");
-        var route = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(.2).WithFrameRate(10).WithFrameLimit(2),
+        var route = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("route").DurationSeconds(.2).FramesPerSecond(10).MaximumRasterFrames(2),
             new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
         Require(route.ToSvg().Contains("animateMotion", StringComparison.Ordinal), "Stories topology motion SVG failed.");
         var gif = route.ToGif();

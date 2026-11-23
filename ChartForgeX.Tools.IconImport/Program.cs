@@ -71,7 +71,7 @@ internal static partial class Program {
                     DefaultColor = ColorFor(folderName)
                 });
                 import.Pack.Metadata.Remove("import.sourceDirectory");
-                import.Pack.WithMetadata("source.folder", folderName);
+                import.Pack.Metadata("source.folder", folderName);
                 foreach (var icon in import.Pack.Icons) {
                     if (icon.Category != null) icon.Category = icon.Category.Replace("Svg Old Versions", "Old Versions", StringComparison.Ordinal);
                 }

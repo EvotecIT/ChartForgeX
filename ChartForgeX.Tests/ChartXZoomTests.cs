@@ -19,14 +19,14 @@ public sealed partial class ChartXZoomTests {
         Assert.Throws<ArgumentException>(() => new ChartXZoomLevels(2));
         Assert.Throws<ArgumentException>(() => new ChartXZoomLevels(1, 2, 2));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartXZoomLevels(1, double.PositiveInfinity));
-        var bank = Bare().WithXAxisBounds(0, 10).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }).PrepareXZoom(Context(), levels);
+        var bank = Bare().XAxis(x => x.Bounds(0, 10)).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }).PrepareXZoom(Context(), levels);
         Assert.Throws<ArgumentOutOfRangeException>(() => bank.At(-1));
         Assert.Throws<ArgumentOutOfRangeException>(() => bank.At(3));
         Assert.Throws<ArgumentOutOfRangeException>(() => bank.At(1, double.NaN));
         Assert.Throws<ArgumentOutOfRangeException>(() => bank.At(1, -.1));
         Assert.Throws<ArgumentOutOfRangeException>(() => bank.At(1, 1.1));
         var unsupported = Bare().AddLine("Smooth", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
-        unsupported.Series[0].WithInterpolation(ChartInterpolation.Smooth);
+        unsupported.Series[0].Interpolation(ChartInterpolation.Smooth);
         Assert.Throws<NotSupportedException>(() => unsupported.PrepareXZoom(Context(), levels));
     }
 
@@ -38,11 +38,11 @@ public sealed partial class ChartXZoomTests {
     [InlineData(true, false, ChartStepPosition.Middle)]
     [InlineData(true, true, ChartStepPosition.End)]
     public void ContainedPanRetainsNativeCrossingsGapsAndSourceIdentities(bool step, bool reversed, ChartStepPosition position) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) };
         if (step) chart.AddStepLine("Observed", points, Blue); else chart.AddLine("Observed", points, Blue);
         chart.Series[0].Markers.Enabled = false;
-        if (step) chart.Series[0].WithInterpolation(ChartInterpolation.Step, position);
+        if (step) chart.Series[0].Interpolation(ChartInterpolation.Step, position);
         chart.Options.XAxis.Reversed = reversed;
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2, 4));
         foreach (var pan in new[] { 0d, .173, .5, .899, 1 }) {
@@ -64,7 +64,7 @@ public sealed partial class ChartXZoomTests {
             Assert.Contains(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line" && path.Commands.Count >= 2);
         }
         chart.Series[0].Points[1] = new ChartPoint(10, 8, breakBefore: true);
-        chart.WithDataLabels();
+        chart.DataLabels();
         var disconnected = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2)).At(1, .5);
         Assert.Equal(2, disconnected.Scene.Nodes.OfType<VisualScenePath>().Single(path => path.Role == "line").Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
         Assert.DoesNotContain(disconnected.ToRgba().Pixels.Chunk(4), pixel => pixel[2] > pixel[0] + 60 && pixel[2] > pixel[1] + 60);
@@ -74,13 +74,13 @@ public sealed partial class ChartXZoomTests {
 
     [Fact]
     public void FinalBankPlotOwnsAutomaticMarkerPaddingAndFixedPrimaryAndSecondaryY() {
-        var chart = Chart.Create().WithLegend(false).WithXAxis("Sample").WithYAxis("Primary")
+        var chart = Chart.Create().Legend(false).XAxis(x => x.Title("Sample")).YAxis(y => y.Title("Primary"))
             .AddLine("Primary", new[] { new ChartPoint(0, -100), new ChartPoint(5, 4), new ChartPoint(10, 100) })
             .AddStepLine("Secondary", new[] { new ChartPoint(0, 1), new ChartPoint(5, 10), new ChartPoint(10, 1000) });
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
         chart.Options.XAxis.LabelAngle = 45;
         chart.Options.XAxis.LabelFormatter = value => "Anchored " + value.ToString("G4", System.Globalization.CultureInfo.InvariantCulture);
-        foreach (var series in chart.Series) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 11; markers.StrokeWidth = 2; });
+        foreach (var series in chart.Series) series.Markers(markers => { markers.Enabled = true; markers.Radius = 11; markers.StrokeWidth = 2; });
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2, 4));
         var full = bank.At(0); var fullPoints = full.Regions.Where(item => item.Role == "point").ToDictionary(item => item.Id, item => item.Bounds);
         Assert.True(bank.FullViewport.Minimum < 0); Assert.True(bank.FullViewport.Maximum > 10);
@@ -94,12 +94,12 @@ public sealed partial class ChartXZoomTests {
             Assert.All(view.Scene.Nodes.OfType<VisualSceneEllipse>().Where(item => item.Role == "marker"), marker => Assert.Equal(11, marker.Rx));
             Assert.All(bank.Bank[level].Layers.SelectMany(layer => layer.Scene.Nodes).OfType<VisualSceneText>(), text => Assert.NotNull(text.Text.Face.Font));
         }
-        Assert.Null(chart.Options.XAxis.Minimum); Assert.Null(chart.Options.XAxis.Maximum); Assert.Null(chart.Options.YAxis.Minimum);
+        Assert.Null(chart.Options.XAxis.Min); Assert.Null(chart.Options.XAxis.Max); Assert.Null(chart.Options.YAxis.Min);
     }
 
     [Fact]
     public void NativePreparationIsDetachedAndAtNeverInvokesFormattersOrRetainsTheModel() {
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Legend(false).DataLabels().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(5, 5), new ChartPoint(10, 8) }, Blue);
         var xCalls = new Dictionary<double, int>(); var valueCalls = 0;
         chart.Options.XAxis.LabelFormatter = value => { xCalls[value] = xCalls.GetValueOrDefault(value) + 1; return "X " + value; };
@@ -110,7 +110,7 @@ public sealed partial class ChartXZoomTests {
         Assert.All(xCalls.Values, count => Assert.Equal(1, count));
         var capturedValueCalls = valueCalls; var capturedXCalls = xCalls.Count;
         var snapshot = bank.At(1, .5); var svg = snapshot.ToSvg(); var png = snapshot.ToPng();
-        chart.ClearSeries(); chart.Options.XAxis.Reversed = true; chart.WithTitle("Changed");
+        chart.ClearSeries(); chart.Options.XAxis.Reversed = true; chart.Title("Changed");
         chart.Options.XAxis.LabelFormatter = _ => throw new InvalidOperationException("Detached bank used the axis callback.");
         chart.Options.ValueFormatter = _ => throw new InvalidOperationException("Detached bank used the data callback.");
         Assert.Equal(svg, bank.At(1, .5).ToSvg()); Assert.Equal(png, bank.At(1, .5).ToPng());
@@ -125,14 +125,14 @@ public sealed partial class ChartXZoomTests {
 
     [Fact]
     public void SourceCaptionsAndReferenceFactsSurviveWithExplicitOffWindowReasons() {
-        var chart = Bare().WithDataLabels().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().DataLabels().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 5) }, Blue)
             .AddVerticalLine(1, "X reference")
             .AddHorizontalLine(2, "Y reference")
             .AddPlotRegion(new(new ChartColor(220, 180, 40), xMinimum: 1, xMaximum: 4, yMinimum: 1, yMaximum: 3, label: "X region", showLabel: true))
             .AddPlotRegion(new(new ChartColor(100, 180, 40), yMinimum: 7, yMaximum: 9, label: "Y region", showLabel: true));
         chart.Series[0].Markers.Enabled = false;
-        chart.Series[0].WithPointLabel(0, "Left").WithPointLabel(1, "Middle").WithPointLabel(2, "Right");
+        chart.Series[0].PointLabel(0, "Left").PointLabel(1, "Middle").PointLabel(2, "Right");
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2));
         var view = bank.At(1, .5); var svg = XDocument.Parse(view.ToSvg());
         Assert.Equal(3, PointFacts(view).Length);
@@ -149,7 +149,7 @@ public sealed partial class ChartXZoomTests {
 
     [Fact]
     public void FixedReferenceCaptionUsesCoreIntervalsToAvoidMovingNativeInk() {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(5, 8), new ChartPoint(10, 2) }, Blue)
             .AddHorizontalLine(5, "Fixed reference");
         chart.Series[0].Markers.Enabled = false;
@@ -171,11 +171,11 @@ public sealed partial class ChartXZoomTests {
     [Fact]
     public void MagnificationPreservesMarkerContoursPointPaintHatchesAndGuideDashes() {
         var green = new ChartColor(20, 160, 60); var red = new ChartColor(180, 40, 20);
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddStepLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(5, 5), new ChartPoint(10, 8) }, Blue)
             .AddVerticalLine(5, "Reference");
-        chart.Series[0].ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 6; markers.Shape = ChartMarkerShape.Diamond; markers.Stroke = red; markers.StrokeWidth = 3; });
-        chart.Series[0].WithPointColor(1, green).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        chart.Series[0].Markers(markers => { markers.Enabled = true; markers.Radius = 6; markers.Shape = ChartMarkerShape.Diamond; markers.Stroke = red; markers.StrokeWidth = 3; });
+        chart.Series[0].PointColor(1, green).PointFillPattern(1, ChartFillPattern.Crosshatch);
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2, 4));
         foreach (var level in bank.Bank) {
             var nodes = level.Layers.SelectMany(layer => layer.Scene.Nodes).ToArray();
@@ -203,14 +203,14 @@ public sealed partial class ChartXZoomTests {
 
     [Fact]
     public void ExtremeFiniteDomainsUseStableContainedWindowsAndUnrepresentableLevelsFail() {
-        var chart = Bare().WithXAxisBounds(-1e308, 1e308).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(-1e308, 1e308)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(-1e308, 2), new ChartPoint(1e308, 8) });
         chart.Series[0].Markers.Enabled = false;
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2));
         var middle = bank.At(1, .5).XProjection!;
         Assert.Equal(-5e307, middle.Minimum); Assert.Equal(5e307, middle.Maximum);
         Assert.Equal(bank.PlotBounds.Left + bank.PlotBounds.Width / 2, middle.Project(0), 9);
-        var narrow = Bare().WithXAxisBounds(1e15, 1e15 + 1).AddLine("Narrow", new[] { new ChartPoint(1e15, 2), new ChartPoint(1e15 + 1, 8) });
+        var narrow = Bare().XAxis(x => x.Bounds(1e15, 1e15 + 1)).AddLine("Narrow", new[] { new ChartPoint(1e15, 2), new ChartPoint(1e15 + 1, 8) });
         narrow.Series[0].Markers.Enabled = false;
         Assert.Throws<ArgumentOutOfRangeException>(() => narrow.PrepareXZoom(Context(), new ChartXZoomLevels(1, 100)));
     }
@@ -227,7 +227,7 @@ public sealed partial class ChartXZoomTests {
     public void NonpresetPanRejectsOffWindowSourceCaptionsEvenWhenTheirPaintWouldFit(bool step, bool reversed, bool markers) {
         const double pan = .173;
         var minimum = pan * 5; var maximum = minimum + 5;
-        var chart = Bare().WithDataLabels().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Bare().DataLabels().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var observations = new[] { (X: minimum - .005, Y: 2d, Label: "Outside lower"),
             (X: minimum, Y: 4d, Label: "Boundary lower"), (X: maximum + .005, Y: 6d, Label: "Outside upper"),
             (X: maximum, Y: 8d, Label: "Boundary upper") };
@@ -236,7 +236,7 @@ public sealed partial class ChartXZoomTests {
             if (step) chart.AddStepLine(point.Label, new[] { new ChartPoint(point.X, point.Y) });
             else chart.AddLine(point.Label, new[] { new ChartPoint(point.X, point.Y) });
             var series = chart.Series[i];
-            series.WithPointLabel(0, point.Label);
+            series.PointLabel(0, point.Label);
             series.Markers.Enabled = markers;
             var right = (i < 2) != reversed;
             series.DataLabelPlacement = right ? ChartDataLabelPlacement.Right : ChartDataLabelPlacement.Left;
@@ -260,7 +260,7 @@ public sealed partial class ChartXZoomTests {
             Assert.Contains(view.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label" && node.Text.Lines.Any(line => line.Text == text));
     }
 
-    private static Chart Bare() => Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false);
+    private static Chart Bare() => Chart.Create().Axes(false).ShowGrid(false).Legend(false);
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(420, 280)), VisualTheme.Graphite(),
         frame: new VisualFrame(showLegend: false), font: FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
     private static XElement[] PointFacts(PreparedVisual visual) => XDocument.Parse(visual.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();

@@ -27,7 +27,7 @@ public sealed class TopologyRankOptimizationCausalTests {
     }
     internal static string Source(string direction)=>"---\nconfig:\n  swimlane:\n    optimizeRanksByCrossings: true\n    automaticLaneOrdering: false\n    lineHops: false\n---\nswimlane-beta "+direction+"\nA[Accept] --> D[Deliver]\nB[Build] --> C[Check]\nE[Existing rank anchor]";
     internal static TopologyChart Chart(TopologyLayoutDirection direction,TopologyLayoutMode mode) {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(1100,900,24).WithLayout(mode,direction);
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(1100, 900, 24)).LayoutMode(mode).LayoutDirection(direction);
         foreach(var id in new[]{"A","B","C","D","E"})chart.AddAutoNode(id,id,width:120,height:56);
         chart.AddEdge("ad","A","D").AddEdge("bc","B","C");SetMinima(chart);return chart;
     }

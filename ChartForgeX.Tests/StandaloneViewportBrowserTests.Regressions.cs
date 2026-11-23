@@ -13,7 +13,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(true)]
     public async Task SynchronizedResetRestoresBothPeerSourceWindowsAndClearsItsResetControl(bool visibleCategories) {
         if (!Enabled) return;
-        Chart Data() => Chart.Create().WithSize(680, 340).WithXAxisBounds(0, 12).WithYAxisBounds(0, 100)
+        Chart Data() => Chart.Create().Size(680, 340).XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(0, 100))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings",
                 new[] { new ChartPoint(0, 10), new ChartPoint(6, 50), new ChartPoint(12, 90) }));
         var html = new[] { Data(), Data() }.ToInteractiveHtmlDashboardPage(options => {

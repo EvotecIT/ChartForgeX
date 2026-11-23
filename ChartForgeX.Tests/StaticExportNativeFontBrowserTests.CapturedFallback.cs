@@ -8,6 +8,7 @@ using ChartForgeX.Typography;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -19,8 +20,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     public async Task CapturedFallbackMotionKeepsNativeGlyphExportsAndAcceptedInitialLifetime(bool donut, int width, bool dark, bool initial) {
         if (!Enabled) return;
         NativeFallbackClusterBeforeControls.Register(); var renderer = new HtmlInteractiveChartRenderer();
-        HtmlChartSection Section(double value) => renderer.PrepareSection(NativeFallbackClusterBeforeControls.Model(donut, true, value).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? ThemeMode.Dark : ThemeMode.Light),
+        HtmlChartSection Section(double value) => renderer.PrepareSection(NativeFallbackClusterBeforeControls.Model(donut, true, value).Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light),
             configure: options => { options.TextPresentation = HtmlChartTextPresentation.NativeContours; options.Interaction.ChartId = "native-fallback-motion"; options.Interaction.Enable(ChartInteractionFeatures.Export); });
         var from = Section(60); var to = Section(80); var payload = renderer.PrepareNativeTransitionJson(from, to,
             new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));

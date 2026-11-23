@@ -11,11 +11,11 @@ namespace ChartForgeX.Tests;
 public sealed class RadarCurveCompositionTests {
     [Fact]
     public void StandaloneCurveFittingUsesTheSelectedSecondaryDomain() {
-        var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10).AddRadarLine("Target", Values(100));
+        var chart = Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(0, 10)).AddRadarLine("Target", Values(100));
         chart.Series[0].Radar.CurveTension = 1;
         var primary = Prepare(chart);
-        chart.Series[0].UseSecondaryValueAxis();
+        chart.Series[0].SecondaryAxis();
         for (var index = 0; index < chart.Series[0].Points.Count; index++) chart.Series[0].Points[index] = new ChartPoint(index + 1, 10);
         var secondary = Prepare(chart);
         Assert.Equal(primary.Regions.Select(region => region.Bounds), secondary.Regions.Select(region => region.Bounds));
@@ -63,9 +63,9 @@ public sealed class RadarCurveCompositionTests {
     [InlineData(960, true)]
     public async Task MixedCurvesRemainVisibleInCompactAndWideStaticHosts(int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = V2GalleryModels.CreateMixedRadial(curveTension: 1).WithSize(width < 400 ? 360 : 800, width < 400 ? 360 : 440)
-            .WithHeader(true).WithTitle("Regional counts and targets")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = V2GalleryModels.CreateMixedRadial(curveTension: 1).Size(width < 400 ? 360 : 800, width < 400 ? 360 : 440)
+            .ShowHeader(true).Title("Regional counts and targets")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToHtmlPage(), width, 620);
         Assert.Equal(4, await session.Page.Locator("[data-cfx-role=radial-column]").CountAsync());
         var outlines = await session.Page.Locator("[data-cfx-role=radar-outline]").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('d'))");
@@ -83,10 +83,10 @@ public sealed class RadarCurveCompositionTests {
     }
 
     private static Chart Mixed(ChartLineAreaForm form, double innerRatio) {
-        var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10).WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: innerRatio))
+        var chart = Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(0, 10)).RadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: innerRatio))
             .AddRadialColumn("Counts", Values(100)).AddRadar("Target", Values(10));
-        chart.Series[1].UseSecondaryValueAxis(); chart.Series[1].Radar.Form = form;
+        chart.Series[1].SecondaryAxis(); chart.Series[1].Radar.Form = form;
         chart.Options.TransparentBackground = true; chart.Options.ShowPlotBackground = false; chart.Options.ShowCard = false;
         return chart;
     }

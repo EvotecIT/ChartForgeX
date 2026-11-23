@@ -26,8 +26,8 @@ public sealed class MermaidPolarScheduleTypographyTests {
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'" + BrowserProofFonts.Family + "','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
-        chart.WithSize(width, 460).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
-        if (family == "gantt") chart.WithDataLabels();
+        chart.Size(width, 460).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        if (family == "gantt") chart.DataLabels();
         var authoredTickSize = chart.Options.Theme.Typography.AxisSize;
         chart.Options.XAxis.LabelAngle = angle;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -63,9 +63,9 @@ public sealed class MermaidPolarScheduleTypographyTests {
     [InlineData(320)]
     [InlineData(960)]
     public void NativePolarUsesTheSameMeasuredAxisAndDataCaptionBounds(int width) {
-        var chart = Chart.Create().WithSize(width, 360).WithPngFont("Arial")
+        var chart = Chart.Create().Size(width, 360).Png(p => p.FontPath("Arial"))
             .AddPolar("Signal", new[] { new ChartForgeX.Primitives.ChartPoint(0, 40), new ChartForgeX.Primitives.ChartPoint(Math.PI / 2, 60), new ChartForgeX.Primitives.ChartPoint(Math.PI, 80) })
-            .WithDataLabels();
+            .DataLabels();
         chart.Options.TickLabelStyle.FontSize = 256; chart.Options.DataLabelStyle.FontSize = 256;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var labels = Texts(prepared.ToSvg());
         Assert.True(labels.Count(element => Role(element) == "polar-angle-label") >= 4);
@@ -81,14 +81,14 @@ public sealed class MermaidPolarScheduleTypographyTests {
     [InlineData(ChartSeriesKind.GanttLane)]
     [InlineData(ChartSeriesKind.StateTimeline)]
     public void NativeScheduleSiblingsFitTheirFixedTextStrips(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(360, 360).WithPngFont("Arial").WithLegend(false).WithDataLabels();
+        var chart = Chart.Create().Size(360, 360).Png(p => p.FontPath("Arial")).Legend(false).DataLabels();
         switch (kind) {
-            case ChartSeriesKind.Gantt: chart.AddGanttTask("API", 1, 3, .5).WithGanttToday(2d); break;
+            case ChartSeriesKind.Gantt: chart.AddGanttTask("API", 1, 3, .5).Gantt(g => g.Today(2d)); break;
             case ChartSeriesKind.Timeline: chart.AddTimelineItem("API", DateTime.FromOADate(1), DateTime.FromOADate(3)); break;
-            case ChartSeriesKind.GanttLane: chart.AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "up", "Save") }, "Services", "99%").WithGanttToday(2d); break;
+            case ChartSeriesKind.GanttLane: chart.AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "up", "Save") }, "Services", "99%").Gantt(g => g.Today(2d)); break;
             case ChartSeriesKind.StateTimeline: chart.AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "99%", "Services"); break;
         }
-        if (kind is ChartSeriesKind.GanttLane or ChartSeriesKind.StateTimeline) chart.Options.LaneSummaryHeader = "Status";
+        if (kind is ChartSeriesKind.GanttLane or ChartSeriesKind.StateTimeline) chart.Options.StateTimeline.SummaryHeader = "Status";
         chart.Options.TickLabelStyle.FontSize = 256; chart.Options.DataLabelStyle.FontSize = 256;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var labels = Texts(prepared.ToSvg());
         Assert.Contains(labels, element => Role(element) == "schedule-row-label" && element.Value == "API");

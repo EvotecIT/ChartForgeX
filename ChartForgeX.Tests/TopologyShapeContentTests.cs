@@ -21,7 +21,7 @@ public sealed class TopologyShapeContentTests {
     [InlineData(TopologyNodeShape.TrapezoidAlt)]
     [InlineData(TopologyNodeShape.Stadium)]
     public void RichContentGrowsBeforeRoutingAndRemainsInsideItsNativeShape(TopologyNodeShape shape) {
-        var chart = TopologyChart.Create().WithViewport(800, 500, 20);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 500, 20));
         chart.Nodes.Add(new TopologyNode { Id = "review", Label = "Approved?", Subtitle = "Human gate", Badge = "?",
             X = 40, Y = 40, Width = 130, Height = 68, Shape = shape, Status = TopologyHealthStatus.Warning,
             FitLabelToContent = true, PreserveDisplayModeSize = true });
@@ -71,7 +71,7 @@ public sealed class TopologyShapeContentTests {
         var result = new MarkupFlowParser().Parse("steps:\n| id | label | kind | subtitle | badge | width | height | fitLabelToContent |\n| fixed | Approved? | decision | Human gate | ? | 130 | 68 | false |");
         Assert.False(result.HasErrors);
         var flow = result.Document!;
-        flow.ConfigureStep("fixed", step => step.Color = "#355AAA");
+        flow.UpdateStep("fixed", step => step.Color = "#355AAA");
         Assert.False(Assert.Single(flow.Steps).FitLabelToContent);
         var prepared = flow.Prepare(Context());
         var semantic = Assert.Single(prepared.SemanticInterchange!.Nodes);
@@ -91,7 +91,7 @@ public sealed class TopologyShapeContentTests {
 
     [Fact]
     public void AuthoredGlyphStripStaysBesideCompleteRichShapeText() {
-        var chart = TopologyChart.Create().WithViewport(800, 500, 20);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 500, 20));
         chart.Nodes.Add(new TopologyNode { Id = "service", Label = "Service", Subtitle = "Owner", Symbol = "API", Badge = "OK",
             X = 40, Y = 40, Width = 130, Height = 68, Shape = TopologyNodeShape.Diamond,
             FitLabelToContent = true, PreserveDisplayModeSize = true, ShowStatusBadge = false });
@@ -105,7 +105,7 @@ public sealed class TopologyShapeContentTests {
 
     [Fact]
     public void SingleLinePolicyFitsJoinedTitleSubtitleAndDetailsBeforeRouting() {
-        var chart = TopologyChart.Create().WithViewport(800, 500, 20);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 500, 20));
         chart.Nodes.Add(new TopologyNode { Id = "review", Label = "Review\napproval", Subtitle = "Human\nreview",
             X = 20, Y = 20, Width = 60, Height = 40, Shape = TopologyNodeShape.Diamond,
             FitLabelToContent = true, PreserveDisplayModeSize = true, ShowStatusBadge = true });
@@ -124,7 +124,7 @@ public sealed class TopologyShapeContentTests {
     [Fact]
     public void FixedEnclosedBadgeDoesNotReserveItsLegacyExternalFootprint() {
         PreparedVisual Prepare(string badge) {
-            var chart = TopologyChart.Create().WithViewport(200, 180, 20);
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(200, 180, 20));
             chart.Nodes.Add(new TopologyNode { Id = "fixed", Label = "A", Badge = badge, X = 20, Y = 20,
                 Width = 32, Height = 40, Shape = TopologyNodeShape.Diamond, PreserveDisplayModeSize = true, ShowStatusBadge = false });
             return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(200, 180), 20),

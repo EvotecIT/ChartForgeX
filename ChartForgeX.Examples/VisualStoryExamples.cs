@@ -17,15 +17,15 @@ internal static class VisualStoryExamples {
         var chart = FiveLineChartExample.Create();
         chart.SavePng(Path.Combine(output, "weekly-builds.png"));
         var console = TerminalStory.Create()
-            .WithTitle("dotnet run — five-line-chart")
-            .WithDialect(TerminalDialect.CSharp)
-            .WithWidth(900)
-            .WithFinalPrompt(false)
+            .Title("dotnet run — five-line-chart")
+            .Dialect(TerminalDialect.CSharp)
+            .Width(900)
+            .ShowFinalPrompt(false)
             .Command("dotnet run")
             .Output("Saved weekly-builds.png", TerminalTextTone.Success);
         var story = VisualStory.Create("Create a chart in five lines")
-            .WithDescription("Source, execution transcript, and the generated chart stay together.")
-            .WithSize(800, 450);
+            .Description("Source, execution transcript, and the generated chart stay together.")
+            .Size(800, 450);
         story.Scene("source", "Start with five lines", 2.8)
             .Panel("source", new VisualStorySourceSurface(StorySourceText.Create(FiveLineChartExample.Source, "csharp"), "C# source"));
         story.Scene("run", "Run the example", 2.2, VisualStorySceneLayout.Split)
@@ -42,8 +42,8 @@ internal static class VisualStoryExamples {
         const string request = "GET /api/projects/chartforgex\nAccept: application/json";
         const string response = "{\n  \"name\": \"ChartForgeX\",\n  \"status\": \"ready\",\n  \"formats\": [\"svg\", \"png\", \"gif\"]\n}";
         var story = VisualStory.Create("Explain an API in one visual story")
-            .WithDescription("The request, response, and useful result are presented as one resolved narrative.")
-            .WithSize(800, 450);
+            .Description("The request, response, and useful result are presented as one resolved narrative.")
+            .Size(800, 450);
         story.Scene("request", "Send the request", 2)
             .Panel("request", new VisualStorySourceSurface(StorySourceText.Create(request, "http"), "HTTP request"));
         story.Scene("response", "Inspect the response", 2, VisualStorySceneLayout.Split)
@@ -68,8 +68,8 @@ internal static class VisualStoryExamples {
             .DrawText(60, 198, 520, "clean · sharp · ready", 20, ChartColor.FromHex("#55D6A9"), alignment: TextAlignment.Center)
             .ToImage();
         var story = VisualStory.Create("Show an image transformation")
-            .WithDescription("Generic media surfaces make before-and-after demos first-class.")
-            .WithSize(800, 450);
+            .Description("Generic media surfaces make before-and-after demos first-class.")
+            .Size(800, 450);
         story.Scene("before", "Begin with the source image", 2)
             .Panel("before", new VisualStoryMediaSurface(before, "Plain source image labeled before"));
         story.Scene("compare", "Apply the transformation", 2.4, VisualStorySceneLayout.Split)
@@ -84,7 +84,7 @@ internal static class VisualStoryExamples {
         File.WriteAllText(Path.Combine(output, name + ".html"), story.ToHtmlPage());
         story.SavePng(Path.Combine(output, name + ".png"));
         story.SaveTranscript(Path.Combine(output, name + ".txt"));
-        var animation = VisualStoryAnimationOptions.Create().WithFramesPerSecond(6).WithEndHold(1.5);
+        var animation = VisualStoryAnimationOptions.Create().FramesPerSecond(6).EndHoldSeconds(1.5);
         story.SaveGif(Path.Combine(output, name + ".gif"), animation);
         story.SaveApng(Path.Combine(output, name + ".apng"), animation);
     }
@@ -95,11 +95,11 @@ internal static class FiveLineChartExample {
 
     internal static Chart Create() {
         var chart = Chart.Create()
-            .WithTitle("Weekly builds")
-            .WithSubtitle("A real outcome, not a console promise")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(800, 444)
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri");
+            .Title("Weekly builds")
+            .Subtitle("A real outcome, not a console promise")
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(800, 444)
+            .XLabels("Mon", "Tue", "Wed", "Thu", "Fri");
         chart.AddSmoothArea(
             "Builds",
             new[] {

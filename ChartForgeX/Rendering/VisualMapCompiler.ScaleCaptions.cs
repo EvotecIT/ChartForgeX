@@ -6,16 +6,16 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
     private static ChartColorLegendStyle CaptionedMapLegendStyle(Chart chart, ChartColorPresentation presentation) =>
-        chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right && presentation.LegendStyle == ChartColorLegendStyle.Auto
-            ? chart.Options.MapColorScale!.HasPositionedStops ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Gradient
+        chart.Options.Map.ScaleLegendPosition == ChartMapScaleLegendPosition.Right && presentation.LegendStyle == ChartColorLegendStyle.Auto
+            ? chart.Options.Map.ColorScale!.HasPositionedStops ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Gradient
             : presentation.LegendStyle;
 
     private static MapLayout CaptionedScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, double min, double max, ChartColorPresentation presentation) {
-        var scale = chart.Options.MapColorScale!; var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
+        var scale = chart.Options.Map.ColorScale!; var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
         var hasDomain = MapHasDomain(chart, scale, min, max); var missing = HasMissingMapValues(chart);
         var legendStyle = CaptionedMapLegendStyle(chart, presentation);
-        if (chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
+        if (chart.Options.Map.ScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
             var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
             var width = VisualColorScaleLegendScene.CaptionedVerticalWidth(builder, scale, presentation.Labels, style, gap / 2,
                 plot.Width * .4, min, max, hasDomain, presentation.ScaleValues, title, missing, legendStyle);
@@ -31,7 +31,7 @@ internal static partial class VisualMapCompiler {
 
     private static void DrawCaptionedScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
-        var scale = chart.Options.MapColorScale!;
+        var scale = chart.Options.Map.ColorScale!;
         VisualColorScaleLegendScene.DrawCaptioned(builder, scale, presentation.Labels, TickStyle(chart, context), context.Theme.Spacing / 2,
             layout.Scale, min, max, "map-scale", HasMissingMapValues(chart), ChartMissingData.KeyLook(scale, colors),
             presentation.ScaleValues, "map.scale-overflow", MapHasDomain(chart, scale, min, max), null,

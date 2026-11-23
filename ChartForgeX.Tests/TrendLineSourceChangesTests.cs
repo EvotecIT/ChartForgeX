@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 public sealed class TrendLineSourceChangesTests {
     [Fact]
     public void CompleteReplacementRefitsSameSeriesCapturesSourceAndKeepsPreparedExportsDetached() {
-        var series = Series().WithPointLabel(1, "Derived end");
+        var series = Series().PointLabel(1, "Derived end");
         var chart = Chart.Create().AddSeries(series); var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var replacement = new[] { new ChartPoint(0, 10), new ChartPoint(1, 12), new ChartPoint(2, 18), new ChartPoint(3, 28) };
@@ -27,7 +27,7 @@ public sealed class TrendLineSourceChangesTests {
 
     [Fact]
     public void KeyedChangesAndRollingRetentionPreserveRawIdsWithoutRemappingDerivedEndpointPresentation() {
-        var series = Series().WithPointLabel(0, "Start handle").WithPointLabel(1, "End handle");
+        var series = Series().PointLabel(0, "Start handle").PointLabel(1, "End handle");
         series.ApplyTrendLineSourceChanges(new[] {
             ChartObservationChange<ChartPoint>.Remove(Id("a")),
             ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(1, 1).WithColorValue(-7)),
@@ -56,7 +56,7 @@ public sealed class TrendLineSourceChangesTests {
         Assert.Throws<InvalidOperationException>(() => series.ReplaceTrendLineSourcePoints(ThrowingSource()));
         Assert.Throws<OperationCanceledException>(() => series.ReplaceTrendLineSourcePoints(source, new CancellationToken(true)));
         Assert.Throws<OperationCanceledException>(() => series.ApplyTrendLineSourceChanges(Array.Empty<ChartObservationChange<ChartPoint>>(), cancellationToken: new CancellationToken(true)));
-        Assert.Throws<OperationCanceledException>(() => series.ConfigureTrendLine(options => options.Model = ChartTrendLineModel.Power, new CancellationToken(true)));
+        Assert.Throws<OperationCanceledException>(() => series.TrendLine(options => options.Model = ChartTrendLineModel.Power, new CancellationToken(true)));
         Assert.Equal(source, series.TrendLineSourcePoints); Assert.Equal(samples, series.TrendLineSamples);
         Assert.Equal(ids, series.ObservationIds.OrderBy(pair => pair.Key)); Assert.Equal(before, chart.ToSvg());
         Assert.Equal(ChartTrendLineModel.Polynomial, series.TrendLineConfiguration!.Model);
@@ -75,8 +75,8 @@ public sealed class TrendLineSourceChangesTests {
 
     private static ChartSeries Series() => ChartSeries.CreateTrendLine(new ChartSeriesId("retained"), "Retained quadratic",
         new[] { new ChartPoint(0, 0), new ChartPoint(1, 1), new ChartPoint(2, 4) })
-        .ConfigureTrendLine(options => options.Model = ChartTrendLineModel.Polynomial)
-        .WithObservationIds(new[] { Id("a"), Id("b"), Id("c") });
+        .TrendLine(options => options.Model = ChartTrendLineModel.Polynomial)
+        .ObservationIds(new[] { Id("a"), Id("b"), Id("c") });
 
     private static IEnumerable<ChartPoint> ThrowingSource() {
         yield return new ChartPoint(1, 2); yield return new ChartPoint(2, 4);

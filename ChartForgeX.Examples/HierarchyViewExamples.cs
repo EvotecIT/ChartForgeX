@@ -12,13 +12,13 @@ internal static class HierarchyViewExamples {
                 var width = dark ? 390 : 800; var height = dark ? 420 : 511;
                 // Reuse the maintained allocation facts; mapping the second chart family is authoring, not browser drill-down.
                 var sunburst = SunburstBranchHighlightExamples.CreateChart(width, dark);
-                if (kind == ChartSeriesKind.Sunburst) sunburst.ConfigureSunburst(options => {
+                if (kind == ChartSeriesKind.Sunburst) sunburst.Sunburst(options => {
                     options.SectorGap = 6; options.MinimumLabelFontSize = 10; options.CornerRadius = 4;
                 });
-                var chart = kind == ChartSeriesKind.Sunburst ? sunburst : Chart.Create().WithSize(width, height).WithDataLabels()
-                    .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+                var chart = kind == ChartSeriesKind.Sunburst ? sunburst : Chart.Create().Size(width, height).DataLabels()
+                    .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
                     .AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation"), "Allocated work", sunburst.Series[0].HierarchyItems))
-                    .ConfigureTreemap(options => options.ColorScale = sunburst.Options.Sunburst.ColorScale);
+                    .Treemap(options => options.ColorScale = sunburst.Options.Sunburst.ColorScale);
                 foreach (var selected in new[] { false, true }) {
                     var id = "hierarchy-view-" + kind.ToString().ToLowerInvariant() + "-" + (selected ? "engineering" : "full") + "-" + (dark ? "dark" : "light");
                     var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(),

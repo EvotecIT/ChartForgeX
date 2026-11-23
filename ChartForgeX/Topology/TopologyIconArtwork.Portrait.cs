@@ -15,6 +15,6 @@ public sealed partial class TopologyIconArtwork {
         var validated = new RgbaImage(image.Width, image.Height, image.Pixels);
         return Image("data:image/png;base64," + Convert.ToBase64String(PngWriter.WriteRgba(validated)),
             "0 0 " + image.Width.ToString(CultureInfo.InvariantCulture) + " " + image.Height.ToString(CultureInfo.InvariantCulture))
-            .WithPreserveAspectRatio(fit == TopologyPortraitFit.Slice ? "xMidYMid slice" : "xMidYMid meet");
+            .PreserveAspectRatio(fit == TopologyPortraitFit.Slice ? "xMidYMid slice" : "xMidYMid meet");
     }
 }

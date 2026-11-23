@@ -148,7 +148,7 @@ public sealed class ExternalAssetTests {
     [InlineData("http://:81/assets")]
     public void AssetReferences_RejectUnsafeBasePath(string input) => Assert.Throws<ArgumentException>(() => new HtmlAssetReferences(input));
 
-    private static Chart CreateChart() => Chart.Create().WithSize(480, 240).AddLine("Series", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) });
+    private static Chart CreateChart() => Chart.Create().Size(480, 240).AddLine("Series", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) });
 
     private static string RuntimeSnippet(HtmlAssetFile file) {
         var content = file.Content.Trim();

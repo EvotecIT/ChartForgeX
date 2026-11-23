@@ -18,7 +18,7 @@ public sealed class TopologyForceEdgeWidthCausalTests {
     public void IncumbentDefaultForceWidthAlreadyRetainsItsOutputUnits() => Observe(true, false, null);
 
     private static void Observe(bool fit, bool selected, double? width) {
-        var chart = TopologyChart.Create().WithId("force-width-before").WithViewport(760, 440, 24).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Id("force-width-before").Viewport(new TopologyViewport(760, 440, 24)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 50, 160, width: 150, height: 70).AddNode("b", "B", 540, 160, width: 150, height: 70)
             .AddEdge("handoff", "a", "b", direction: VisualLinkDirection.None);
         foreach (var node in chart.Nodes) { node.DisplayMode = TopologyNodeDisplayMode.Hidden; node.ShowStatusBadge = false; }

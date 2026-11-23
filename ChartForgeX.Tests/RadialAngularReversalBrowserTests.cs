@@ -29,10 +29,10 @@ public sealed class RadialAngularReversalBrowserTests {
     [InlineData(ChartSeriesKind.RadialColumn, true, true)]
     public async Task ReversedNativeTargetsKeepSourceReadoutsAndKeyboardSelection(ChartSeriesKind kind, bool compact, bool dark) {
         if (!Enabled) return;
-        var chart = kind == ChartSeriesKind.RadialColumn ? V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal())
+        var chart = kind == ChartSeriesKind.RadialColumn ? V2GalleryModels.CreateMixedRadial().XAxis(axis => axis.Reversed())
             : V2GalleryModels.Create(kind, "angular-reversal");
-        chart.WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend()
-            .WithTitle("Reversed angular observations").WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Size(compact ? 360 : 800, compact ? 360 : 440).Legend()
+            .Title("Reversed angular observations").Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var series = kind == ChartSeriesKind.PolarArea ? 0 : kind == ChartSeriesKind.RadialColumn ? 2 : 1;
         var point = kind is ChartSeriesKind.PolarArea or ChartSeriesKind.RadialColumn ? 0 : 1;
         var expectedValue = chart.Series[series].Points[point].Y.ToString("R", CultureInfo.InvariantCulture);

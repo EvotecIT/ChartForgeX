@@ -46,8 +46,8 @@ public sealed class NativeRadialValueMotionTests {
         var from = renderer.PrepareSection(chart); var to = renderer.PrepareSection(NativeRadialMotionBeforeControls.Model(true, false, "outside", 80));
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 5, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 5));
         Capture(from, to, frames, payload, "detached"); var svg = frames.Select(row => row.ToSvg()).ToArray(); var png = frames.Select(row => row.ToPng()).ToArray();
-        chart.Series[0].Points.Clear(); chart.Series[0].WithColor(ChartColor.Black); chart.Options.MaximumPieSlices = 2; chart.Options.DonutCenterValue = "Changed";
-        chart.WithFontFamily("Changed caller family").WithValueFormat(ChartValueFormat.Custom(_ => "Changed"));
+        chart.Series[0].Points.Clear(); chart.Series[0].Color(ChartColor.Black); chart.Options.Pie.MaxSlices = 2; chart.Options.Pie.CenterValue = "Changed";
+        chart.FontFamily("Changed caller family").ValueFormat(ChartValueFormat.Custom(_ => "Changed"));
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 5, null);
             Assert.Equal(svg, repeated.Select(row => row.ToSvg())); for (var index = 0; index < repeated.Count; index++) Assert.Equal(png[index], repeated[index].ToPng());
             Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 5)));
@@ -57,9 +57,9 @@ public sealed class NativeRadialValueMotionTests {
     public void UnsupportedCompleteValueStructureRejectsWithoutDisablingOrdinaryRendering(string condition) {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeRadialMotionBeforeControls.Model(false, condition == "aggregate");
         var from = renderer.PrepareSection(chart); chart.Series[0].Points[0] = new ChartPoint(1, condition == "zero" ? 0 : condition == "negative" ? -1 : condition == "reorder" ? 20 : 80);
-        if (condition == "identity") chart.Series[0].WithObservationId(0, new ChartObservationId("changed"));
-        if (condition == "callback") chart.WithValueFormat(ChartValueFormat.Custom(value => "V" + value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-        if (condition == "radius") chart.Series[0].WithPointSliceRadiusRatio(0, 0);
+        if (condition == "identity") chart.Series[0].ObservationId(0, new ChartObservationId("changed"));
+        if (condition == "callback") chart.ValueFormat(ChartValueFormat.Custom(value => "V" + value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        if (condition == "radius") chart.Series[0].PointSliceRadiusRatio(0, 0);
         if (condition == "negative") {
             NativeRadialMotionBeforeControls.Capture(from, "radial-reject-negative-valid-source"); Exception? nativeInvalid = null;
             try { _ = renderer.PrepareSection(chart); } catch (Exception exception) { nativeInvalid = exception; }

@@ -40,7 +40,7 @@ public sealed partial class ChartSeries {
     /// <param name="interpolation">The interpolation applied to each connected source segment.</param>
     /// <param name="stepPosition">The step transition position; other modes require End.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithInterpolation(ChartInterpolation interpolation, ChartStepPosition stepPosition = ChartStepPosition.End) {
+    internal ChartSeries SetInterpolation(ChartInterpolation interpolation, ChartStepPosition stepPosition = ChartStepPosition.End) {
         if (!Enum.IsDefined(typeof(ChartInterpolation), interpolation)) throw new ArgumentOutOfRangeException(nameof(interpolation));
         if (!Enum.IsDefined(typeof(ChartStepPosition), stepPosition)) throw new ArgumentOutOfRangeException(nameof(stepPosition));
         if (interpolation != ChartInterpolation.Step && stepPosition != ChartStepPosition.End)

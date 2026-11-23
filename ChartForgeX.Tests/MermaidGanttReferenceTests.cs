@@ -5,6 +5,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 using Microsoft.Playwright;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -17,7 +18,7 @@ public sealed class MermaidGanttReferenceTests {
         var fixture = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-milestone-dependencies.mmd");
         var result = new MermaidParser().ParseGantt(File.ReadAllText(fixture));
         Assert.False(result.HasErrors);
-        var chart = result.Document!.ToChart().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = result.Document!.ToChart().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 600);
         var marks = session.Page.Locator("[data-cfx-role=\"gantt-task-shape\"], [data-cfx-role=\"gantt-milestone-shape\"]");
         Assert.Equal(3, await marks.CountAsync());
@@ -128,7 +129,7 @@ public sealed class MermaidGanttReferenceTests {
         var source = "gantt\nexcludes 2026-01-05\nWindow :window, 2026-01-02, until anchor\nAnchor :anchor, 2026-01-05, 1d\nTail :tail, after window, 1d";
         var result = new MermaidParser().ParseGantt(source);
         Assert.False(result.HasErrors);
-        var chart = result.Document!.ToChart().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = result.Document!.ToChart().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 600);
         var bars = session.Page.Locator("[data-cfx-role=\"gantt-task-shape\"]");
         Assert.Equal(3, await bars.CountAsync());

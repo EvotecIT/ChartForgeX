@@ -97,8 +97,8 @@ public sealed class TopologyOrdinaryPortFanTests {
     }
 
     private static TopologyChart Fan(bool horizontal, bool reversed) {
-        var chart = TopologyChart.Create().WithViewport(horizontal ? 850 : 500, horizontal ? 500 : 850, 0)
-            .WithLayout(TopologyLayoutMode.Manual).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(horizontal ? 850 : 500, horizontal ? 500 : 850, 0))
+            .LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null);
         chart.AddNode("source", horizontal ? "Source" : "S", horizontal && reversed ? 600 : 0, !horizontal && reversed ? 600 : 0,
             width: horizontal ? 200 : 50, height: horizontal ? 50 : 200);
         for (var index = 0; index < 4; index++) {

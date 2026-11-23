@@ -22,9 +22,9 @@ public static partial class V2Examples {
             "org-chart" => ThumbnailOrgChart(),
             "dashboard" => ThumbnailDashboard(mode),
             "state-timeline" when id.Contains("-availability-") => ThumbnailAvailability(mode),
-            "chart-grid" => ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248)
-                .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddLine("Requests", new[] { new ChartPoint(1, 28), new ChartPoint(2, 42), new ChartPoint(3, 35) }))
-                .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddBar("Capacity", new[] { new ChartPoint(1, 52), new ChartPoint(2, 64), new ChartPoint(3, 58) })),
+            "chart-grid" => ChartGrid.Create().Columns(2).Gap(12).PanelSize(184, 248)
+                .Add(Chart.Create().XLabels("Mon", "Tue", "Wed").AddLine("Requests", new[] { new ChartPoint(1, 28), new ChartPoint(2, 42), new ChartPoint(3, 35) }))
+                .Add(Chart.Create().XLabels("Mon", "Tue", "Wed").AddBar("Capacity", new[] { new ChartPoint(1, 52), new ChartPoint(2, 64), new ChartPoint(3, 58) })),
             _ => model
         };
         // Horizontal interval categories use the thumbnail's ordinary legend space.
@@ -57,7 +57,7 @@ public static partial class V2Examples {
     }
 
     private static TopologyChart ThumbnailOrgChart() {
-        var chart = TopologyChart.Create().WithLegend(null);
+        var chart = TopologyChart.Create().Legend((TopologyLegend?)null);
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
         return chart.AddTeam("company", "Northwind Services", new[] {
             new TopologyTeamMember("avery", "Avery Quinn", "Managing director"),
@@ -67,16 +67,16 @@ public static partial class V2Examples {
     }
 
     private static ChartGrid ThumbnailDashboard(ThemeMode mode) {
-        var preview = ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248);
+        var preview = ChartGrid.Create().Columns(2).Gap(12).PanelSize(184, 248);
         foreach (var chart in OperationsDashboardRecipe.Create(mode: mode).Charts.Take(2)) {
-            chart.Options.ShowDonutCenterLabel = false;
-            preview.Add(chart.WithTitle("").WithSubtitle("").WithLegend(false));
+            chart.Options.Pie.ShowCenterLabel = false;
+            preview.Add(chart.Title("").Subtitle("").Legend(false));
         }
         return preview;
     }
 
     private static TopologyChart ThumbnailTopology() {
-        var chart = TopologyChart.Create().WithId("service-overview");
+        var chart = TopologyChart.Create().Id("service-overview");
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true, WrapNodeLabels = true, IncludeLegend = false };
         chart.Nodes.Add(new TopologyNode { Id = "client", Label = "Client service", X = 0, Y = 0, Width = 138, Height = 66, ShowStatusBadge = false });
         chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Processing service", X = 224, Y = 0, Width = 138, Height = 66, ShowStatusBadge = false });
@@ -85,8 +85,8 @@ public static partial class V2Examples {
         return chart;
     }
 
-    private static FlowArtifact ThumbnailFlow() => FlowArtifact.Create("request-overview").WithSize(ThumbnailWidth, ThumbnailHeight, 16)
-        .AddStep("received", "Received", FlowArtifactStepKind.Start).ConfigureStep("received", step => { step.Width = 128; step.Height = 64; })
-        .AddStep("complete", "Complete", FlowArtifactStepKind.End).ConfigureStep("complete", step => { step.Width = 128; step.Height = 64; })
+    private static FlowArtifact ThumbnailFlow() => FlowArtifact.Create("request-overview").Width(ThumbnailWidth).Height(ThumbnailHeight).Padding(16)
+        .AddStep("received", "Received", FlowArtifactStepKind.Start).UpdateStep("received", step => { step.Width = 128; step.Height = 64; })
+        .AddStep("complete", "Complete", FlowArtifactStepKind.End).UpdateStep("complete", step => { step.Width = 128; step.Height = 64; })
         .AddConnector("received", "complete", "Process");
 }

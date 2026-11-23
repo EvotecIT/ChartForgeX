@@ -34,10 +34,10 @@ internal static class NativePreparationBackpressureExamples {
     private static Chart Model(bool typed, int width, ThemeMode mode) {
         var series = typed ? ChartSeries.CreateRangeBar(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11).Select(value => new ChartInterval(value, 20 + value * 5, 28 + value * 5)))
             : ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11).Select(value => new ChartPoint(value, 20 + value * 5)));
-        series.WithObservationIds(Enumerable.Range(0, 11).Select(value => new ChartObservationId("reading-" + value)));
-        return Chart.Create().WithSize(width, 480).WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(ExampleTypography.FontFamily)
-            .WithTitle(typed ? "Native typed interval admission" : "Native numeric admission").WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).AddSeries(series);
+        series.ObservationIds(Enumerable.Range(0, 11).Select(value => new ChartObservationId("reading-" + value)));
+        return Chart.Create().Size(width, 480).Theme(VisualTheme.Graphite()).ThemeMode(mode).FontFamily(ExampleTypography.FontFamily)
+            .Title(typed ? "Native typed interval admission" : "Native numeric admission").Legend(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100)).AddSeries(series);
     }
 
     private const string Script = """

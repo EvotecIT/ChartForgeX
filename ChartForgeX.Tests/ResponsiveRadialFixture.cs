@@ -12,12 +12,12 @@ internal static class ResponsiveRadialFixture {
         var names = new[] { "Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3" };
         if (longName) names[2] += " with an extended archive and compliance service description";
         var values = new double[] { 412, 268, 190, 120, 64, 31 };
-        var chart = Chart.Create().WithSize(1100, 420).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Licences by product").WithSubtitle("Assigned seats, October 2026").WithXLabels(names);
+        var chart = Chart.Create().Size(1100, 420).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Licences by product").Subtitle("Assigned seats, October 2026").XLabels(names);
         chart.AddSeries(new ChartSeries(new ChartSeriesId("licences"), "Licences", other ? ChartSeriesKind.Pie : ChartSeriesKind.Donut,
             values.Select((value, index) => new ChartPoint(index + 1, value))));
-        chart.Options.DonutCenterLabel = "Licences";
-        if (other) chart.Options.MaximumPieSlices = 4;
+        chart.Options.Pie.CenterLabel = "Licences";
+        if (other) chart.Options.Pie.MaxSlices = 4;
         return chart;
     }
 
@@ -29,7 +29,7 @@ internal static class ResponsiveRadialFixture {
         var size = chart.Options.Size;
         try {
             // Both public renderers prepare the same source frame; the host supplies interaction around its drawing.
-            chart.WithSize(1600, 420);
+            chart.Size(1600, 420);
             var shell = new HtmlInteractiveChartRenderer().RenderFragment(chart, options => {
                 options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
                 options.IncludeResetButton = false;
@@ -39,7 +39,7 @@ internal static class ResponsiveRadialFixture {
             var end = shell.IndexOf("</svg>", start, StringComparison.Ordinal) + "</svg>".Length;
             return shell.Substring(0, start) + responsive + shell.Substring(end)
                 + "<style>" + HtmlResponsiveChartRenderer.Stylesheet + "</style><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>";
-        } finally { chart.WithSize(size.Width, size.Height); }
+        } finally { chart.Size(size.Width, size.Height); }
     }
 
     internal static string Document(string fragment, bool dark) => "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"

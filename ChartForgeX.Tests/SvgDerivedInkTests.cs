@@ -14,12 +14,12 @@ public sealed class SvgDerivedInkTests {
     [InlineData(ThemeMode.Dark)]
     public void DivergingCellLabelsContrastWithActualFillsInEitherHostTheme(ThemeMode sourceMode) {
         var theme = VisualTheme.Graphite();
-        Chart ChartFor(ThemeMode mode) => Chart.Create().WithSize(960, 240).WithTheme(theme, mode).WithDataLabels()
-            .WithHeatmapColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0))
+        Chart ChartFor(ThemeMode mode) => Chart.Create().Size(960, 240).Theme(theme).ThemeMode(mode).DataLabels()
+            .Heatmap(h => h.ColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0)))
             .AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
         XElement[] Cells(string svg) => XDocument.Parse(svg).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell").ToArray();
-        var bound = ChartFor(sourceMode).WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, sourceMode)).ToSvg();
+        var bound = ChartFor(sourceMode).SvgColorVariables(SvgColorVariables.SharedRoles(theme, sourceMode)).ToSvg();
         var boundCells = Cells(bound);
         Assert.Equal(7, boundCells.Length);
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {

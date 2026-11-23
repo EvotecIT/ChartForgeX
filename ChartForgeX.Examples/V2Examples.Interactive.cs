@@ -13,8 +13,8 @@ public static partial class V2Examples {
 
     /// <summary>Writes the gallery's live page: the same chart with tooltips, hover and legend toggles, sharing one runtime copy.</summary>
     private static void WriteInteractive(string output, Chart chart, string id, string title, string subtitle, ThemeMode mode, int width, int height, bool? legend) {
-        chart.WithTitle(title).WithSubtitle(subtitle).WithTheme(VisualTheme.Graphite(), mode).WithSize(width, height);
-        if (legend.HasValue) chart.WithLegend(legend.Value);
+        chart.Title(title).Subtitle(subtitle).Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(width, height);
+        if (legend.HasValue) chart.Legend(legend.Value);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(options => {
             options.PageTitle = title;
             // The gallery shows these pages in narrow frames: scale the whole chart and keep the toolbar small.
@@ -35,7 +35,7 @@ public static partial class V2Examples {
         // Two columns at the gallery width keep each panel readable instead of stacking full-size charts down the page.
         var columns = Math.Max(1, Math.Min(2, grid.Charts.Count));
         var panelWidth = Math.Max(280, (width - 16 * (columns - 1)) / columns - 34);
-        var charts = grid.Charts.Select(chart => chart.WithTheme(VisualTheme.Graphite(), mode).WithSize(panelWidth, (int)(panelWidth * 0.62))).ToArray();
+        var charts = grid.Charts.Select(chart => chart.Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(panelWidth, (int)(panelWidth * 0.62))).ToArray();
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), charts.ToInteractiveHtmlDashboardPage(options => {
             options.PageTitle = title;
             options.Columns = columns;
@@ -49,7 +49,7 @@ public static partial class V2Examples {
 
     /// <summary>Writes a diagram's live page: pan, zoom and node details with its runtime inlined (topology has no shared-asset option).</summary>
     private static void WriteInteractiveTopology(string output, ChartForgeX.Topology.TopologyChart chart, string id, string title, string subtitle, ThemeMode mode) {
-        chart.WithTitle(title).WithSubtitle(subtitle).WithTheme(VisualTheme.Graphite(), mode);
+        chart.Title(title).Subtitle(subtitle).Theme(VisualTheme.Graphite(), mode);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
     }
 

@@ -15,7 +15,7 @@ public sealed class NativeReflowVisibilityBeforeControls {
     [InlineData("line", false)] [InlineData("line", true)] [InlineData("bar", false)] [InlineData("bar", true)]
     [InlineData("boxes", false)] [InlineData("boxes", true)] [InlineData("raw", false)] [InlineData("raw", true)]
     public void OrdinaryNativeSourcePreparationRemainsRepeatable(string kind, bool dark) {
-        var chart = Model(kind).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Model(kind).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareSection(chart); var second = renderer.PrepareSection(chart);
         Capture(first, "reflow-before-ordinary-" + kind + "-" + dark);
         Assert.Equal(first.Html, second.Html); Assert.Equal(first.PreparedVisual.ToSvg(), second.PreparedVisual.ToSvg()); Assert.Equal(first.PreparedVisual.ToPng(), second.PreparedVisual.ToPng());
@@ -37,16 +37,16 @@ public sealed class NativeReflowVisibilityBeforeControls {
         if (kind == "raw") {
             var samples = Enumerable.Range(0, 9).Select(index => index == 3 && changedUnpainted ? 3.25 : (double)index).ToArray();
             series = ChartSeries.CreateBoxPlot(id, "Delivery", new[] { new ChartBoxPlotSampleGroup(1, samples), new ChartBoxPlotSampleGroup(2, new double[] { 2, 3, 4, 5, 6 }), new ChartBoxPlotSampleGroup(3, new double[] { 4, 5, 6, 7, 8 }) });
-            series.WithBoxPlotGroupIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
-            series.WithObservationIds(Enumerable.Range(0, series.BoxPlotSourceSamples.Count).Select(index => new ChartObservationId("sample-" + index)));
+            series.BoxPlotGroupIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
+            series.ObservationIds(Enumerable.Range(0, series.BoxPlotSourceSamples.Count).Select(index => new ChartObservationId("sample-" + index)));
         } else if (kind == "boxes") series = ChartSeries.CreateBoxPlot(id, "Delivery", new[] { new ChartBoxPlot(1, 0, 2, 4, 6, 8), new ChartBoxPlot(2, 2, 3, 4, 5, 6), new ChartBoxPlot(3, 4, 5, 6, 7, 8) });
         else {
             var points = new[] { new ChartPoint(1, 20), new ChartPoint(2, 80), new ChartPoint(3, 40) };
             series = kind == "bar" ? ChartSeries.CreateBar(id, "Delivery", points) : ChartSeries.CreateLine(id, "Delivery", points);
-            series.WithPointColor(1, changedUnpainted ? ChartColor.Black : ChartColor.White);
+            series.PointColor(1, changedUnpainted ? ChartColor.Black : ChartColor.White);
         }
-        if (kind != "raw") series.WithObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
-        return Chart.Create().WithSize(760, 420).WithLegend(false).WithDataLabels(false).WithLineMarkers(ChartLineMarkerMode.None).AddSeries(series);
+        if (kind != "raw") series.ObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
+        return Chart.Create().Size(760, 420).Legend(false).DataLabels(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None)).AddSeries(series);
     }
     internal static void Capture(HtmlChartSection section, string name) {
         Save(name + ".html", section.Html); Save(name + ".svg", section.PreparedVisual.ToSvg());

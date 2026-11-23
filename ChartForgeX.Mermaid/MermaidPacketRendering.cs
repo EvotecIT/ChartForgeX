@@ -18,22 +18,22 @@ public static class MermaidPacketRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidPacketRenderOptions();
         var block = PacketLayoutBlock.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height ?? MermaidPacketRenderOptions.PreviewHeight)
-            .WithPadding(options.Padding)
-            .WithBitsPerRow(options.BitsPerRow ?? document.Configuration.Packet?.BitsPerRow ?? 32)
-            .WithBitNumbers(options.ShowBitNumbers ?? document.Configuration.Packet?.ShowBits ?? true)
-            .WithBitOrder(options.BitOrder ?? document.Configuration.Packet?.BitOrder ?? PacketBitOrder.Ascending)
-            .WithBitWidth(options.BitWidth ?? document.Configuration.Packet?.BitWidth)
-            .WithRowHeight(options.RowHeight ?? document.Configuration.Packet?.RowHeight)
-            .WithFieldGap(options.FieldGap ?? document.Configuration.Packet?.PaddingX)
-            .WithRowGap(options.RowGap ?? document.Configuration.Packet?.PaddingY);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height ?? MermaidPacketRenderOptions.PreviewHeight)
+            .Padding(options.Padding)
+            .BitsPerRow(options.BitsPerRow ?? document.Configuration.Packet?.BitsPerRow ?? 32)
+            .ShowBitNumbers(options.ShowBitNumbers ?? document.Configuration.Packet?.ShowBits ?? true)
+            .BitOrder(options.BitOrder ?? document.Configuration.Packet?.BitOrder ?? PacketBitOrder.Ascending)
+            .BitWidth(options.BitWidth ?? document.Configuration.Packet?.BitWidth)
+            .RowHeight(options.RowHeight ?? document.Configuration.Packet?.RowHeight)
+            .FieldGap(options.FieldGap ?? document.Configuration.Packet?.PaddingX)
+            .RowGap(options.RowGap ?? document.Configuration.Packet?.PaddingY);
 
         foreach (var field in document.Fields) block.AddField(field.StartBit, field.EndBit, field.Label);
         MermaidPresentation.Apply(block, document, options.Presentation);
         // Without a host height the frame ends where its field rows stop growing.
-        if (!options.Height.HasValue && SvgVisualBlockRenderer.PacketContentHeight(block) is int content) block.WithSize(options.Width, content);
+        if (!options.Height.HasValue && SvgVisualBlockRenderer.PacketContentHeight(block) is int content) block.Size(options.Width, content);
         return block;
     }
 

@@ -5,16 +5,16 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void AssertExactAnimatedRasterDuration() {
-        var story = VisualStory.Create("Exact animation duration").WithSize(480, 320);
+        var story = VisualStory.Create("Exact animation duration").Size(480, 320);
         story.Scene("result", "Completed", 0.25)
             .Panel("result", new VisualStoryTextSurface("ready", emphasized: true));
         story.Outcome("visible", "The result is visible", "result");
         var options = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(6)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(2);
+            .FramesPerSecond(6)
+            .TransitionSeconds(0)
+            .EndHoldSeconds(0)
+            .Loop(false)
+            .MaximumFrames(2);
 
         var gifControls = ReadGraphicsControls(story.ToGif(options));
         var apngControls = ReadApngFrameControls(story.ToApng(options));

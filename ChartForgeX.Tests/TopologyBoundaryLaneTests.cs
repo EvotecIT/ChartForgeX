@@ -13,7 +13,7 @@ public sealed class TopologyBoundaryLaneTests {
     [InlineData(3)]
     public void BoundaryCorridorSeparatesRoutesInwardWithoutAWholeObstacleDetour(int rotation) {
         const double width = 700, height = 600;
-        var chart = TopologyChart.Create().WithLegend(null).WithViewport(rotation % 2 == 0 ? width : height, rotation % 2 == 0 ? height : width);
+        var chart = TopologyChart.Create().Legend((TopologyLegend?)null).Viewport(new TopologyViewport(rotation % 2 == 0 ? width : height, rotation % 2 == 0 ? height : width));
         void Node(string id, double x, double y, double w, double h) {
             var rect = rotation switch {
                 1 => new ChartRect(height - y - h, x, h, w),
@@ -31,7 +31,7 @@ public sealed class TopologyBoundaryLaneTests {
         var source = new[] { TopologyEdgePort.Right, TopologyEdgePort.Bottom, TopologyEdgePort.Left, TopologyEdgePort.Top }[rotation];
         var target = new[] { TopologyEdgePort.Left, TopologyEdgePort.Top, TopologyEdgePort.Right, TopologyEdgePort.Bottom }[rotation];
         for (var i = 1; i <= 2; i++) chart.AddEdge("e" + i, "a" + i, "b" + i, routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .WithEdgePorts("e" + i, source, target);
+            .UpdateEdge("e" + i, e => e.SourcePort(source).TargetPort(target));
         var report = chart.Prepare(new TopologyRenderOptions {
             ReadableDenseLayout = true, IncludeTitle = false, IncludeLegend = false, IncludeNodeLabels = false, IncludeGroups = false
         }).Analyze();

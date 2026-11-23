@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void ZeroValueSpecializedChartsPreservePointIndexes() {
-        var pie = Chart.Create().WithSize(540, 320).WithXLabels("Zero", "Live", "Tail")
+        var pie = Chart.Create().Size(540, 320).XLabels("Zero", "Live", "Tail")
             .AddPie("Slices", Points(0, 60, 40));
-        pie.Series[0].WithPointColor(1, "#E11D48").WithPointSliceOffset(1, .12);
+        pie.Series[0].PointColor(1, "#E11D48").PointSliceOffset(1, .12);
         var piePrepared = PreparedFamily(pie);
         var sources = FamilyGroups(piePrepared, "radial-point");
         Verify.Equal(new[] { "1", "2" }, sources.Select(source => source.Metadata["data-cfx-point"]));
@@ -29,9 +29,9 @@ internal static partial class SmokeTests {
             && entry.Metadata["aria-label"] == "Zero: 0 (0%)");
         Verify.NotEmpty(piePrepared.ToPng());
 
-        var polarArea = Chart.Create().WithSize(540, 320).WithXLabels("Zero", "Live", "Tail")
+        var polarArea = Chart.Create().Size(540, 320).XLabels("Zero", "Live", "Tail")
             .AddPolarArea("Segments", Points(0, 60, 40));
-        polarArea.Series[0].WithPointColor(1, "#0F766E");
+        polarArea.Series[0].PointColor(1, "#0F766E");
         var polarPrepared = PreparedFamily(polarArea);
         var polarSources = FamilyGroups(polarPrepared, "polar-area-point-source");
         Verify.Equal(new[] { "0", "1", "2" }, polarSources.Select(source => source.Metadata["data-cfx-point"]));
@@ -45,9 +45,9 @@ internal static partial class SmokeTests {
         Verify.Equal(new[] { "Zero", "Live", "Tail" }, FamilyLabels(polarPrepared, "legend-label").Select(FamilyContent));
         Verify.NotEmpty(polarPrepared.ToPng());
 
-        var funnel = Chart.Create().WithSize(920, 560).WithDataLabels().WithXLabels("Opened", "Deferred", "Closed")
+        var funnel = Chart.Create().Size(920, 560).DataLabels().XLabels("Opened", "Deferred", "Closed")
             .AddFunnel("Pipeline", Points(120, 0, 32));
-        funnel.Series[0].WithPointColor(2, "#7C3AED");
+        funnel.Series[0].PointColor(2, "#7C3AED");
         var funnelPrepared = PreparedFamily(funnel);
         var stages = FamilyGroups(funnelPrepared, "funnel-stage");
         Verify.Equal(new[] { 120d, 0, 32 }, stages.Select(stage => FamilyNumber(stage, "data-cfx-value")));

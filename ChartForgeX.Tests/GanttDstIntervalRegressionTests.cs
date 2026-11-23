@@ -47,15 +47,15 @@ public sealed class GanttDstIntervalRegressionTests {
     public async Task ClearingSourceOrImplicitFormattingRestoresNativeLabels(bool authored) {
         const string source = "gantt\ndateFormat YYYY-MM-DD HH:mm\ntickInterval 1hour\n";
         var document = new MermaidParser().ParseGantt(source + (authored ? "axisFormat Source%H\n" : "") + "Window :2026-01-01 00:00, 6h").Document!;
-        var native = Chart.Create().WithSize(900, 360).AddGanttTask("Window", new DateTime(2026, 1, 1), new DateTime(2026, 1, 1, 6, 0, 0))
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour));
+        var native = Chart.Create().Size(900, 360).AddGanttTask("Window", new DateTime(2026, 1, 1), new DateTime(2026, 1, 1, 6, 0, 0))
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour)));
         Chart? last = null;
         for (var route = 0; route < 4; route++) {
             var chart = document.ToChart(new MermaidGanttRenderOptions { Width = 900, Height = 360 });
             Assert.False(Labels(native).SequenceEqual(Labels(chart)));
             switch (route) {
-                case 0: chart.WithXAxisValueFormatter(null); break;
-                case 1: chart.Options.XAxisValueFormatter = null; break;
+                case 0: chart.XAxis(x => x.LabelBy((Func<double, string>?)null)); break;
+                case 1: chart.Options.XAxis.LabelFormatter = null; break;
                 case 2: chart.Options.XAxis.LabelFormatter = null; break;
                 default: chart.Options.XAxis.ValueFormat = null; break;
             }

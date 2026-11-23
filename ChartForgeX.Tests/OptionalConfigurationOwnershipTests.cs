@@ -12,15 +12,15 @@ namespace ChartForgeX.Tests;
 public sealed class OptionalConfigurationOwnershipTests {
     [Fact]
     public void TableRowCallbacksDetachCellsMicrovisualsAndBadgesAndRollBackBeforeExport() {
-        var table = ChartTable.Create().WithSize(480, 180).WithColumns("Name", "Status", "History").AddRow("Original", "Status", "History");
+        var table = ChartTable.Create().Size(480, 180).Columns("Name", "Status", "History").AddRow("Original", "Status", "History");
         var previous = table.Rows[0];
         previous.Background = ChartColor.FromHex("#203040");
         previous.Foreground = ChartColor.FromHex("#F0F1F2");
         previous.Cells[0].Alignment = TextAlignment.Right;
-        previous.Cells[1].WithBadge("Ready", Tone.Success, ChartColor.FromHex("#20D080"), VisualBadgeStyle.Outline);
-        previous.Cells[2].WithSparkline(new SparklineData(new double?[] { 2, null, 5 }, minimum: 0, maximum: 6), ChartColor.FromHex("#10A0FF"));
+        previous.Cells[1].Badge("Ready", Tone.Success, ChartColor.FromHex("#20D080"), VisualBadgeStyle.Outline);
+        previous.Cells[2].Sparkline(new SparklineData(new double?[] { 2, null, 5 }, minimum: 0, maximum: 6), ChartColor.FromHex("#10A0FF"));
         ChartTableRow? candidate = null;
-        table.ConfigureRow(0, row => {
+        table.UpdateRow(0, row => {
             candidate = row;
             row.Cells[0].Text = "Configured";
             row.Cells[0].Foreground = ChartColor.FromHex("#00FF80");
@@ -49,15 +49,15 @@ public sealed class OptionalConfigurationOwnershipTests {
         Assert.Contains("Ready", svg);
 
         previous.Cells[0].Text = "Previous cell";
-        previous.Cells[2].WithMiniBars(new[] { 99d });
+        previous.Cells[2].MiniBars(new[] { 99d });
         previous.Background = ChartColor.White;
         var retained = Assert.IsType<ChartTableRow>(candidate);
         retained.Cells[1].BadgeText = "Retained badge";
-        retained.Cells[2].WithMiniBars(new[] { 88d });
+        retained.Cells[2].MiniBars(new[] { 88d });
         retained.Cells.Clear();
-        Assert.Throws<InvalidOperationException>(() => table.ConfigureRow(0, row => {
+        Assert.Throws<InvalidOperationException>(() => table.UpdateRow(0, row => {
             row.Cells[0].Text = "Partial cell";
-            row.Cells[2].WithMiniBars(new[] { 77d });
+            row.Cells[2].MiniBars(new[] { 77d });
             row.Cells.Clear();
             throw new InvalidOperationException();
         }));
@@ -74,11 +74,11 @@ public sealed class OptionalConfigurationOwnershipTests {
         VisualCanvasStyleOptions? styleCandidate = null;
         VisualAccessibility? accessibilityCandidate = null;
         var glass = ChartColor.FromHex("#00D080");
-        canvas.ConfigureStyle(options => {
+        canvas.Style(options => {
             styleCandidate = options;
             options.TileGlassTop = glass;
             options.TileGlassBottom = glass;
-        }).ConfigureAccessibility(options => {
+        }).Accessibility(options => {
             accessibilityCandidate = options;
             options.Name = "Configured canvas";
             options.Description = "Host and status";
@@ -96,11 +96,11 @@ public sealed class OptionalConfigurationOwnershipTests {
         previousAccessibility.Name = "Previous canvas";
         Assert.IsType<VisualCanvasStyleOptions>(styleCandidate).TileGlassBottom = ChartColor.White;
         Assert.IsType<VisualAccessibility>(accessibilityCandidate).IsDecorative = true;
-        Assert.Throws<InvalidOperationException>(() => canvas.ConfigureStyle(options => {
+        Assert.Throws<InvalidOperationException>(() => canvas.Style(options => {
             options.TileGlassTop = ChartColor.Transparent;
             throw new InvalidOperationException();
         }));
-        Assert.Throws<InvalidOperationException>(() => canvas.ConfigureAccessibility(options => {
+        Assert.Throws<InvalidOperationException>(() => canvas.Accessibility(options => {
             options.Name = "Partial canvas";
             options.Language = "de";
             throw new InvalidOperationException();
@@ -111,11 +111,11 @@ public sealed class OptionalConfigurationOwnershipTests {
 
     [Fact]
     public void SegmentedItemCallbackInstallsIndependentFactsAndDoesNotAppendAfterFailure() {
-        var block = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows).WithSize(440, 200);
+        var block = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows).Size(440, 200);
         SegmentedMetricItem? candidate = null;
         block.AddItem("Ready", 8, item => {
             candidate = item;
-            item.WithProgress(10, 10).WithDelta("+2").WithDisplayValue("8 of 10");
+            item.Maximum(10).Segments(10).Delta("+2").DisplayValue("8 of 10");
             item.Color = ChartColor.FromHex("#20A0FF");
         });
         var svg = block.ToSvg();
@@ -128,7 +128,7 @@ public sealed class OptionalConfigurationOwnershipTests {
         retained.Segments = 1;
         retained.Color = ChartColor.White;
         Assert.Throws<InvalidOperationException>(() => block.AddItem("Partial item", 5, item => {
-            item.WithProgress(5, 5);
+            item.Maximum(5).Segments(5);
             throw new InvalidOperationException();
         }));
         Assert.Single(block.Items);

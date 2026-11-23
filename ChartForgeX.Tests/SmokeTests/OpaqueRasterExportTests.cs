@@ -25,9 +25,9 @@ internal static partial class SmokeTests {
         var supportedFormats = RasterImageFormatExtensions.GetSupportedFormats();
         Assert(supportedFormats.SequenceEqual(new[] { RasterImageFormat.Png, RasterImageFormat.Jpeg, RasterImageFormat.Bmp, RasterImageFormat.Ppm, RasterImageFormat.Tiff }), "Supported raster formats should be discoverable in stable order.");
         var styledChart = Chart.Create()
-            .WithSize(320, 200)
-            .WithTitle("styled raster family")
-            .ConfigureTitleStyle(style => style.WithColor("#7c3aed").WithWeight("bold").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Double).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
+            .Size(320, 200)
+            .Title("styled raster family")
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).FontWeight("bold").Italic().UnderlineStyle(TextDecorationStyle.Wavy).StrikethroughStyle(TextDecorationStyle.Double).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase))
             .AddBar("Values", Points(1, 3, 2));
         foreach (var format in supportedFormats) {
             var decoded = RasterImageDecoder.Decode(styledChart.ToRasterImage(format));
@@ -124,20 +124,20 @@ internal static partial class SmokeTests {
         AssertExtensionInferredSave("chart", ".tif", path => SampleChart().Save(path), bytes => AssertTiffHeader(bytes, 640, 360));
         AssertDotPrefixedExtensionInferredSave(path => SampleChart().Save(path), bytes => AssertBmpHeader(bytes, 640, 360));
         AssertExtensionInferredSave("grid", ".ppm", path => GridForInferredSave().Save(path), bytes => AssertPpmHeader(bytes, null, null));
-        AssertExtensionInferredSave("block", ".png", path => MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").Save(path), bytes => AssertPngHeader(bytes));
-        AssertExtensionInferredSave("visual-grid", ".html", path => VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().WithMetric("CPU", "42%") }).Save(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Visual grid Save should infer HTML from the output extension."));
+        AssertExtensionInferredSave("block", ".png", path => MetricCard.Create().Size(180, 100).Metric("CPU", "42%").Save(path), bytes => AssertPngHeader(bytes));
+        AssertExtensionInferredSave("visual-grid", ".html", path => VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().Metric("CPU", "42%") }).Save(path), bytes => Assert(System.Text.Encoding.UTF8.GetString(bytes).Contains("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase), "Visual grid Save should infer HTML from the output extension."));
         AssertThrows<ArgumentException>(() => SampleChart().Save("chart.webp"), "Save should reject unsupported image extensions.");
 
         var transparent = Chart.Create()
-            .WithSize(32, 24)
-            .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
-            .WithTransparentBackground()
-            .WithHeader(false)
-            .WithCard(false)
-            .WithPlotBackground(false)
+            .Size(32, 24)
+            .Theme(VisualTheme.TransparentOverlay()).ThemeMode(ThemeMode.Dark)
+            .TransparentBackground()
+            .ShowHeader(false)
+            .ShowCard(false)
+            .ShowPlotBackground(false)
             .AddLine("Signal", Points(1, 2, 3), ChartColor.FromRgb(96, 165, 250));
         transparent.Options.ShowAxes = false;
-        transparent.Options.ShowLegend = false;
+        transparent.Options.Legend.Visible = false;
         var flattened = transparent.ToBmp(new RasterImageOptions { Background = ChartColors.Magenta });
         AssertBmpHeader(flattened, 32, 24);
         var topLeft = ReadBmpPixel(flattened, 0, 0);
@@ -151,7 +151,7 @@ internal static partial class SmokeTests {
         var tiffTopLeft = ReadTiffPixel(flattenedTiff, 0, 0);
         Assert(tiffTopLeft.R == ChartColors.Magenta.R && tiffTopLeft.G == ChartColors.Magenta.G && tiffTopLeft.B == ChartColors.Magenta.B, "TIFF export should flatten transparent pixels against the requested background.");
 
-        var grid = ChartGrid.Create().WithPanelSize(180, 120).Add(Chart.Create().WithSize(180, 120).AddLine("Values", Points(1, 2, 3)));
+        var grid = ChartGrid.Create().PanelSize(180, 120).Add(Chart.Create().Size(180, 120).AddLine("Values", Points(1, 2, 3)));
         AssertBmpHeader(grid.ToBmp(), null, null);
         AssertPpmHeader(grid.ToPpm(), null, null);
         AssertTiffHeader(grid.ToTiff(), null, null);
@@ -162,10 +162,10 @@ internal static partial class SmokeTests {
         using var gridTiffStream = new MemoryStream();
         grid.WriteTiff(gridTiffStream);
         Assert(gridTiffStream.ToArray().SequenceEqual(grid.ToTiff()), "Grid TIFF stream export should match byte-array export.");
-        AssertBmpHeader(MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").ToBmp(), 180, 100);
-        AssertPpmHeader(MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").ToPpm(), 180, 100);
-        AssertTiffHeader(MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%").ToTiff(), 180, 100);
-        var card = MetricCard.Create().WithSize(180, 100).WithMetric("CPU", "42%");
+        AssertBmpHeader(MetricCard.Create().Size(180, 100).Metric("CPU", "42%").ToBmp(), 180, 100);
+        AssertPpmHeader(MetricCard.Create().Size(180, 100).Metric("CPU", "42%").ToPpm(), 180, 100);
+        AssertTiffHeader(MetricCard.Create().Size(180, 100).Metric("CPU", "42%").ToTiff(), 180, 100);
+        var card = MetricCard.Create().Size(180, 100).Metric("CPU", "42%");
         AssertPpmHeader(card.ToRasterImage(RasterImageFormat.Ppm), 180, 100);
         using var cardStream = new MemoryStream();
         card.WriteRasterImage(cardStream, RasterImageFormat.Ppm);
@@ -173,7 +173,7 @@ internal static partial class SmokeTests {
         using var cardPpmStream = new MemoryStream();
         card.WritePpm(cardPpmStream);
         Assert(cardPpmStream.ToArray().SequenceEqual(card.ToPpm()), "Visual block PPM stream export should match byte-array export.");
-        var visualGrid = VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().WithMetric("CPU", "42%") });
+        var visualGrid = VisualGrid.CreateMetricStrip("Endpoint", new[] { MetricCard.Create().Metric("CPU", "42%") });
         AssertBmpHeader(visualGrid.ToBmp(), null, null);
         AssertPpmHeader(visualGrid.ToPpm(), null, null);
         AssertTiffHeader(visualGrid.ToTiff(), null, null);
@@ -224,7 +224,7 @@ internal static partial class SmokeTests {
         AssertExtensionInferredSave("topology", ".tiff", path => topology.Save(path, topologyOptions), bytes => AssertTiffHeader(bytes, null, null));
     }
 
-    private static ChartGrid GridForInferredSave() => ChartGrid.Create().WithPanelSize(180, 120).Add(Chart.Create().WithSize(180, 120).AddLine("Values", Points(1, 2, 3)));
+    private static ChartGrid GridForInferredSave() => ChartGrid.Create().PanelSize(180, 120).Add(Chart.Create().Size(180, 120).AddLine("Values", Points(1, 2, 3)));
 
     private static void AssertExtensionInferredSave(string prefix, string extension, Action<string> saveAction, Action<byte[]> assertOutput) {
         var path = Path.Combine(Path.GetTempPath(), "chartforgex-save-image-" + prefix + "-" + Guid.NewGuid().ToString("N") + extension);

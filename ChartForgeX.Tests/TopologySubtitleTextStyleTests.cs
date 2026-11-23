@@ -46,7 +46,7 @@ public sealed class TopologySubtitleTextStyleTests {
     }
 
     private static TopologyChart Source() {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("subtitle-role").WithViewport(760, 480, 24).WithLegend(null)
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Id("subtitle-role").Viewport(new TopologyViewport(760, 480, 24)).Legend((TopologyLegend?)null)
             .AddNode("service", "Service", 40, 60, width: 560, height: 300);
         chart.Nodes[0].Subtitle = "Resilient service"; chart.Nodes[0].ShowStatusBadge = false;
         chart.Nodes[0].PreserveDisplayModeSize = true;

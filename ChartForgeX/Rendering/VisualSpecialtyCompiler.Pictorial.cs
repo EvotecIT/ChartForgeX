@@ -9,14 +9,14 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
-    internal static double PictorialRequiredRows(double value, ChartOptions options) => options.PictorialValuePerSymbol.HasValue
-        ? Math.Max(1, Math.Ceiling(value / options.PictorialValuePerSymbol.Value / options.PictorialColumns)) : 1;
+    internal static double PictorialRequiredRows(double value, ChartOptions options) => options.Pictorial.ValuePerSymbol.HasValue
+        ? Math.Max(1, Math.Ceiling(value / options.Pictorial.ValuePerSymbol.Value / options.Pictorial.Columns)) : 1;
 
     private static void Pictorial(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var options = chart.Options; var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
-        var maximum = options.PictorialMaximum ?? series.RenderPoints.Max(point => point.Y);
-        var columns = options.PictorialColumns; var unit = options.PictorialValuePerSymbol;
-        var showValues = options.ShowPictorialValues;
+        var maximum = options.Pictorial.Max ?? series.RenderPoints.Max(point => point.Y);
+        var columns = options.Pictorial.Columns; var unit = options.Pictorial.ValuePerSymbol;
+        var showValues = options.Pictorial.ShowValues;
         var rows = new int[series.RenderPoints.Count]; var requestedRows = new double[rows.Length];
         // A viewport cannot display arbitrarily many unit symbols. Keep full values and report omitted rows.
         var rowBudget = Math.Max(1, (int)Math.Min(256, Math.Floor(plot.Height / rows.Length / 4)));
@@ -34,19 +34,19 @@ internal static partial class VisualSpecialtyCompiler {
         var symbolWidth = Math.Max(0, plot.Width - labelWidth - valueWidth - margin * (showValues ? 2 : 1));
         var gap = Math.Min(context.Theme.Spacing / 2, symbolWidth / columns * .16);
         var slot = Math.Max(0, (symbolWidth - gap * (columns - 1)) / columns);
-        var size = Math.Min(slot, Math.Min(rowHeight, slot) * .82 * options.PictorialSymbolScale);
+        var size = Math.Min(slot, Math.Min(rowHeight, slot) * .82 * options.Pictorial.SymbolScale);
         var startX = plot.Left + labelWidth + margin;
-        var custom = options.PictorialArtwork == null ? CustomPictorialPath(options, size) : null;
+        var custom = options.Pictorial.Artwork == null ? CustomPictorialPath(options, size) : null;
         var metadata = new Dictionary<string, string> {
-            ["data-cfx-shape"] = options.PictorialShape.ToString(), ["data-cfx-custom-symbol"] = custom != null ? "true" : "false",
+            ["data-cfx-shape"] = options.Pictorial.Shape.ToString(), ["data-cfx-custom-symbol"] = custom != null ? "true" : "false",
             ["data-cfx-columns"] = N(columns), ["data-cfx-maximum"] = N(maximum),
             ["data-cfx-value-per-symbol"] = unit.HasValue ? N(unit.Value) : "proportional",
-            ["data-cfx-show-values"] = showValues ? "true" : "false", ["data-cfx-symbol-scale"] = N(options.PictorialSymbolScale),
-            ["data-cfx-empty-opacity"] = N(options.PictorialEmptyOpacity)
+            ["data-cfx-show-values"] = showValues ? "true" : "false", ["data-cfx-symbol-scale"] = N(options.Pictorial.SymbolScale),
+            ["data-cfx-empty-opacity"] = N(options.Pictorial.EmptyOpacity)
         };
-        if (options.PictorialArtwork != null) metadata["data-cfx-image-artwork"] = "true";
-        if (options.PictorialFillDirection != ChartPictorialFillDirection.LeftToRight)
-            metadata["data-cfx-fill-direction"] = options.PictorialFillDirection.ToString();
+        if (options.Pictorial.Artwork != null) metadata["data-cfx-image-artwork"] = "true";
+        if (options.Pictorial.FillDirection != ChartPictorialFillDirection.LeftToRight)
+            metadata["data-cfx-fill-direction"] = options.Pictorial.FillDirection.ToString();
         using var chartGroup = builder.PushGroup("pictorial-chart", "pictorial-chart", metadata);
         var rowOffset = 0;
         for (var index = 0; index < rows.Length; index++) {
@@ -68,18 +68,18 @@ internal static partial class VisualSpecialtyCompiler {
                     var x = startX + column * (slot + gap) + (slot - size) / 2;
                     var y = top + row * rowHeight + (rowHeight - size) / 2;
                     var symbolBounds = new ChartRect(x, y, size, size);
-                    var path = options.PictorialArtwork == null ? PictorialPath(options.PictorialShape, symbolBounds, custom) : null;
+                    var path = options.Pictorial.Artwork == null ? PictorialPath(options.Pictorial.Shape, symbolBounds, custom) : null;
                     using (builder.PushGroup(Id(index) + "-symbol-" + row + "-" + column, "pictorial-symbol", new Dictionary<string, string> {
                         ["data-cfx-point"] = N(index), ["data-cfx-row"] = N(row), ["data-cfx-column"] = N(column),
                         ["data-cfx-fill"] = N(amount), ["data-cfx-partial-fill"] = amount > 0 && amount < 1 ? "clip" : "none"
                     })) {
-                        if (options.PictorialArtwork is { } artwork) {
+                        if (options.Pictorial.Artwork is { } artwork) {
                             PictorialImage(builder, artwork, symbolBounds, amount, options);
                         } else {
-                            if (amount < 1) builder.Path(path!, colors.Border.WithOpacity(options.PictorialEmptyOpacity), role: "pictorial-empty", close: true,
-                                paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(colors.Border.WithOpacity(options.PictorialEmptyOpacity), options.PictorialEmptyOpacity)));
+                            if (amount < 1) builder.Path(path!, colors.Border.WithOpacity(options.Pictorial.EmptyOpacity), role: "pictorial-empty", close: true,
+                                paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(colors.Border.WithOpacity(options.Pictorial.EmptyOpacity), options.Pictorial.EmptyOpacity)));
                             if (amount > 0) {
-                                using (builder.PushClip(PictorialPartialBounds(symbolBounds, amount, options.PictorialFillDirection))) {
+                                using (builder.PushClip(PictorialPartialBounds(symbolBounds, amount, options.Pictorial.FillDirection))) {
                                     builder.Path(path!, color, role: "pictorial-fill", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
                                     Pattern(chart, builder, index, path!, color);
                                 }
@@ -96,13 +96,13 @@ internal static partial class VisualSpecialtyCompiler {
     }
 
     private static IReadOnlyList<IReadOnlyList<ChartPoint>>? CustomPictorialPath(ChartOptions options, double size) {
-        if (options.PictorialSvgPathData == null) return null;
-        var source = options.PictorialSvgPathViewBox;
+        if (options.Pictorial.SvgPathData == null) return null;
+        var source = options.Pictorial.SvgPathViewBox;
         if (double.IsNaN(source.Left) || double.IsInfinity(source.Left) || double.IsNaN(source.Top) || double.IsInfinity(source.Top)
             || double.IsNaN(source.Width) || double.IsInfinity(source.Width) || double.IsNaN(source.Height) || double.IsInfinity(source.Height))
             throw new InvalidOperationException("Pictorial custom-path viewBox must be finite.");
         // Parse only the user-supplied input, once. Both painters receive this same detached numeric shape.
-        var paths = ChartMapPathParser.ParseSubpaths(options.PictorialSvgPathData, Math.Max(size / source.Width, size / source.Height) * 4);
+        var paths = ChartMapPathParser.ParseSubpaths(options.Pictorial.SvgPathData, Math.Max(size / source.Width, size / source.Height) * 4);
         if (paths.Count == 0 || paths.All(path => path.Points.Count < 3)) throw new InvalidOperationException("Pictorial custom path must contain a fillable contour.");
         return paths.Select(path => (IReadOnlyList<ChartPoint>)path.Points.Select(point =>
             new ChartPoint((point.X - source.Left) / source.Width, (point.Y - source.Top) / source.Height)).ToArray()).ToArray();

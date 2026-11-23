@@ -17,7 +17,7 @@ public sealed class EventModelingLaneHeaderCausalRegressionTests {
         // Explicitly select the existing native owner so this measures lane sizing even
         // before the Event Modeling converter changes from DenseGrouped to Swimlane.
         var chart = parsed.Document!.ToTopologyChart(new MermaidTopologyRenderOptions { Width = 800, Height = 400 })
-            .WithLayout(TopologyLayoutMode.Swimlane, TopologyLayoutDirection.LeftToRight);
+            .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         var expected = Assert.Single(chart.Groups).Label;
         var svg = chart.ToSvg(); var text = XDocument.Parse(svg).Descendants().Where(node => node.Name.LocalName == "text").Select(node => node.Value);
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

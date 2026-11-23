@@ -17,7 +17,7 @@ public sealed class IconCaptionFontSizeTests {
         Assert.False(result.HasErrors);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var node = Assert.Single(chart.Nodes);
-        chart.WithNodeDisplay(node.Id, TopologyNodeDisplayMode.Icon);
+        chart.UpdateNode(node.Id, n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null));
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         var svg = chart.ToSvg(options); var xml = XDocument.Parse(svg);
         var label = Assert.Single(xml.Descendants(), element => element.Name.LocalName == "text" && element.Ancestors().Any(parent =>

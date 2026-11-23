@@ -19,12 +19,12 @@ public static class MermaidBlockRendering {
         options ??= new MermaidBlockRenderOptions();
         var columns = document.Columns ?? options.Columns;
         var block = BlockLayoutBlock.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height ?? MermaidBlockRenderOptions.PreviewHeight)
-            .WithPadding(options.Padding)
-            .WithColumns(columns)
-            .WithEdges(options.ShowEdges);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height ?? MermaidBlockRenderOptions.PreviewHeight)
+            .Padding(options.Padding)
+            .Columns(columns)
+            .ShowEdges(options.ShowEdges);
 
         block.AutoColumns = document.AutoColumns;
         foreach (var item in document.Items) {
@@ -61,7 +61,7 @@ public static class MermaidBlockRendering {
         MermaidPresentation.Apply(block, document, options.Presentation);
         MermaidNativeStyles.ResolveLetterSpacing(block);
         // Without a host height the frame ends where its rows stop growing.
-        if (!options.Height.HasValue && SvgVisualBlockRenderer.BlockLayoutContentHeight(block) is int content) block.WithSize(options.Width, content);
+        if (!options.Height.HasValue && SvgVisualBlockRenderer.BlockLayoutContentHeight(block) is int content) block.Size(options.Width, content);
         return block;
     }
 

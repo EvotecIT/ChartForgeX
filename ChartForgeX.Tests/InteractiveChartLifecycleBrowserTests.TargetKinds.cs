@@ -79,8 +79,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(true)]
     public async Task PublicAnnotationSelectionAndLassoContainNativeFactsWithoutSeriesWrappersOrPassiveGuidance(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(640, 360).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(3, 4), new ChartPoint(7, 7) }))
             .AddHorizontalLine(6, "Reference guide")
             .AddPlotRegion(new(ChartColor.FromHex("#5c9e75"), label: "Background guide", opacity: .2));
@@ -133,9 +133,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             "gauge" => ChartSeries.CreateGauge(id, "Capacity", value),
             _ => ChartSeries.CreateBullet(id, "Capacity", value, 20)
         };
-        if (family == "gauge") series.WithObservationId(0, new ChartObservationId("capacity"));
-        return Chart.Create().WithSize(640, 360).WithLegend()
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+        if (family == "gauge") series.ObservationId(0, new ChartObservationId("capacity"));
+        return Chart.Create().Size(640, 360).Legend()
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
 
     private static void NativeKindOptions(HtmlChartInteractionOptions options) {

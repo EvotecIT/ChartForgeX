@@ -56,14 +56,14 @@ internal sealed class MermaidQuadrantSettings {
         var series = chart.Series[0];
         if (_showX.HasValue) chart.Options.XAxis.Visible = _showX.Value;
         if (_showY.HasValue) chart.Options.YAxis.Visible = _showY.Value;
-        if (_showTitle == false) chart.WithTitle(string.Empty);
-        if (_pointRadius.HasValue) series.ConfigureMarkers(marker => marker.Radius = _pointRadius.Value);
-        if (_colors.TryGetValue("quadrantPointFill", out var fill)) series.ConfigureMarkers(marker => marker.Fill = fill);
-        if (_pointFontSize.HasValue || _colors.ContainsKey("quadrantPointTextFill")) series.ConfigureDataLabelStyle(style => {
+        if (_showTitle == false) chart.Title(string.Empty);
+        if (_pointRadius.HasValue) series.Markers(marker => marker.Radius = _pointRadius.Value);
+        if (_colors.TryGetValue("quadrantPointFill", out var fill)) series.Markers(marker => marker.Fill = fill);
+        if (_pointFontSize.HasValue || _colors.ContainsKey("quadrantPointTextFill")) series.DataLabelStyle(style => {
             if (_pointFontSize.HasValue) style.FontSize = _pointFontSize.Value;
             if (_colors.TryGetValue("quadrantPointTextFill", out var text)) style.Color = text;
         });
-        if (_titleFontSize.HasValue || _colors.ContainsKey("quadrantTitleFill")) chart.ConfigureTitleStyle(style => {
+        if (_titleFontSize.HasValue || _colors.ContainsKey("quadrantTitleFill")) chart.TitleStyle(style => {
             if (_titleFontSize.HasValue) style.FontSize = _titleFontSize.Value;
             if (_colors.TryGetValue("quadrantTitleFill", out var title)) style.Color = title;
         });

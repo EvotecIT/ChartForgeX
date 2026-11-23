@@ -26,11 +26,11 @@ public sealed class StandaloneHtmlSurfaceTests {
             builder.Dark.ElevatedSurface = darkSurface;
         });
         var expected = alpha == 0 ? dark ? darkSurface : lightSurface : dark ? darkBackground : lightBackground;
-        var chart = Chart.Create().WithSize(320, 220).WithTheme(theme, mode).WithTransparentBackground(false).WithCard(false)
+        var chart = Chart.Create().Size(320, 220).Theme(theme).ThemeMode(mode).TransparentBackground(false).ShowCard(false)
             .AddLine("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) });
-        var chartGrid = ChartGrid.Create().WithTheme(theme, mode).WithColumns(1).Add(chart);
-        var table = ChartTable.Create().WithSize(320, 220).WithTheme(theme, mode).WithColumns("Name").AddRow("Observed");
-        var visualGrid = VisualGrid.Create().WithTheme(theme, mode).WithColumns(1).Add(table);
+        var chartGrid = ChartGrid.Create().Theme(theme).ThemeMode(mode).Columns(1).Add(chart);
+        var table = ChartTable.Create().Size(320, 220).Theme(theme).ThemeMode(mode).Columns("Name").AddRow("Observed");
+        var visualGrid = VisualGrid.Create().Theme(theme).ThemeMode(mode).Columns(1).Add(table);
         var originalSvg = chart.ToSvg();
         var pages = new Dictionary<string, string> {
             ["chart"] = chart.ToHtmlPage(), ["chart grid"] = chartGrid.ToHtmlPage(),

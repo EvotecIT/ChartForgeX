@@ -85,13 +85,13 @@ public sealed class MermaidRemainingCaptionRolesTests {
     [Fact]
     public void MetricSelectedEdgeTextDoesNotInheritAuthoredRunsAndPlainGraphiteOutputKeepsV1() {
         var theme = VisualTheme.Graphite();
-        var chart = Model().WithTheme(theme); chart.Groups[0].Label = "Scope";
+        var chart = Model().Theme(theme); chart.Groups[0].Label = "Scope";
         var ordinaryVersion = chart.Prepare().ToInterchangeEnvelope().Version;
         chart.Edges[0].LabelContent = TextContent.FromRuns(new[] { new TextContentRun("Original", TextInlineEmphasis.Bold) });
         chart.Edges[0].Metrics["reading"] = "Measured";
         var envelope = chart.Prepare(new TopologyRenderOptions { EdgeLabelMetricKey = "reading" }).ToInterchangeEnvelope();
         Assert.Equal("Measured", Assert.Single(envelope.Edges).Label); Assert.Null(Assert.Single(envelope.Edges).Topology!.LabelContent); Assert.Equal(ordinaryVersion, envelope.Version);
-        var a = Model().WithTheme(theme); var b = Model().WithTheme(theme); b.Groups[0].LabelContent = TextContent.Plain(a.Groups[0].Label); b.Edges[0].LabelContent = TextContent.Plain(a.Edges[0].Label!);
+        var a = Model().Theme(theme); var b = Model().Theme(theme); b.Groups[0].LabelContent = TextContent.Plain(a.Groups[0].Label); b.Edges[0].LabelContent = TextContent.Plain(a.Edges[0].Label!);
         Assert.Equal(a.Prepare().ToSvg(), b.Prepare().ToSvg()); Assert.Equal(a.Prepare().ToPng(), b.Prepare().ToPng()); Assert.Equal(a.Prepare().ToInterchangeEnvelope().ToJson(), b.Prepare().ToInterchangeEnvelope().ToJson());
     }
     [Fact]
@@ -143,6 +143,6 @@ public sealed class MermaidRemainingCaptionRolesTests {
         .Concat(chart.Edges.Where(edge => edge.LabelContent != null).Select(edge => edge.LabelContent!));
     private static string[] Signatures(TopologyChart chart) => Contents(chart).Where(content => content.IsStructured)
         .Select(content => content.PlainText + ":" + string.Join(";", content.Runs.Select(run => run.Text + "=" + run.Emphasis))).OrderBy(value => value, StringComparer.Ordinal).ToArray();
-    internal static TopologyChart Model() => TopologyChart.Create().WithViewport(800, 500).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+    internal static TopologyChart Model() => TopologyChart.Create().Viewport(new TopologyViewport(800, 500)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
         .AddAutoGroup("scope", "Scope").AddAutoNode("a", "First", groupId: "scope").AddAutoNode("b", "Second", groupId: "scope").AddEdge("link", "a", "b", "Relationship");
 }

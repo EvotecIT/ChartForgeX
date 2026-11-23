@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void PolarAreaHonorsGridVisibility() {
         var compact = PolarAreaSample()
-            .WithGrid(false)
+            .ShowGrid(false)
             .ToSvg();
 
         Assert(compact.Contains("data-cfx-role=\"polar-area-segment\"", System.StringComparison.Ordinal), "Polar-area segments should still render when grid is disabled.");
@@ -16,8 +16,8 @@ internal static partial class SmokeTests {
 
         var defaultSvg = PolarAreaSample().ToSvg();
         Assert(defaultSvg.Contains("data-cfx-role=\"polar-area-ring\"", System.StringComparison.Ordinal), "Polar-area reference rings should render by default.");
-        Assert(PolarAreaSample().WithGrid(false).ToPng().Length > 64, "Compact polar-area options should render valid PNG output.");
-        var positionedLegend = PolarAreaSample().WithLegendPosition(ChartLegendPosition.BottomRight);
+        Assert(PolarAreaSample().ShowGrid(false).ToPng().Length > 64, "Compact polar-area options should render valid PNG output.");
+        var positionedLegend = PolarAreaSample().Legend(l => l.Position(ChartLegendPosition.BottomRight));
         var positionedSvg = positionedLegend.ToSvg();
         var prepared = PreparedFamily(positionedLegend);
         Assert(prepared.Regions.Count(region => region.Role == "legend") == 4, "Polar-area legends should retain all four categories.");
@@ -27,7 +27,7 @@ internal static partial class SmokeTests {
     }
 
     private static Chart PolarAreaSample() => Chart.Create()
-        .WithSize(520, 340)
-        .WithXLabels("Coverage", "Policy", "Alerts", "Response")
+        .Size(520, 340)
+        .XLabels("Coverage", "Policy", "Alerts", "Response")
         .AddPolarArea("Control share", Points(92, 74, 88, 96));
 }

@@ -38,7 +38,7 @@ public sealed class MermaidTreemapTranslucentClassTests {
         Assert.Empty(fence.Diagnostics); Assert.Equal(svg, Assert.Single(fence.Artifacts).ToSvg()); Assert.Equal(png, fence.Artifacts[0].ToPng());
         MermaidTreemapStyleMappingTests.AssertDirectAndFencedFacts(artifact, fence.Artifacts[0]);
         var saved = prepared.ToSvg(); var savedPng = prepared.ToPng();
-        chart.Series[0].ConfigurePointDataLabelStyle(2, style => style.Color = ChartColor.FromHex("#7C3AED"));
+        chart.Series[0].PointDataLabelStyle(2, style => style.Color = ChartColor.FromHex("#7C3AED"));
         var changed = chart.Prepare(context);
         Assert.Equal(ChartColor.FromHex("#7C3AED"), Assert.Single(changed.Scene.Nodes.OfType<VisualSceneText>(), item => item.Role == "treemap-label").Color);
         Assert.Equal(saved, prepared.ToSvg()); Assert.Equal(savedPng, prepared.ToPng());

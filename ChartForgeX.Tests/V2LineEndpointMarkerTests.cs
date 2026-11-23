@@ -20,9 +20,9 @@ public sealed class V2LineEndpointMarkerTests {
     public void SharedLastMarkerEndsExactlyOnTheFinalObservationAndKeepsItsLabel(ChartSeriesKind kind, ChartStepPosition position) {
         var series = new ChartSeries(new ChartSeriesId("observed"), "Observed", kind,
             new[] { new ChartPoint(1, 3), new ChartPoint(2, 9), new ChartPoint(3, 5) });
-        if (kind is ChartSeriesKind.StepLine or ChartSeriesKind.StepArea) series.WithInterpolation(ChartInterpolation.Step, position);
-        series.WithPointLabel(2, "Final observation").WithDataLabels();
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).AddSeries(series);
+        if (kind is ChartSeriesKind.StepLine or ChartSeriesKind.StepArea) series.Interpolation(ChartInterpolation.Step, position);
+        series.PointLabel(2, "Final observation").ShowDataLabels(true);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).AddSeries(series);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 360)));
         var prepared = chart.Prepare(context); var scene = prepared.Scene;
         var marker = Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "marker");
@@ -40,7 +40,7 @@ public sealed class V2LineEndpointMarkerTests {
         var svgMarker = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "marker");
         Assert.Equal(marker.Cx, double.Parse(svgMarker.Attribute("cx")!.Value, CultureInfo.InvariantCulture), 3);
         Assert.Equal(marker.Cy, double.Parse(svgMarker.Attribute("cy")!.Value, CultureInfo.InvariantCulture), 3);
-        chart.WithLineMarkers(ChartLineMarkerMode.None);
+        chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.None));
         Assert.DoesNotContain(chart.Prepare(context).Scene.Nodes, node => node.Role == "marker");
         series.Markers.Enabled = true;
         Assert.Equal(3, chart.Prepare(context).Scene.Nodes.Count(node => node.Role == "marker"));

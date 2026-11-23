@@ -98,8 +98,8 @@ public sealed class NativeTopologyThemePaintTests {
             .AddEdgeKind("Connection", TopologyEdgeKind.Generic)
             .AddStatus("Override", TopologyHealthStatus.Healthy, variables ? "var(--override, #8833AA)" : "#8833AA")
             .AddNodeKind("Override node", TopologyNodeKind.Database, variables ? "var(--override, #8833AA)" : "#8833AA", backgroundColor: variables ? "var(--override-card, #AABBCC)" : "#AABBCC");
-        var literal = Diagram(VisualTheme.Graphite()).WithLegend(Legend(false));
-        var variable = Diagram(VisualTheme.Graphite()).WithLegend(Legend(true));
+        var literal = Diagram(VisualTheme.Graphite()).Legend(Legend(false));
+        var variable = Diagram(VisualTheme.Graphite()).Legend(Legend(true));
         var options = new TopologyRenderOptions { IncludeLegend = true, SvgColorVariables = Variables() };
         var prepared = variable.Prepare(options);
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -142,7 +142,7 @@ public sealed class NativeTopologyThemePaintTests {
     [InlineData("#FF000080", 248, 218)]
     [InlineData("#FF000000", 255, 212)]
     public void GroupVariableClearanceUsesTheAuthoredFallbackTintAndAlpha(string fallback, int expectedGreen, int expectedAlpha) {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).WithViewport(600, 360, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).Viewport(new TopologyViewport(600, 360, 20)).Legend((TopologyLegend?)null)
             .AddGroup("services", "Services", 10, 10, 560, 320, color: "var(--group, " + fallback + ")")
             .AddNode("source", "Source", 70, 150, groupId: "services")
             .AddNode("target", "Target", 350, 150, groupId: "services")
@@ -162,8 +162,8 @@ public sealed class NativeTopologyThemePaintTests {
     public void GeographicThemeVariableTintPreservesFallbackAlpha() {
         var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Background = ChartColor.White; builder.Light.Accent = ChartColor.FromHex("#FF000080"); });
-        var chart = Diagram(theme).WithLayout(TopologyLayoutMode.Geographic)
-            .WithNodeCoordinates("node-0", -80, 30).WithNodeCoordinates("node-1", 50, 30);
+        var chart = Diagram(theme).LayoutMode(TopologyLayoutMode.Geographic)
+            .UpdateNode("node-0", n => n.Longitude(-80).Latitude(30)).UpdateNode("node-1", n => n.Longitude(50).Latitude(30));
         var options = new TopologyRenderOptions { IncludeLegend = false, MapBackgroundStyle = TopologyMapBackgroundStyle.SoftSilhouette, SvgColorVariables = new SvgColorVariables().AddThemeToken(VisualThemeColorToken.Accent, "--map-accent") };
         var prepared = chart.Prepare(options);
         var surface = prepared.Visual.Scene.Nodes.OfType<VisualSceneRectangle>().Single(rectangle => rectangle.Role == "topology-map-surface");
@@ -175,8 +175,8 @@ public sealed class NativeTopologyThemePaintTests {
     }
 
     private static TopologyChart Diagram(VisualTheme theme, ThemeMode mode = ThemeMode.Light) {
-        var chart = TopologyChart.Create().WithId("theme-paints").WithTheme(theme, mode).WithTitle("Network").WithSubtitle("Host theme")
-            .WithViewport(820, 240, 20).WithLegend(null);
+        var chart = TopologyChart.Create().Id("theme-paints").Theme(theme, mode).Title("Network").Subtitle("Host theme")
+            .Viewport(new TopologyViewport(820, 240, 20)).Legend((TopologyLegend?)null);
         var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled };
         for (var i = 0; i < statuses.Length; i++) chart.AddNode("node-" + i, statuses[i].ToString(), 30 + i * 150, 60, kind: TopologyNodeKind.Server, status: statuses[i], subtitle: "Status", width: 120, height: 85);
         chart.AddEdge("route", "node-0", "node-1", routing: TopologyEdgeRouting.Straight);

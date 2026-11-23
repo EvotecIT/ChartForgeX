@@ -13,7 +13,7 @@ internal static class NativeCompositeExamples {
                 var image = composition.ToImage();
                 var stem = Path.Combine(output, "native-composite-" + operation + "-" + variant + "-" + mode);
                 File.WriteAllBytes(stem + ".png", composition.ToPng());
-                var canvas = VisualCanvas.Create(image.Width, image.Height).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+                var canvas = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
                     .AddImage(image, 0, 0, image.Width, image.Height);
                 File.WriteAllText(stem + ".svg", canvas.ToSvg());
                 File.WriteAllText(stem + ".csharp.txt", ExampleRecipeSource.EmitNativeCompositeComposition(variant, mode));

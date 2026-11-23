@@ -12,7 +12,7 @@ public static class NativeRetainedMaskExample {
         if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         var width = variant == "compact" ? 390 : 1100;
         var theme = VisualTheme.Graphite();
-        var sequence = SequenceArtifact.Create("native-retained-mask").WithSize(width, 620)
+        var sequence = SequenceArtifact.Create("native-retained-mask").Width(width).Height(620)
             .AddParticipant("review", "Review").AddParticipant("archive", "Archive")
             .AddMessage("review", "archive", "Save").AddMessage("archive", "review", "Stored");
         sequence.Theme = theme;

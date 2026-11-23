@@ -18,9 +18,9 @@ public sealed class MapTextParityTests {
         Assert.Equal(Map("Arial, sans-serif").ToRgbaImage().Pixels, chart.ToRgbaImage().Pixels);
     }
 
-    private static Chart Map(string family) => Chart.Create().WithSize(540, 340)
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(family)).WithLegend(false).WithDataLabels()
-        .WithMapViewport(ChartMapViewport.Europe())
+    private static Chart Map(string family) => Chart.Create().Size(540, 340)
+        .Theme(VisualTheme.Graphite().WithFontFamily(family)).Legend(false).DataLabels()
+        .Map(m => m.Viewport(ChartMapViewport.Europe()))
         .AddDottedMap("Places", new[] { new ChartMapPoint("Madrid", -3.7, 40.4), new ChartMapPoint("Warsaw", 21, 52.2) })
         .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
 }

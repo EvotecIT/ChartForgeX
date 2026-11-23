@@ -21,9 +21,9 @@ public sealed class DenseNativeAxisAndFinancialLayoutTests {
         var series = kind == ChartSeriesKind.RangeArea
             ? ChartSeries.CreateRangeArea(new ChartSeriesId("observed"), "Values", points.Select(point => new ChartRangeBand(point.X, point.Y - 1, point.Y + 1)), smooth: false)
             : new ChartSeries(new ChartSeriesId("observed"), "Values", kind, points);
-        var chart = Chart.Create().WithSize(900, 300).WithXAxis("delivery status").WithXLabels(names).AddSeries(series)
-            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(18).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
-            .ConfigureAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithTextCase(TextCaseTransform.Uppercase));
+        var chart = Chart.Create().Size(900, 300).XAxis(x => x.Title("delivery status")).XLabels(names).AddSeries(series)
+            .TickLabelStyle(style => style.FontFamily("monospace").FontSize(18).Italic().TextCase(TextCaseTransform.Uppercase))
+            .AxisTitleStyle(style => style.FontFamily("serif").FontSize(32).Italic().TextCase(TextCaseTransform.Uppercase));
         var source = series.Points.ToArray();
         var prepared = Prepare(chart);
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "axis-x-label").ToArray();
@@ -75,13 +75,13 @@ public sealed class DenseNativeAxisAndFinancialLayoutTests {
         var values = Enumerable.Range(0, 45).Select(index => new ChartCandlestick(index + 1.5, 4, 8, 2, 6)).ToArray();
         var series = kind == ChartSeriesKind.Candlestick ? ChartSeries.CreateCandlestick(new ChartSeriesId("observed"), "Observed", values)
             : ChartSeries.CreateOhlc(new ChartSeriesId("observed"), "Observed", values);
-        series.ConfigureFinancial(options => {
+        series.Financial(options => {
             options.Rising.StrokeWidth = stroke; options.Falling.StrokeWidth = stroke;
             if (kind == ChartSeriesKind.Candlestick) {
                 options.Rising.Wick.StrokeWidth = stroke; options.Falling.Wick.StrokeWidth = stroke;
             }
         });
-        var chart = Chart.Create().WithSize(width, 360).WithHeader(false).WithLegend(false).AddSeries(series);
+        var chart = Chart.Create().Size(width, 360).ShowHeader(false).Legend(false).AddSeries(series);
         var prepared = Prepare(chart);
         var marks = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
         Assert.Equal(values.Length, marks.Length);
@@ -95,9 +95,9 @@ public sealed class DenseNativeAxisAndFinancialLayoutTests {
 
     [Fact]
     public void AuthoredOversizedFinancialStrokeIsRetainedWhileAutomaticBodyIsBounded() {
-        var chart = Chart.Create().WithSize(390, 360).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(390, 360).ShowHeader(false).Legend(false)
             .AddCandlestick("Observed", Enumerable.Range(0, 45).Select(index => new ChartCandlestick(index + 1.5, 4, 8, 2, 6)));
-        chart.Series[0].WithStrokeWidth(8);
+        chart.Series[0].StrokeWidth(8);
         var prepared = Prepare(chart);
         var bodies = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "candlestick-body").ToArray();
         Assert.Equal(45, bodies.Length);
@@ -113,11 +113,11 @@ public sealed class DenseNativeAxisAndFinancialLayoutTests {
             ? ChartSeries.CreateRangeArea(new ChartSeriesId("observed"), "Observed", points.Select(point =>
                 new ChartRangeBand(point.X, point.Y - 1, point.Y + 1, point.BreakBefore)), smooth: false)
             : new ChartSeries(new ChartSeriesId("observed"), "Observed", kind, points);
-        series.WithObservationIds(rows.Select(index => new ChartObservationId("observation-" + index)));
-        series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 2; });
-        return Chart.Create().WithSize(390, 360).WithHeader(false).WithLegend(false).WithTheme(VisualTheme.Graphite())
-            .ConfigureTickLabelStyle(style => style.FontSize = 12).AddSeries(series)
-            .WithXLabels(Enumerable.Range(0, 48).Select(index => new ChartAxisLabel(2.5 + index * .75,
+        series.ObservationIds(rows.Select(index => new ChartObservationId("observation-" + index)));
+        series.Markers(markers => { markers.Enabled = true; markers.Radius = 2; });
+        return Chart.Create().Size(390, 360).ShowHeader(false).Legend(false).Theme(VisualTheme.Graphite())
+            .TickLabelStyle(style => style.FontSize = 12).AddSeries(series)
+            .XLabels(Enumerable.Range(0, 48).Select(index => new ChartAxisLabel(2.5 + index * .75,
                 "Regional processing checkpoint " + index.ToString("00") + " / complete authored category description")));
     }
 

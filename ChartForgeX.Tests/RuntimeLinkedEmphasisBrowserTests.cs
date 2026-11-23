@@ -110,11 +110,11 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
     [InlineData(true, 390)]
     public async Task CartesianPointLegendsKeepObservationForegroundAndExplicitIsolation(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Requests over time").WithXLabels("Mon", "Tue", "Wed").WithPointLegend()
+        var chart = Chart.Create().Size(640, 360).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Requests over time").XLabels("Mon", "Tue", "Wed").Legend(l => l.ShowPoints())
             .AddSeries(new ChartSeries(new ChartSeriesId("api"), "API", ChartSeriesKind.Bar,
                 new[] { new ChartPoint(1, 17), new ChartPoint(2, 24), new ChartPoint(3, 21) })
-                .WithObservationIds(new[] { new ChartObservationId("a-1"), new ChartObservationId("a-2"), new ChartObservationId("a-3") }));
+                .ObservationIds(new[] { new ChartObservationId("a-1"), new ChartObservationId("a-2"), new ChartObservationId("a-3") }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Options), width, 680);
         var page = session.Page;
         await page.EvaluateAsync("() => { window.linkedRoot=document.querySelector('.cfx-interactive-chart'); window.linkedController=ChartForgeXCharts.get(linkedRoot); linkedController.highlight({observationIds:['a-1']},{dim:true}); }");
@@ -152,12 +152,12 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, bool dark) {
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Requests over time").WithXLabels("Mon", "Tue", "Wed");
+        var chart = Chart.Create().Size(640, 360).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Requests over time").XLabels("Mon", "Tue", "Wed");
         chart.AddSeries(new ChartSeries(new ChartSeriesId("api"), "API", kind, new[] { new ChartPoint(1, 17), new ChartPoint(2, 24), new ChartPoint(3, 21) })
-            .WithObservationIds(new[] { new ChartObservationId("a-1"), new ChartObservationId("a-2"), new ChartObservationId("a-3") }));
+            .ObservationIds(new[] { new ChartObservationId("a-1"), new ChartObservationId("a-2"), new ChartObservationId("a-3") }));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("worker"), "Worker", kind, new[] { new ChartPoint(1, 8), new ChartPoint(2, 12), new ChartPoint(3, 9) })
-            .WithObservationIds(new[] { new ChartObservationId("b-1"), new ChartObservationId("b-2"), new ChartObservationId("b-3") }));
+            .ObservationIds(new[] { new ChartObservationId("b-1"), new ChartObservationId("b-2"), new ChartObservationId("b-3") }));
         return chart;
     }
 

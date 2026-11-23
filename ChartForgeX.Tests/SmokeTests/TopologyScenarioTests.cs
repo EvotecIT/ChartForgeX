@@ -7,8 +7,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyScenariosValidateReusableReferences() {
         var chart = TopologyChart.Create()
-            .WithId("scenario-validation")
-            .WithViewport(420, 240, 20)
+            .Id("scenario-validation")
+            .Viewport(new TopologyViewport(420, 240, 20))
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 220, 80)
             .AddEdge("a-b", "a", "b")
@@ -34,9 +34,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyScenarioMetadataIncludesEdgeEndpoints() {
         var chart = TopologyChart.Create()
-            .WithId("edge-only-scenario")
-            .WithViewport(420, 240, 20)
-            .WithLegend(null)
+            .Id("edge-only-scenario")
+            .Viewport(new TopologyViewport(420, 240, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 220, 80)
             .AddEdge("a-b", "a", "b")
@@ -50,9 +50,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-edge-id=\"a-b\"", StringComparison.Ordinal), "Scenario edge metadata should preserve normal edge ids.");
 
         var duplicateEdges = TopologyChart.Create()
-            .WithId("duplicate-edge-scenario")
-            .WithViewport(520, 260, 20)
-            .WithLegend(null)
+            .Id("duplicate-edge-scenario")
+            .Viewport(new TopologyViewport(520, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 220, 80)
             .AddNode("c", "C", 380, 80)
@@ -66,9 +66,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyActiveScenarioHighlightsStaticOutput() {
         var chart = TopologyChart.Create()
-            .WithId("active-scenario")
-            .WithViewport(560, 260, 20)
-            .WithLegend(null)
+            .Id("active-scenario")
+            .Viewport(new TopologyViewport(560, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("main", "Main", 20, 70, 360, 130)
             .AddNode("a", "A", 60, 110, groupId: "main")
             .AddNode("b", "B", 220, 110, groupId: "main")
@@ -86,7 +86,7 @@ internal static partial class SmokeTests {
         Assert(TopologyEntity(svg, "node", "c").Descendants().Single(mark => (string?)mark.Attribute("data-cfx-role") == "topology-node-surface").RenderedColor("stroke").A == 255, "Default static scenarios should preserve unrelated context rather than dimming it.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "route" }).Length > 64, "Static active scenario highlighting should render as PNG.");
 
-        chart.Scenarios[0].WithSpotlight();
+        chart.Scenarios[0].Spotlight();
         var spotlightSvg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, ActiveScenarioId = "route" });
         Assert(TopologyEntity(spotlightSvg, "node", "c").Descendants().Single(mark => (string?)mark.Attribute("data-cfx-role") == "topology-node-surface").RenderedColor("stroke").A == (byte)Math.Round(255 * .28), "Explicit spotlight scenarios should dim nodes outside the route in static output.");
 
@@ -102,14 +102,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyScenarioMotionRendersSvgGifAndApng() {
         var chart = TopologyChart.Create()
-            .WithId("motion-scenario")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("motion-scenario")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 220, 80)
             .AddEdge("a-b", "a", "b", "flow", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy)
             .AddScenario("route", "Route", scenario => scenario
-                .WithColor("#2563EB")
+                .Color("#2563EB")
                 .AddNodeStep("a")
                 .AddEdgeStep("a-b")
                 .AddNodeStep("b"));
@@ -177,9 +177,9 @@ internal static partial class SmokeTests {
                 ScenarioId = "missing", DurationSeconds = 1, FramesPerSecond = 4
             }), "Explicit topology motion scenario ids should fail clearly when they do not match a scenario.");
         var fallbackRouteChart = TopologyChart.Create()
-            .WithId("motion-routable-fallback")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("motion-routable-fallback")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 220, 80)
             .AddEdge("a-b", "a", "b", "flow", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy)
@@ -230,9 +230,9 @@ internal static partial class SmokeTests {
         Assert(explicitMotion.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker").RenderedColor("fill").Equals(healthColor), "Explicit edge motion markers should use the selected theme's health status color independently of scenario colors.");
 
         var noScenarioChart = TopologyChart.Create()
-            .WithId("motion-explicit-edge")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("motion-explicit-edge")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 80)
             .AddNode("b", "B", 220, 80)
             .AddEdge("a-b", "a", "b", "flow", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy);
@@ -250,9 +250,9 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => noScenarioChart.ToApng(new TopologyRenderOptions { IncludeLegend = false }), "Topology APNG export should fail clearly when no scenario or explicit edge route can be animated.");
 
         var curvedChart = TopologyChart.Create()
-            .WithId("motion-curved")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("motion-curved")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 40, 130)
             .AddNode("b", "B", 270, 130)
             .AddEdge("curve", "a", "b", routing: TopologyEdgeRouting.Curved);
@@ -265,9 +265,9 @@ internal static partial class SmokeTests {
         Assert(curvePoints.Count == nativeCurve.Count && curvePoints.Zip(nativeCurve, (actual, expected) => Math.Abs(actual.X - expected.X) <= .00050001 && Math.Abs(actual.Y - expected.Y) <= .00050001).All(matches => matches), "SVG motion should follow the same resolved geometry as native SVG and PNG.");
 
         var orderedNodeChart = TopologyChart.Create()
-            .WithId("motion-node-order")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("motion-node-order")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("z", "Z", 40, 130)
             .AddNode("a", "A", 270, 130)
             .AddEdge("z-a", "z", "a");
@@ -277,33 +277,33 @@ internal static partial class SmokeTests {
         var scenarioOptions = TopologyMotionOptions.RoutePulseForScenario(" route ");
         Assert(scenarioOptions.ScenarioId == "route", "Topology motion scenario factories should trim stable ids.");
         scenarioOptions
-            .WithDuration(2)
-            .WithFrameRate(4)
-            .WithFrameLimit(4);
+            .DurationSeconds(2)
+            .FramesPerSecond(4)
+            .MaximumRasterFrames(4);
         AssertThrows<ArgumentOutOfRangeException>(() => chart.ToGif(new TopologyRenderOptions { IncludeLegend = false }, motion: scenarioOptions), "Topology GIF export should reject frame counts above the configured raster frame limit.");
     }
 
     private static void TopologyScenarioModelsRejectInvalidInputs() {
         var scenario = new TopologyScenario { Id = "scenario", Label = "Scenario" }
-            .WithPlayback(1200, loop: true)
-            .WithSpotlight()
-            .WithMetadata("owner", "network")
-            .WithMetadata("empty", null);
+            .PlaybackDelayMilliseconds(1200).LoopPlayback().AutoPlay(false)
+            .Spotlight()
+            .Metadata("owner", "network")
+            .Metadata("empty", null);
         Assert(scenario.Metadata["owner"] == "network" && scenario.Metadata["empty"] == string.Empty, "Topology scenario metadata helpers should keep host metadata reusable and null-safe.");
-        scenario.AddEdgeStep("edge", "Route", configure: step => step.WithDuration(1800).WithMetadata("protocol", "https").WithMetadata("empty", null));
+        scenario.AddEdgeStep("edge", "Route", configure: step => step.DurationMilliseconds(1800).Metadata("protocol", "https").Metadata("empty", null));
         Assert(scenario.Steps[0].Metadata["protocol"] == "https" && scenario.Steps[0].Metadata["empty"] == string.Empty, "Topology scenario step metadata helpers should keep route-step metadata reusable and null-safe.");
         Assert(scenario.PlaybackDelayMilliseconds == 1200 && scenario.LoopPlayback && scenario.Spotlight && scenario.Steps[0].DurationMilliseconds == 1800, "Topology scenarios should own the same paced timeline and explicit focus intent as chart scenarios.");
 
         var options = new TopologyRenderOptions()
-            .WithHtmlScenarioControls(false)
-            .WithHtmlScenarioPanel(false)
-            .WithHtmlScenarioUrlState()
-            .WithActiveScenario("scenario");
+            .HtmlScenarioControls(false)
+            .HtmlScenarioPanel(false)
+            .HtmlScenarioUrlState()
+            .ActiveScenarioId("scenario");
         Assert(options.ActiveScenarioId == "scenario", "Topology render options should expose a fluent active scenario helper.");
-        Assert(!options.EnableHtmlScenarioControls, "Topology render options should expose a fluent scenario control toggle.");
-        Assert(!options.EnableHtmlScenarioPanel, "Topology render options should expose a fluent scenario panel toggle.");
-        Assert(options.EnableHtmlScenarioUrlState, "Topology render options should expose a fluent scenario URL-state toggle.");
-        Assert(options.WithoutActiveScenario().ActiveScenarioId == null, "Topology render options should expose a fluent active scenario clear helper.");
+        Assert(!options.Html.ScenarioControls, "Topology render options should expose a fluent scenario control toggle.");
+        Assert(!options.Html.ScenarioPanel, "Topology render options should expose a fluent scenario panel toggle.");
+        Assert(options.Html.ScenarioUrlState, "Topology render options should expose a fluent scenario URL-state toggle.");
+        Assert(options.ActiveScenarioId(null).ActiveScenarioId == null, "Topology render options should expose a fluent active scenario clear helper.");
 
         var contextualChart = TopologyChart.Create()
             .AddNode("a", "A", 0, 0)
@@ -312,7 +312,7 @@ internal static partial class SmokeTests {
             .AddScenario("context", "Context", route => route.AddEdgeStep("a-b"));
         var contextualHighlight = TopologyHighlightState.From(contextualChart, new TopologyRenderOptions { ActiveScenarioId = "context", DimmedOpacity = 0.2 });
         Assert(contextualHighlight.DimmedOpacity == 1d, "Default topology scenarios should highlight the route without fading the surrounding context in static output.");
-        contextualChart.Scenarios[0].WithSpotlight();
+        contextualChart.Scenarios[0].Spotlight();
         var spotlightHighlight = TopologyHighlightState.From(contextualChart, new TopologyRenderOptions { ActiveScenarioId = "context", DimmedOpacity = 0.2 });
         Assert(Math.Abs(spotlightHighlight.DimmedOpacity - 0.2) < 0.0001, "Explicit topology spotlight scenarios should retain focused static dimming.");
 
@@ -325,26 +325,26 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddScenario("bad id", "Scenario"), "Topology scenarios should reject ids that would break scenario membership attributes.");
         AssertThrows<ArgumentException>(() => TopologyChart.Create().AddScenario("scenario", " "), "Topology scenarios should reject empty labels close to the caller.");
         AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.AddNodeStep(" "), "Topology scenario steps should reject empty ids close to the caller.");
-        AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.WithMetadata(" ", "value"), "Topology scenario metadata helpers should reject empty keys close to the caller.");
-        AssertThrows<ArgumentException>(() => new TopologyScenarioStep { Id = "node", Kind = TopologyScenarioStepKind.Node }.WithMetadata(" ", "value"), "Topology scenario step metadata helpers should reject empty keys close to the caller.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.WithPlayback(100), "Topology scenario timelines should reject unreadable playback delays.");
-        AssertThrows<ArgumentException>(() => new TopologyRenderOptions().WithActiveScenario("bad id"), "Topology active scenario helpers should reject ids that cannot be used as stable HTML tokens.");
+        AssertThrows<ArgumentException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.Metadata(" ", "value"), "Topology scenario metadata helpers should reject empty keys close to the caller.");
+        AssertThrows<ArgumentException>(() => new TopologyScenarioStep { Id = "node", Kind = TopologyScenarioStepKind.Node }.Metadata(" ", "value"), "Topology scenario step metadata helpers should reject empty keys close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new TopologyScenario { Id = "scenario", Label = "Scenario" }.PlaybackDelayMilliseconds(100).LoopPlayback(false).AutoPlay(false), "Topology scenario timelines should reject unreadable playback delays.");
+        AssertThrows<ArgumentException>(() => new TopologyRenderOptions().ActiveScenarioId("bad id"), "Topology active scenario helpers should reject ids that cannot be used as stable HTML tokens.");
         AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForScenario("bad id"), "Topology motion scenario helpers should reject ids that cannot be used as stable HTML tokens.");
         AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForEdges(), "Topology motion explicit edge helpers should require at least one edge id.");
         AssertThrows<ArgumentException>(() => TopologyMotionOptions.RoutePulseForEdges(" "), "Topology motion explicit edge helpers should reject empty edge ids.");
         var motion = TopologyMotionOptions.RoutePulseForEdges("edge")
-            .WithDuration(2)
-            .WithFrameRate(8)
-            .WithFrameLimit(32)
-            .WithMarker(6, " #2563EB ")
+            .DurationSeconds(2)
+            .FramesPerSecond(8)
+            .MaximumRasterFrames(32)
+            .MarkerRadius(6).MarkerColor(" #2563EB ")
             .AtProgress(0.5)
-            .WithEndpointPulses(false);
+            .PulseRouteEndpoints(false);
         Assert(motion.DurationSeconds == 2 && motion.FramesPerSecond == 8 && motion.MaximumRasterFrames == 32 && motion.MarkerRadius == 6 && motion.MarkerColor == "#2563EB" && Math.Abs(motion.Progress - 0.5) < 0.0001 && !motion.PulseRouteEndpoints, "Topology motion fluent helpers should tune reusable route animation options close to the caller.");
-        Assert(motion.WithMarkerColor(" ").MarkerColor == null, "Topology motion marker color helpers should clear empty overrides.");
-        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithDuration(0), "Topology motion fluent duration helper should reject invalid values close to the caller.");
-        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithFrameRate(double.PositiveInfinity), "Topology motion fluent frame-rate helper should reject invalid values close to the caller.");
-        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithFrameLimit(0), "Topology motion fluent frame-limit helper should reject invalid values close to the caller.");
-        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").WithMarker(double.NaN), "Topology motion fluent marker helper should reject invalid values close to the caller.");
+        Assert(motion.MarkerColor(" ").MarkerColor == null, "Topology motion marker color helpers should clear empty overrides.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").DurationSeconds(0), "Topology motion fluent duration helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").FramesPerSecond(double.PositiveInfinity), "Topology motion fluent frame-rate helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").MaximumRasterFrames(0), "Topology motion fluent frame-limit helper should reject invalid values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").MarkerRadius(double.NaN).MarkerColor(null), "Topology motion fluent marker helper should reject invalid values close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => TopologyMotionOptions.RoutePulseForEdges("edge").AtProgress(1.1), "Topology motion fluent progress helper should reject values outside the sampled progress range.");
     }
 

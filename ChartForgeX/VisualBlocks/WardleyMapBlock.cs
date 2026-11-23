@@ -27,7 +27,7 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     public IReadOnlyList<double> StageBoundaries => _stageBoundaries;
 
     /// <summary>Sets detached, strictly increasing stage right edges in (0,1], or clears them with null.</summary>
-    public WardleyMapBlock WithStageBoundaries(IEnumerable<double>? boundaries) {
+    internal WardleyMapBlock SetStageBoundaries(IEnumerable<double>? boundaries) {
         if (boundaries == null) { _stageBoundaries = Array.Empty<double>(); return this; }
         var values = new List<double>(); var previous = 0d;
         foreach (var value in boundaries) {
@@ -69,16 +69,10 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     /// <summary>Gets the optional normalized origin of the numbered annotation legend.</summary>
     public WardleyMapAnnotationBox? AnnotationsBox { get; set; }
 
-    /// <summary>Sets or clears immutable paint overrides without changing geometry or the shared theme.</summary>
-    public WardleyMapBlock WithStyle(WardleyMapStyle? style) { Style = style; return this; }
-
     /// <summary>Places the annotation legend at normalized visibility/evolution coordinates; its measured box stays inside the plot.</summary>
-    public WardleyMapBlock WithAnnotationsBox(double visibility, double evolution) {
+    internal WardleyMapBlock SetAnnotationsBox(double visibility, double evolution) {
         AnnotationsBox = new WardleyMapAnnotationBox(visibility, evolution); return this;
     }
-
-    /// <summary>Restores ordinary inline annotation captions.</summary>
-    public WardleyMapBlock WithoutAnnotationsBox() { AnnotationsBox = null; return this; }
 
     /// <inheritdoc />
     public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Wardley map" : Title);

@@ -12,8 +12,8 @@ public static class MermaidJourneyRendering {
     public static JourneyDiagramBlock ToJourneyDiagramBlock(this MermaidJourneyDocument document, MermaidJourneyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidJourneyRenderOptions();
-        var block = JourneyDiagramBlock.Create().WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid journey"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle)).WithSize(options.Width, options.Height);
+        var block = JourneyDiagramBlock.Create().Title(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid journey"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle)).Size(options.Width, options.Height);
         for (var index = 0; index < document.Sections.Count; index++) block.AddSection("section-" + index.ToString(CultureInfo.InvariantCulture), document.Sections[index].Name);
         for (var index = 0; index < document.Tasks.Count; index++) {
             var item = document.Tasks[index];

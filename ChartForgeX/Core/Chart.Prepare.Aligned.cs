@@ -12,10 +12,10 @@ public sealed partial class Chart {
         ChartCartesianViewport? viewport = null, bool retainFullDrawings = false) {
         // Both native domains are fixed before layout, so a section without an overview needs only its requested drawings.
         if (viewport != null && !retainFullDrawings && VisualCartesianCompiler.SupportsYViewport(this)
-            && Options.XAxis.Minimum.HasValue && Options.XAxis.Maximum.HasValue
-            && Options.YAxis.Minimum.HasValue && Options.YAxis.Maximum.HasValue
+            && Options.XAxis.Min.HasValue && Options.XAxis.Max.HasValue
+            && Options.YAxis.Min.HasValue && Options.YAxis.Max.HasValue
             && (!Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary)
-                || ChartCartesianOrientation.ValueAxis(this, ChartAxisSide.Secondary) is { Minimum: not null, Maximum: not null }))
+                || ChartCartesianOrientation.ValueAxis(this, ChartAxisSide.Secondary) is { Min: not null, Max: not null }))
             return (PrepareCore(firstContext, viewport), PrepareCore(secondContext, viewport), null, null);
         // Discover the common envelope before applying a request: a narrow padded edge may exceed the standalone wide domain.
         var scenes = new[] { PrepareCore(firstContext, null), PrepareCore(secondContext, null) };

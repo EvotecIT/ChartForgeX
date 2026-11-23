@@ -16,10 +16,10 @@ public static class MermaidVennRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidVennRenderOptions();
         var block = VennDiagramBlock.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
-            .WithPadding(options.Padding);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height)
+            .Padding(options.Padding);
 
         foreach (var item in document.Sets) {
             block.AddSet(item.Id, item.Label, item.Size);

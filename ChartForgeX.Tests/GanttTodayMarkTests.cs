@@ -17,9 +17,9 @@ public sealed class GanttTodayMarkTests {
     [InlineData(true, true, 320)]
     public async Task TodayLinePaintsVisibleInkAcrossClassicAndPackedTaskFills(bool dark, bool lanes, int width) {
         var start = new DateTime(2026, 1, 1);
-        var chart = Chart.Create().WithSize(width, 360).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithGanttToday(start.AddDays(2));
-        if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+        var chart = Chart.Create().Size(width, 360).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).GanttToday(start.AddDays(2));
+        if (lanes) chart.StateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(4), "work") });
         else chart.AddGanttTask("Task", start, start.AddDays(4));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

@@ -48,11 +48,11 @@ public sealed class NativeCircleValueTransitionTests {
         Chart Create(double value) {
             var chart = Model(760, false, value, family); var series = chart.Series[0];
             series.StateRole = ChartSeriesState.Info;
-            if (policy is "series" or "point") series.WithColor(ChartColor.FromHex("#2468AC"));
-            if (policy == "point") series.WithPointColor(0, ChartColor.FromHex("#7B3294"));
-            series.WithPointLabel(0, "Accepted assessment");
-            series.ConfigurePointDataLabelStyle(0, style => style.WithUnderline(TextDecorationStyle.Dashed).WithFontSize(13));
-            chart.Options.CircleRadiusScale = 1.2; chart.Options.CircleStrokeScale = 1.6; return chart;
+            if (policy is "series" or "point") series.Color(ChartColor.FromHex("#2468AC"));
+            if (policy == "point") series.PointColor(0, ChartColor.FromHex("#7B3294"));
+            series.PointLabel(0, "Accepted assessment");
+            series.PointDataLabelStyle(0, style => style.UnderlineStyle(TextDecorationStyle.Dashed).FontSize(13));
+            chart.Options.Circle.RadiusScale = 1.2; chart.Options.Circle.StrokeScale = 1.6; return chart;
         }
         var from = renderer.PrepareSection(Create(40)); var to = renderer.PrepareSection(Create(90));
         var middle = AssertNativeMiddle(renderer, from, to, Create(65));
@@ -70,7 +70,7 @@ public sealed class NativeCircleValueTransitionTests {
     public void NativeLabelAndStatusVisibilityPoliciesKeepTheirOwnLayoutAndRemainDetached(bool labels, bool status) {
         var family = BrowserProofFonts.Family; var renderer = new HtmlInteractiveChartRenderer();
         Chart Create(double value) {
-            var chart = Model(390, true, value, family); chart.Series[0].ShowDataLabels = labels; chart.Options.ShowCircleStatusLabel = status; return chart;
+            var chart = Model(390, true, value, family); chart.Series[0].ShowDataLabels = labels; chart.Options.Circle.ShowStatusLabel = status; return chart;
         }
         var chart = Create(40); var from = renderer.PrepareSection(chart); var to = renderer.PrepareSection(Create(90));
         var middle = AssertNativeMiddle(renderer, from, to, Create(65));
@@ -78,8 +78,8 @@ public sealed class NativeCircleValueTransitionTests {
         if (!labels) Assert.DoesNotContain(middle.Scene.Nodes, node => node.Role is "circle-label" or "circle-title");
         var svg = middle.ToSvg("retained-circle"); var png = middle.ToPng();
         chart.Series[0].UpdateGaugeValue(0, new ChartGaugeValue(5, -50, 50));
-        chart.Series[0].WithPointLabel(0, "Later changed caption").WithPointColor(0, ChartColor.FromHex("#FF0000"));
-        chart.Options.CircleRadiusScale = .65; chart.WithFontFamily("Later missing face").WithValueFormat(ChartValueFormat.Custom(_ => "Changed"));
+        chart.Series[0].PointLabel(0, "Later changed caption").PointColor(0, ChartColor.FromHex("#FF0000"));
+        chart.Options.Circle.RadiusScale = .65; chart.FontFamily("Later missing face").ValueFormat(ChartValueFormat.Custom(_ => "Changed"));
         try {
             FontRegistry.Clear(); var retained = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3)[1];
             Assert.Equal(svg, retained.ToSvg("retained-circle")); Assert.Equal(png, retained.ToPng());
@@ -91,8 +91,8 @@ public sealed class NativeCircleValueTransitionTests {
         var renderer = new HtmlInteractiveChartRenderer(); var family = BrowserProofFonts.Family;
         var from = renderer.PrepareSection(Model(760, false, 40, family));
         var changed = Model(760, false, 100, family);
-        changed.WithTheme(VisualTheme.Graphite().Configure(builder => builder.Light.Status.Medium =
-            new VisualTokenColor(ChartColor.FromHex("#7B3294"), builder.Light.Status.Medium.Ink)), ThemeMode.Light).WithFontFamily(family);
+        changed.Theme(VisualTheme.Graphite().Configure(builder => builder.Light.Status.Medium =
+            new VisualTokenColor(ChartColor.FromHex("#7B3294"), builder.Light.Status.Medium.Ink))).ThemeMode(ThemeMode.Light).FontFamily(family);
         var to = renderer.PrepareSection(changed); var capture = from.PreparedVisual.Scene.ValueCapture!;
         Assert.Equal(to.PreparedVisual.ToSvg("same-circle-endpoint"), capture.Frame(from.PreparedVisual, new[] { 100d }).ToSvg("same-circle-endpoint"));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, to, 3));
@@ -103,18 +103,18 @@ public sealed class NativeCircleValueTransitionTests {
         var renderer = new HtmlInteractiveChartRenderer(); var family = BrowserProofFonts.Family;
         var from = renderer.PrepareSection(Model(760, false, 40, family)); var after = Model(760, false, 90, family);
         var original = from.PreparedVisual.ToSvg();
-        after.Options.CircleStrokeScale = 1.7;
+        after.Options.Circle.StrokeScale = 1.7;
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, renderer.PrepareSection(after), 3));
         after = Model(760, false, 90, family); after.Series[0].StateRole = ChartSeriesState.Info;
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, renderer.PrepareSection(after), 3));
         after = Model(760, false, 90, family); after.Series[0].UpdateGaugeValue(0, new ChartGaugeValue(90, -10, 100));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, renderer.PrepareSection(after), 3));
-        var custom = renderer.PrepareSection(Model(760, false, 90, family).WithValueFormat(ChartValueFormat.Custom(value => value + " units")));
+        var custom = renderer.PrepareSection(Model(760, false, 90, family).ValueFormat(ChartValueFormat.Custom(value => value + " units")));
         Assert.NotEmpty(custom.PreparedVisual.ToPng()); Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, custom, 3));
-        var anonymous = renderer.PrepareSection(CircleRecipe.Create().WithFontFamily(family));
+        var anonymous = renderer.PrepareSection(CircleRecipe.Create().FontFamily(family));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(anonymous, anonymous, 3));
-        var legendFrom = renderer.PrepareSection(Model(760, false, 40, family).WithLegend(true));
-        var legendTo = renderer.PrepareSection(Model(760, false, 90, family).WithLegend(true));
+        var legendFrom = renderer.PrepareSection(Model(760, false, 40, family).Legend(true));
+        var legendTo = renderer.PrepareSection(Model(760, false, 90, family).Legend(true));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(legendFrom, legendTo, 3));
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         Assert.Throws<OperationCanceledException>(() => renderer.PrepareValueTransitionJson(from, renderer.PrepareSection(Model(760, false, 90, family)), 3, cancelled.Token));
@@ -122,9 +122,9 @@ public sealed class NativeCircleValueTransitionTests {
     }
 
     internal static Chart Model(int width, bool dark, double value, string family) {
-        var chart = CircleRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily(family).WithLegend(false);
-        var series = chart.Series[0]; series.WithObservationId(0, new ChartObservationId("current"));
+        var chart = CircleRecipe.Create().Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .FontFamily(family).Legend(false);
+        var series = chart.Series[0]; series.ObservationId(0, new ChartObservationId("current"));
         var reading = series.GaugeValues[0]; series.UpdateGaugeValue(0, new ChartGaugeValue(value, reading.Minimum, reading.Maximum));
         return chart;
     }

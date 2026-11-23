@@ -29,7 +29,7 @@ var lightVariables = VisualDesignTokens.GraphiteLight().ToSvgColorVariables();
 var darkVariables = VisualDesignTokens.GraphiteDark().ToSvgColorVariables();
 
 // SVG: one file for both themes; the page swaps the custom properties.
-var themedHero = HeroChart(ThemeMode.Light).WithSvgColorVariables(lightVariables);
+var themedHero = HeroChart(ThemeMode.Light).SvgColorVariables(lightVariables);
 var heroSvg = themedHero.ToSvg("cfx-hero");
 Write("hero.svg", heroSvg);
 Write("hero-theme.css", ThemeCss(lightVariables, darkVariables));
@@ -45,11 +45,11 @@ foreach (var (name, mode) in modes) {
 // Hero dashboard: one ChartGrid of several families, rendered in both themes.
 ChartGrid HeroDashboard(ThemeMode mode) {
     ChartPoint[] Values(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
-    var trend = HeroChart(mode).WithTitle("Sign-ins by method").WithSubtitle("Last 12 weeks").WithSize(1056, 320);
-    var methods = Chart.Create().WithThemeMode(mode).WithTitle("This week").WithSubtitle("Share of sign-ins")
-        .WithXLabels(HeroSeries).AddDonut("Sign-ins", Values(HeroData.Select(series => series[^1]).ToArray()));
-    var posture = Chart.Create().WithThemeMode(mode).WithTitle("Security posture").WithSubtitle("Current against target")
-        .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring").WithYAxisBounds(0, 100).WithDataLabels(false)
+    var trend = HeroChart(mode).Title("Sign-ins by method").Subtitle("Last 12 weeks").Size(1056, 320);
+    var methods = Chart.Create().ThemeMode(mode).Title("This week").Subtitle("Share of sign-ins")
+        .XLabels(HeroSeries).AddDonut("Sign-ins", Values(HeroData.Select(series => series[^1]).ToArray()));
+    var posture = Chart.Create().ThemeMode(mode).Title("Security posture").Subtitle("Current against target")
+        .XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring").YAxis(y => y.Bounds(0, 100)).DataLabels(false)
         .AddRadarArea("Current", Values(91, 72, 88, 95, 79, 84)).AddRadarLine("Target", Values(95, 90, 95, 95, 90, 92));
     var hours = new[] { "0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22" };
     var days = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
@@ -57,23 +57,23 @@ ChartGrid HeroDashboard(ThemeMode mode) {
         var working = d < 5 && h >= 4 && h <= 9;
         return Math.Round((working ? 60 + 30 * Math.Sin(h * .9) : 8 + 6 * Math.Cos(h)) * (d < 5 ? 1 : .35));
     }));
-    var heat = Chart.Create().WithThemeMode(mode).WithTitle("Sign-ins by hour").WithSubtitle("Weekday working hours stand out")
-        .WithXLabels(hours).AddHeatmapRows(days, activity);
-    var coverage = Chart.Create().WithThemeMode(mode).WithTitle("MFA coverage").WithSubtitle("Accounts with a strong method")
+    var heat = Chart.Create().ThemeMode(mode).Title("Sign-ins by hour").Subtitle("Weekday working hours stand out")
+        .XLabels(hours).AddHeatmapRows(days, activity);
+    var coverage = Chart.Create().ThemeMode(mode).Title("MFA coverage").Subtitle("Accounts with a strong method")
         .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("coverage"), "Coverage",
             new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(95) })));
     foreach (var panel in new[] { methods, posture, heat, coverage }) {
-        panel.WithSize(520, 320);
+        panel.Size(520, 320);
     }
 
-    return ChartGrid.Create().WithThemeMode(mode).WithColumns(3).WithGap(16).WithPanelSize(520, 320).WithPanelFit(VisualPanelFit.Stretch)
+    return ChartGrid.Create().ThemeMode(mode).Columns(3).Gap(16).PanelSize(520, 320).PanelFit(VisualPanelFit.Stretch)
         .Add(trend, 2).Add(methods).Add(posture).Add(heat).Add(coverage);
 }
 
 foreach (var (name, mode) in modes) {
     var grid = HeroDashboard(mode);
     Write($"dashboard-{name}.svg", grid.ToSvg());
-    File.WriteAllBytes(Path.Combine(output, $"dashboard-{name}.png"), grid.WithPngOutputScale(2).ToPng());
+    File.WriteAllBytes(Path.Combine(output, $"dashboard-{name}.png"), grid.PngOutputScale(2).ToPng());
 }
 
 // Touch icon and social card, rasterized by ChartForgeX from SVG.
@@ -134,7 +134,7 @@ if (markup.HasErrors || markup.Artifacts.FirstOrDefault()?.Model is not Chart fe
     throw new InvalidOperationException("The ChartForgeX Markdown hero did not produce a chart artifact.");
 }
 foreach (var (name, mode) in modes) {
-    Write($"hero-markdown-{name}.svg", fenced.WithThemeMode(mode).ToSvg($"cfx-md-{name}"));
+    Write($"hero-markdown-{name}.svg", fenced.ThemeMode(mode).ToSvg($"cfx-md-{name}"));
 }
 
 // Mermaid: source kept next to the native render.

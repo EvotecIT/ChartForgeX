@@ -150,8 +150,8 @@ public static class EnhanceExamples {
         PreparedVisual Prepared(Chart chart) => chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 300), 8),
             VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame("", "", showLegend: true), FontSpec.FromFamily("system-ui, sans-serif")));
         var story = VisualStory.Create("Charts and a CanopyX grid that follow each other")
-            .WithDescription("Four chart families and one data grid of the same illustrative records, wired with one call per pair.")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Light).WithSize(800, 480);
+            .Description("Four chart families and one data grid of the same illustrative records, wired with one call per pair.")
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light).Size(800, 480);
         var code = Asset("linked-views.js").TrimEnd();
         Scene("columns", "Click a segment and the grid filters to its day and kind", Prepared(EnhanceRecipe.Week(records)),
             "Records per day by kind for the last seven days of October 2026 (example data).");

@@ -149,10 +149,10 @@ public sealed class PolarViewportBrowserTests {
         }
         private Chart Model() {
             var values = new[] { new ChartPoint(-.25, 40), new ChartPoint(Math.PI * 2 - .25, 50), new ChartPoint(.25, 60), new ChartPoint(3, 70), new ChartPoint(.15, 95) };
-            var chart = PolarViewportContractTests.Create(values).WithSize(900, 440).WithHeader(true).WithTitle("Native directional view")
-                .WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), _dark ? ThemeMode.Dark : ThemeMode.Light)
-                .WithSecondaryYAxisBounds(1, 1000).AddPolar("Secondary", values.Select(point => new ChartPoint(point.X, point.Y == 95 ? 1000 : point.Y == 70 ? 100 : 30)).ToArray());
-            chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
+            var chart = PolarViewportContractTests.Create(values).Size(900, 440).ShowHeader(true).Title("Native directional view")
+                .FontFamily(BrowserProofFonts.Family).Theme(VisualTheme.Graphite()).ThemeMode(_dark ? ThemeMode.Dark : ThemeMode.Light)
+                .SecondaryYAxis(s => s.Bounds(1, 1000)).AddPolar("Secondary", values.Select(point => new ChartPoint(point.X, point.Y == 95 ? 1000 : point.Y == 70 ? 100 : 30)).ToArray());
+            chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
             return chart;
         }
         private static void Configure(HtmlChartInteractionOptions options) {

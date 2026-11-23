@@ -19,9 +19,9 @@ public sealed class CartesianPlotRegionGalleryTests {
     public void ExecutableGalleryModelsKeepBackgroundGuidanceAndObservationsIndependent(ChartSeriesKind kind, string variant, bool dark) {
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal);
-        var chart = V2GalleryModels.Create(kind, variant, mode).WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle(kind == ChartSeriesKind.Scatter ? "Effort and impact" : "Capacity and delay");
+        var chart = V2GalleryModels.Create(kind, variant, mode).Size(compact ? 360 : 800, compact ? 360 : 440)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title(kind == ChartSeriesKind.Scatter ? "Effort and impact" : "Capacity and delay");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(kind == ChartSeriesKind.Scatter ? 4 : 2, prepared.Regions.Count(r => r.Role == "plot-region"));
         Assert.Equal(kind == ChartSeriesKind.Scatter ? 6 : 5, prepared.Regions.Count(r => r.Role == "point"));

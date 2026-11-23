@@ -13,7 +13,7 @@ public sealed class NativeFallbackClusterMotionTests : IDisposable {
     [Theory] [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public void CompleteMixedFaceFramesEqualIndependentNativePreparationAfterRegistryReplacement(bool donut, bool outside) {
         NativeFallbackClusterBeforeControls.Register(); var renderer = new HtmlInteractiveChartRenderer();
-        Chart Model(double value) => NativeFallbackClusterBeforeControls.Model(donut, true, value).WithDataLabelPlacement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside);
+        Chart Model(double value) => NativeFallbackClusterBeforeControls.Model(donut, true, value).DataLabels(d => d.Placement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside));
         var from = renderer.PrepareSection(Model(60)); var to = renderer.PrepareSection(Model(80)); var middle = renderer.PrepareSection(Model(70));
         var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3); var payload = renderer.PrepareNativeTransitionJson(from, to, options);
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var name = "captured-fallback-" + donut + "-" + outside;

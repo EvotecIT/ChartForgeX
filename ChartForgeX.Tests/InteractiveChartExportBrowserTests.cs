@@ -23,9 +23,9 @@ public sealed class InteractiveChartExportBrowserTests {
     public async Task StandaloneSvgAndBrowserPngRetainPersistentPaintWithoutHoverOrKeyboardChrome(bool isolated) {
         if (!Enabled) return;
         var authored = ChartColor.FromHex("#E11D48");
-        var chart = Chart.Create().WithSize(680, 420).WithTitle("Export current observations").WithLegend()
-            .WithDataLabels(false).WithYAxisBounds(0, 12)
-            .WithSvgColorVariables(new SvgColorVariables().Add("--export-series", authored, SvgColorRole.Series))
+        var chart = Chart.Create().Size(680, 420).Title("Export current observations").Legend()
+            .DataLabels(false).YAxis(y => y.Bounds(0, 12))
+            .SvgColorVariables(new SvgColorVariables().Add("--export-series", authored, SvgColorRole.Series))
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("focus"), "Current", new[] { new ChartPoint(1, 8) }, authored))
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("muted"), "Comparison", new[] { new ChartPoint(1, 6) }, ChartColor.FromHex("#2563EB")))
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("other"), "Other", new[] { new ChartPoint(1, 10) }, ChartColor.FromHex("#EAB308")));
@@ -119,7 +119,7 @@ public sealed class InteractiveChartExportBrowserTests {
     [BrowserFact]
     public async Task RootBranchExportsKeepSelectedPaintAndOmitTheActiveBranchOverride() {
         if (!Enabled) return;
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", ThemeMode.Light).WithSize(680, 460);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", ThemeMode.Light).Size(680, 460);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.PinOnSelect = false;

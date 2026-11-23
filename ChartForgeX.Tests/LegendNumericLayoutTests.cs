@@ -13,7 +13,7 @@ public sealed class LegendNumericLayoutTests {
     [InlineData(false, 900, ChartLegendPosition.Right)]
     public void OverflowBoundsRetainCompleteExponentsAndSeparateLegendColumns(bool donut, int width, ChartLegendPosition position) {
         var chart = Create(donut, width, position, 1e308, 1e308, 1e308);
-        chart.Options.MaximumPieSlices = 2;
+        chart.Options.Pie.MaxSlices = 2;
         var prepared = Prepare(chart);
         AssertColumns(prepared);
         var value = prepared.Scene.Nodes.OfType<VisualSceneText>().Last(node => node.Role == "legend-value");
@@ -35,8 +35,8 @@ public sealed class LegendNumericLayoutTests {
     public void ALongAuthoredValueCannotEraseItsCategoryAndKeepsItsCompleteDescription() {
         const string authored = "123456789012345678901234567890 authored units";
         var chart = Create(false, 900, ChartLegendPosition.Right, 3, 7)
-            .WithXLabels("International category", "Second category")
-            .ConfigureLegendStyle(style => style.WithFontSize(16).WithFontFamily("serif").WithTextCase(TextCaseTransform.Uppercase));
+            .XLabels("International category", "Second category")
+            .LegendStyle(style => style.FontSize(16).FontFamily("serif").TextCase(TextCaseTransform.Uppercase));
         chart.Options.ValueFormat = ChartValueFormat.Custom(_ => authored);
         var prepared = Prepare(chart);
         AssertColumns(prepared);
@@ -74,8 +74,8 @@ public sealed class LegendNumericLayoutTests {
     [InlineData(600, ChartLegendPosition.Top)]
     public void ValueAndPercentageColumnsAlignAcrossLegendRowsOfDifferentWidths(int width, ChartLegendPosition position) {
         // Short and long names, one- to three-digit values and percentages of different widths, beside, above or below the ring.
-        var chart = Chart.Create().WithSize(width, 400).WithLegendPosition(position)
-            .WithXLabels("Subscriptions and renewals", "Consulting", "Support", "Licenses", "Training", "Other")
+        var chart = Chart.Create().Size(width, 400).Legend(l => l.Position(position))
+            .XLabels("Subscriptions and renewals", "Consulting", "Support", "Licenses", "Training", "Other")
             .AddDonut("Revenue", new[] { 612d, 241, 87, 33, 19, 8 }.Select((value, index) => new ChartPoint(index + 1, value)).ToArray());
         var prepared = Prepare(chart);
         var texts = prepared.Scene.Nodes.OfType<VisualSceneText>().ToArray();
@@ -117,7 +117,7 @@ public sealed class LegendNumericLayoutTests {
     private static double Right(VisualSceneText text) => Left(text) + Assert.Single(text.Text.Lines).Width;
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static Chart Create(bool donut, int width, ChartLegendPosition position, params double[] values) {
-        var chart = Chart.Create().WithSize(width, 400).WithXLabels("First", "Second", "Third").WithLegendPosition(position);
+        var chart = Chart.Create().Size(width, 400).XLabels("First", "Second", "Third").Legend(l => l.Position(position));
         var points = values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
         return donut ? chart.AddDonut("Parts", points) : chart.AddPie("Parts", points);
     }

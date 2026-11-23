@@ -143,7 +143,7 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
     public async Task DashboardChartsFitTheirColumnsAndKeepTheirOwnChrome() {
         if (!Enabled) return;
         var charts = new[] { StatusLines(true), StatusLines(false), SeverityBars(false) };
-        foreach (var chart in charts) chart.WithSize(800, 440);
+        foreach (var chart in charts) chart.Size(800, 440);
         await using var session = await OpenAsync(charts.ToInteractiveHtmlDashboardPage(options => options.Columns = 2), 1024, 900);
         var page = session.Page;
         var panels = await page.EvaluateAsync<JsonElement>("""

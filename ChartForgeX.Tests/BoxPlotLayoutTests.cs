@@ -12,15 +12,15 @@ public sealed class BoxPlotLayoutTests {
     public void OrientationAndLocalizedFiveNumberReadoutsAreCapturedWithPreparedGeometry() {
         var chart = Fixture();
         Assert.Equal(ChartOrientation.Vertical, chart.Options.BoxPlot.Orientation);
-        Assert.Same(chart, chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal));
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureBoxPlot(null!));
+        Assert.Same(chart, chart.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal));
+        Assert.Throws<ArgumentNullException>(() => chart.BoxPlot((Action<ChartBoxPlotOptions>)null!));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.BoxPlot.Orientation = (ChartOrientation)99);
-        chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne";
+        chart.Labels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne";
             labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum"; });
         var copied = chart.Options.Labels.Capture();
         var prepared = chart.Prepare(new VisualRenderContext()); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.BoxPlot.Orientation = ChartOrientation.Vertical;
-        chart.ConfigureLabels(labels => { labels.Category = "Changed"; labels.Minimum = "Changed"; labels.Q1 = "Changed";
+        chart.Labels(labels => { labels.Category = "Changed"; labels.Minimum = "Changed"; labels.Q1 = "Changed";
             labels.Median = "Changed"; labels.Q3 = "Changed"; labels.Maximum = "Changed"; });
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
@@ -38,11 +38,11 @@ public sealed class BoxPlotLayoutTests {
     [InlineData(true, false, true)]
     [InlineData(true, true, false)]
     public void GroupedSummariesUsePhysicalAxesAndStableSlotsWhileRetainingAllFiveFacts(bool horizontal, bool reverseValue, bool reverseCategory) {
-        var chart = Fixture(); chart.Series[1].WithStrokeWidth(8);
-        chart.ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(-20, 20).WithReversal(reverseValue);
-        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 4).WithReversal(reverseCategory);
-        chart.WithStackedBars(); // A scalar bar mode does not stack summary statistics.
+        var chart = Fixture(); chart.Series[1].StrokeWidth(8);
+        chart.BoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(-20, 20).Reversed(reverseValue);
+        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Bounds(0, 4).Reversed(reverseCategory);
+        chart.Bars(b => b.Stacked()); // A scalar bar mode does not stack summary statistics.
         var scene = Scene(chart);
         var bodies = scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "boxplot-body").ToArray();
         var medians = scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "boxplot-median").ToArray();
@@ -80,14 +80,14 @@ public sealed class BoxPlotLayoutTests {
             Assert.Equal(Value(values[item][0]), horizontal ? caps[item * 2].Start.X : caps[item * 2].Start.Y, 8);
             Assert.Equal(Value(values[item][4]), horizontal ? caps[item * 2 + 1].Start.X : caps[item * 2 + 1].Start.Y, 8);
         }
-        Assert.Throws<InvalidOperationException>(() => chart.Series[0].WithStackGroup("summaries"));
-        Assert.Throws<InvalidOperationException>(() => chart.Series[0].WithNormalization());
+        Assert.Throws<InvalidOperationException>(() => chart.Series[0].StackGroup("summaries"));
+        Assert.Throws<InvalidOperationException>(() => chart.Series[0].NormalizedTo(100));
     }
 
     [Fact]
     public void RawQuartilesInterpolateAtNMinusOneAndRetainDerivedSampleIdentity() {
         var samples = new[] { 30d, 0, 20, 10 };
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).AddBoxPlot("Raw", 1, samples);
+        var chart = Chart.Create().Axes(false).Legend(false).AddBoxPlot("Raw", 1, samples);
         var summary = chart.Series[0].BoxPlots[0];
         Assert.Equal(new[] { 0d, 7.5, 15, 22.5, 30 }, new[] { summary.Minimum, summary.Q1, summary.Median, summary.Q3, summary.Maximum });
         var prepared = chart.Prepare(new VisualRenderContext()); var svg = prepared.ToSvg();
@@ -102,17 +102,17 @@ public sealed class BoxPlotLayoutTests {
         var singleton = Chart.Create().AddBoxPlot("One", 1, new[] { 4d });
         var one = Assert.Single(singleton.Series[0].BoxPlots);
         Assert.All(new[] { one.Minimum, one.Q1, one.Median, one.Q3, one.Maximum }, value => Assert.Equal(4, value));
-        singleton.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
+        singleton.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
         Assert.NotEmpty(singleton.Prepare(new VisualRenderContext()).Regions);
     }
 
     [Fact]
     public void HorizontalDomainsUseAllStatisticsAndLogValuesWithoutAnInventedBaseline() {
-        var chart = Chart.Create().ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().BoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
             .AddBoxPlot("Summary", new[] { new ChartBoxPlot(2, 10, 20, 30, 50, 100), new ChartBoxPlot(5, 20, 25, 30, 35, 40) });
         var range = ChartRange.FromChart(chart);
         Assert.Equal(10, range.MinX); Assert.Equal(100, range.MaxX); Assert.Equal(.5, range.MinY); Assert.Equal(6.5, range.MaxY);
-        chart.Options.XAxis.WithScale(ChartScaleKind.Logarithmic);
+        chart.Options.XAxis.Scale(ChartScaleKind.Logarithmic);
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
         chart.Series[0].UpdateBoxPlot(0, new ChartBoxPlot(2, 0, 20, 30, 50, 100));
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
@@ -120,33 +120,33 @@ public sealed class BoxPlotLayoutTests {
 
     [Fact]
     public void VerticalAndHorizontalSecondaryProjectionsKeepMixedOrientationConstraints() {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false)
+        var chart = Chart.Create().Axes(false).Legend(false)
             .AddBoxPlot("Primary", new[] { new ChartBoxPlot(1, 1, 2, 5, 8, 9) })
             .AddBoxPlot("Secondary", new[] { new ChartBoxPlot(1, 100, 200, 300, 400, 500) });
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.Options.YAxis.WithBounds(0, 10); chart.Options.SecondaryYAxis.WithBounds(100, 500);
+        chart.Series[1].SecondaryAxis();
+        chart.Options.YAxis.Bounds(0, 10); chart.Options.SecondaryYAxis.Bounds(100, 500);
         var bodies = Scene(chart).Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "boxplot-body").ToArray();
         Assert.Equal(80, bodies[0].Bounds.Top, 8); Assert.Equal(240, bodies[0].Bounds.Height, 8);
         Assert.Equal(100, bodies[1].Bounds.Top, 8); Assert.Equal(200, bodies[1].Bounds.Height, 8);
         Assert.True(bodies[0].Bounds.Right < bodies[1].Bounds.Left);
-        chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
+        chart.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
         var horizontal = chart.Prepare(new VisualRenderContext());
         Assert.NotNull(horizontal.SecondaryXProjection); Assert.NotEmpty(horizontal.ToPng());
         chart.Series[1].ValueAxis = ChartAxisSide.Primary; chart.AddRangeBar("Interval", new[] { new ChartInterval(1, 2, 8) });
         Assert.Contains("horizontal orientation", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
-        chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Vertical);
+        chart.BoxPlot(options => options.Orientation = ChartOrientation.Vertical);
         chart.AddLine("Target", new[] { new ChartPoint(1, 5), new ChartPoint(2, 6) });
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
     }
 
     [Fact]
     public void HorizontalCategoryCaptionsAgreeAcrossAxisPointLegendAndSummaryReadoutWithoutRepeatedFormatting() {
-        var chart = Chart.Create().WithPointLegend().WithXLabels("Fallback", "Other")
-            .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).XLabels("Fallback", "Other")
+            .BoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
             .AddBoxPlot("Summary", new[] { new ChartBoxPlot(1, 1, 2, 3, 4, 5), new ChartBoxPlot(2, 2, 3, 4, 5, 6) });
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "First")); var calls = 0;
-        chart.Options.YAxis.WithLabelFormatter(value => { calls++; return "Category " + value; });
-        chart.Series[0].WithPointLabel(1, "Custom median").WithPointColor(1, "#123456").WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+        chart.Options.YAxis.LabelBy(value => { calls++; return "Category " + value; });
+        chart.Series[0].PointLabel(1, "Custom median").PointColor(1, "#123456").PointFillPattern(1, ChartFillPattern.DiagonalForward);
         var request = VisualExportRequest.ForChart(chart); Assert.Equal(0, calls);
         var prepared = chart.Prepare(request.Context); Assert.Equal(1, calls);
         var points = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "point").ToArray();
@@ -156,7 +156,7 @@ public sealed class BoxPlotLayoutTests {
             .Select(text => string.Concat(text.Text.Lines.Select(line => line.Text))));
         Assert.Contains(prepared.Regions, region => region.Role == "axis-y-label" && region.Label!.StartsWith("Category 2", StringComparison.Ordinal));
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "boxplot-pattern");
-        chart.Options.YAxis.Labels.Clear(); chart.Options.YAxis.WithLabelFormatter(null);
+        chart.Options.YAxis.Labels.Clear(); chart.Options.YAxis.LabelBy((Func<double, string>?)null);
         Assert.Contains("data-cfx-category-label=\"Fallback\"", chart.Prepare(new VisualRenderContext()).ToSvg());
     }
 
@@ -165,9 +165,9 @@ public sealed class BoxPlotLayoutTests {
     [InlineData("compact-horizontal", ThemeMode.Dark)]
     public void HorizontalMedianLabelsHaveClearLanesBesideGroupedQuartileBodies(string variant, ThemeMode mode) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, variant, mode);
-        chart.WithSize(variant.StartsWith("compact", StringComparison.Ordinal) ? 360 : 800, 440)
-            .WithTitle("Delivery time by service").WithSubtitle("Expected and observed five-number summaries")
-            .WithFontFamily("Carlito").WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        chart.Size(variant.StartsWith("compact", StringComparison.Ordinal) ? 360 : 800, 440)
+            .Title("Delivery time by service").Subtitle("Expected and observed five-number summaries")
+            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         // Wide layouts keep every median caption; the 360px compact layout may move one that has no clear lane to the tooltip.
@@ -175,7 +175,7 @@ public sealed class BoxPlotLayoutTests {
         Assert.Subset(new HashSet<string>(new[] { "15", "22", "25", "28", "30", "32", "35", "40" }), new HashSet<string>(labels.Select(node => string.Concat(node.Text.Lines.Select(line => line.Text)))));
     }
 
-    private static Chart Fixture() => Chart.Create().WithAxes(false).WithLegend(false)
+    private static Chart Fixture() => Chart.Create().Axes(false).Legend(false)
         .AddBoxPlot("Expected", new[] { new ChartBoxPlot(3, -8, -4, 0, 4, 12), new ChartBoxPlot(1, -12, -8, -2, 6, 10), new ChartBoxPlot(2, -3, 1, 4, 9, 14) })
         .AddBoxPlot("Observed", new[] { new ChartBoxPlot(3, -5, 2, 5, 10, 16), new ChartBoxPlot(1, -10, -6, 2, 8, 12) });
 

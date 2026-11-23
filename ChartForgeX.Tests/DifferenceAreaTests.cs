@@ -12,10 +12,10 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(ChartInterpolation.Step)]
     public void CrossingPairsKeepBothNamesValuesBreaksAndLogicalObservationIndices(ChartInterpolation interpolation) {
         var chart = Model(new(0, 8, 2), new(1, 2, 5), new(3, -4, -4, true));
-        chart.Series[0].WithInterpolation(interpolation, interpolation == ChartInterpolation.Step ? ChartStepPosition.Middle : ChartStepPosition.End);
-        chart.Series[0].ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });
-        chart.Series[0].WithPointColor(2, Red);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointColor(3, Red));
+        chart.Series[0].Interpolation(interpolation, interpolation == ChartInterpolation.Step ? ChartStepPosition.Middle : ChartStepPosition.End);
+        chart.Series[0].DifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });
+        chart.Series[0].PointColor(2, Red);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].PointColor(3, Red));
         var prepared = Prepare(chart);
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "point"));
         var facts = Group(prepared, "series-0-point-1");
@@ -28,7 +28,7 @@ public sealed partial class DifferenceAreaTests {
         var markers = prepared.Scene.Nodes.OfType<VisualSceneMark>().Where(node => node.Role == "difference-marker").ToArray();
         Assert.Equal(2, markers.Length); Assert.All(markers, marker => Assert.Equal(Red, marker.Fill));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        chart.Series[0].Interpolation(ChartInterpolation.Linear);
         chart.Series[0].ReplaceDifferencePoints(Array.Empty<ChartDifferencePoint>());
         chart.Series[0].DifferenceArea.FirstName = "Changed"; chart.Series[0].DifferenceArea.NegativeFill = Red;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
@@ -47,7 +47,7 @@ public sealed partial class DifferenceAreaTests {
             case "backtracking": series.UpdateDifferencePoint(1, new ChartDifferencePoint(-1, 2, 5)); break;
             case "log-x": chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic; break;
             case "log-y": series.UpdateDifferencePoint(0, new ChartDifferencePoint(0, 0, 2)); chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic; break;
-            case "secondary-log-y": series.UpdateDifferencePoint(0, new ChartDifferencePoint(0, 0, 2)); series.UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
+            case "secondary-log-y": series.UpdateDifferencePoint(0, new ChartDifferencePoint(0, 0, 2)); series.SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
         }
         var error = Record.Exception(() => Prepare(chart));
         Assert.True(error is InvalidOperationException or NotSupportedException, error?.ToString());
@@ -67,8 +67,8 @@ public sealed partial class DifferenceAreaTests {
         Assert.Throws<ArgumentException>(() => options.FirstName = " ");
         Assert.Throws<ArgumentOutOfRangeException>(() => options.NegativeFillOpacity = 1.1);
         var difference = Model(new ChartDifferencePoint(0, 8, 2));
-        Assert.Throws<InvalidOperationException>(() => difference.Series[0].WithStackGroup("Pair"));
-        Assert.Throws<InvalidOperationException>(() => difference.Series[0].WithNormalization());
+        Assert.Throws<InvalidOperationException>(() => difference.Series[0].StackGroup("Pair"));
+        Assert.Throws<InvalidOperationException>(() => difference.Series[0].NormalizedTo(100));
         var date = new DateTime(2026, 3, 1, 12, 0, 0, DateTimeKind.Utc);
         Assert.Equal(date.ToOADate(), new ChartDifferencePoint(date.ToLocalTime(), 1, 2).X);
     }
@@ -80,7 +80,7 @@ public sealed partial class DifferenceAreaTests {
     [InlineData("compact-dated-gaps", true)]
     public void GalleryFactoriesUseRealPairedModelsAndIndependentDatedScales(string variant, bool compact) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.DifferenceArea, variant);
-        chart.WithSize(compact ? 360 : 800, compact ? 360 : 440);
+        chart.Size(compact ? 360 : 800, compact ? 360 : 440);
         var series = Assert.Single(chart.Series, series => series.Kind == ChartSeriesKind.DifferenceArea);
         Assert.Equal("Actual", series.DifferenceArea.FirstName);
         var prepared = Prepare(chart);
@@ -96,9 +96,9 @@ public sealed partial class DifferenceAreaTests {
     private static readonly ChartColor Red = ChartColor.FromHex("#DF3040");
     private static readonly ChartColor Blue = ChartColor.FromHex("#305CDF");
     private static Chart Model(params ChartDifferencePoint[] pairs) {
-        var chart = Chart.Create().WithSize(600, 420).WithHeader(false).WithAxes(false).WithGrid(false).WithLegend(false)
-            .WithDataLabels(false).WithLineVisualStyle(ChartLineVisualStyle.Plain()).AddDifferenceArea("Comparison", pairs);
-        chart.Series[0].WithStrokeWidth(1).ConfigureDifferenceArea(options => {
+        var chart = Chart.Create().Size(600, 420).ShowHeader(false).Axes(false).ShowGrid(false).Legend(false)
+            .DataLabels(false).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain())).AddDifferenceArea("Comparison", pairs);
+        chart.Series[0].StrokeWidth(1).DifferenceArea(options => {
             options.PositiveFill = Red; options.NegativeFill = Blue;
             options.PositiveFillOpacity = .5; options.NegativeFillOpacity = .5;
         });
@@ -107,7 +107,7 @@ public sealed partial class DifferenceAreaTests {
     private static PreparedVisual Prepare(Chart chart) {
         var context = VisualExportRequest.ForChart(chart).Context;
         return chart.Prepare(new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode,
-            new VisualFrame(showLegend: chart.Options.ShowLegend, showSurface: false, transparentBackground: true), context.Font));
+            new VisualFrame(showLegend: chart.Options.Legend.Visible, showSurface: false, transparentBackground: true), context.Font));
     }
     private static IReadOnlyDictionary<string, string> Group(PreparedVisual prepared, string id) =>
         prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == id).Metadata;

@@ -27,7 +27,7 @@ public sealed class V2SpecialtyTests {
     [Fact]
     public void CustomPathUsesItsViewBoxInBothPaintersAndIgnoresTheLegacyPngFallback() {
         var custom = Pictorial(ChartPictorialShape.Circle, .5)
-            .WithPictorialSvgPath("M110 100 L120 120 L100 120 Z", new ChartRect(100, 100, 20, 20), ChartPictorialShape.Circle);
+            .Pictorial(p => p.SvgPath("M110 100 L120 120 L100 120 Z", new ChartRect(100, 100, 20, 20), ChartPictorialShape.Circle));
         var customScene = Compile(custom);
         var triangle = Compile(Pictorial(ChartPictorialShape.Triangle, .5));
         var circle = Compile(Pictorial(ChartPictorialShape.Circle, .5));
@@ -42,7 +42,7 @@ public sealed class V2SpecialtyTests {
     [Fact]
     public void CustomCompoundContoursKeepTheirHoleInTheNativeRaster() {
         var scene = Compile(Pictorial(ChartPictorialShape.Circle, 1)
-            .WithPictorialSvgPath("M0 0 H24 V24 H0 Z M6 6 H18 V18 H6 Z"));
+            .Pictorial(p => p.SvgPath("M0 0 H24 V24 H0 Z M6 6 H18 V18 H6 Z")));
         var path = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "pictorial-fill");
         var left = path.Commands.Min(command => command.X); var right = path.Commands.Max(command => command.X);
         var top = path.Commands.Min(command => command.Y); var bottom = path.Commands.Max(command => command.Y);
@@ -56,17 +56,17 @@ public sealed class V2SpecialtyTests {
     [Fact]
     public void PictorialWrapsUnitsRetainsStylesAndReportsFixedViewportOverflowWithoutLosingValues() {
         var color = ChartColor.FromHex("#2468AC");
-        var chart = Chart.Create().WithPictorialColumns(2).WithPictorialValuePerSymbol(1).WithPictorialEmptyOpacity(.3)
+        var chart = Chart.Create().Pictorial(p => p.Columns(2).ValuePerSymbol(1).EmptyOpacity(.3))
             .AddPictorial("People", new[] { new ChartPictorialItem("A", 3.5, color) }, ChartPictorialShape.Person);
-        chart.Series[0].WithPointFillPattern(0, ChartFillPattern.DiagonalForward);
-        chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithColor("#AB1234"));
+        chart.Series[0].PointFillPattern(0, ChartFillPattern.DiagonalForward);
+        chart.Series[0].PointDataLabelStyle(0, style => style.Color(ChartColor.FromHex("#AB1234")));
         var scene = Compile(chart);
         var symbols = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "pictorial-symbol").ToArray();
         Assert.Equal(4, symbols.Length); Assert.Equal("0.5", symbols[3].Metadata["data-cfx-fill"]);
         Assert.All(scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "pictorial-fill"), path => Assert.Equal(color, path.Fill));
         Assert.Contains(scene.Nodes, node => node.Role == "fill-pattern");
         Assert.Equal(ChartColor.FromHex("#AB1234"), Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "pictorial-value").Color);
-        chart.Options.ShowPictorialValues = false;
+        chart.Options.Pictorial.ShowValues = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role == "pictorial-value");
         chart.Series[0].Points[0] = new ChartPoint(1, 1_000_000);
         var compact = Compile(chart, new ChartRect(0, 0, 100, 40));
@@ -80,9 +80,9 @@ public sealed class V2SpecialtyTests {
 
     [Fact]
     public void RotatedWordCloudUsesActualStyledMetricsAndRetainsLimitedAndZeroWeightTerms() {
-        var chart = Chart.Create().WithWordCloudAngles(90).WithWordCloudMaximumTerms(1).WithWordCloudFontRange(16, 40)
+        var chart = Chart.Create().WordCloud(w => w.Angles(new double[] { 90 }).MaxTerms(1).FontRange(16, 40))
             .AddWordCloud("Words", new[] { new ChartWordCloudItem("office ffi", 80), new ChartWordCloudItem("Limited", 40), new ChartWordCloudItem("Zero", 0) });
-        chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithWeight("900").WithItalic().WithTextCase(TextCaseTransform.Uppercase));
+        chart.Series[0].PointDataLabelStyle(0, style => style.FontWeight("900").Italic().TextCase(TextCaseTransform.Uppercase));
         var scene = Compile(chart);
         var text = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "word-cloud-text");
         Assert.Equal("OFFICE FFI", Assert.Single(text.Text.Lines).Text);
@@ -100,25 +100,25 @@ public sealed class V2SpecialtyTests {
     [Fact]
     public void CompactWordCloudReportsUnplacedSourceAndPreparedExportsDetachFromMutableInputs() {
         var full = new string('W', 120);
-        var chart = Chart.Create().WithWordCloudFontRange(12, 18).AddWordCloud("Words", new[] { new ChartWordCloudItem(full, 8) });
+        var chart = Chart.Create().WordCloud(w => w.FontRange(12, 18)).AddWordCloud("Words", new[] { new ChartWordCloudItem(full, 8) });
         var scene = Compile(chart, new ChartRect(0, 0, 60, 40));
         Assert.Empty(scene.Nodes.OfType<VisualSceneText>());
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "word-cloud.overflow");
         Assert.Contains(scene.Regions, region => region.Label == full + ": 8");
         var artifact = new PreparedVisual(scene).ToArtifact("words", VisualArtifactKind.Chart);
         Assert.Contains(artifact.Regions, region => region.Label?.Contains(full) == true);
-        var pictorial = Pictorial(ChartPictorialShape.Heart, .5).WithPictorialSvgPath("M0 0 H24 V24 H0 Z");
+        var pictorial = Pictorial(ChartPictorialShape.Heart, .5).Pictorial(p => p.SvgPath("M0 0 H24 V24 H0 Z"));
         var prepared = new PreparedVisual(Compile(pictorial)); var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        pictorial.Series[0].Points.Clear(); pictorial.Options.PictorialSvgPathData = "M0 0 L24 0 L0 24 Z";
-        pictorial.Options.PictorialColumns = 20;
+        pictorial.Series[0].Points.Clear(); pictorial.Options.Pictorial.SvgPathData = "M0 0 L24 0 L0 24 Z";
+        pictorial.Options.Pictorial.Columns = 20;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
     [Fact]
     public void FunnelZeroSlotsAndRatiosRetainTheirSourceSemanticsAndExplicitStyle() {
-        var chart = Chart.Create().WithDataLabels().WithXLabels("Initial", "Empty", "Reopened")
+        var chart = Chart.Create().DataLabels().XLabels("Initial", "Empty", "Reopened")
             .AddFunnel("Stages", new[] { new ChartPoint(1, 100), new ChartPoint(2, 0), new ChartPoint(3, 40) });
-        var color = ChartColor.FromHex("#2468AC"); chart.Series[0].WithPointColor(0, color);
+        var color = ChartColor.FromHex("#2468AC"); chart.Series[0].PointColor(0, color);
         var scene = Compile(chart);
         var stages = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "funnel-stage").ToArray();
         Assert.Equal(3, stages.Length); Assert.Equal("0", stages[1].Metadata["data-cfx-value"]);
@@ -136,8 +136,7 @@ public sealed class V2SpecialtyTests {
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role is "funnel-label" or "funnel-ratio");
     }
 
-    private static Chart Pictorial(ChartPictorialShape shape, double value) => Chart.Create().WithPictorialColumns(1)
-        .WithPictorialMaximum(1).WithPictorialValues(false).WithPictorialEmptyOpacity(0)
+    private static Chart Pictorial(ChartPictorialShape shape, double value) => Chart.Create().Pictorial(p => p.Columns(1).Max(1).ShowValues(false).EmptyOpacity(0))
         .AddPictorial("Symbols", new[] { new ChartPictorialItem("", value, ChartColor.FromHex("#DE2738")) }, shape);
 
     private static VisualScene Compile(Chart chart, ChartRect? bounds = null) {

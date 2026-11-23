@@ -131,7 +131,7 @@ public sealed class NativeSvgRasterBudgetTests {
     }
 
     private static TopologyChart Chart(TopologyIconArtwork image, int count) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(320, 240, 12).WithLegend(null); chart.Id = "source-budget"; chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 12)).Legend((TopologyLegend?)null); chart.Id = "source-budget"; chart.LayoutMode = TopologyLayoutMode.Manual;
         for (var index = 0; index < count; index++) chart.Nodes.Add(new TopologyNode { Id = index == 0 ? "image" : "image_" + index, Label = "Image", X = 72, Y = 48, Width = 64, Height = 64,
             DisplayMode = TopologyNodeDisplayMode.Artwork, Artwork = image, ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true });
         return chart;

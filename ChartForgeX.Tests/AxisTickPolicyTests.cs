@@ -11,25 +11,25 @@ namespace ChartForgeX.Tests;
 public sealed class AxisTickPolicyTests {
     [Fact]
     public void FixedStepPlacesWholeMultiplesInsideTheDomainAndOneOuterTickForAutomaticBounds() {
-        var axis = new ChartAxis().WithTickStep(25);
+        var axis = new ChartAxis().TickStep(25);
         Assert.Equal(new double[] { 25, 50, 75, 100 }, ChartTicks.GenerateInside(axis, 3, 110));
         Assert.Equal(new double[] { 0, 25, 50, 75, 100, 125 }, ChartTicks.Generate(axis, 3, 110));
         Assert.Equal(new double[] { -50, -25, 0 }, ChartTicks.GenerateInside(axis, -60, 10));
         // Decimal steps keep their decimal values instead of accumulating binary error (0.30000000000000004).
-        Assert.Equal(new[] { 0, .1, .2, .3, .4, .5 }, ChartTicks.GenerateInside(new ChartAxis().WithTickStep(.1), 0, .5));
+        Assert.Equal(new[] { 0, .1, .2, .3, .4, .5 }, ChartTicks.GenerateInside(new ChartAxis().TickStep(.1), 0, .5));
     }
 
     [Fact]
     public void LogarithmicStepCountsWholePowersInEitherSignDomain() {
-        var positive = new ChartAxis().WithLogarithmicScale().WithTickStep(2);
+        var positive = new ChartAxis().LogarithmicScale().TickStep(2);
         Assert.Equal(new double[] { 1, 100, 10_000, 1_000_000 }, ChartTicks.GenerateInside(positive, 1, 2_000_000));
-        var negative = new ChartAxis().WithLogarithmicScale(domain: ChartLogarithmicDomain.Negative).WithTickStep(1);
+        var negative = new ChartAxis().LogarithmicScale(domain: ChartLogarithmicDomain.Negative).TickStep(1);
         Assert.Equal(new double[] { -1000, -100, -10 }, ChartTicks.GenerateInside(negative, -1000, -5));
     }
 
     [Fact]
     public void ExplicitValuesKeepTheirOrderInsideTheDomainAndTheNearestOuterValues() {
-        var axis = new ChartAxis().WithTickValues(500, 0, 10, 100, 50, 10);
+        var axis = new ChartAxis().TickValues(500, 0, 10, 100, 50, 10);
         Assert.Equal(new double[] { 0, 10, 50, 100, 500 }, axis.TickValues);
         Assert.Equal(new double[] { 10, 50, 100 }, ChartTicks.GenerateInside(axis, 5, 120));
         Assert.Equal(new double[] { 0, 10, 50, 100, 500 }, ChartTicks.Generate(axis, 5, 120));
@@ -38,18 +38,18 @@ public sealed class AxisTickPolicyTests {
 
     [Fact]
     public void CalendarStepPlacesTimeTicksOnMonthBoundaries() {
-        var axis = new ChartAxis().WithTimeScale().WithTickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Month));
+        var axis = new ChartAxis().TimeScale().TickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Month));
         var ticks = ChartTicks.GenerateInside(axis, new DateTime(2026, 1, 10).ToOADate(), new DateTime(2026, 4, 20).ToOADate());
         Assert.Equal(new[] { new DateTime(2026, 2, 1), new DateTime(2026, 3, 1), new DateTime(2026, 4, 1) }, ticks.Select(DateTime.FromOADate));
     }
 
     [Fact]
     public void MinorTicksDivideEachMajorIntervalAndThePartialIntervalsAtBothEnds() {
-        var linear = new ChartAxis().WithMinorTicks(4);
+        var linear = new ChartAxis().MinorTickCount(4);
         Assert.Equal(new double[] { -10, -5, 5, 10, 15, 20, 30, 35, 40, 45, 55, 60 },
             ChartAxisTickPolicy.Minor(linear, new double[] { 0, 25, 50 }, -10, 60));
         // A logarithmic decade divides in data units: 2…9 between 1 and 10, 20…90 between 10 and 100.
-        var logarithmic = new ChartAxis().WithLogarithmicScale().WithMinorTicks(8);
+        var logarithmic = new ChartAxis().LogarithmicScale().MinorTickCount(8);
         Assert.Equal(new double[] { 2, 3, 4, 5, 6, 7, 8, 9, 20, 30, 40, 50, 60, 70, 80, 90 },
             ChartAxisTickPolicy.Minor(logarithmic, new double[] { 1, 10, 100 }, 1, 100));
     }
@@ -57,26 +57,26 @@ public sealed class AxisTickPolicyTests {
     [Fact]
     public void InvalidTickPoliciesRejectWithClearErrors() {
         foreach (var step in new[] { 0, -1, double.NaN, double.PositiveInfinity })
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().WithTickStep(step));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().WithTickValues(Enumerable.Range(0, ChartAxis.MaximumTickValues + 1).Select(value => (double)value)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().WithTickValues(1, double.NaN));
-        Assert.Throws<ArgumentException>(() => new ChartAxis().WithTickValues());
-        Assert.Throws<InvalidOperationException>(() => new ChartAxis().WithTickStep(5).WithTickValues(1, 2));
-        Assert.Throws<InvalidOperationException>(() => new ChartAxis().WithTickValues(1, 2).WithTickStep(5));
-        Assert.Throws<InvalidOperationException>(() => new ChartAxis().WithTickStep(5).WithTickSpacing(20, null));
-        Assert.Throws<InvalidOperationException>(() => new ChartAxis().WithTickSpacing(20, null).WithTickValues(1, 2));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().WithTickSpacing(50, 20));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().WithMinorTicks(ChartAxis.MaximumMinorTickCount + 1));
-        Assert.Empty(new ChartAxis().WithTickStep(5).WithAutomaticTicks().WithTickValues(1).WithAutomaticTicks().TickValues);
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().TickStep(step));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().TickValues(Enumerable.Range(0, ChartAxis.MaximumTickValues + 1).Select(value => (double)value)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().TickValues(1, double.NaN));
+        Assert.Throws<ArgumentException>(() => new ChartAxis().TickValues());
+        Assert.Throws<InvalidOperationException>(() => new ChartAxis().TickStep(5).TickValues(1, 2));
+        Assert.Throws<InvalidOperationException>(() => new ChartAxis().TickValues(1, 2).TickStep(5));
+        Assert.Throws<InvalidOperationException>(() => new ChartAxis().TickStep(5).TickSpacing(20, null));
+        Assert.Throws<InvalidOperationException>(() => new ChartAxis().TickSpacing(20, null).TickValues(1, 2));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().TickSpacing(50, 20));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartAxis().MinorTickCount(ChartAxis.MaximumMinorTickCount + 1));
+        Assert.Empty(new ChartAxis().TickStep(5).AutomaticTicks().TickValues(1).AutomaticTicks().TickValues);
 
-        Assert.Contains("calendar step", Render(chart => chart.Options.XAxis.WithTimeScale().WithTickStep(7)).Message);
-        Assert.Contains("not a time axis", Render(chart => chart.Options.YAxis.WithTickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Day))).Message);
-        Assert.Contains("symmetric logarithmic", Render(chart => chart.Options.YAxis.WithScale(ChartScaleKind.SymmetricLogarithmic).WithTickStep(10)).Message);
-        Assert.Contains("whole powers", Render(chart => chart.Options.YAxis.WithLogarithmicScale().WithTickStep(1.5)).Message);
-        Assert.Contains("limit is 1000", Render(chart => chart.Options.YAxis.WithBounds(0, 100).WithTickStep(.01)).Message);
+        Assert.Contains("calendar step", Render(chart => chart.Options.XAxis.TimeScale().TickStep(7)).Message);
+        Assert.Contains("not a time axis", Render(chart => chart.Options.YAxis.TickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Day))).Message);
+        Assert.Contains("symmetric logarithmic", Render(chart => chart.Options.YAxis.Scale(ChartScaleKind.SymmetricLogarithmic).TickStep(10)).Message);
+        Assert.Contains("whole powers", Render(chart => chart.Options.YAxis.LogarithmicScale().TickStep(1.5)).Message);
+        Assert.Contains("limit is 1000", Render(chart => chart.Options.YAxis.Bounds(0, 100).TickStep(.01)).Message);
 
         static InvalidOperationException Render(Action<Chart> configure) {
-            var chart = Chart.Create().WithSize(480, 300).AddLine("Measured", new[] { new ChartPoint(1, 5), new ChartPoint(2, 50) });
+            var chart = Chart.Create().Size(480, 300).AddLine("Measured", new[] { new ChartPoint(1, 5), new ChartPoint(2, 50) });
             configure(chart);
             return Assert.Throws<InvalidOperationException>(() => chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         }
@@ -86,10 +86,10 @@ public sealed class AxisTickPolicyTests {
     [InlineData(null, 50d)]
     [InlineData(220d, null)]
     public void TickSpacingBoundsSteerTheAutomaticSearch(double? minimum, double? maximum) {
-        var chart = Chart.Create().WithSize(900, 320).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(900, 320).ShowHeader(false).Legend(false)
             .AddLine("Measured", new[] { new ChartPoint(0, 10), new ChartPoint(100, 40) });
         var automatic = Pitches(chart);
-        chart.Options.XAxis.WithTickSpacing(minimum, maximum);
+        chart.Options.XAxis.TickSpacing(minimum, maximum);
         var bounded = Pitches(chart);
         // The default reads about one tick per 80 drawing units; a 50-unit ceiling makes it denser, a 220-unit floor sparser.
         if (maximum.HasValue) Assert.True(bounded.Max() <= maximum.Value + .001 && bounded.Length > automatic.Length, string.Join(",", bounded));
@@ -105,14 +105,14 @@ public sealed class AxisTickPolicyTests {
     [Fact]
     public void AutomaticRangesEndOnAuthoredTicksSoBothPlotEdgesCarryCaptions() {
         // A logarithmic step of two powers around 0.8…72,000 ends on 0.01 and 1,000,000.
-        var log = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
+        var log = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
             .AddLine("Payload", new[] { new ChartPoint(1, .8), new ChartPoint(2, 72_000) })
-            .ConfigureYAxis(axis => axis.WithLogarithmicScale().WithTickStep(2));
+            .YAxis(axis => axis.LogarithmicScale().TickStep(2));
         Assert.Equal(new[] { .01, 1, 100, 10_000, 1_000_000 }, Ticks(log));
         // Explicit values keep only their own captions: the zero baseline gets none, and the top ends on 80 without padding.
-        var values = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
+        var values = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
             .AddLine("Latency", new[] { new ChartPoint(0, 16), new ChartPoint(1, 73) })
-            .ConfigureYAxis(axis => axis.WithTickValues(20, 50, 80));
+            .YAxis(axis => axis.TickValues(20, 50, 80));
         Assert.Equal(new double[] { 20, 50, 80 }, Ticks(values));
         var prepared = values.Prepare(VisualExportRequest.ForChart(values).Context);
         var top = prepared.Scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "grid-y" && node.Start.Y == prepared.Scene.Nodes.OfType<VisualSceneLine>()
@@ -128,9 +128,9 @@ public sealed class AxisTickPolicyTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void MinorLinesKeepVisibleInkAndDefaultBandsTintTheThemeGrid(ThemeMode mode) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Theme(VisualTheme.Graphite()).ThemeMode(mode)
             .AddLine("Measured", new[] { new ChartPoint(0, 12), new ChartPoint(10, 96) })
-            .ConfigureYAxis(axis => axis.WithTickStep(25).WithMinorTicks(1).ConfigureGrid(grid => grid.WithBands()));
+            .YAxis(axis => axis.TickStep(25).MinorTickCount(1).Grid(grid => grid.ShowBands()));
         var nodes = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes;
         var major = nodes.OfType<VisualSceneLine>().First(node => node.Role == "grid-y").Stroke!.Value;
         var minor = nodes.OfType<VisualSceneLine>().First(node => node.Role == "grid-y-minor").Stroke!.Value;
@@ -146,11 +146,11 @@ public sealed class AxisTickPolicyTests {
     public void AxisGridStepMinorLinesAndBandsPaintTheSameGeometryInSvgAndNativePng() {
         var band = ChartColor.FromHex("#2F7D5B");
         var line = ChartColor.FromHex("#B04A3A");
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
             .AddLine("Measured", new[] { new ChartPoint(0, 12), new ChartPoint(10, 96) })
-            .ConfigureYAxis(axis => axis.WithTickStep(25).WithMinorTicks(4)
-                .ConfigureGrid(grid => grid.WithColor(line).WithStrokeWidth(1.5).WithDash(4, 3).WithBands(band, .2)));
+            .YAxis(axis => axis.TickStep(25).MinorTickCount(4)
+                .Grid(grid => grid.Color(line).StrokeWidth(1.5).Dash(4, 3).BandOpacity(.2).BandColor(band).ShowBands()));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var majors = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "grid-y").ToArray();
         var captions = prepared.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label).ToArray();

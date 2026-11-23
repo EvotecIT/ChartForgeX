@@ -30,7 +30,7 @@ public sealed class BlockTypographyBoundsTests {
         var packet = Assert.IsType<PacketLayoutBlock>(artifact.Model);
         packet.Options.ShowCard = card;
         packet.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
-        if (!headings) packet.WithTitle("").WithSubtitle("");
+        if (!headings) packet.Title("").Subtitle("");
         var svg = XDocument.Parse(packet.ToSvg());
         var fields = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();
         Assert.Equal(2, fields.Length);
@@ -75,7 +75,7 @@ public sealed class BlockTypographyBoundsTests {
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; builder.Light.Axis = builder.Dark.Axis = builder.Light.Grid = builder.Dark.Grid = builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF0000"); }); theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.Transparent }; });
-        var map = WardleyMapBlock.Create().WithSize(800, 400).WithTheme(theme).WithCard(false).WithTransparentBackground();
+        var map = WardleyMapBlock.Create().Size(800, 400).Theme(theme).ShowCard(false).TransparentBackground();
         map.AddNode("n", "Node", .9, .1); map.AddNote("MMMM", .5, .5);
         var svg = map.ToSvg();
         var note = Assert.Single(XDocument.Parse(svg).Descendants(), element => element.Name.LocalName == "text" && element.Value == "MMMM");

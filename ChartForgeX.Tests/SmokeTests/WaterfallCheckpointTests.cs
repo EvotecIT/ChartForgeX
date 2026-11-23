@@ -57,18 +57,18 @@ public sealed class WaterfallCheckpointTests {
     [InlineData(false)]
     [InlineData(true)]
     public void PreparedMarksLegendsAndLabelsShareTypedFactsAndExistingPointOverrides(bool secondary) {
-        var chart = Chart.Create().WithSize(900, 500).WithPointLegend().WithDataLabels().WithBarStyle(ChartBarStyle.Flat)
+        var chart = Chart.Create().Size(900, 500).Legend(l => l.ShowPoints()).DataLabels().Bars(b => b.Style(ChartBarStyle.Flat))
             .AddWaterfall("Movement", Items());
         chart.Options.Labels.Subtotal = "Stage sum"; chart.Options.Labels.Total = "Balance"; chart.Options.Labels.Change = "Movement";
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(20, "Costs"));
         var series = chart.Series[0];
         var accent = ChartColor.FromHex("#A5358A");
-        series.WithPointColor(3, accent).WithPointFillPattern(3, ChartFillPattern.Crosshatch).WithPointLabel(3, "Cost checkpoint")
-            .ConfigurePointDataLabelStyle(3, style => style.WithColor("#FFFFFF"));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.WithPointColor(8, accent));
-        if (secondary) series.UseSecondaryValueAxis();
+        series.PointColor(3, accent).PointFillPattern(3, ChartFillPattern.Crosshatch).PointLabel(3, "Cost checkpoint")
+            .PointDataLabelStyle(3, style => style.Color(ChartColor.FromHex("#FFFFFF")));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.PointColor(8, accent));
+        if (secondary) series.SecondaryAxis();
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-        axis.WithReversal(); chart.Options.XAxis.WithReversal();
+        axis.Reversed(); chart.Options.XAxis.Reversed();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.no-data");
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Metadata.ContainsKey("data-cfx-waterfall-kind")

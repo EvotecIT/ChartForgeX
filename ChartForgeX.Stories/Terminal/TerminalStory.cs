@@ -280,14 +280,8 @@ public sealed partial class TerminalStory {
     /// <summary>Creates an empty terminal story.</summary>
     public static TerminalStory Create() => new();
 
-    /// <summary>Sets the terminal title.</summary>
-    public TerminalStory WithTitle(string title) {
-        Title = title;
-        return this;
-    }
-
     /// <summary>Sets the prompt dialect and optional custom prompt.</summary>
-    public TerminalStory WithDialect(TerminalDialect dialect, string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
+    internal TerminalStory SetDialect(TerminalDialect dialect, string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureInitialConfiguration();
         ValidateEnum(dialect, nameof(dialect));
         var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
@@ -297,33 +291,8 @@ public sealed partial class TerminalStory {
         return this;
     }
 
-    /// <summary>Sets the working directory used by shell prompts.</summary>
-    public TerminalStory WithWorkingDirectory(string workingDirectory) {
-        WorkingDirectory = workingDirectory;
-        return this;
-    }
-
-    /// <summary>Sets the terminal theme.</summary>
-    public TerminalStory WithTheme(VisualTheme theme, ThemeMode? mode = null) {
-        Theme = theme;
-        if (mode.HasValue) ThemeMode = mode.Value;
-        return this;
-    }
-
-    /// <summary>Sets the visible terminal window chrome independently of colors and command syntax.</summary>
-    public TerminalStory WithWindowStyle(TerminalWindowStyle style) {
-        WindowStyle = style;
-        return this;
-    }
-
-    /// <summary>Sets the logical SVG width.</summary>
-    public TerminalStory WithWidth(int width) {
-        Width = width;
-        return this;
-    }
-
     /// <summary>Sets terminal typography.</summary>
-    public TerminalStory WithTypography(double fontSize, double lineHeight) {
+    public TerminalStory Typography(double fontSize, double lineHeight) {
         FiniteRange(fontSize, 10, 24, nameof(fontSize));
         FiniteRange(lineHeight, fontSize * 0.8, 40, nameof(lineHeight));
         FontSize = fontSize;
@@ -331,16 +300,8 @@ public sealed partial class TerminalStory {
         return this;
     }
 
-    /// <summary>Sets automatic animation timing.</summary>
-    public TerminalStory WithTiming(double initialDelaySeconds, double charactersPerSecond, double lineDelaySeconds) {
-        InitialDelaySeconds = initialDelaySeconds;
-        CharactersPerSecond = charactersPerSecond;
-        LineDelaySeconds = lineDelaySeconds;
-        return this;
-    }
-
     /// <summary>Applies a reusable playback pace for typing, output reveals, and tab reading time.</summary>
-    public TerminalStory WithPlaybackSpeed(TerminalStoryPlaybackSpeed speed) {
+    public TerminalStory PlaybackSpeed(TerminalStoryPlaybackSpeed speed) {
         ValidateEnum(speed, nameof(speed));
         switch (speed) {
             case TerminalStoryPlaybackSpeed.Slow:
@@ -372,24 +333,6 @@ public sealed partial class TerminalStory {
     public double GetCommandDurationSeconds(string command) {
         if (command == null) throw new ArgumentNullException(nameof(command));
         return Math.Max(0.35, Math.Min(4.5, TerminalStoryLayout.VisibleTextElementCount(command) / CharactersPerSecond));
-    }
-
-    /// <summary>Sets the minimum reading time after new content appears and before the active tab changes.</summary>
-    public TerminalStory WithTabHold(double seconds) {
-        TabHoldSeconds = seconds;
-        return this;
-    }
-
-    /// <summary>Configures whether the completed story shows a final prompt.</summary>
-    public TerminalStory WithFinalPrompt(bool visible = true) {
-        ShowFinalPrompt = visible;
-        return this;
-    }
-
-    /// <summary>Sets the PNG output density multiplier.</summary>
-    public TerminalStory WithPngOutputScale(int scale) {
-        PngOutputScale = scale;
-        return this;
     }
 
     /// <summary>Adds a typed command.</summary>
@@ -442,7 +385,7 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Defines the initial persistent terminal tab before timeline authoring begins.</summary>
-    public TerminalStory WithInitialTab(
+    public TerminalStory InitialTab(
         string id,
         string title,
         TerminalDialect dialect,

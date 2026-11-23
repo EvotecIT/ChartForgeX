@@ -3,8 +3,8 @@ public static class IshikawaDepthRecipe {
     /// <summary>Creates complete measured cause captions; a compact host may scroll the natural frame.</summary>
     public static FishboneDiagramBlock Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
-        var block = FishboneDiagramBlock.Create("Delayed service release").WithTitle("Measured cause tree")
-            .WithTheme(VisualTheme.Graphite(), mode).WithPadding(28);
+        var block = FishboneDiagramBlock.Create("Delayed service release").Title("Measured cause tree")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Padding(28);
         var cause0 = block.AddCause("People and ownership handoffs");
         var cause1 = cause0.AddChild("Regional review coordination");
         cause1.AddChild("Missing reviewer availability");
@@ -33,6 +33,6 @@ public static class IshikawaDepthRecipe {
         var cause25 = cause21.AddChild("Outcome and follow-up tracking");
         cause25.AddChild("Unclear customer impact window");
         cause25.AddChild("Missing next checkpoint context");
-        return block.WithNaturalSize(variant == "compact" ? 390 : 1100, 520);
+        return block.NaturalSize(variant == "compact" ? 390 : 1100, 520);
     }
 }

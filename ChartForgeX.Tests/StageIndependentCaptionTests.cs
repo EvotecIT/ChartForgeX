@@ -14,12 +14,12 @@ public sealed class StageIndependentCaptionTests {
     [InlineData(ThemeMode.Light, 13.5)]
     public void FiveStageConePaintsEverySeparateCaptionWhenTheMeasuredRailHasRoom(ThemeMode mode, double fontSize) {
         var names = new[] { "Visitors", "Sign-ups", "Trials", "Paid", "Renewed" };
-        var chart = ConeFunnelRecipe.Create().WithSize(800, 480).ConfigureDataLabelStyle(style => style.WithFontSize(fontSize));
+        var chart = ConeFunnelRecipe.Create().Size(800, 480).DataLabelStyle(style => style.FontSize(fontSize));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 480)),
             VisualTheme.Graphite(), mode, new VisualFrame("From visitor to renewed subscription",
                 "Each stage narrows the cone by the customers it keeps"),
-            ChartForgeX.Typography.FontSpec.FromFile(chart.Options.PngFontPath!)));
+            ChartForgeX.Typography.FontSpec.FromFile(chart.Options.Png.FontPath!)));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role?.StartsWith("funnel-", StringComparison.Ordinal) == true && node.Role.EndsWith("-label", StringComparison.Ordinal)).ToArray();
         // The vertical cone rail reads as two lines per stage: name and value, then both ratios.
@@ -55,11 +55,11 @@ public sealed class StageIndependentCaptionTests {
     [InlineData(true, ChartFunnelForm.StageBars, ChartOrientation.Horizontal, 800, ThemeMode.Light)]
     public void SeparateCaptionsRetainIndependentStylePlacementSourceIdentityAndCompleteDescriptions(bool pyramid, ChartFunnelForm form,
         ChartOrientation orientation, int width, ThemeMode mode) {
-        var chart = StagePresentationOptionsTests.Create(pyramid, form, orientation, width, 640).WithTheme(VisualTheme.Graphite(), mode);
+        var chart = StagePresentationOptionsTests.Create(pyramid, form, orientation, width, 640).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         var ink = ChartColor.FromHex("#A73761");
-        chart.ConfigureFunnel(options => { options.LabelContent = ChartStageLabelContent.Separate; options.RetentionLabel.Visible = false; options.DropOffLabel.Visible = false;
+        chart.Funnel(options => { options.LabelContent = ChartStageLabelContent.Separate; options.RetentionLabel.Visible = false; options.DropOffLabel.Visible = false;
             options.CategoryLabel.Style.FontSize = 12; options.CategoryLabel.Style.Color = ink; options.ValueLabel.Style.FontSize = 13; });
-        chart.ConfigurePyramid(options => { options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Style.FontSize = 12;
+        chart.Pyramid(options => { options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Style.FontSize = 12;
             options.CategoryLabel.Style.Color = ink; options.ValueLabel.Style.FontSize = 13; options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
         var prepared = StagePresentationOptionsTests.Prepare(chart); var family = pyramid ? "pyramid" : "funnel";
         var categories = prepared.Regions.Where(region => region.Role == family + "-category-label").ToArray();
@@ -85,7 +85,7 @@ public sealed class StageIndependentCaptionTests {
     public void SeparateMetricsDistinguishUndefinedBaselinesAndNegativeDropOffWithoutInventingValues() {
         var chart = StagePresentationOptionsTests.Create(false, ChartFunnelForm.StageBars, ChartOrientation.Vertical, 900, 700);
         chart.Series[0].Points[0] = new ChartPoint(1, 0); chart.Series[0].Points[1] = new ChartPoint(2, 20); chart.Series[0].Points[2] = new ChartPoint(3, 40);
-        chart.ConfigureFunnel(options => {
+        chart.Funnel(options => {
             options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Visible = false; options.ValueLabel.Visible = false;
             options.RetentionLabel.Placement = ChartDataLabelPlacement.Left; options.DropOffLabel.Placement = ChartDataLabelPlacement.Right;
         });
@@ -105,8 +105,8 @@ public sealed class StageIndependentCaptionTests {
     [InlineData(true)]
     public void TinyFramesOmitOnlyPaintedCaptionsAndPreserveEveryCompleteSourceFact(bool pyramid) {
         var chart = StagePresentationOptionsTests.Create(pyramid, ChartFunnelForm.StageBars, ChartOrientation.Vertical);
-        chart.ConfigureFunnel(options => options.LabelContent = ChartStageLabelContent.Separate)
-            .ConfigurePyramid(options => options.LabelContent = ChartStageLabelContent.Separate);
+        chart.Funnel(options => options.LabelContent = ChartStageLabelContent.Separate)
+            .Pyramid(options => options.LabelContent = ChartStageLabelContent.Separate);
         var context = new VisualRenderContext(); var builder = new VisualSceneBuilder(new VisualSize(90, 30), context.Font);
         VisualSpecialtyCompiler.Build(chart, context, builder, new ChartRect(0, 0, 90, 30));
         var scene = builder.Build(); var family = pyramid ? "pyramid" : "funnel";
@@ -120,7 +120,7 @@ public sealed class StageIndependentCaptionTests {
     public void ZeroPyramidPartitionsNeverCreatePhantomMarkObstaclesOrDanglingCaptionLeaders() {
         var chart = StagePresentationOptionsTests.Create(true, ChartFunnelForm.StageBars, ChartOrientation.Vertical);
         for (var index = 0; index < chart.Series[0].Points.Count; index++) chart.Series[0].Points[index] = new ChartPoint(index + 1, 0);
-        chart.ConfigurePyramid(options => options.LabelContent = ChartStageLabelContent.Separate);
+        chart.Pyramid(options => options.LabelContent = ChartStageLabelContent.Separate);
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "pyramid-stage"));
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "pyramid-category-label"));

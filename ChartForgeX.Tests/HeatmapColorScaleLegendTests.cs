@@ -33,7 +33,7 @@ public sealed class HeatmapColorScaleLegendTests {
     [InlineData(true)]
     [InlineData(false)]
     public void StepCaptionOptOutKeepsEndpointCaptions(bool configured) {
-        var chart = ContinuousKey(configured).WithHeatmapScaleStepLabels(false);
+        var chart = ContinuousKey(configured).Heatmap(h => h.ShowScaleStepLabels(false));
         var labels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role == "heatmap-scale-label").ToArray();
         Assert.Equal(2, labels.Length);
@@ -42,8 +42,8 @@ public sealed class HeatmapColorScaleLegendTests {
     }
 
     private static Chart ContinuousKey(bool configured) {
-        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 10, 20).WithSize(800, 440);
-        return configured ? chart.WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")).WithValueRange(0, 20)) : chart;
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 10, 20).Size(800, 440);
+        return configured ? chart.Heatmap(h => h.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")).WithValueRange(0, 20))) : chart;
     }
     private static readonly ChartColor Low = ChartColor.FromHex("#DAE8F8"), Middle = ChartColor.FromHex("#6F9ECE"), High = ChartColor.FromHex("#1C5CAB");
 
@@ -58,14 +58,14 @@ public sealed class HeatmapColorScaleLegendTests {
     [InlineData(ChartSeriesKind.HexbinHeatmap, 800, false, "diverging")]
     [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, "diverging")]
     public void CanonicalLegendsFitAndMatchSvgAndNativeCellPaint(ChartSeriesKind kind, int width, bool dark, string mode) {
-        var chart = HeatmapColorScaleTests.Create(kind, 0, 10, 20).WithSize(width, 400)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.ConfigureLabels(labels => labels.Value = "wartość");
+        var chart = HeatmapColorScaleTests.Create(kind, 0, 10, 20).Size(width, 400)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Labels(labels => labels.Value = "wartość");
         var scale = mode == "discrete" ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(10, Low, "Niski"), new ChartColorBand(20, Middle, "Średni"), new ChartColorBand(null, High, "Wysoki")
         }) : mode == "diverging" ? ChartColorScale.Diverging(Low, Middle, High, 10).WithValueRange(0, 20).WithLabels("Low", "Target", "High")
             : ChartColorScale.Sequential(new[] { Low, ChartColor.FromHex("#B2CDE8"), Middle, ChartColor.FromHex("#4680BC"), High }).WithValueRange(0, 20);
-        chart.WithHeatmapColorScale(scale);
+        chart.Heatmap(h => h.ColorScale(scale));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var document = XDocument.Parse(prepared.ToSvg());
         var prefix = kind == ChartSeriesKind.CalendarHeatmap ? "calendar-scale" : "heatmap-scale";
         var steps = Role(document, prefix + "-step");
@@ -100,9 +100,9 @@ public sealed class HeatmapColorScaleLegendTests {
             Assert.True(label.Bounds.Left >= key.Bounds.Left && label.Bounds.Right <= key.Bounds.Right + .000001);
         });
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.scale-overflow");
-        chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
+        chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false));
         Assert.DoesNotContain(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Regions, region => region.Role == prefix);
-        var hiddenContext = VisualExportRequest.ForChart(chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = true)).Context;
+        var hiddenContext = VisualExportRequest.ForChart(chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = true))).Context;
         var frameHidden = new VisualRenderContext(hiddenContext.Layout, hiddenContext.Theme, hiddenContext.ThemeMode, new VisualFrame(showLegend: false), hiddenContext.Font);
         Assert.DoesNotContain(chart.Prepare(frameHidden).Regions, region => region.Role == prefix);
     }
@@ -141,7 +141,7 @@ public sealed class HeatmapColorScaleLegendTests {
                 && boxes[index].Top < boxes[other].Bottom && boxes[index].Bottom > boxes[other].Top, "Full band captions and NoData must not overlap.");
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "text.overflow");
-        var colors = chart.Options.HeatmapColorScale!.Bands.Select(band => band.Color).ToArray();
+        var colors = chart.Options.Heatmap.ColorScale!.Bands.Select(band => band.Color).ToArray();
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
         var image = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(colors, swatches.Select(swatch => swatch.Fill!.Value));
@@ -182,7 +182,7 @@ public sealed class HeatmapColorScaleLegendTests {
         if (!inferred) scale = scale.WithValueRange(min, max);
         scale = scale.WithLabels(null, "Target", null);
         var effectiveMidpoint = scale.EffectiveMidpoint(min, max);
-        var chart = HeatmapColorScaleTests.Create(kind, min, effectiveMidpoint, max).WithSize(width, 400).WithHeatmapColorScale(scale);
+        var chart = HeatmapColorScaleTests.Create(kind, min, effectiveMidpoint, max).Size(width, 400).Heatmap(h => h.ColorScale(scale));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 400)),
             VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
         var prefix = kind == ChartSeriesKind.CalendarHeatmap ? "calendar-scale" : "heatmap-scale";
@@ -215,8 +215,8 @@ public sealed class HeatmapColorScaleLegendTests {
 
     [Fact]
     public void SampledMidpointCaptionFollowsItsFractionalValuePosition() {
-        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 3.2, 10).WithSize(360, 400)
-            .WithHeatmapColorScale(ChartColorScale.Diverging(Low, Middle, High, 3.2).WithLabels(null, "Target", null));
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 3.2, 10).Size(360, 400)
+            .Heatmap(h => h.ColorScale(ChartColorScale.Diverging(Low, Middle, High, 3.2).WithLabels(null, "Target", null)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
         var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "heatmap-scale-label-midpoint");
@@ -232,7 +232,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var scale = constant ? ChartColorScale.Diverging(new[] { Low }, Middle, new[] { Low, Middle, High })
             : ChartColorScale.Sequential(new[] { Low, Middle, High, ChartColor.Black });
         var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, constant ? 7 : 0, constant ? 7 : 10)
-            .WithHeatmapColorScale(scale.WithLabels(null, "Target", null));
+            .Heatmap(h => h.ColorScale(scale.WithLabels(null, "Target", null)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var key = prepared.Regions.Single(region => region.Role == "heatmap-scale");
         var caption = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "heatmap-scale-label-midpoint");
@@ -241,11 +241,11 @@ public sealed class HeatmapColorScaleLegendTests {
 
     [Fact]
     public void CalendarMissingPaintRemainsSeparateFromZeroAndHonorsOnlyAnAuthoredNoDataColor() {
-        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.CalendarHeatmap, 0, 10).WithSize(500, 320);
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.CalendarHeatmap, 0, 10).Size(500, 320);
         var original = XDocument.Parse(chart.ToSvg());
         var defaultMissing = HeatmapColorScaleTests.Fill(Role(original, "calendar-cell").First(cell => (string?)cell.Attribute("data-cfx-empty") == "true"));
         var scale = ChartColorScale.Sequential(Low, High).WithValueRange(0, 10);
-        chart.WithHeatmapColorScale(scale);
+        chart.Heatmap(h => h.ColorScale(scale));
         var document = XDocument.Parse(chart.ToSvg());
         var missing = Role(document, "calendar-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "true").ToArray();
         Assert.NotEmpty(missing); Assert.All(missing, cell => Assert.Equal(defaultMissing, HeatmapColorScaleTests.Fill(cell)));
@@ -253,7 +253,7 @@ public sealed class HeatmapColorScaleLegendTests {
         Assert.Empty(Role(document, "calendar-scale-zero-label"));
         Assert.Single(Role(document, "calendar-scale-empty"));
         var customMissing = ChartColor.FromHex("#B3B5B7");
-        chart.WithHeatmapColorScale(scale.WithNoDataColor(customMissing));
+        chart.Heatmap(h => h.ColorScale(scale.WithNoDataColor(customMissing)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); document = XDocument.Parse(prepared.ToSvg());
         Assert.All(Role(document, "calendar-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "true"), cell => {
             Assert.Equal(customMissing.ToHex(), HeatmapColorScaleTests.Fill(cell)); Assert.Null(cell.Attribute("data-cfx-value"));
@@ -265,10 +265,10 @@ public sealed class HeatmapColorScaleLegendTests {
 
     [Fact]
     public void ExplicitScalesKeepRampAndPointPaintRolesForSvgVariablesWithoutChangingPng() {
-        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 10).WithHeatmapColorScale(ChartColorScale.Sequential(Low, High));
-        chart.Series[0].WithPointColor(1, High);
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 10).Heatmap(h => h.ColorScale(ChartColorScale.Sequential(Low, High)));
+        chart.Series[0].PointColor(1, High);
         var png = chart.ToPng();
-        chart.WithSvgColorVariables(new SvgColorVariables().Add("--ramp-low", Low, SvgColorRole.Ramp)
+        chart.SvgColorVariables(new SvgColorVariables().Add("--ramp-low", Low, SvgColorRole.Ramp)
             .Add("--ramp-high", High, SvgColorRole.Ramp).Add("--explicit-high", High, SvgColorRole.Series));
         var cells = HeatmapColorScaleTests.Cells(chart);
         Assert.Contains("var(--ramp-low,", HeatmapColorScaleTests.Fill(cells[0]));
@@ -284,9 +284,9 @@ public sealed class HeatmapColorScaleLegendTests {
     public void NoDataKeyPaintsLikeTheMissingCellsItExplains(bool authored, bool dark) {
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var scale = ChartColorScale.Discrete(new[] { new ChartColorBand(95, High, "Outage"), new ChartColorBand(null, Low, "Complete") });
-        var chart = Chart.Create().WithSize(640, 320).WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Size(640, 320).Theme(VisualTheme.Graphite()).ThemeMode(mode).XLabels("Mon", "Tue", "Wed")
             .AddHeatmapRow("dc1", new double?[] { 100, 99, 100 }).AddHeatmapRow("dc2", new double?[] { null, 90, 100 })
-            .WithHeatmapColorScale(authored ? scale.WithNoDataColor(Middle) : scale);
+            .Heatmap(h => h.ColorScale(authored ? scale.WithNoDataColor(Middle) : scale));
         var nodes = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes;
         var cell = Assert.Single(nodes.OfType<VisualSceneRectangle>(), node => node.Role == "heatmap-missing-cell");
         var key = Assert.Single(nodes.OfType<VisualSceneRectangle>(), node => node.Role == "heatmap-scale-missing-swatch");

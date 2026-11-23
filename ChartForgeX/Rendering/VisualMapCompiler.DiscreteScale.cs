@@ -15,7 +15,7 @@ internal static partial class VisualMapCompiler {
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
         var height = texts.Concat(new[] { "Mg", title, presentation.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
-        if (chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
+        if (chart.Options.Map.ScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
             var measured = texts.Concat(new[] { title, presentation.NoData })
                 .Max(text => builder.MeasureText(text, style).Width);
             var width = Math.Min(plot.Width * .5, measured + height * 2 + gap * 3);
@@ -28,7 +28,7 @@ internal static partial class VisualMapCompiler {
     }
 
     private static void DrawDiscreteScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, ChartColorPresentation presentation) {
-        var scale = chart.Options.MapColorScale!;
+        var scale = chart.Options.Map.ColorScale!;
         var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
         var area = layout.Scale; var gap = context.Theme.Spacing; var style = TickStyle(chart, context);
         var row = layout.Texts.Concat(new[] { "Mg", title, presentation.NoData })
@@ -72,7 +72,7 @@ internal static partial class VisualMapCompiler {
 
     private static string[] BandCaptions(Chart chart, ChartColorPresentation presentation) {
         var values = chart.Series[0].RegionValues;
-        return ChartColorScaleLegend.BandCaptions(presentation.Labels, chart.Options.MapColorScale!, presentation.ScaleValues,
+        return ChartColorScaleLegend.BandCaptions(presentation.Labels, chart.Options.Map.ColorScale!, presentation.ScaleValues,
             maximum: values.Count > 0 ? values.Max(item => item.Value) : null);
     }
 

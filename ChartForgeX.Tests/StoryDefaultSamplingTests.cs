@@ -62,14 +62,14 @@ public sealed class StoryDefaultSamplingTests {
     }
 
     private static VisualStory LongStory(int seconds) {
-        var story = VisualStory.Create("Long story").WithSize(480, 320);
+        var story = VisualStory.Create("Long story").Size(480, 320);
         for (var index = 0; index < seconds / 60; index++)
             story.Scene("scene" + index, "Chapter " + index, 60).Panel("result", new VisualStoryTextSurface("Chapter " + index));
         return story.Outcome("ready", "Ready", "result");
     }
 
     private static VisualStory ShortFinalChapter() {
-        var story = VisualStory.Create("Short completed chapter").WithSize(480, 320);
+        var story = VisualStory.Create("Short completed chapter").Size(480, 320);
         story.Scene("first", "First", 59.501).Panel("result", new VisualStoryTextSurface("First"));
         story.Scene("last", "Last", .25).Panel("result", new VisualStoryTextSurface("Last"));
         return story.Outcome("ready", "Ready", "result");

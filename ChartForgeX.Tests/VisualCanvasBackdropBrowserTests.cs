@@ -14,14 +14,14 @@ public sealed class VisualCanvasBackdropBrowserTests {
     public async Task AuthoredHorizonAndExplicitOrDisabledHaloRenderInBothStaticOutputs(ThemeMode mode, int width) {
         if (!Enabled) return;
         var theme = VisualTheme.Graphite();
-        var horizon = VisualCanvas.Create(800, 400).WithTheme(theme, mode).WithBackground(ChartColor.White)
-            .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon).ConfigureStyle(style => style.TechHorizonFill = ChartColor.Black);
-        var halo = VisualCanvas.Create(200, 160).WithTheme(theme, mode).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        var horizon = VisualCanvas.Create(800, 400).Theme(theme).ThemeMode(mode).BackgroundTop(ChartColor.White).BackgroundBottom(ChartColor.White)
+            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon).Style(style => style.TechHorizonFill = ChartColor.Black);
+        var halo = VisualCanvas.Create(200, 160).Theme(theme).ThemeMode(mode).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddHeroBadge(40, 30, 120, 90, "")
-            .ConfigureStyle(style => style.HeroBadgeGlowColor = ChartColor.FromHex("#D01BCC"));
+            .Style(style => style.HeroBadgeGlowColor = ChartColor.FromHex("#D01BCC"));
         var horizonSvg = horizon.ToSvg(); var horizonPng = horizon.ToPng();
         var haloSvg = halo.ToSvg(); var haloPng = halo.ToPng();
-        halo.ConfigureStyle(style => style.HeroBadgeGlowColor = ChartColor.Transparent);
+        halo.Style(style => style.HeroBadgeGlowColor = ChartColor.Transparent);
         var clearSvg = halo.ToSvg(); var clearPng = halo.ToPng();
         static string Section(string id, string title, string svg, byte[] png) =>
             "<section id='" + id + "'><h2>" + title + "</h2><div class='pair'><div>SVG" + svg

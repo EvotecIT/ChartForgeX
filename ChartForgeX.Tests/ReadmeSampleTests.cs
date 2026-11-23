@@ -16,16 +16,16 @@ public sealed class ReadmeSampleTests {
     public void QuickStartLabelsLineUpWithTheirPoints() {
         // The NuGet README Quick Start, as published.
         var chart = Chart.Create()
-            .WithTitle("Weekly orders")
-            .WithSubtitle("Completed orders across the working week")
-            .WithSize(800, 440)
-            .WithXAxis("Day")
-            .WithYAxis("Orders")
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+            .Title("Weekly orders")
+            .Subtitle("Completed orders across the working week")
+            .Size(800, 440)
+            .XAxis(x => x.Title("Day"))
+            .YAxis(y => y.Title("Orders"))
+            .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddLine("Completed", ChartPoints.FromValues(28, 34, 41, 48, 32))
             .AddLine("Target", ChartPoints.FromValues(30, 35, 40, 45, 50));
 
-        var labels = chart.Options.XAxisLabels;
+        var labels = chart.Options.XAxis.Labels;
         foreach (var series in chart.Series) {
             Assert.Equal(labels.Count, series.Points.Count);
             for (var i = 0; i < labels.Count; i++) Assert.Equal(labels[i].Value, series.Points[i].X);

@@ -15,12 +15,12 @@ internal static partial class VisualRadialCompiler {
     private static RadialBandFrame? ResolveBandFrame(Chart chart, VisualRenderContext context, ChartRect plot,
         IReadOnlyList<ChartRadialBand?> bands, int outerSeries) {
         if (chart.Series.Count < 2) return null;
-        bool ActiveExternal(int index) => (chart.Series[index].ShowDataLabels ?? chart.Options.ShowDataLabels ?? false)
-            && IsExternal(chart.Series[index].DataLabelPlacement ?? chart.Options.DataLabelPlacement);
+        bool ActiveExternal(int index) => (chart.Series[index].ShowDataLabels ?? chart.Options.DataLabels.Visible ?? false)
+            && IsExternal(chart.Series[index].DataLabelPlacement ?? chart.Options.DataLabels.Placement);
         if (!chart.Series.Any(series => series.PointSliceOffsets.Any(offset => offset > 0))
             && !Enumerable.Range(0, chart.Series.Count).Any(index => index != outerSeries && ActiveExternal(index))) return null;
         var placements = Enumerable.Range(0, chart.Series.Count).Where(index => index == outerSeries || ActiveExternal(index))
-            .Select(index => chart.Series[index].DataLabelPlacement ?? chart.Options.DataLabelPlacement).ToArray();
+            .Select(index => chart.Series[index].DataLabelPlacement ?? chart.Options.DataLabels.Placement).ToArray();
         var side = placements.Any(value => value is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right);
         var vertical = placements.Any(value => value is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below);
         var extentRatio = bands.Max(band => band!.OuterRatio);
@@ -55,7 +55,7 @@ internal static partial class VisualRadialCompiler {
         var placed = new LabelPlacementService().Place(requests, plot, null, gap, builder.MeasureText, avoidLeaderLabels: true);
         var paths = new ChartPath?[placed.Count];
         var accepted = placed.Select(result => !result.IsDropped).ToArray();
-        var haloWidth = chart.Options.DataLabelConnectorStrokeWidth + 2;
+        var haloWidth = chart.Options.DataLabels.ConnectorStrokeWidth + 2;
         for (var index = 0; index < placed.Count; index++) {
             if (!accepted[index] || !placed[index].HasLeaderLine) continue;
             var label = frame.Labels[index]; var result = placed[index]; var end = result.LeaderEnd;
@@ -91,10 +91,10 @@ internal static partial class VisualRadialCompiler {
                     builder.AddDiagnostic(new VisualDiagnostic("radial.label-overflow", "A multi-ring caption or its leader could not fit without covering another caption; complete text and source association remain available."));
                 if (!accepted[index]) continue;
                 if (paths[index] is ChartPath path) {
-                    var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? label.Slice.Color, chart.Options.DataLabelConnectorOpacity);
+                    var color = ChartColorMath.WithOpacity(chart.Options.DataLabels.ConnectorColor ?? label.Slice.Color, chart.Options.DataLabels.ConnectorOpacity);
                     // An overlay must remain distinguishable while crossing enclosing occupied bands.
                     builder.Path(path, stroke: backdrop, strokeWidth: haloWidth, role: "data-label-connector-halo", id: id + "-connector-halo", paint: VisualChartPaint.Stroke(SvgPaint.Literal(backdrop)));
-                    builder.Path(path, stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth, role: "data-label-connector", id: id + "-connector", paint: ConnectorPaint(chart, label.Slice, color));
+                    builder.Path(path, stroke: color, strokeWidth: chart.Options.DataLabels.ConnectorStrokeWidth, role: "data-label-connector", id: id + "-connector", paint: ConnectorPaint(chart, label.Slice, color));
                 }
                 var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize;
                 style.Baseline = TextBaseline.Normal; style.Alignment = TextAlignment.Left; style.TextCase = TextCaseTransform.None;
@@ -165,10 +165,10 @@ internal static partial class VisualRadialCompiler {
         Candidate(0);
         var step = Math.Max(1, (vertical ? measured.Width : measured.Height) + gap);
         for (var shift = 1; shift <= frame.Labels.Count; shift++) { Candidate(shift * step); Candidate(-shift * step); }
-        var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? label.Slice.Color, chart.Options.DataLabelConnectorOpacity);
+        var color = ChartColorMath.WithOpacity(chart.Options.DataLabels.ConnectorColor ?? label.Slice.Color, chart.Options.DataLabels.ConnectorOpacity);
         return new LabelPlacementRequest(label.Text, anchor, style, candidates) {
             Bounds = band, MeasuredSize = measured, AssociatedMarkId = SliceId(label.Slice),
-            HasLeaderLine = chart.Options.DataLabelConnectorStrokeWidth > 0 && color.A > 0, LeaderOnFirstCandidate = true
+            HasLeaderLine = chart.Options.DataLabels.ConnectorStrokeWidth > 0 && color.A > 0, LeaderOnFirstCandidate = true
         };
     }
 

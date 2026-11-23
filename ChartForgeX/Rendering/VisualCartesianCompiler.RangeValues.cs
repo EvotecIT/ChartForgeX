@@ -11,7 +11,7 @@ internal static partial class VisualCartesianCompiler {
     internal static IVisualValuePlan? TryCaptureRangeValues(Chart chart, VisualRenderContext context,
         VisualSceneTextCapture text, VisualScene scene, ChartCartesianProjection? axes) {
         if (!context.CaptureNativeValueSource || axes == null || ChartCartesianOrientation.IsHorizontal(chart) || !text.SupportsCapturedReplay
-            || chart.Series.Count == 0 || chart.Options.ShowPointLegend || chart.Options.ValueFormatter != null
+            || chart.Series.Count == 0 || chart.Options.Legend.ShowPoints || chart.Options.ValueFormatter != null
             || chart.Series.Any(series => series.Kind is not (ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
                 || series.Id.IsAutomatic || series.Ranges.Count == 0 || series.ObservationIds.Count != series.Ranges.Count
                 || Enumerable.Range(0, series.Ranges.Count).Any(index => !series.ObservationIds.ContainsKey(index)))) return null;

@@ -45,9 +45,9 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     public async Task OrdinaryAcceptedReplacementReplacesGlyphsAndKeepsComputedTextPaint() {
         if (!Enabled) return;
         var chart = Model(800, ThemeMode.Light);
-        var replacement = Model(800, ThemeMode.Light).WithTitle("A new accepted caption")
-            .WithXLabels("Captured one", "Captured two", "Captured three", "Captured zero");
-        replacement.ConfigureFunnel(options => options.CategoryLabel.Style.FontSize = 18);
+        var replacement = Model(800, ThemeMode.Light).Title("A new accepted caption")
+            .XLabels("Captured one", "Captured two", "Captured three", "Captured zero");
+        replacement.Funnel(options => options.CategoryLabel.Style.FontSize = 18);
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(Options), 824, 850);
         var page = session.Page;
         await page.EvaluateAsync("() => { window.nativeFontChart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')); }");
@@ -70,13 +70,13 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserFact]
     public async Task TopologyProducerCallbackUsesTheSameCapturedFontAndExportOwner() {
         if (!Enabled) return;
-        var chart = TopologyChart.Create().WithViewport(800, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 420)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
         chart.Title = "Topology captured font";
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Received Reviewed", X = 60, Y = 90, Width = 260, Height = 90 });
         var calls = 0;
         var fragment = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => {
             calls++; return prepared.ToSvg();
-        }, new TopologyRenderOptions { EnableHtmlExportControls = true });
+        }, new TopologyRenderOptions { Html = { ExportControls = true } });
         await using var session = await BrowserProofFonts.OpenAsync(fragment, 824, 650);
         var exported = await CaptureExports(session.Page, "[data-cfx-topology-export=svg]", "[data-cfx-topology-export=png]", "native-font-topology-callback");
         Assert.Equal(1, calls); AssertTextSvg(exported.Svg, "Received Reviewed");
@@ -116,11 +116,11 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (!Enabled) return;
         string html;
         if (topology) {
-            var chart = TopologyChart.Create().WithViewport(800, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 420)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
             chart.Title = "Decoration captured font";
             chart.Nodes.Add(new TopologyNode { Id = "node", Label = DecorationCorridorCaption, X = 60, Y = 90, Width = 260, Height = 90 });
-            html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { EnableHtmlExportControls = true });
-        } else html = Model(800, ThemeMode.Light).WithTitle(DecorationCorridorCaption).WithSubtitle(string.Empty).ToInteractiveHtmlFragment(Options);
+            html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { Html = { ExportControls = true } });
+        } else html = Model(800, ThemeMode.Light).Title(DecorationCorridorCaption).Subtitle(string.Empty).ToInteractiveHtmlFragment(Options);
         await using var session = await BrowserProofFonts.OpenAsync(html, 824, 850);
         await session.Page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "svg " + (ancestor ? "g" : "text")
             + "{text-decoration-line:" + lines + ";text-decoration-style:" + style + ";text-decoration-color:rgb(17,203,177);text-decoration-thickness:3px}" });
@@ -201,7 +201,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
 
     private static Chart Model(int width, ThemeMode mode) =>
         FunnelPresentationRecipe.Create(width == 390 ? "compact-cone" : "cone", mode)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
     private static void Options(HtmlChartInteractionOptions options) {
         options.TextPresentation = HtmlChartTextPresentation.Browser; // Preserve the incumbent editable-browser/export contract explicitly.
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

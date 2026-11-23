@@ -56,15 +56,12 @@ public sealed class HeatmapInsightCard : FactualVisualBlock<HeatmapInsightCard> 
     /// <summary>Gets or sets the high-value heatmap color.</summary>
     public ChartColor HighColor { get => _highColor; set => _highColor = value; }
 
-    /// <summary>Sets the factual period or range displayed above the heatmap.</summary>
-    public HeatmapInsightCard WithPeriodLabel(string label) { PeriodLabel = label ?? throw new ArgumentNullException(nameof(label)); return this; }
-
     /// <summary>Creates a new heatmap insight card.</summary>
     public static HeatmapInsightCard Create() => new();
 
 
     /// <summary>Sets heatmap column labels.</summary>
-    public HeatmapInsightCard WithColumns(params string[] columns) {
+    internal HeatmapInsightCard SetColumns(params string[] columns) {
         if (columns == null) throw new ArgumentNullException(nameof(columns));
         _columns.Clear();
         foreach (var column in columns) _columns.Add(column ?? throw new ArgumentException("Column labels cannot contain null values.", nameof(columns)));
@@ -81,22 +78,6 @@ public sealed class HeatmapInsightCard : FactualVisualBlock<HeatmapInsightCard> 
     /// <summary>Adds one side-rail insight.</summary>
     public HeatmapInsightCard AddInsight(string label, string detail) {
         _insights.Add(new HeatmapInsightItem(label, detail));
-        return this;
-    }
-
-    /// <summary>Sets the side insight title.</summary>
-    public HeatmapInsightCard WithInsightTitle(string title) {
-        InsightTitle = title ?? throw new ArgumentNullException(nameof(title));
-        return this;
-    }
-
-    /// <summary>Sets the color key text and range.</summary>
-    public HeatmapInsightCard WithColorKey(double minimum, double maximum, ChartColor? lowColor = null, ChartColor? highColor = null, string? label = null) {
-        Minimum = minimum;
-        Maximum = maximum;
-        if (lowColor.HasValue) LowColor = lowColor.Value;
-        if (highColor.HasValue) HighColor = highColor.Value;
-        if (label != null) ColorKeyLabel = label;
         return this;
     }
 }

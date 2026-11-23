@@ -13,8 +13,8 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     [BrowserFact]
     public async Task DefaultAutoUses120CssPixelCategoryLimitIndependentlyOfValueDistance() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 540).WithLegend(true).WithTheme(VisualTheme.Graphite())
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddLine("Reading", new[] { new ChartPoint(5, 5) });
+        var chart = Chart.Create().Size(800, 540).Legend(true).Theme(VisualTheme.Graphite())
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddLine("Reading", new[] { new ChartPoint(5, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Features = ChartInteractionFeatures.Tooltips), 950, 720);
         var page = session.Page;
         Assert.Equal("auto", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-range"));
@@ -74,8 +74,8 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     public async Task PaintedCartesianCaptionUsesItsDeclaredObservationAndNativeEligibility(ChartSeriesKind kind) {
         if (!Enabled) return;
         var horizontal = kind == ChartSeriesKind.HorizontalBar;
-        var chart = Chart.Create().WithSize(700, 430).WithHeader(false).WithLegend(false).WithDataLabels()
-            .WithTheme(VisualTheme.Graphite()).WithXAxisBounds(0, horizontal ? 50 : 5).WithYAxisBounds(0, horizontal ? 5 : 50);
+        var chart = Chart.Create().Size(700, 430).ShowHeader(false).Legend(false).DataLabels()
+            .Theme(VisualTheme.Graphite()).XAxis(x => x.Bounds(0, horizontal ? 50 : 5)).YAxis(y => y.Bounds(0, horizontal ? 5 : 50));
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(3, 30) };
         chart = kind switch {
             ChartSeriesKind.Bar => chart.AddBar("Reading", points),
@@ -229,8 +229,8 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     public async Task RestoredChildAndMarkerFreePaintRemainEligibleUntilTheirActualSurfaceIsHidden(bool markerFree) {
         if (!Enabled) return;
         var chart = Observation(markerFree, graphite: true);
-        if (markerFree) chart = Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithLegend(true)
-            .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        if (markerFree) chart = Chart.Create().Size(800, 540).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).Legend(true)
+            .Lines(l => l.MarkerMode(ChartLineMarkerMode.None)).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Range = HtmlChartTooltipRange.Nearest;
@@ -264,9 +264,9 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Observation(bool dark, bool graphite = false) => Chart.Create().WithSize(800, 540).WithLegend(true)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-        .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddScatter("Reading", new[] { new ChartPoint(5, 5) });
+    private static Chart Observation(bool dark, bool graphite = false) => Chart.Create().Size(800, 540).Legend(true)
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+        .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddScatter("Reading", new[] { new ChartPoint(5, 5) });
 
     private static async Task CaptureAsync(IPage page, string name, object observations) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

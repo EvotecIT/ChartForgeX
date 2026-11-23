@@ -64,10 +64,10 @@ public sealed class ProgressBarIdentityBrowserTests {
     private static Chart Progress(bool dark, bool updated) {
         var points = updated ? new[] { new ChartPoint(2, 20), new ChartPoint(1, 75) } : new[] { new ChartPoint(1, 40), new ChartPoint(2, 20) };
         var series = new ChartSeries(new ChartSeriesId("progress"), "Tasks", ChartSeriesKind.ProgressBar, points);
-        series.WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
-            .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
-        return Chart.Create().WithSize(640, 360).WithTitle("Progress by region").WithXLabels("North", "South")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+        series.ObservationId(updated ? 1 : 0, new ChartObservationId("north"))
+            .ObservationId(updated ? 0 : 1, new ChartObservationId("south"));
+        return Chart.Create().Size(640, 360).Title("Progress by region").XLabels("North", "South")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; options.Tooltip.PinOnSelect = false;

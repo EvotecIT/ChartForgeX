@@ -17,9 +17,9 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
     public async Task NativeTextOnlySelectionKeepsItsPaintedCueAndIdentityWithoutFilters(bool annotation, string? fixture) {
         if (!Enabled) return;
         var chart = fixture is null
-            ? Chart.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
+            ? Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
             : HtmlNativeLineInkTests.Model(fixture);
-        chart.WithSize(640, 360).WithTitle("Native text selection");
+        chart.Size(640, 360).Title("Native text selection");
         if (fixture is not null) chart.ClearSeries();
         var caption = fixture is null ? "Authored caption" : fixture.StartsWith("bitmap", StringComparison.Ordinal) ? "A" : "😀";
         var selector = "[data-cfx-role=word-cloud-term][data-cfx-point='0']";

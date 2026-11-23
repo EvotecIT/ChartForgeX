@@ -64,16 +64,6 @@ public sealed partial class VisualCanvas {
     public ThemeMode ThemeMode { get => _themeMode; set { ValidateEnum(value, nameof(value)); _themeMode = value; } }
     /// <summary>Gets or sets local canvas styling without replacing the shared theme.</summary>
     public VisualCanvasStyleOptions Style { get => _style; set => _style = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Changes appearance without changing the theme snapshot.</summary>
-    public VisualCanvas WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
-    /// <summary>Sets canvas-specific surface and measurement options.</summary>
-    public VisualCanvas WithStyle(VisualCanvasStyleOptions style) { Style = style; return this; }
-    /// <summary>Installs independent canvas-specific surface and measurement options after successful configuration.</summary>
-    /// <remarks>Callback exceptions preserve the owner. Previous options and retained callback values remain independent of the installed result.</remarks>
-    public VisualCanvas ConfigureStyle(Action<VisualCanvasStyleOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Style = ChartOptionConfiguration.Configure(Style, configure, options => options.Clone()); return this;
-    }
 
     internal ResolvedVisualCanvasStyle ResolveStyle() => ResolveStyle(Theme, ThemeMode, Style);
 

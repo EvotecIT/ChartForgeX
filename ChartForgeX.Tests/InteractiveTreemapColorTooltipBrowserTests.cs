@@ -18,22 +18,22 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
     public async Task TooltipsKeepAreaAndIndependentColorFactsWithLocalizedMissingStatus(int width, bool dark, bool titleOverride, bool leafKeys) {
         if (!Enabled) return;
         var colorLabel = titleOverride ? "Zmiana (%) <&>" : "Kolor";
-        var chart = Chart.Create().WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Przydział pracy").WithDataLabels(false).ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; })
+        var chart = Chart.Create().Size(width, 380).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Przydział pracy").DataLabels(false).Labels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; })
             .AddTreemap("Zespoły", new[] {
                 new ChartHierarchyItem("positive", "Obsługa", value: 9, colorValue: 7.125),
                 new ChartHierarchyItem("zero", "Zerowa zmiana", value: 4, colorValue: 0),
                 new ChartHierarchyItem("missing", "Nieznana zmiana", value: 2)
-            }).ConfigureTreemap(options => {
+            }).Treemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(ChartForgeX.Primitives.ChartColor.FromHex("#DAE8F8"), ChartForgeX.Primitives.ChartColor.FromHex("#1C5CAB"));
                 options.ColorDimension.ShowLegend = !leafKeys;
                 if (titleOverride) options.ColorDimension.Name = colorLabel;
             });
-        if (leafKeys) chart.WithPointLegend();
+        if (leafKeys) chart.Legend(l => l.ShowPoints());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg();
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
-        chart.ConfigureLabels(labels => { labels.Color = "Changed"; labels.NoData = "Changed"; });
+        chart.Labels(labels => { labels.Color = "Changed"; labels.NoData = "Changed"; });
         chart.Options.Treemap.ColorDimension.Name = "Changed";
         Assert.Equal(svg, prepared.ToSvg());
         await using var session = await OpenAsync(html, width + 24, 500);

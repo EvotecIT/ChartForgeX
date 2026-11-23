@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
     /// <summary>Funnel and Pyramid stages have no legend or axis to name them, so their captions are on unless the series or chart turns them off.</summary>
-    internal static bool StageCaptionsShown(Chart chart, ChartSeries series) => series.ShowDataLabels ?? chart.Options.ShowDataLabels ?? true;
+    internal static bool StageCaptionsShown(Chart chart, ChartSeries series) => series.ShowDataLabels ?? chart.Options.DataLabels.Visible ?? true;
 
     private static void Pyramid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var options = chart.Options.Pyramid; var colors = context.Theme.Resolve(context.ThemeMode);
@@ -19,7 +19,7 @@ internal static partial class VisualSpecialtyCompiler {
         var separate = show && chart.Options.Pyramid.LabelContent == ChartStageLabelContent.Separate
             ? new StageCaptions(chart, context, builder, plot, false) : null;
         var combined = show && separate == null;
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var rail = 0d;
         var sideRail = placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right
             || placement is not (ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below) && options.Orientation == ChartOrientation.Vertical;

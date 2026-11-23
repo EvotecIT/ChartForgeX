@@ -69,15 +69,15 @@ public sealed class TopologyQuietEdgeLabelTests {
 
     [Fact]
     public void FittedCardsKeepTheirNaturalWidthBelowTheWrappingLimit() {
-        var chart = TopologyChart.Create().WithId("fitted-cards").WithTitle("").WithViewport(900, 400, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
+        var chart = TopologyChart.Create().Id("fitted-cards").Title("").Viewport(new TopologyViewport(900, 400, 24)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
         chart.AddNode("short", "Cache", 40, 100, width: 60, height: 60, subtitle: "Redis");
         chart.AddNode("long", "Order service", 400, 100, width: 60, height: 60, subtitle: "Validates every order, reserves stock and coordinates the payment provider");
         foreach (var node in chart.Nodes) {
             node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rounded; node.CornerRadius = DiagramTheme.CardCornerRadius;
             node.FitLabelToContent = true; node.MaximumTextWidth = 190; node.ShowStatusBadge = false;
         }
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeSubtitleLines = 6 });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeSubtitleLines = 6 });
         var svg = XDocument.Parse(chart.Prepare().ToSvg());
         double Width(string id) {
             var numbers = SurfaceNumbers(svg, id); var xs = numbers.Where((_, index) => index % 2 == 0).ToArray(); return xs.Max() - xs.Min();
@@ -89,24 +89,24 @@ public sealed class TopologyQuietEdgeLabelTests {
 
     [Fact]
     public void DefaultConnectorsStayLegibleWhenAFittedDiagramScalesDown() {
-        var chart = TopologyChart.Create().WithId("fitted-connector").WithTitle("").WithViewport(160, 120, 8).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
+        var chart = TopologyChart.Create().Id("fitted-connector").Title("").Viewport(new TopologyViewport(160, 120, 8)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
         chart.AddNode("a", "Plan", 0, 0, width: 140, height: 80); chart.AddNode("b", "Deliver", 900, 0, width: 140, height: 80);
         chart.AddEdge("handoff", "a", "b", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
         chart.Theme = DiagramTheme.Apply(chart.Theme);
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true });
         var line = Role(XDocument.Parse(chart.Prepare().ToSvg()), "topology-edge-line").Single();
         Assert.True(Number(line, "stroke-width") >= DiagramTheme.MinimumConnectorStrokeWidth - 1e-9, "A scaled-down connector must keep at least 0.75 px.");
     }
 
     private static TopologyChart Source(bool dark) {
-        var chart = TopologyChart.Create().WithId("quiet-label").WithTitle("").WithViewport(760, 400, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = TopologyChart.Create().Id("quiet-label").Title("").Viewport(new TopologyViewport(760, 400, 24)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddNode("a", "Plan", 60, 100, width: 140, height: 80); chart.AddNode("b", "Deliver", 500, 100, width: 140, height: 80);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; }
         chart.AddEdge("handoff", "a", "b", "Transfer", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
         var edge = chart.Edges[0]; edge.SourceLabel = "1"; edge.TargetLabel = "many";
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false }); return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false }); return chart;
     }
 
     private static IEnumerable<XElement> Role(XDocument svg, string role) => svg.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == role);

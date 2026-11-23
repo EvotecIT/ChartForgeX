@@ -36,7 +36,7 @@ public sealed class SunburstHierarchyTests {
 
     [Fact]
     public void InclusiveTotalsLeaveActualRemainderAndNullGroupsDeriveResolvedChildren() {
-        var chart = Chart.Create().ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal)
+        var chart = Chart.Create().Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal)
             .AddSunburst("Budget", new[] {
                 new ChartHierarchyItem("root", "All", value: 20),
                 new ChartHierarchyItem("provided", "Provided", "root", 10),
@@ -69,7 +69,7 @@ public sealed class SunburstHierarchyTests {
     [InlineData(3e-300, 1e-300, 2e-300)]
     [InlineData(3e300, 1e300, 2e300)]
     public void RepresentationalOverrunClosesOnlyTheFinalPositiveChild(double parent, double first, double last) {
-        var chart = Chart.Create().ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal)
+        var chart = Chart.Create().Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal)
             .AddSunburst("Fractions", new[] {
                 new ChartHierarchyItem("root", "All", value: parent),
                 new ChartHierarchyItem("first", "First", "root", first),
@@ -86,7 +86,7 @@ public sealed class SunburstHierarchyTests {
     [Fact]
     public void APositiveRepresentableRemainderIsRetainedInsteadOfNormalizedAway() {
         var parent = Math.BitIncrement(1d);
-        var chart = Chart.Create().ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal)
+        var chart = Chart.Create().Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal)
             .AddSunburst("Remainder", new[] {
                 new ChartHierarchyItem("root", "All", value: parent), new ChartHierarchyItem("one", "One", "root", .5), new ChartHierarchyItem("two", "Two", "root", .5)
             });
@@ -119,7 +119,7 @@ public sealed class SunburstHierarchyTests {
     public void DeepCompactRingsRemainAdjacentWithoutInventedMinimumThickness() {
         var items = Enumerable.Range(0, 64).Select(index => new ChartHierarchyItem("level-" + index, "Level " + index,
             index == 0 ? null : "level-" + (index - 1), index == 63 ? 1 : null));
-        var chart = Chart.Create().WithDataLabels(false).AddSunburst("Nested", items);
+        var chart = Chart.Create().DataLabels(false).AddSunburst("Nested", items);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(160, 128)), frame: new VisualFrame(showLegend: false)));
         var nodes = Nodes(prepared);
         for (var index = 1; index < 64; index++)
@@ -169,7 +169,7 @@ public sealed class SunburstHierarchyTests {
             new[] { new ChartHierarchyItem("root", "All"), new ChartHierarchyItem("one", "One", "root", double.MaxValue), new ChartHierarchyItem("two", "Two", "root", double.MaxValue) }
         };
         foreach (var items in invalid) {
-            var chart = Chart.Create().ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
+            var chart = Chart.Create().Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
             Assert.Throws<ArgumentException>(() => chart.AddSunburst("Invalid", items)); Assert.Empty(chart.Series);
         }
         var treemap = new[] { new ChartHierarchyItem("group", "Group", value: 10), new ChartHierarchyItem("leaf", "Leaf", "group", 2) };

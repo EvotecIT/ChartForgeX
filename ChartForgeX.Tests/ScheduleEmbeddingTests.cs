@@ -14,9 +14,9 @@ public sealed class ScheduleEmbeddingTests {
     public void OpenTaskFadesTowardTheUnknownEndInSvgAndRaster(bool reversed) {
         var series = ChartSeries.CreateGanttTask(new ChartSeriesId("support"), "Support", 2, 3);
         series.ReplaceGanttItems(new[] { ChartGanttItem.OpenEnded(2) });
-        var chart = Chart.Create().AddSeries(series).WithXAxisBounds(0, 10)
-            .WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade);
-        var scale = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 10, Reversed = reversed });
+        var chart = Chart.Create().AddSeries(series).XAxis(xAxis => xAxis.Bounds(0, 10))
+            .Gantt(g => g.OpenEndStyle(ChartGanttOpenEndStyle.Fade));
+        var scale = new ChartStripScale(new ChartAxis { Min = 0, Max = 10, Reversed = reversed });
         var prepared = chart.PrepareStrip(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 40), 0)), scale);
         var svg = XDocument.Parse(prepared.ToSvg("support"));
         var task = Assert.Single(svg.Descendants(), element => Role(element) == "gantt-task");
@@ -43,12 +43,12 @@ public sealed class ScheduleEmbeddingTests {
     [InlineData(true)]
     public void ScheduleBandsPaintBehindMarksAndTodayRemainsVisible(bool lanes) {
         var day = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(600, 200)
-            .WithStateCategories(new ChartStateCategory("supported", "Supported", ChartColor.FromHex("#2468AC")));
+        var chart = Chart.Create().Size(600, 200)
+            .StateCategories(new ChartStateCategory("supported", "Supported", ChartColor.FromHex("#2468AC")));
         if (lanes) chart.AddGanttLane("Version", new[] { new ChartGanttLaneItem(day, day.AddDays(8), "supported") });
         else chart.AddGanttTask("Version", day, day.AddDays(8));
-        chart.WithXAxisBounds(day.ToOADate(), day.AddDays(10).ToOADate())
-            .WithGanttToday(day.AddDays(5))
+        chart.XAxis(x => x.Bounds(day.ToOADate(), day.AddDays(10).ToOADate()))
+            .GanttToday(day.AddDays(5))
             .AddVerticalBand(day.AddDays(2).ToOADate(), day.AddDays(4).ToOADate(), color: ChartColor.FromHex("#2468AC"));
         var svg = XDocument.Parse(chart.ToSvg());
         var nodes = svg.Descendants().ToArray();
@@ -71,10 +71,10 @@ public sealed class ScheduleEmbeddingTests {
     public void ScheduleLinksAndStateHitAreasStayInsideTheSharedDisplayWindow() {
         var chart = Chart.Create().AddGanttTask("Partly visible", -5, 2).AddGanttTask("Outside", -5, -2);
         for (var index = 0; index < chart.Series.Count; index++) {
-            chart.Series[index].WithMarkOptions(new ChartMarkOptions(href: "/task/" + index, current: true));
-            chart.Series[index].WithRowOptions(new ChartMarkOptions(href: "/row/" + index, current: true));
+            chart.Series[index].MarkOptions(new ChartMarkOptions(href: "/task/" + index, current: true));
+            chart.Series[index].RowOptions(new ChartMarkOptions(href: "/row/" + index, current: true));
         }
-        var scale = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 10 });
+        var scale = new ChartStripScale(new ChartAxis { Min = 0, Max = 10 });
         var prepared = chart.PrepareStrip(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 80), 0)), scale);
         var svg = XDocument.Parse(prepared.ToSvg("window"));
         Assert.DoesNotContain(svg.Descendants(), element => Role(element) == ChartDomRoles.ScheduleRow);

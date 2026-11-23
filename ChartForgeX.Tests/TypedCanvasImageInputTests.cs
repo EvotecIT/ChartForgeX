@@ -15,7 +15,7 @@ public sealed class TypedCanvasImageInputTests {
     public void BitmapInputSnapshotsCallerPixelsForBothOutputs(bool badge) {
         byte[] pixels = [255, 0, 0, 255, 0, 128, 0, 255];
         var image = new RgbaImage(2, 1, pixels);
-        var canvas = VisualCanvas.Create(64, 64).WithBackdrop(VisualCanvasBackdropStyle.Transparent);
+        var canvas = VisualCanvas.Create(64, 64).BackdropStyle(VisualCanvasBackdropStyle.Transparent);
         if (badge) canvas.AddHeroBadge(image, new VisualCanvasPlacement(VisualCanvasAnchor.Center), 48, 48, padding: 0, fit: VisualCanvasImageFit.Stretch);
         else canvas.AddImage(image, new VisualCanvasPlacement(VisualCanvasAnchor.Center), 48, 48);
         var expected = (byte[])pixels.Clone();
@@ -44,7 +44,7 @@ public sealed class TypedCanvasImageInputTests {
 
     [Fact]
     public void VectorProducerRetainsItsSvgRepresentation() {
-        var chart = Chart.Create().WithSize(80, 60).AddLine("Capacity", [new ChartPoint(0, 1), new ChartPoint(1, 2)]);
+        var chart = Chart.Create().Size(80, 60).AddLine("Capacity", [new ChartPoint(0, 1), new ChartPoint(1, 2)]);
         var canvas = VisualCanvas.Create(100, 80).AddChart(0, 0, 80, 60, chart);
         var document = XDocument.Parse(canvas.ToSvg());
         Assert.StartsWith("data:image/svg+xml;", document.Descendants().Single(node => node.Name.LocalName == "image").Attribute("href")!.Value);
@@ -124,7 +124,7 @@ public sealed class TypedCanvasImageInputTests {
                 pixels[i + 3] = 255;
             }
         }
-        var canvas = VisualCanvas.Create(64, 64).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        var canvas = VisualCanvas.Create(64, 64).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddImage(new RgbaImage(16, 8, pixels), 8, 8, 48, 48, opacity: .5, fit: fit);
         var svg = canvas.ToSvg();
         var png = canvas.ToPng();
@@ -164,7 +164,7 @@ public sealed class TypedCanvasImageInputTests {
 
     private static VisualCanvas[] EncodedCanvases(byte[] encoded, string path, RasterDecodeOptions options) {
         var placement = new VisualCanvasPlacement(VisualCanvasAnchor.Center);
-        VisualCanvas Empty() => VisualCanvas.Create(16, 16).WithBackdrop(VisualCanvasBackdropStyle.Transparent);
+        VisualCanvas Empty() => VisualCanvas.Create(16, 16).BackdropStyle(VisualCanvasBackdropStyle.Transparent);
         return [
             Empty().AddImageBytes(0, 0, 16, 16, encoded, options: options),
             Empty().AddImageBytes(placement, 16, 16, encoded, options: options),

@@ -65,7 +65,7 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
     [InlineData(true)]
     public async Task PointLegendUsesReferencedColorAndLocalizedSizeWithoutInventingSeriesAggregates(bool bubble) {
         if (!Enabled) return;
-        var chart = Model(800).WithPointLegend();
+        var chart = Model(800).Legend(l => l.ShowPoints());
         Add(chart, bubble, "Samples", new[] { 1d, 2 }, new[] { 0d, 24 }, new[] { 9d, 81 }, new double?[] { 0, null });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 824, 600);
         var page = session.Page;
@@ -79,14 +79,14 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Model(int width) => Chart.Create().WithSize(width, 500).WithDataLabels(false)
-        .WithTheme(VisualTheme.Graphite()).ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
+    private static Chart Model(int width) => Chart.Create().Size(width, 500).DataLabels(false)
+        .Theme(VisualTheme.Graphite()).Labels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
 
     private static void Add(Chart chart, bool bubble, string name, double[] x, double[] y, double[] size, double?[] color) {
         var id = new ChartSeriesId(name == "Samples" ? "samples-source" : "alerts-source");
         var series = bubble ? ChartSeries.CreateBubble(id, name, Enumerable.Range(0, x.Length).Select(index => new ChartBubble(x[index], y[index], size[index]).WithColorValue(color[index])))
             : ChartSeries.CreateScatter(id, name, Enumerable.Range(0, x.Length).Select(index => new ChartPoint(x[index], y[index]).WithColorValue(color[index])));
-        series.WithColorScale(ChartColorScale.Sequential(Low, High));
+        series.ColorScale(ChartColorScale.Sequential(Low, High));
         chart.AddSeries(series);
     }
 

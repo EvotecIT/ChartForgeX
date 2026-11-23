@@ -55,7 +55,7 @@ public sealed class MapLabelClusterDepthTests {
         foreach (var group in accepted) {
             double Read(string field) => double.Parse(group.Metadata[field], CultureInfo.InvariantCulture);
             var x = Read("data-cfx-anchor-x") - Read("data-cfx-leader-x"); var y = Read("data-cfx-anchor-y") - Read("data-cfx-leader-y");
-            Assert.InRange(Math.Sqrt(x * x + y * y), 0, chart.Options.MapCallouts!.MaximumDistance + 1e-8);
+            Assert.InRange(Math.Sqrt(x * x + y * y), 0, chart.Options.Map.Callouts!.MaximumDistance + 1e-8);
             var box = new ChartRect(Read("data-cfx-label-left"), Read("data-cfx-label-top"), Read("data-cfx-label-width"), Read("data-cfx-label-height"));
             Assert.DoesNotContain(boxes, previous => previous.Left < box.Right && box.Left < previous.Right && previous.Top < box.Bottom && box.Top < previous.Bottom);
             boxes.Add(box);
@@ -71,13 +71,13 @@ public sealed class MapLabelClusterDepthTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); var old = Assert.Single(Groups(prepared, "dotted-map-cluster-source"));
         var series = chart.Series[1]; var points = series.MapPoints.ToArray();
         series.ReplaceMapPoints(new[] { points[0], points[3], points[2], points[1], points[4] });
-        series.WithObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("dispatch"), new ChartObservationId("processing"), new ChartObservationId("intake"), new ChartObservationId("outside") });
+        series.ObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("dispatch"), new ChartObservationId("processing"), new ChartObservationId("intake"), new ChartObservationId("outside") });
         var reordered = Prepare(chart); var cluster = Assert.Single(Groups(reordered, "dotted-map-cluster-source"));
         Assert.Equal(old.Metadata["data-cfx-cluster-center-x"], cluster.Metadata["data-cfx-cluster-center-x"]);
         Assert.Equal(old.Metadata["data-cfx-cluster-center-y"], cluster.Metadata["data-cfx-cluster-center-y"]);
         Assert.Equal(old.Metadata["data-cfx-derived-identity"], cluster.Metadata["data-cfx-derived-identity"]);
         Assert.Equal(png, reordered.ToPng()); Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
-        series.WithMapClustering(null);
+        series.MapClustering(null);
         var expanded = Prepare(chart); Assert.Empty(Groups(expanded, "dotted-map-cluster-source"));
         Assert.Equal(4, expanded.Scene.Nodes.OfType<VisualSceneEllipse>().Count(node => node.Role == "dotted-map-point"));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
@@ -85,12 +85,12 @@ public sealed class MapLabelClusterDepthTests {
 
     [Fact]
     public void ClustersNeverCrossDatasetBoundariesAndEmptyOrBelowThresholdInputsKeepTheirRawFacts() {
-        var first = ChartSeries.CreateDottedMap(new ChartSeriesId("first"), "First", new[] { new ChartMapPoint("A", 10, 50) }).WithMapClustering(new ChartMapClustering());
-        var second = ChartSeries.CreateDottedMap(new ChartSeriesId("second"), "Second", new[] { new ChartMapPoint("B", 10, 50) }).WithMapClustering(new ChartMapClustering());
-        var chart = Chart.Create().WithSize(520, 360).WithMapViewport(ChartMapViewport.Europe()).AddSeries(first).AddSeries(second);
+        var first = ChartSeries.CreateDottedMap(new ChartSeriesId("first"), "First", new[] { new ChartMapPoint("A", 10, 50) }).MapClustering(new ChartMapClustering());
+        var second = ChartSeries.CreateDottedMap(new ChartSeriesId("second"), "Second", new[] { new ChartMapPoint("B", 10, 50) }).MapClustering(new ChartMapClustering());
+        var chart = Chart.Create().Size(520, 360).Map(m => m.Viewport(ChartMapViewport.Europe())).AddSeries(first).AddSeries(second);
         var prepared = Prepare(chart); Assert.Empty(Groups(prepared, "dotted-map-cluster-source"));
         Assert.Equal(2, prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Count(node => node.Role == "dotted-map-point"));
-        first.ReplaceMapPoints(new[] { new ChartMapPoint("A", 10, 50), new ChartMapPoint("A2", 10, 50) }).WithMapClustering(new ChartMapClustering(48, 3));
+        first.ReplaceMapPoints(new[] { new ChartMapPoint("A", 10, 50), new ChartMapPoint("A2", 10, 50) }).MapClustering(new ChartMapClustering(48, 3));
         Assert.Empty(Groups(Prepare(chart), "dotted-map-cluster-source"));
         first.ReplaceMapPoints(Array.Empty<ChartMapPoint>()); second.ReplaceMapPoints(Array.Empty<ChartMapPoint>());
         var empty = Prepare(chart); Assert.Empty(Groups(empty, "dotted-map-cluster-source"));
@@ -102,12 +102,12 @@ public sealed class MapLabelClusterDepthTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapClustering(0)); Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapClustering(double.NaN));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapClustering(48, 1)); Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapClustering(48, 2, -1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapCallouts(0)); Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapCallouts(48, (ChartMapRegionLabel)999));
-        Assert.Throws<InvalidOperationException>(() => ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", new[] { new ChartPoint(0, 1) }).WithMapClustering(new ChartMapClustering()));
+        Assert.Throws<InvalidOperationException>(() => ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", new[] { new ChartPoint(0, 1) }).MapClustering(new ChartMapClustering()));
         var chart = MapNavigationDepthRecipe.Create(); var sites = chart.Series[1]; var route = sites.MapConnectors[0];
-        sites.WithMapClustering(null).ReplaceMapConnectors(new[] { route.WithEndpointClearance(null) }); chart.Options.MapCallouts = null;
+        sites.MapClustering(null).ReplaceMapConnectors(new[] { route.WithEndpointClearance(null) }); chart.Options.Map.Callouts = null;
         var baseline = Prepare(chart); var svg = baseline.ToSvg(); var png = baseline.ToPng();
-        sites.WithMapClustering(new ChartMapClustering()).ReplaceMapConnectors(new[] { route }); chart.Options.MapCallouts = new ChartMapCallouts(); _ = Prepare(chart);
-        sites.WithMapClustering(null).ReplaceMapConnectors(new[] { route.WithEndpointClearance(null) }); chart.Options.MapCallouts = null;
+        sites.MapClustering(new ChartMapClustering()).ReplaceMapConnectors(new[] { route }); chart.Options.Map.Callouts = new ChartMapCallouts(); _ = Prepare(chart);
+        sites.MapClustering(null).ReplaceMapConnectors(new[] { route.WithEndpointClearance(null) }); chart.Options.Map.Callouts = null;
         Assert.Equal(svg, Prepare(chart).ToSvg()); Assert.Equal(png, Prepare(chart).ToPng());
     }
 

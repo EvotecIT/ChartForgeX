@@ -19,7 +19,7 @@ public sealed class TopologyOrgPortraitTests {
     [InlineData(true, TopologyPortraitFit.Meet, ThemeMode.Dark, 390)]
     public void HierarchyAndTeamPortraitsShareExactNativeSvgImageGeometryAndCrop(bool team, TopologyPortraitFit fit, ThemeMode mode, int width) {
         var artwork = TopologyIconArtwork.Portrait(Stripes(), fit);
-        var chart = Model(team, artwork).WithViewport(width, 320);
+        var chart = Model(team, artwork).Viewport(new TopologyViewport(width, 320));
         var prepared = chart.Prepare(Context(width, mode), Options());
         Save(prepared, "portrait-" + team + "-" + fit + "-" + mode + "-" + width);
         var image = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneImage>(), node => node.Role == "topology-node-artwork");
@@ -105,7 +105,7 @@ public sealed class TopologyOrgPortraitTests {
     }
 
     private static TopologyChart Model(bool team, TopologyIconArtwork artwork) {
-        var chart = TopologyChart.Create().WithViewport(900, 320).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(900, 320)).Legend((TopologyLegend?)null);
         if (team) chart.AddTeam("team", "Example team", new[] { new TopologyTeamMember("person", "Avery Quinn", "Example role") { Artwork = artwork } },
             new TopologyTeamOptions { IncludeTeamNode = false });
         else chart.AddHierarchy(new[] { new TopologyHierarchyItem("person", "Avery Quinn") { Kind = TopologyNodeKind.Person, Artwork = artwork, Width = 164, Height = 64 } });

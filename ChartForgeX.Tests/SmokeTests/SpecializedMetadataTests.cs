@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
             return group;
         }
 
-        var polar = PreparedFamily(Chart.Create().WithXLabels("Coverage", "Policy", "Alerts").AddPolarArea("Control share", Points(60, 30, 10)));
+        var polar = PreparedFamily(Chart.Create().XLabels("Coverage", "Policy", "Alerts").AddPolarArea("Control share", Points(60, 30, 10)));
         var polarSource = Source(polar, "polar-area-point-source", "series-0-point-0");
         Verify.Equal("Coverage", polarSource.Metadata["data-cfx-label"]);
         Verify.Equal(60, FamilyNumber(polarSource, "data-cfx-value"));
@@ -30,7 +30,7 @@ internal static partial class SmokeTests {
         Verify.All(sectors, sector => Verify.Equal(Math.PI * 2 / 3, sector.Sweep, 10));
         Verify.Equal(.5, Math.Pow(sectors[1].Outer / sectors[0].Outer, 2), 10);
 
-        var funnel = PreparedFamily(Chart.Create().WithXLabels("Discovered", "Validated", "Fixed").AddFunnel("Pipeline", Points(100, 70, 35)));
+        var funnel = PreparedFamily(Chart.Create().XLabels("Discovered", "Validated", "Fixed").AddFunnel("Pipeline", Points(100, 70, 35)));
         var stage = Source(funnel, "funnel-stage", "series-0-point-1");
         Verify.Equal("Validated", stage.Metadata["data-cfx-label"]);
         Verify.Equal(70, FamilyNumber(stage, "data-cfx-value"));
@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
         Verify.Equal(.3, FamilyNumber(stage, "data-cfx-dropoff"), 10);
         Verify.Equal(3, funnel.Scene.Nodes.OfType<VisualScenePath>().Count(mark => mark.Role == "funnel-segment" && mark.Close));
 
-        var radial = PreparedFamily(Chart.Create().WithXLabels("Identity", "Device", "Network").AddProgressRing("Coverage", Points(92, 74, 66)));
+        var radial = PreparedFamily(Chart.Create().XLabels("Identity", "Device", "Network").AddProgressRing("Coverage", Points(92, 74, 66)));
         var radialSource = Source(radial, "progress-ring-point", "series-0-point-0");
         Verify.Equal("Identity", radialSource.Metadata["data-cfx-label"]);
         Verify.Equal(92, FamilyNumber(radialSource, "data-cfx-value"));
@@ -46,8 +46,8 @@ internal static partial class SmokeTests {
         Verify.Equal(100, FamilyNumber(radialSource, "data-cfx-max"));
         var ring = radial.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Role == "progress-ring-ring");
         Verify.Equal(.92, ring.Sweep / (Math.PI * 2), 10);
-        var positionedRadial = PreparedFamily(Chart.Create().WithLegendPosition(ChartLegendPosition.TopRight)
-            .WithXLabels("Identity", "Device", "Network").AddProgressRing("Coverage", Points(92, 74, 66)));
+        var positionedRadial = PreparedFamily(Chart.Create().Legend(l => l.Position(ChartLegendPosition.TopRight))
+            .XLabels("Identity", "Device", "Network").AddProgressRing("Coverage", Points(92, 74, 66)));
         Verify.Equal(new[] { "Identity", "Device", "Network" }, FamilyLabels(positionedRadial, "legend-label").Select(FamilyContent));
         var firstRing = positionedRadial.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Role == "progress-ring-ring");
         Verify.True(positionedRadial.Regions.Where(region => region.Role == "legend").Max(region => region.Bounds.Bottom) < firstRing.Cy);
@@ -85,7 +85,7 @@ internal static partial class SmokeTests {
         var bulletTarget = Verify.Single(bullet.Scene.Nodes.OfType<VisualSceneLine>(), mark => mark.Role == "bullet-target");
         Verify.True(bulletValue.Bounds.Right < bulletTarget.Start.X);
 
-        var waterfall = PreparedFamily(Chart.Create().WithXLabels("Opened", "Closed").AddWaterfall("Findings", Points(18, -7)));
+        var waterfall = PreparedFamily(Chart.Create().XLabels("Opened", "Closed").AddWaterfall("Findings", Points(18, -7)));
         var waterfallSource = Source(waterfall, "point", "series-0-point-1");
         Verify.Equal(18, FamilyNumber(waterfallSource, "data-cfx-start"));
         Verify.Equal(11, FamilyNumber(waterfallSource, "data-cfx-end"));

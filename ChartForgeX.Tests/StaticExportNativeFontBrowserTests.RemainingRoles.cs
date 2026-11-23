@@ -15,7 +15,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (!Enabled) return;
         var artifact = MermaidRemainingCaptionRolesExample.Create(family, width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family);
         var chart = Assert.IsType<TopologyChart>(artifact.Model);
-        var html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { EnableHtmlExportControls = true });
+        var html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { Html = { ExportControls = true } });
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 760);
         var root = session.Page.Locator(".cfx-topology-viewport > svg[role=img]"); var before = await root.EvaluateAsync<string>("node=>node.outerHTML");
         var export = await CaptureExports(session.Page, "[data-cfx-topology-export=svg]", "[data-cfx-topology-export=png]", "remaining-caption-browser-" + family + "-" + width + "-" + dark);

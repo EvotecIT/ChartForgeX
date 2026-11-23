@@ -88,7 +88,7 @@ public sealed class ChartTable : FactualVisualBlock<ChartTable> {
     public static ChartTable Create() => new();
 
     /// <summary>Adds columns from header text.</summary>
-    public ChartTable WithColumns(params string[] headers) {
+    internal ChartTable SetColumns(params string[] headers) {
         if (headers == null) throw new ArgumentNullException(nameof(headers));
         if (headers.Length == 0) throw new ArgumentException("Table must contain at least one column.", nameof(headers));
         if (_rows.Count > 0 && _rows[0].Cells.Count != headers.Length) throw new InvalidOperationException("Existing table rows do not match the new column count.");
@@ -124,7 +124,7 @@ public sealed class ChartTable : FactualVisualBlock<ChartTable> {
 
     /// <summary>Installs an independent row snapshot after successful configuration.</summary>
     /// <remarks>Callback exceptions preserve the row. Previous rows and retained callback values remain independent of the installed cells and microvisuals.</remarks>
-    public ChartTable ConfigureRow(int rowIndex, Action<ChartTableRow> configure) {
+    public ChartTable UpdateRow(int rowIndex, Action<ChartTableRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table row.");
         _rows[rowIndex] = ChartOptionConfiguration.Configure(_rows[rowIndex], configure, row => row.Clone());
@@ -132,29 +132,20 @@ public sealed class ChartTable : FactualVisualBlock<ChartTable> {
     }
 
     /// <summary>Marks a column as a status column by header.</summary>
-    public ChartTable WithStatusColumn(string header) {
+    public ChartTable StatusColumn(string header) {
         if (header == null) throw new ArgumentNullException(nameof(header));
         var index = _columns.FindIndex(column => string.Equals(column.Header, header, StringComparison.Ordinal));
         if (index < 0) index = _columns.FindIndex(column => string.Equals(column.Header, header, StringComparison.OrdinalIgnoreCase));
         if (index < 0) throw new ArgumentException("Status column header must reference an existing table column.", nameof(header));
-        return WithStatusColumn(index);
+        return StatusColumn(index);
     }
 
     /// <summary>Marks a column as a status column by index.</summary>
-    public ChartTable WithStatusColumn(int columnIndex) {
+    public ChartTable StatusColumn(int columnIndex) {
         if (columnIndex < 0 || columnIndex >= _columns.Count) throw new ArgumentOutOfRangeException(nameof(columnIndex), columnIndex, "Status column index must reference an existing table column.");
         _statusColumnIndex = columnIndex;
         return this;
     }
-
-    /// <summary>Sets whether alternating row backgrounds are rendered.</summary>
-    public ChartTable WithRowStriping(bool enabled = true) { RowStriping = enabled; return this; }
-
-    /// <summary>Sets whether the header row is rendered.</summary>
-    public ChartTable WithHeader(bool enabled = true) { ShowHeader = enabled; return this; }
-
-    /// <summary>Sets whether compact row sizing is used.</summary>
-    public ChartTable WithDenseMode(bool enabled = true) { Dense = enabled; return this; }
 }
 
 /// <summary>
@@ -292,15 +283,6 @@ public sealed class ChartList : FactualVisualBlock<ChartList> {
         Marker = VisualListMarker.Check;
         return this;
     }
-
-    /// <summary>Sets the marker style.</summary>
-    public ChartList WithMarker(VisualListMarker marker) {
-        Marker = marker;
-        return this;
-    }
-
-    /// <summary>Sets whether compact row sizing is used.</summary>
-    public ChartList WithDenseMode(bool enabled = true) { Dense = enabled; return this; }
 }
 
 /// <summary>
@@ -361,17 +343,14 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     public static RadialMetricCard Create() => new();
 
     /// <summary>Sets the primary center metric label and value.</summary>
-    public RadialMetricCard WithMetric(string label, object? value, string? format = null) {
+    public RadialMetricCard Metric(string label, object? value, string? format = null) {
         Label = label ?? throw new ArgumentNullException(nameof(label));
         Value = ChartTableCell.FromValue(value, format).Text;
         return this;
     }
 
-    /// <summary>Sets an optional built-in icon rendered above the center metric.</summary>
-    public RadialMetricCard WithIcon(Icon icon) { Icon = icon; return this; }
-
     /// <summary>Replaces all radial layers.</summary>
-    public RadialMetricCard WithLayers(IEnumerable<ChartRadialLayer> layers) {
+    internal RadialMetricCard SetLayers(IEnumerable<ChartRadialLayer> layers) {
         if (layers == null) throw new ArgumentNullException(nameof(layers));
         _layers.Clear();
         foreach (var layer in layers) AddLayer(layer);
@@ -379,10 +358,10 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     }
 
     /// <summary>Replaces all radial layers using a fluent layer collection builder.</summary>
-    public RadialMetricCard WithLayers(Func<ChartRadialLayers, ChartRadialLayers> configure) {
+    internal RadialMetricCard SetLayers(Func<ChartRadialLayers, ChartRadialLayers> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var layers = configure(ChartRadialLayers.Create()) ?? throw new InvalidOperationException("Radial metric layer configuration cannot return null.");
-        return WithLayers(layers);
+        return SetLayers(layers);
     }
 
     /// <summary>Adds one radial layer.</summary>
@@ -484,11 +463,11 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
         if (title == null) throw new ArgumentNullException(nameof(title));
         if (cards == null) throw new ArgumentNullException(nameof(cards));
         var grid = Create()
-            .WithTitle(title)
-            .WithColumns(columns)
-            .WithPanelSize(panelWidth, panelHeight)
-            .WithGap(16)
-            .WithPadding(24);
+            .Title(title)
+            .Columns(columns)
+            .PanelSize(panelWidth, panelHeight)
+            .Gap(16)
+            .Padding(24);
         var count = 0;
         foreach (var card in cards) {
             if (card == null) throw new ArgumentException("Metric strips cannot contain null cards.", nameof(cards));
@@ -500,41 +479,8 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
         return grid;
     }
 
-    /// <summary>Sets the grid title.</summary>
-    public VisualGrid WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets the grid subtitle.</summary>
-    public VisualGrid WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>Sets the preferred column count.</summary>
-    public VisualGrid WithColumns(int columns) { Columns = columns; return this; }
-
-    /// <summary>Sets the gap between panels.</summary>
-    public VisualGrid WithGap(int gap) { Gap = gap; return this; }
-
-    /// <summary>Sets the outer padding.</summary>
-    public VisualGrid WithPadding(int padding) { Padding = padding; return this; }
-
-    /// <summary>Sets the grid theme.</summary>
-    public VisualGrid WithTheme(VisualTheme theme, ThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
-
-    /// <summary>Chooses the light or dark appearance without replacing the shared theme.</summary>
-    public VisualGrid WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
-
     /// <summary>Sets a fixed panel size.</summary>
-    public VisualGrid WithPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }
-
-    /// <summary>Sets how children fit fixed panels.</summary>
-    public VisualGrid WithPanelFit(VisualPanelFit fit) { PanelFit = fit; return this; }
-
-    /// <summary>Sets whether rows without a fixed panel size use their natural item heights.</summary>
-    public VisualGrid WithAdaptiveRowHeights(bool enabled = true) { AdaptiveRowHeights = enabled; return this; }
-
-    /// <summary>Sets the PNG output pixel multiplier.</summary>
-    public VisualGrid WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
-
-    /// <summary>Sets whether the grid renders a subtle outer frame.</summary>
-    public VisualGrid WithFrame(bool visible = true) { FrameVisible = visible; return this; }
+    internal VisualGrid SetPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }
 
 
     /// <summary>Renders static grid SVG with an embedding identity scope.</summary>

@@ -11,9 +11,9 @@ internal static partial class SmokeTests {
     private static void RegionMapRendersReusableMapDefinition() {
         var definition = ChartMapCatalog.Get("us-states");
         var chart = Chart.Create()
-            .WithSize(760, 420)
-            .WithTitle("Revenue by region")
-            .WithMapLabels(false)
+            .Size(760, 420)
+            .Title("Revenue by region")
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Revenue", definition, new[] {
                 new ChartRegionMapItem("California", 95, ChartColor.FromHex("#2563EB")),
                 new ChartRegionMapItem("NY", 82),
@@ -29,8 +29,8 @@ internal static partial class SmokeTests {
     private static void TileMapRendersReusableTileMapDefinition() {
         var definition = ChartTileMapCatalog.Get("us-states");
         var chart = Chart.Create()
-            .WithSize(760, 420)
-            .WithTitle("Revenue by tile region")
+            .Size(760, 420)
+            .Title("Revenue by tile region")
             .AddTileMap("Revenue", definition, new[] {
                 new ChartRegionMapItem("CA", 95, ChartColor.FromHex("#2563EB")),
                 new ChartRegionMapItem("NY", 82),
@@ -59,13 +59,12 @@ internal static partial class SmokeTests {
         };
 
         var region = Chart.Create()
-            .WithSize(760, 420)
-            .WithMapLabels(false)
-            .WithMapColorScale(scale)
+            .Size(760, 420)
+            .Map(m => m.ShowLabels(false).ColorScale(scale))
             .AddRegionMap("Change", ChartMapCatalog.Get("us-states"), regions);
         var tile = Chart.Create()
-            .WithSize(760, 420)
-            .WithMapColorScale(scale)
+            .Size(760, 420)
+            .Map(m => m.ColorScale(scale))
             .AddTileMap("Change", ChartTileMapCatalog.Get("us-states"), regions);
 
         foreach (var chart in new[] { region, tile }) {
@@ -97,8 +96,8 @@ internal static partial class SmokeTests {
             .WithValueRange(0, 10);
 
         var chart = Chart.Create()
-            .WithSize(360, 260)
-            .WithMapLabels(false)
+            .Size(360, 260)
+            .Map(m => m.ShowLabels(false))
             .AddRegionHeatmap("Births", definition, new[] {
                 new ChartRegionMapItem("A", 0),
                 new ChartRegionMapItem("B", 2.5),
@@ -133,14 +132,11 @@ internal static partial class SmokeTests {
             new ChartMapRegion("BG", "Background", "M-12 -72L35 -72L35 -34L-12 -34Z")
         });
         var region = Chart.Create()
-            .WithSize(760, 420)
-            .WithCard(false)
-            .WithPlotBackground(false)
-            .WithMapSurface(false)
-            .WithMapLabels(false)
-            .WithMapRegionStroke(ChartColor.FromRgba(255, 255, 255, 160), 0.42)
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .WithRegionMapCoordinateBounds(-12, 35, 34, 72)
+            .Size(760, 420)
+            .ShowCard(false)
+            .ShowPlotBackground(false)
+            .Map(m => m.ShowSurface(false).ShowLabels(false).RegionStrokeColor(ChartColor.FromRgba(255, 255, 255, 160)).RegionStrokeWidth(0.42).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
+            .RegionMapCoordinateBounds(-12, 35, 34, 72)
             .AddMapBaseLayer(contextDefinition, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#D4D4D8"), 0.8)
             .AddRegionHeatmap("Births", reportDefinition, new[] {
                 new ChartRegionMapItem("A", 0),
@@ -149,11 +145,10 @@ internal static partial class SmokeTests {
             }, scale)
             .AddMapBoundaryLayer(contextDefinition, ChartColor.FromHex("#111827"), 1.4);
         var tile = Chart.Create()
-            .WithSize(760, 420)
-            .WithCard(false)
-            .WithPlotBackground(false)
-            .WithMapSurface(false)
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .Size(760, 420)
+            .ShowCard(false)
+            .ShowPlotBackground(false)
+            .Map(m => m.ShowSurface(false).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
             .AddTileHeatmap("Births", ChartTileMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 0),
                 new ChartRegionMapItem("NY", 50),
@@ -177,10 +172,10 @@ internal static partial class SmokeTests {
         Assert(!tileSvg.Contains("data-cfx-role=\"tile-map-surface\"", StringComparison.Ordinal), "Report-style tile maps should be able to suppress the map surface.");
         Assert(region.ToPng().Length > 64, "Report-style region heatmaps should render PNG output.");
         Assert(tile.ToPng().Length > 64, "Report-style tile heatmaps should render PNG output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapBounds(new ChartRect(double.NaN, 0, 10, 10)), "Region map bounds should reject non-finite left values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapBounds(new ChartRect(0, 0, double.PositiveInfinity, 10)), "Region map bounds should reject non-finite dimensions.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapCoordinateBounds(35, -12, 34, 72), "Region map coordinate bounds should reject inverted longitudes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithRegionMapCoordinateBounds(-12, 35, 72, 34), "Region map coordinate bounds should reject inverted latitudes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Map(m => m.RegionBounds(new ChartRect(double.NaN, 0, 10, 10))), "Region map bounds should reject non-finite left values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Map(m => m.RegionBounds(new ChartRect(0, 0, double.PositiveInfinity, 10))), "Region map bounds should reject non-finite dimensions.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().RegionMapCoordinateBounds(35, -12, 34, 72), "Region map coordinate bounds should reject inverted longitudes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().RegionMapCoordinateBounds(-12, 35, 72, 34), "Region map coordinate bounds should reject inverted latitudes.");
     }
 
     private static void GeoJsonMapDefinitionsImportPolygonFeaturesForRegionHeatmaps() {
@@ -220,8 +215,8 @@ internal static partial class SmokeTests {
 
         var scale = ChartColorScale.Sequential(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#065F46")).WithValueRange(0, 10);
         var svg = Chart.Create()
-            .WithSize(420, 260)
-            .WithMapLabels(false)
+            .Size(420, 260)
+            .Map(m => m.ShowLabels(false))
             .AddRegionHeatmap("Births", definition, new[] {
                 new ChartRegionMapItem("PL911", 0),
                 new ChartRegionMapItem("DE300", 10)
@@ -263,14 +258,14 @@ internal static partial class SmokeTests {
         """;
 
         var definition = ChartMapDefinition.FromGeoJson("nuts-bounded", "NUTS bounded", geoJson, new ChartMapGeoJsonOptions()
-            .WithCoordinateBounds(10, 30, 49, 60));
+            .MinimumLongitude(10).MaximumLongitude(30).MinimumLatitude(49).MaximumLatitude(60).IncludeFeaturesIntersectingCoordinateBounds());
 
         Assert(definition.Regions.Count == 2, "GeoJSON coordinate bounds should keep features intersecting the requested longitude and latitude window.");
         Assert(definition.TryResolveRegion("PL911", out _), "GeoJSON coordinate bounds should keep matching regions.");
         Assert(definition.TryResolveRegion("CZ010", out _), "GeoJSON coordinate bounds should include matching edge regions.");
         Assert(!definition.TryResolveRegion("FRY10", out _), "GeoJSON coordinate bounds should omit far-away regions so imported map bounds remain focused.");
         Assert(definition.Bounds.Left > 10 && definition.Bounds.Right < 30, "Bounded GeoJSON definitions should derive map bounds from kept regions only.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapDefinition.FromGeoJson("bad", "Bad", geoJson, new ChartMapGeoJsonOptions().WithCoordinateBounds(30, 10, 49, 60)), "GeoJSON coordinate bounds should validate ordered longitudes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapDefinition.FromGeoJson("bad", "Bad", geoJson, new ChartMapGeoJsonOptions().MinimumLongitude(30).MaximumLongitude(10).MinimumLatitude(49).MaximumLatitude(60).IncludeFeaturesIntersectingCoordinateBounds()), "GeoJSON coordinate bounds should validate ordered longitudes.");
     }
 
     private static void MapDefinitionsIgnoreAmbiguousAliases() {
@@ -374,12 +369,12 @@ internal static partial class SmokeTests {
         };
 
         var tileSvg = Chart.Create()
-            .WithSize(760, 420)
+            .Size(760, 420)
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), regions)
             .ToSvg();
         var regionSvg = Chart.Create()
-            .WithSize(760, 420)
-            .WithMapLabels(false)
+            .Size(760, 420)
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), regions)
             .ToSvg();
 
@@ -403,8 +398,8 @@ internal static partial class SmokeTests {
             new ChartMapRegion("pl-MZ", "Mazowieckie", "M5 0L10 0L10 10L5 10Z")
         });
         var mapSvg = Chart.Create()
-            .WithSize(360, 220)
-            .WithMapLabels(false)
+            .Size(360, 220)
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Regions", mapDefinition, new[] {
                 new ChartRegionMapItem("de-BE", 10),
                 new ChartRegionMapItem("pl-MZ", 20)
@@ -416,8 +411,8 @@ internal static partial class SmokeTests {
             new ChartTileMapRegion("tenant-b", "Tenant b", 1, 0)
         });
         var tileSvg = Chart.Create()
-            .WithSize(360, 220)
-            .WithMapLabels(false)
+            .Size(360, 220)
+            .Map(m => m.ShowLabels(false))
             .AddTileMap("Tenants", tileDefinition, new[] {
                 new ChartRegionMapItem("tenant-A", 10),
                 new ChartRegionMapItem("tenant-b", 20)
@@ -446,8 +441,8 @@ internal static partial class SmokeTests {
             new ChartMapRegion("B", "Beta", "M1e0-1L3,1L3,3L1,3z m.5,.5 l1,0 0,1 -1,0 z")
         });
         var chart = Chart.Create()
-            .WithSize(360, 240)
-            .WithMapLabels(false)
+            .Size(360, 240)
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Custom", definition, new[] {
                 new ChartRegionMapItem("A", 10),
                 new ChartRegionMapItem("B", 20)
@@ -465,9 +460,9 @@ internal static partial class SmokeTests {
             new ChartMapRegion("B", "Beta", "M11,0 12,0 12,1 11,1Z")
         });
         var chart = Chart.Create()
-            .WithSize(240, 190)
-            .WithMapLabels(false)
-            .ConfigureMapColorDimension(options => options.ShowLegend = false)
+            .Size(240, 190)
+            .Map(m => m.ShowLabels(false))
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false))
             .AddRegionMap("Holes", definition, new[] {
                 new ChartRegionMapItem("A", 100, ChartColor.FromHex("#DC2626")),
                 new ChartRegionMapItem("B", 0)
@@ -514,8 +509,8 @@ internal static partial class SmokeTests {
             new ChartMapRegion("C", "Gamma", "M25 82 A18 12 20 0 1 75 82 A18 12 20 0 1 25 82 Z")
         });
         var chart = Chart.Create()
-            .WithSize(420, 300)
-            .WithMapLabels(false)
+            .Size(420, 300)
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Commands", definition, new[] {
                 new ChartRegionMapItem("A", 10),
                 new ChartRegionMapItem("B", 20),
@@ -533,9 +528,9 @@ internal static partial class SmokeTests {
             new ChartMapRegion("A", "Alpha", "M0,0 1,0 1,.5 0,.5Z")
         });
         var chart = Chart.Create()
-            .WithSize(420, 300)
-            .WithMapLabels(false)
-            .ConfigureMapColorDimension(options => options.ShowLegend = false)
+            .Size(420, 300)
+            .Map(m => m.ShowLabels(false))
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false))
             .AddRegionMap("Normalized", definition, new[] {
                 new ChartRegionMapItem("A", 10)
             });
@@ -549,8 +544,8 @@ internal static partial class SmokeTests {
 
     private static void TileMapLabelsCanBeHiddenForCompactCards() {
         var chart = Chart.Create()
-            .WithSize(360, 220)
-            .WithMapLabels(false)
+            .Size(360, 220)
+            .Map(m => m.ShowLabels(false))
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("NY", 82)
@@ -564,9 +559,9 @@ internal static partial class SmokeTests {
 
     private static void RegionMapScaleLegendCanBeHiddenForCompactCards() {
         var chart = Chart.Create()
-            .WithSize(420, 260)
-            .ConfigureMapColorDimension(options => options.ShowLegend = false)
-            .WithMapLabels(false)
+            .Size(420, 260)
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false))
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("NY", 82)
@@ -580,7 +575,7 @@ internal static partial class SmokeTests {
 
     private static void RegionMapLabelsOnlyRenderWhenRegionsHaveRoom() {
         var chart = Chart.Create()
-            .WithSize(760, 420)
+            .Size(760, 420)
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("DC", 42)
@@ -596,8 +591,8 @@ internal static partial class SmokeTests {
 
     private static void TileMapScaleLegendCanBeHiddenForCompactCards() {
         var chart = Chart.Create()
-            .WithSize(360, 220)
-            .ConfigureMapColorDimension(options => options.ShowLegend = false)
+            .Size(360, 220)
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false))
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("NY", 82)
@@ -612,10 +607,10 @@ internal static partial class SmokeTests {
     private static void MapScaleLegendSeparatesNoDataFromLowValues() {
         var completeRegions = AllCatalogRegions();
         var region = Chart.Create()
-            .WithSize(760, 420)
+            .Size(760, 420)
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), completeRegions);
         var tile = Chart.Create()
-            .WithSize(760, 420)
+            .Size(760, 420)
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), completeRegions);
 
         var regionSvg = region.ToSvg();
@@ -634,15 +629,15 @@ internal static partial class SmokeTests {
 
     private static void MapNoDataScaleStaysInsideCompactCards() {
         var region = Chart.Create()
-            .WithSize(300, 210)
-            .WithMapLabels(false)
+            .Size(300, 210)
+            .Map(m => m.ShowLabels(false))
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("NY", 82)
             });
         var tile = Chart.Create()
-            .WithSize(300, 210)
-            .WithMapLabels(false)
+            .Size(300, 210)
+            .Map(m => m.ShowLabels(false))
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("NY", 82)

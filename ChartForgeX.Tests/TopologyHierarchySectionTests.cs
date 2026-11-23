@@ -87,7 +87,7 @@ public sealed class TopologyHierarchySectionTests {
     internal static TopologyChart Source(ThemeMode mode) {
         var pixels = new byte[8 * 4 * 4]; for (var index = 0; index < 32; index++) { pixels[index * 4] = 36; pixels[index * 4 + 1] = 112; pixels[index * 4 + 2] = 168; pixels[index * 4 + 3] = 255; }
         var portrait = TopologyIconArtwork.Portrait(new RgbaImage(8, 4, pixels));
-        var chart = TopologyChart.Create().WithId("organization-source").WithViewport(1100, 580).WithLegend(null).AddHierarchy(new[] {
+        var chart = TopologyChart.Create().Id("organization-source").Viewport(new TopologyViewport(1100, 580)).Legend((TopologyLegend?)null).AddHierarchy(new[] {
             new TopologyHierarchyItem("lead", "Avery Quinn") { Artwork = portrait },
             new TopologyHierarchyItem("engineering", "Engineering", "lead") { Artwork = portrait },
             new TopologyHierarchyItem("operations", "Operations", "lead") { Artwork = portrait },

@@ -16,11 +16,11 @@ public sealed class GaugeScalePrecisionBrowserTests {
         if (!Enabled) return;
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(path), "The existing Carlito fixture must be available.");
-        var chart = Chart.Create().WithSize(width, height).WithPngFont(path)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito"), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands")
+        var chart = Chart.Create().Size(width, height).Png(p => p.FontPath(path))
+            .Theme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito")).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Readiness needle").Subtitle("Explicit target and bands")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) })))
-            .ConfigureGauge(options => {
+            .Gauge(options => {
                 options.Form = ChartGaugeForm.Needle;
                 options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
@@ -89,9 +89,9 @@ public sealed class GaugeScalePrecisionBrowserTests {
     [InlineData(true, 1d, 800, 440)]
     public async Task NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg(bool dark, double ratio, int width, int height) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
+        var chart = Chart.Create().Size(width, height).Legend(false).Title("Range")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).Gauge(options => options.Form = ChartGaugeForm.Needle);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><body style='margin:24px;background:" + (dark ? "#111827" : "#fff") + "'>"
             + prepared.ToSvg() + "<img style='display:block' width='" + width + "' height='" + height + "' src='data:image/png;base64," + Convert.ToBase64String(prepared.ToPng()) + "'></body></html>";
@@ -136,11 +136,11 @@ public sealed class GaugeScalePrecisionBrowserTests {
     [InlineData(ChartGaugeForm.Linear, true, 360, 360)]
     public async Task CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng(ChartGaugeForm form, bool dark, int width, int height) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Measured range")
+        var chart = Chart.Create().Size(width, height).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Measured range")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
-            .ConfigureGauge(options => options.Form = form);
+            .Gauge(options => options.Form = form);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var background = dark ? "#111827" : "#fff";
         var html = "<!doctype html><html><body style=\"margin:24px;background:" + background + ";color:" + (dark ? "#fff" : "#111827") + "\">SVG"

@@ -12,14 +12,14 @@ internal static partial class VisualMapCompiler {
     private static MapLayout MissingScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartColorPresentation presentation) {
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
-        if (chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
+        if (chart.Options.Map.ScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
             var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
             var width = Math.Min(plot.Width * .4, Math.Max(builder.MeasureText(title, style).Width,
                 builder.MeasureText(presentation.NoData, style).Width) + builder.MeasureText("Mg", style).Height + gap * 3);
             return new MapLayout(new ChartRect(plot.Left, plot.Top, Math.Max(0, plot.Width - width - gap), plot.Height),
                 new ChartRect(plot.Right - width, plot.Top, width, plot.Height), Array.Empty<string>(), true);
         }
-        var height = VisualColorScaleLegendScene.Height(builder, chart.Options.MapColorScale!, presentation.Labels, style,
+        var height = VisualColorScaleLegendScene.Height(builder, chart.Options.Map.ColorScale!, presentation.Labels, style,
             gap / 2, plot.Width, plot.Height * .35, true, presentation.ScaleValues, hasDomain: false,
             heading: presentation.HasName ? presentation.Name : null);
         return new MapLayout(new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, plot.Height - height - gap)),

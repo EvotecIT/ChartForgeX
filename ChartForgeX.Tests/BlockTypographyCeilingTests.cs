@@ -18,7 +18,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(true)]
     public async Task TallSingleBranchGitKeepsMeasuredTagInsideItsBadge(bool dark) {
         var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var block = GitGraphBlock.Create().WithSize(600, 1200).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "i");
+        var block = GitGraphBlock.Create().Size(600, 1200).Theme(theme).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).ShowCard(false).AddBranch("main").AddCommit("base", "main", tag: "i");
         var svg = block.ToSvg();
         Assert.Equal("i", Assert.Single(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "git-tag-label").Value);
         Assert.NotEmpty(block.ToPng());
@@ -35,7 +35,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(true)]
     public async Task GitCaptionsWithLineBreaksFitAsSingleTextRuns(bool dark) {
         var theme = VisualTheme.Graphite().WithFontFamily("Courier New");
-        var block = GitGraphBlock.Create().WithSize(320, 300).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light).WithCard(false)
+        var block = GitGraphBlock.Create().Size(320, 300).Theme(theme).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).ShowCard(false)
             .AddBranch("main").AddCommit("first", "main").AddCommit("last", "main", label: "MMMMMMMMMM\nMMMMMMMMMM");
         var svg = block.ToSvg();
         Assert.NotEmpty(block.ToPng());
@@ -95,7 +95,7 @@ public sealed class BlockTypographyCeilingTests {
         theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 48, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; builder.Light.Muted = builder.Dark.Muted = ChartColor.Transparent; });
         var red = ChartColor.FromHex("#FF0000");
-        var block = VennDiagramBlock.Create().WithSize(600, 400).WithCard(false).WithTheme(theme).WithTransparentBackground()
+        var block = VennDiagramBlock.Create().Size(600, 400).ShowCard(false).Theme(theme).TransparentBackground()
             .AddSet("A", "MMMM", 60).AddSet("B", "NNNN", 50)
             .AddIntersection(new[] { "A", "B" }, "MMMM", 10).AddText(new[] { "A" }, "note", "Data");
         if (role == 0) block.Sets[0].TextColor = red;

@@ -70,8 +70,8 @@ public static partial class TopologyChartExtensions {
     public static SequenceArtifact ToSequenceArtifact(this TopologyChart chart, string scenarioId) {
         var resolved = TopologyScenarioResolver.Resolve(chart, scenarioId);
         var baseId = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
-        var sequence = SequenceArtifact.Create(baseId + "-" + resolved.Id + "-sequence").WithTitle(resolved.Label);
-        if (!string.IsNullOrWhiteSpace(resolved.Scenario.Description)) sequence.WithSubtitle(resolved.Scenario.Description!);
+        var sequence = SequenceArtifact.Create(baseId + "-" + resolved.Id + "-sequence").Title(resolved.Label);
+        if (!string.IsNullOrWhiteSpace(resolved.Scenario.Description)) sequence.Subtitle(resolved.Scenario.Description!);
         sequence.Theme = chart.Theme;
         sequence.ThemeMode = chart.ThemeMode;
         sequence.Padding = chart.Viewport.Padding;

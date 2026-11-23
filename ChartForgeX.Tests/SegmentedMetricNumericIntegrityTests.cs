@@ -61,7 +61,7 @@ public sealed class SegmentedMetricNumericIntegrityTests {
     }
 
     private static SegmentedMetricBlock Create(SegmentedMetricStyle style, double value, bool includeZero) {
-        var block = SegmentedMetricBlock.Create(style).WithSize(620, 360).WithMetric("Capacity", "Balanced");
+        var block = SegmentedMetricBlock.Create(style).Size(620, 360).Metric("Capacity", "Balanced");
         block.AddItem(new SegmentedMetricItem("First", value) { Color = ChartColor.FromHex("#D32F2F"), DisplayValue = "One half" });
         if (includeZero) block.AddItem(new SegmentedMetricItem("Empty", 0) { DisplayValue = "Empty" });
         block.AddItem(new SegmentedMetricItem("Second", value) { Color = ChartColor.FromHex("#1976D2"), DisplayValue = "One half" });

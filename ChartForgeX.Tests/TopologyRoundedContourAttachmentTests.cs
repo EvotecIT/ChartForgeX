@@ -34,8 +34,8 @@ public sealed class TopologyRoundedContourAttachmentTests {
     }
 
     private static void AssertAttachment(TopologyNodeShape shape, double width, double height, bool reversed, bool fit) {
-        var chart = TopologyChart.Create().WithViewport(500, 360, 0)
-            .WithLayout(TopologyLayoutMode.Manual).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(500, 360, 0))
+            .LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 100, Y = 100,
             Width = width, Height = height, Shape = shape, PreserveDisplayModeSize = true,
             FitLabelToContent = false, ShowLabel = false, ShowStatusBadge = false,

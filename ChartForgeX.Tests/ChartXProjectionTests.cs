@@ -11,7 +11,7 @@ public sealed class ChartAxisProjectionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ProjectionUsesTheNativeMappingAndExtrapolatesWithoutClamping(bool reversed) {
-        var chart = Line().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Line().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         chart.Options.XAxis.Reversed = reversed;
         var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(2, 6)));
         var projection = Assert.IsType<ChartAxisProjection>(prepared.XProjection);
@@ -53,7 +53,7 @@ public sealed class ChartAxisProjectionTests {
     [InlineData(5, 11)]
     [InlineData(11, 12)]
     public void ViewportCannotExtendBeyondTheResolvedFullDomain(double minimum, double maximum) =>
-        Assert.Throws<ArgumentOutOfRangeException>(() => Line().WithXAxisBounds(0, 10).Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(minimum, maximum))));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Line().XAxis(x => x.Bounds(0, 10)).Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(minimum, maximum))));
 
     [Theory]
     [InlineData(ChartSeriesKind.Bar)]
@@ -75,7 +75,7 @@ public sealed class ChartAxisProjectionTests {
     [Fact]
     public void NonlinearAndMixedCartesianChartsCaptureProjectionsWhileSparklinesRemainExcluded() {
         var nonlinear = Chart.Create().AddLine("Positive", new[] { new ChartPoint(1, 2), new ChartPoint(10, 4) })
-            .WithXAxisBounds(1, 10).WithXAxisScale(ChartScaleKind.Logarithmic);
+            .XAxis(x => x.Bounds(1, 10).Scale(ChartScaleKind.Logarithmic));
         var mixed = Line().AddBar("Other", new[] { new ChartPoint(1, 2) });
         var sparkline = Line(); sparkline.Options.IsSparkline = true;
         foreach (var chart in new[] { nonlinear, mixed }) {
@@ -100,7 +100,7 @@ public sealed class ChartAxisProjectionTests {
         var exhausted = Line().Prepare(tiny);
         Assert.Null(exhausted.XProjection); Assert.Contains(exhausted.Diagnostics, item => item.Code == "cartesian.insufficient-space");
         Assert.Throws<InvalidOperationException>(() => Line().Prepare(tiny, new ChartCartesianViewport(x: new ChartAxisWindow(1, 2))));
-        var error = Assert.Throws<ArgumentOutOfRangeException>(() => Line().WithXAxisBounds(0, 10)
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() => Line().XAxis(x => x.Bounds(0, 10))
             .Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(0, double.Epsilon))));
         Assert.Equal("viewport", error.ParamName);
     }
@@ -127,7 +127,7 @@ public sealed class ChartAxisProjectionTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => narrow.Project(1));
     }
 
-    private static Chart Line() => Chart.Create().WithLegend(false)
+    private static Chart Line() => Chart.Create().Legend(false)
         .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(5, 5), new ChartPoint(10, 8) });
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(420, 280)), frame: new VisualFrame(showLegend: false));
 }

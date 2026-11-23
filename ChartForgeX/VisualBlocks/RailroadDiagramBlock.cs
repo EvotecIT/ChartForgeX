@@ -37,7 +37,7 @@ public sealed class RailroadDiagramBlock : VisualBlock<RailroadDiagramBlock> {
     /// <summary>Measures the complete natural frame before any raster allocation.</summary>
     public ChartSize MeasureNaturalSize() => VisualBlockRendering.RailroadLayout(this).Size;
     /// <summary>Sets the complete natural frame, retaining optional minimum dimensions.</summary>
-    public RailroadDiagramBlock WithNaturalSize(int minimumWidth = 0, int minimumHeight = 0) {
+    public RailroadDiagramBlock NaturalSize(int minimumWidth = 0, int minimumHeight = 0) {
         if (minimumWidth < 0 || minimumHeight < 0) throw new ArgumentOutOfRangeException(nameof(minimumWidth));
         var size = MeasureNaturalSize(); Options.Size = new ChartSize(Math.Max(size.Width, minimumWidth), Math.Max(size.Height, minimumHeight)); return this;
     }

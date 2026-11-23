@@ -35,8 +35,8 @@ public sealed class FiniteCompositingBrowserTests {
             + Convert.ToBase64String(opacityResult.Image.ToPng()) + "'>";
         var composition = NativeCompositeCompositionExample.Create(variant, mode, VisualCompositeOperator.SourceIn);
         var image = composition.ToImage();
-        var canvas = VisualCanvas.Create(image.Width, image.Height).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
-            .WithTitle("Explicit native stencil").AddImage(image, 0, 0, image.Width, image.Height);
+        var canvas = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
+            .Title("Explicit native stencil").AddImage(image, 0, 0, image.Width, image.Height);
         var stencil = canvas.ToSvg();
         html += "<section id='stencil'>" + stencil + "</section>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 900);

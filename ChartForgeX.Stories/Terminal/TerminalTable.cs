@@ -38,7 +38,7 @@ public sealed class TerminalTable {
     public static TerminalTable Create() => new();
 
     /// <summary>Sets table columns.</summary>
-    public TerminalTable WithColumns(params string[] columns) {
+    internal TerminalTable SetColumns(params string[] columns) {
         if (columns == null) throw new ArgumentNullException(nameof(columns));
         if (columns.Length == 0 || columns.Length > 8) throw new ArgumentOutOfRangeException(nameof(columns), "Terminal tables require between one and eight columns.");
         var normalized = columns.Select((value, index) => Normalize(value, "Column " + index)).ToArray();

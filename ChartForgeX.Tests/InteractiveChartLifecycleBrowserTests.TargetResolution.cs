@@ -13,8 +13,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateHistogram(new ChartSeriesId("durations"), "Duration", new[] { .2, .4, 1.5 },
             ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 2 }))
-            .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("third") });
-        await using var session = await OpenAsync(Chart.Create().WithSize(640, 360).AddSeries(series).ToInteractiveHtmlPage(options => {
+            .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("third") });
+        await using var session = await OpenAsync(Chart.Create().Size(640, 360).AddSeries(series).ToInteractiveHtmlPage(options => {
             Fit(options); options.Highlight.DimOthersWhileSelected = true;
             options.Interaction.Enable(ChartInteractionFeatures.SynchronizedCharts);
             options.Interaction.GroupName = "target-resolution";

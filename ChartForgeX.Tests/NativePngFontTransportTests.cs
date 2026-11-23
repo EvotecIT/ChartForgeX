@@ -84,7 +84,7 @@ public sealed class NativePngFontTransportTests : IDisposable {
         var builder = new VisualSceneBuilder(new VisualSize(240, 130), FontSpec.FromFamily(Family));
         foreach (var weight in new[] { 100d, 900d }) {
             var style = TextStyle.Create(40, ChartColor.Black);
-            style.Font = FontSpec.FromFamily(Family).WithVariation("wght", weight); style.Hinting = TextHinting.None;
+            style.Font = FontSpec.FromFamily(Family).Variation("wght", weight); style.Hinting = TextHinting.None;
             builder.Text("HH", 12, weight == 100 ? 45 : 105, style, role: "captured-caption");
         }
         var document = XDocument.Parse(new PreparedVisual(builder.Build()).ForInteractivePngExport().ToSvg());
@@ -119,21 +119,21 @@ public sealed class NativePngFontTransportTests : IDisposable {
     public void ChartAndTopologyCallbackCaptureAreOptedInByTheirExistingExportFeature() {
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed());
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed(weight: 700), weight: 700);
-        var chart = Chart.Create().WithSize(360, 240).WithTheme(VisualTheme.Graphite().WithFontFamily(Family))
-            .WithTitle("HH").WithXLabels("H").AddBar("H", ChartPoints.FromValues(12));
+        var chart = Chart.Create().Size(360, 240).Theme(VisualTheme.Graphite().WithFontFamily(Family))
+            .Title("HH").XLabels("H").AddBar("H", ChartPoints.FromValues(12));
         var renderer = new HtmlInteractiveChartRenderer();
         var plain = renderer.PrepareSection(chart, configure: options => options.Interaction.Disable(ChartInteractionFeatures.Export));
         var exported = renderer.PrepareSection(chart, configure: options => options.Interaction.Enable(ChartInteractionFeatures.Export));
         Assert.DoesNotContain("data-cfx-png-glyphs", plain.Html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-png-glyphs", exported.Html, StringComparison.Ordinal);
         Assert.Equal(plain.PreparedVisual.ToSvg(), exported.PreparedVisual.ToSvg());
-        var topology = TopologyChart.Create().WithViewport(360, 240).WithTheme(VisualTheme.Graphite().WithFontFamily(Family));
+        var topology = TopologyChart.Create().Viewport(new TopologyViewport(360, 240)).Theme(VisualTheme.Graphite().WithFontFamily(Family));
         topology.Title = "HH";
         topology.Nodes.Add(new TopologyNode { Id = "node", Label = "H", X = 30, Y = 60, Width = 160, Height = 60 });
         var ordinary = topology.Prepare().ToSvg(); var calls = 0; string? callbackSvg = null;
         var html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(topology, prepared => {
             calls++; var value = prepared.ToSvg(); callbackSvg = value; return value;
-        }, new TopologyRenderOptions { EnableHtmlExportControls = true });
+        }, new TopologyRenderOptions { Html = { ExportControls = true } });
         Assert.Equal(1, calls); var capturedCallback = callbackSvg ?? throw new InvalidOperationException("The native callback did not run.");
         Assert.Contains("data-cfx-png-glyphs", capturedCallback, StringComparison.Ordinal);
         Assert.Contains(capturedCallback, html, StringComparison.Ordinal); Assert.Equal(ordinary, topology.Prepare().ToSvg());

@@ -17,13 +17,13 @@ public static class MermaidPieRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidPieRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
-            .WithPointLegend()
-            .WithXLabels(GetLabels(document));
-        if (document.ShowData) chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue);
-        else chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height)
+            .Legend(l => l.ShowPoints())
+            .XLabels(GetLabels(document));
+        if (document.ShowData) chart.DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndValue));
+        else chart.DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent));
         chart.AddPie(string.IsNullOrWhiteSpace(options.SeriesName) ? "Slices" : options.SeriesName!, GetPoints(document));
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }

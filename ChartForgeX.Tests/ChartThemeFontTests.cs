@@ -69,16 +69,16 @@ public sealed class ChartThemeFontTests {
     [Fact]
     public void GridAndBlockPngsFollowTheThemeFamily() {
         if (!HasFace("Segoe UI", 400) || !HasFace("Georgia", 400)) return;
-        var sans = ChartGrid.Create().WithTitle("Operations").WithTheme(VisualTheme.Graphite().WithFontFamily("Segoe UI"), ThemeMode.Dark).Add(BarChart("Segoe UI"));
-        var serif = ChartGrid.Create().WithTitle("Operations").WithTheme(VisualTheme.Graphite().WithFontFamily("Georgia"), ThemeMode.Dark).Add(BarChart("Segoe UI"));
+        var sans = ChartGrid.Create().Title("Operations").Theme(VisualTheme.Graphite().WithFontFamily("Segoe UI")).ThemeMode(ThemeMode.Dark).Add(BarChart("Segoe UI"));
+        var serif = ChartGrid.Create().Title("Operations").Theme(VisualTheme.Graphite().WithFontFamily("Georgia")).ThemeMode(ThemeMode.Dark).Add(BarChart("Segoe UI"));
         Assert.NotEqual(sans.ToPng(), serif.ToPng());
     }
 
     private static Chart BarChart(string family) => Chart.Create()
-        .WithTitle("Readership")
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(family), ThemeMode.Dark)
-        .WithSize(360, 220)
-        .WithXLabels("A", "B", "C")
+        .Title("Readership")
+        .Theme(VisualTheme.Graphite().WithFontFamily(family)).ThemeMode(ThemeMode.Dark)
+        .Size(360, 220)
+        .XLabels("A", "B", "C")
         .AddBar("Issues", ChartPoints.FromValues(12, 18, 9));
 
     private static bool HasFace(string family, int weight) => InstalledFontCatalog.Find(family, weight, false)?.Weight == weight;

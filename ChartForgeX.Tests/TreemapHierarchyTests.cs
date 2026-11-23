@@ -16,7 +16,7 @@ public sealed class TreemapHierarchyTests {
         new ChartHierarchyItem("south-support", "Support", "south-team", 8, 8), new ChartHierarchyItem("reserve", "Reserve", "south-team", 0),
         new ChartHierarchyItem("research", "Research", value: 3)
     };
-    internal static Chart Forest() => Chart.Create().WithDataLabels(true).AddTreemap("Allocation", ForestItems());
+    internal static Chart Forest() => Chart.Create().DataLabels(true).AddTreemap("Allocation", ForestItems());
     internal static PreparedVisual Prepare(Chart chart, bool legend = false) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: legend)));
     internal static XElement[] Targets(PreparedVisual prepared) => XDocument.Parse(prepared.ToSvg()).Descendants()
@@ -25,11 +25,11 @@ public sealed class TreemapHierarchyTests {
 
     [Fact]
     public void ReadingAndWritingDefaultLabelVisibilityPreservesTreemapCaptions() {
-        var chart = Chart.Create().WithSize(420, 280).AddTreemap("Work", new[] { new ChartHierarchyItem("web", "Web server", value: 4) });
-        var visibility = chart.Options.ShowDataLabels;
-        chart.Options.ShowDataLabels = visibility;
+        var chart = Chart.Create().Size(420, 280).AddTreemap("Work", new[] { new ChartHierarchyItem("web", "Web server", value: 4) });
+        var visibility = chart.Options.DataLabels.Visible;
+        chart.Options.DataLabels.Visible = visibility;
 
-        Assert.Null(chart.Options.ShowDataLabels);
+        Assert.Null(chart.Options.DataLabels.Visible);
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains("Web server", svg.ToString());
     }
@@ -40,11 +40,11 @@ public sealed class TreemapHierarchyTests {
     [InlineData(false, true, true)]
     [InlineData(true, false, false)]
     public void ResolvedLabelVisibilityControlsLeafCaptionsAndGroupHeaderSpace(bool chartLabels, bool? seriesLabels, bool visible) {
-        var chart = Chart.Create().WithDataLabels(chartLabels).AddTreemap("Work", new[] {
+        var chart = Chart.Create().DataLabels(chartLabels).AddTreemap("Work", new[] {
             new ChartHierarchyItem("parent", "Parent"),
             new ChartHierarchyItem("child", "Child", "parent", 6),
             new ChartHierarchyItem("other", "Other", "parent", 4)
-        }).ConfigureTreemap(options => { options.Gap = 0; options.GroupPadding = 0; });
+        }).Treemap(options => { options.Gap = 0; options.GroupPadding = 0; });
         chart.Series[0].ShowDataLabels = seriesLabels;
         var prepared = Prepare(chart);
         var nodes = XDocument.Parse(prepared.ToSvg()).Descendants().ToArray();
@@ -98,7 +98,7 @@ public sealed class TreemapHierarchyTests {
     public void LeafSizesPreserveRatiosAcrossTinyAndLargeFiniteRanges(double first, double second) {
         var chart = Chart.Create().AddTreemap("Sizes", new[] {
             new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("first", "First", "group", first), new ChartHierarchyItem("second", "Second", "group", second)
-        }).WithDataLabels(false).ConfigureTreemap(options => { options.Gap = 0; options.GroupPadding = 0; options.ShowGroupLabels = false; });
+        }).DataLabels(false).Treemap(options => { options.Gap = 0; options.GroupPadding = 0; options.ShowGroupLabels = false; });
         var prepared = Prepare(chart); var nodes = Targets(prepared).ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
         Assert.Equal(first, Number(nodes["first"], "data-cfx-value")); Assert.Equal(second, Number(nodes["second"], "data-cfx-authored-value"));
         Assert.Equal(first + second, Number(nodes["group"], "data-cfx-value"));
@@ -173,7 +173,7 @@ public sealed class TreemapHierarchyTests {
         Assert.Throws<NotSupportedException>(() => ((IList)chart.Series[0].HierarchyItems).Clear());
         Assert.Equal(svg, Prepare(chart, true).ToSvg());
         chart.Options.Treemap.Gap = 40; chart.Options.Treemap.ShowGroupLabels = false; chart.Options.Treemap.ColorScale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White);
-        chart.Series[0].WithPointColor(2, ChartColor.Black); chart.Series[0].DataLabelStyle.FontSize = 40;
+        chart.Series[0].PointColor(2, ChartColor.Black); chart.Series[0].DataLabelStyle.FontSize = 40;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 

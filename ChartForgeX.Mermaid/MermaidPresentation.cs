@@ -60,14 +60,14 @@ internal static class MermaidPresentation {
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
-            chart.WithTheme(Theme(chart.Options.Theme, document.Configuration, host, diagram: document.Kind == MermaidDiagramKind.Gantt));
+            if (document.Theme != null) chart.ThemeMode(Mode(document.Theme));
+            chart.Theme(Theme(chart.Options.Theme, document.Configuration, host, diagram: document.Kind == MermaidDiagramKind.Gantt));
             if (document.Kind == MermaidDiagramKind.Gantt) chart.Options.ShowCard = false;
             // Native charts are transparent by default. An authored canvas color also requests its paint.
-            if (document.Kind == MermaidDiagramKind.Gantt || document.Configuration.ThemeColors?.HasBackground == true) chart.WithTransparentBackground(false);
+            if (document.Kind == MermaidDiagramKind.Gantt || document.Configuration.ThemeColors?.HasBackground == true) chart.TransparentBackground(false);
             document.Configuration.ChartColors?.Apply(chart);
             document.Configuration.RadarTheme?.Apply(chart);
-            if (host?.ThemeMode != null) chart.WithThemeMode(host.ThemeMode.Value);
+            if (host?.ThemeMode != null) chart.ThemeMode(host.ThemeMode.Value);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;

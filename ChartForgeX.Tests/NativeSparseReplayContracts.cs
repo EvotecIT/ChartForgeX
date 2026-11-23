@@ -30,8 +30,8 @@ public sealed class NativeSparseReplayContracts {
         var chart = Model("pie"); var series = chart.Series[0];
         series.PointColors.Clear(); series.PointColors.Add(ChartColor.Black); series.PointColors.Add(null);
         series.PointFillPatterns.Clear(); series.PointLabels.Clear(); series.PointDataLabelStyles.Clear();
-        series.WithPointSliceOffset(1, .1).UseDefaultSliceOffset(1);
-        series.WithPointSliceRadiusRatio(1, .7).UseDefaultSliceRadius(1);
+        series.PointSliceOffset(1, .1).PointSliceOffset(1, 0);
+        series.PointSliceRadiusRatio(1, .7).ResetPointSliceRadius(1);
         var source = series.CaptureVisibilitySource();
         var selected = ChartSeries.FromVisibilitySource(source, null, new[] { 1, 2 });
         Assert.Single(selected.PointColors); Assert.Null(selected.PointColors[0]);
@@ -43,7 +43,7 @@ public sealed class NativeSparseReplayContracts {
     public void FinancialConfiguredAndClearedTailKeepTheirExactSparseSourceShapeThroughCompleteFrames() {
         Chart ModelAt(double value) {
             var chart = NativeComponentClipBeforeControls.Model("candlestick", value);
-            chart.Series[0].ConfigureFinancialValue(1, options => options.StrokeWidth = 4).UseSeriesFinancialStyle(1);
+            chart.Series[0].FinancialValue(1, options => options.StrokeWidth = 4).ResetFinancialValue(1);
             return chart;
         }
         var renderer = new HtmlInteractiveChartRenderer();

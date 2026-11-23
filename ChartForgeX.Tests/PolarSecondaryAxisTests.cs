@@ -8,7 +8,7 @@ public sealed class PolarSecondaryAxisTests {
     [Fact]
     public void PolarRejectsANegativeMinimumOnTheSelectedSecondaryRadiusAxis() {
         var chart = Chart.Create().AddPolar("Rate", new[] { new ChartPoint(0, 5), new ChartPoint(1, 8) });
-        chart.Series[0].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithBounds(-10, 10);
+        chart.Series[0].SecondaryAxis(); chart.Options.SecondaryYAxis.Bounds(-10, 10);
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(VisualExportRequest.ForChart(chart).Context));
     }
 
@@ -18,16 +18,16 @@ public sealed class PolarSecondaryAxisTests {
     [InlineData(ChartSeriesKind.Radar, 2.5, 3)]
     [InlineData(ChartSeriesKind.Polar, 2.5, 3)]
     public void RadiusCaptionsUseTheirOwnAxisFormatterWithoutDuplicatingGridRings(ChartSeriesKind kind, double? intervals, int expectedRings) {
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).Legend(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(0, 10));
         var points = new[] { new ChartPoint(0, 50), new ChartPoint(1, 50), new ChartPoint(2, 50) };
         if (kind == ChartSeriesKind.Radar) chart.AddRadarLine("Counts", points).AddRadarLine("Rate", points);
         else chart.AddPolar("Counts", points).AddPolar("Rate", points);
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
+        chart.Series[1].SecondaryAxis(); chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
         chart.Options.YAxis.LabelFormatter = value => "Count " + value;
         chart.Options.SecondaryYAxis.LabelFormatter = value => "Rate " + value;
-        chart.Options.PolarGridRingCount = intervals;
-        if (intervals.HasValue) chart.WithPolarGridShape(ChartPolarGridShape.Circle);
+        chart.Options.Polar.GridRingCount = intervals;
+        if (intervals.HasValue) chart.Polar(p => p.GridShape(ChartPolarGridShape.Circle));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Regions, region => region.Label!.StartsWith("Count ", StringComparison.Ordinal));
         Assert.Contains(prepared.Regions, region => region.Label!.StartsWith("Rate ", StringComparison.Ordinal));
@@ -42,14 +42,14 @@ public sealed class PolarSecondaryAxisTests {
     [InlineData(ChartSeriesKind.Polar, false)]
     [InlineData(ChartSeriesKind.Polar, true)]
     public void SeriesUseTheirSelectedRadiusDomainAndReversal(ChartSeriesKind kind, bool reversed) {
-        var chart = Chart.Create().WithSize(400, 360).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(400, 360).ShowHeader(false).Legend(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).SecondaryYAxis(s => s.Bounds(0, 10));
         var first = new[] { new ChartPoint(0, 75), new ChartPoint(1, 75), new ChartPoint(2, 75) };
         var second = new[] { new ChartPoint(0, reversed ? 2.5 : 7.5), new ChartPoint(1, 5), new ChartPoint(2, 5) };
         if (kind == ChartSeriesKind.Radar) chart.AddRadarLine("Counts", first).AddRadarLine("Rate", second);
         else chart.AddPolar("Counts", first).AddPolar("Rate", second);
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.Options.SecondaryYAxis.WithReversal(reversed);
+        chart.Series[1].SecondaryAxis();
+        chart.Options.SecondaryYAxis.Reversed(reversed);
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var primary = Assert.Single(prepared.Regions, region => region.Id == "series-0-point-0").Bounds;

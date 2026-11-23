@@ -29,7 +29,7 @@ public sealed class NativeEffectWireBudgetBeforeControls {
 
 internal static class NativeEffectWireFixture {
     internal static PreparedVisual Source(bool largeFacts = false, string? factText = null, int factCount = 45) {
-        var model = SequenceArtifact.Create("native-wire").WithSize(720,640)
+        var model = SequenceArtifact.Create("native-wire").Width(720).Height(640)
             .AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");
         if (largeFacts) {
             var text = factText ?? new string('x',65536);

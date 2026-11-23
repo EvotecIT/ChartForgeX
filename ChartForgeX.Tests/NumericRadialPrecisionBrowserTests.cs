@@ -25,9 +25,9 @@ public sealed class NumericRadialPrecisionBrowserTests {
     [InlineData(false, 2, true)]
     public async Task EncodedPrecisionFactsKeepRawKeyboardReadoutsWithoutPointerAcquisition(bool bars, int range, bool caption) {
         if (!Enabled) return;
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithHeader(false)
-            .WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(caption)
-            .WithDataLabelPlacement(ChartDataLabelPlacement.Outside), bars, "Observed", new ChartPoint(1, 1), new ChartPoint(2, 100000000));
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440).ShowHeader(false)
+            .Legend(false).Axes(false).ShowGrid(false).DataLabels(caption)
+            .DataLabels(d => d.Placement(ChartDataLabelPlacement.Outside)), bars, "Observed", new ChartPoint(1, 1), new ChartPoint(2, 100000000));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.Range = range == 0 ? HtmlChartTooltipRange.Exact : range == 1 ? HtmlChartTooltipRange.WithinDistance(20) : HtmlChartTooltipRange.Nearest;

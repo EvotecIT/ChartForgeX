@@ -18,15 +18,15 @@ public sealed class MermaidRadarFractionalGuidesTests {
     [InlineData(true, .5)]
     [InlineData(true, 2.5)]
     public void HiddenFractionalGuidesPreserveTheDataPlot(bool polar, double count) {
-        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100));
         var values = new[] { new ChartPoint(1, 17), new ChartPoint(2, 31), new ChartPoint(3, 73) };
         if (polar) chart.AddPolar("Signal", values);
         else chart.AddRadarLine("Signal", values);
         chart.Options.ShowGrid = false;
         chart.Options.ShowAxes = false;
         var original = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        chart.Options.PolarGridRingCount = count;
+        chart.Options.Polar.GridRingCount = count;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(original.Regions.Select(region => region.Bounds), prepared.Regions.Select(region => region.Bounds));
         Assert.Equal(original.ToPng(), prepared.ToPng());
@@ -95,8 +95,8 @@ public sealed class MermaidRadarFractionalGuidesTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic, false)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic, true)]
     public void NativeFractionalIntervalsPreserveTheScaleAndFitTheExtendedGuide(ChartScaleKind scale, bool reversed) {
-        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithYAxisBounds(10, 1000).WithPolarGridShape(ChartPolarGridShape.Circle)
+        var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(false).DataLabels(false)
+            .YAxis(y => y.Bounds(10, 1000)).Polar(p => p.GridShape(ChartPolarGridShape.Circle))
             .AddRadarLine("Signal", new[] { new ChartPoint(1, 10), new ChartPoint(2, 100), new ChartPoint(3, 1000) });
         chart.Options.YAxis.Scale = scale;
         chart.Options.YAxis.Reversed = reversed;
@@ -104,7 +104,7 @@ public sealed class MermaidRadarFractionalGuidesTests {
         chart.Options.ShowPlotBackground = false;
         chart.Options.ShowCard = false;
         var original = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        chart.Options.PolarGridRingCount = 2.5;
+        chart.Options.Polar.GridRingCount = 2.5;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var spoke = prepared.Scene.Nodes.OfType<VisualSceneLine>().First(node => node.Role == "radar-spoke");
         var radius = Distance(spoke.Start.X, spoke.Start.Y, spoke.End.X, spoke.End.Y);
@@ -121,8 +121,8 @@ public sealed class MermaidRadarFractionalGuidesTests {
                 after[index].Bounds.Top + after[index].Bounds.Height / 2 - spoke.Start.Y, 7);
         }
         AssertGuidePixels(prepared.ToPng(), spoke.Start.X, spoke.Start.Y, radius * 3 / 2.5, false);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = double.NaN);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = double.PositiveInfinity);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.GridRingCount = double.NaN);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.GridRingCount = double.PositiveInfinity);
     }
 
     [Theory]
@@ -136,7 +136,7 @@ public sealed class MermaidRadarFractionalGuidesTests {
         Assert.Equal(expected, result.Document!.Ticks);
         Assert.Equal(expected.ToString(CultureInfo.InvariantCulture), result.Document.ToVisualArtifact().Metadata["mermaid.ticks"]);
         var chart = result.Document.ToChart();
-        Assert.Equal(Math.Min(expected, 32), chart.Options.PolarGridRingCount);
+        Assert.Equal(Math.Min(expected, 32), chart.Options.Polar.GridRingCount);
         Assert.Equal((int)Math.Ceiling(Math.Min(expected, 32)), chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.Count(node => node.Role == "radar-ring"));
         Assert.Equal(capped ? 1 : 0, result.Diagnostics.Count);
         if (capped) Assert.Equal(MermaidDiagnosticSeverity.Warning, result.Diagnostics[0].Severity);

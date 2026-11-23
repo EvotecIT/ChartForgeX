@@ -12,7 +12,7 @@ public sealed class ChordRibbonTensionTests {
     [InlineData(.8)]
     [InlineData(1)]
     public void TensionMovesOnlyConnectorControlsAndPreservesSlotsArcsDirectionsAndFacts(double tension) {
-        var chart = ChordDepthRecipe.Create("source").ConfigureChord(options => options.RibbonTension = tension);
+        var chart = ChordDepthRecipe.Create("source").Chord(options => options.RibbonTension = tension);
         var model = ChartChordLayout.Compute(chart.Series[0], chart.Options.Chord, new ChartRect(0, 0, 800, 520));
         var defaultChart = ChordDepthRecipe.Create("source");
         var baseline = ChartChordLayout.Compute(defaultChart.Series[0], defaultChart.Options.Chord, new ChartRect(0, 0, 800, 520));
@@ -38,7 +38,7 @@ public sealed class ChordRibbonTensionTests {
     public void NullOrderAndDefaultTensionRetainIncumbentSvgPngAndControlArithmetic() {
         var chart = ChordDepthRecipe.Create("source"); var context = PreparedChordTests.Context();
         var baseline = chart.Prepare(context); var svg = baseline.ToSvg("default"); var png = baseline.ToPng(new VisualRenderOptions(supersampling: 1));
-        chart.ConfigureChord(options => { options.Ordering = new ChartChordOrdering(); options.RibbonTension = .8; });
+        chart.Chord(options => { options.Ordering = new ChartChordOrdering(); options.RibbonTension = .8; });
         var explicitDefaults = chart.Prepare(context);
         Assert.Equal(svg, explicitDefaults.ToSvg("default")); Assert.Equal(png, explicitDefaults.ToPng(new VisualRenderOptions(supersampling: 1)));
         var model = ChartChordLayout.Compute(chart.Series[0], chart.Options.Chord, new ChartRect(0, 0, 800, 520));
@@ -52,7 +52,7 @@ public sealed class ChordRibbonTensionTests {
     [InlineData(1.01)]
     public void InvalidTensionDoesNotCommitOptions(double value) {
         var chart = ChordDepthRecipe.Create(); var options = chart.Options.Chord;
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureChord(candidate => candidate.RibbonTension = value));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Chord(candidate => candidate.RibbonTension = value));
         Assert.Same(options, chart.Options.Chord); Assert.Equal(.55, options.RibbonTension);
     }
 }

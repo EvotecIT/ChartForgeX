@@ -23,28 +23,28 @@ public sealed class DataLabelVisibilityInheritanceTests {
     [InlineData("donut-center")]
     public void DefaultOnCaptionsInheritChartVisibilityAndRestoreTheChartAfterAnOverride(string kind) {
         var chart = Create(kind); var series = chart.Series[0]; var raw = Facts(chart);
-        Assert.Null(chart.Options.ShowDataLabels); Assert.Null(series.ShowDataLabels);
+        Assert.Null(chart.Options.DataLabels.Visible); Assert.Null(series.ShowDataLabels);
         var baseline = Capture(chart); var baselineLabels = Labels(baseline, Roles(kind));
         Assert.NotEmpty(baselineLabels);
 
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         var inheritedHidden = Capture(chart);
         Assert.Empty(Labels(inheritedHidden, Roles(kind)));
         Assert.Equal(raw, Facts(chart));
 
-        series.WithDataLabels(true);
+        series.ShowDataLabels(true);
         var explicitlyVisible = Capture(chart);
         Assert.Equal(baselineLabels, Labels(explicitlyVisible, Roles(kind)));
         Assert.Equal(raw, Facts(chart));
 
-        chart.WithDataLabels(true); series.WithDataLabels(false);
+        chart.DataLabels(true); series.ShowDataLabels(false);
         var explicitlyHidden = Capture(chart);
         Assert.Empty(Labels(explicitlyHidden, Roles(kind)));
         Assert.Equal(Geometry(explicitlyHidden), Geometry(inheritedHidden));
         Assert.Equal(AllLabels(explicitlyHidden), AllLabels(inheritedHidden));
         Assert.Equal(raw, Facts(chart));
 
-        chart.WithDataLabels(false); series.WithDataLabels(true).UseChartDataLabels();
+        chart.DataLabels(false); series.ShowDataLabels(true).ShowDataLabels(null);
         Assert.Null(series.ShowDataLabels);
         var inheritedAgain = Capture(chart);
         Assert.Empty(Labels(inheritedAgain, Roles(kind)));
@@ -65,13 +65,13 @@ public sealed class DataLabelVisibilityInheritanceTests {
     [InlineData("donut-center")]
     [InlineData("progress-bar")]
     public void ExplicitDataLabelsDoNotOverrideTheSeparateContentSwitch(string kind) {
-        var chart = Create(kind).WithDataLabels(false); chart.Series[0].WithDataLabels(true);
+        var chart = Create(kind).DataLabels(false); chart.Series[0].ShowDataLabels(true);
         var raw = Facts(chart);
-        if (kind == "chord") chart.ConfigureChord(options => options.LabelContent = ChartChordLabelContent.None);
-        else if (kind == "progress-ring") chart.WithProgressRingCenterLabel(false);
-        else if (kind == "circle") chart.WithCircleStatusLabel(false);
-        else if (kind == "donut-center") chart.WithDonutCenterLabel(false);
-        else chart.Options.ShowProgressValues = false;
+        if (kind == "chord") chart.Chord(options => options.LabelContent = ChartChordLabelContent.None);
+        else if (kind == "progress-ring") chart.Progress(p => p.ShowRingCenterLabel(false));
+        else if (kind == "circle") chart.Circle(c => c.ShowStatusLabel(false));
+        else if (kind == "donut-center") chart.Pie(p => p.ShowCenterLabel(false));
+        else chart.Options.Progress.ShowValues = false;
         var hidden = Capture(chart);
         Assert.Empty(Labels(hidden, kind == "circle" ? new[] { "circle-status-label" } : Roles(kind)));
         if (kind == "circle") Assert.Equal(2, Labels(hidden, new[] { "circle-label", "circle-title" }).Length);
@@ -84,7 +84,7 @@ public sealed class DataLabelVisibilityInheritanceTests {
     }
 
     private static Chart Create(string kind) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(390, 300).WithHeader(false).WithLegend(false);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(390, 300).ShowHeader(false).Legend(false);
         var nodes = new[] { new ChartNode("A", "Alpha"), new ChartNode("B", "Bravo"), new ChartNode("C", "Charlie") };
         var links = new[] { new ChartFlowLink("AB", "A", "B", 5), new ChartFlowLink("AC", "A", "C", 3), new ChartFlowLink("BC", "B", "C", 2) };
         if (kind == "chord") chart.AddChord("Processing", nodes, links);
@@ -93,10 +93,10 @@ public sealed class DataLabelVisibilityInheritanceTests {
             var targets = kind == "gauge-needle-configured" ? new[] { new ChartGaugeTarget(20, "Low"), new ChartGaugeTarget(60, "High") }
                 : new[] { new ChartGaugeTarget(60, "Target") };
             chart.AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("reading"), "Measured", new ChartGaugeValue(37, -20, 80, targets)));
-            if (kind == "gauge-needle-configured") chart.ConfigureGauge(options => {
+            if (kind == "gauge-needle-configured") chart.Gauge(options => {
                 options.Form = ChartGaugeForm.Needle; options.StartAngleDegrees = 120; options.SweepAngleDegrees = 300; options.TickCount = 5;
             });
-            if (kind.StartsWith("gauge-linear", StringComparison.Ordinal)) chart.ConfigureGauge(options => {
+            if (kind.StartsWith("gauge-linear", StringComparison.Ordinal)) chart.Gauge(options => {
                 options.Form = ChartGaugeForm.Linear;
                 options.Orientation = kind.EndsWith("vertical", StringComparison.Ordinal) ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
             });
@@ -108,7 +108,7 @@ public sealed class DataLabelVisibilityInheritanceTests {
         });
         else if (kind == "progress-bar") chart.AddProgressBars("Completion", new[] { new ChartProgressItem("Reviewed", 73), new ChartProgressItem("Verified", 45) });
         else if (kind == "bullet") chart.AddBullet("Reviewed", 37, 60, -20, 80, new[] { 20d, 50, 80 });
-        else if (kind == "donut-center") chart.AddDonut("Distribution", new[] { new ChartPoint(1, 25), new ChartPoint(2, 45), new ChartPoint(3, 30) }).WithXLabels("Alpha", "Bravo", "Charlie");
+        else if (kind == "donut-center") chart.AddDonut("Distribution", new[] { new ChartPoint(1, 25), new ChartPoint(2, 45), new ChartPoint(3, 30) }).XLabels("Alpha", "Bravo", "Charlie");
         else throw new ArgumentException(kind, nameof(kind));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         return chart;

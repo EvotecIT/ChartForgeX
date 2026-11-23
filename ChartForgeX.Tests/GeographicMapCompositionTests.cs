@@ -52,7 +52,7 @@ public sealed class GeographicMapCompositionTests {
             new ChartMapPoint("North gateway", 10, 60, 0)
         });
         Assert.Empty(sites.ObservationIds);
-        sites.WithObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("north") });
+        sites.ObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("north") });
         sites.ReplaceMapConnectors(Array.Empty<ChartMapConnector>());
         chart.MoveSeries(sites, 0);
         var updated = Prepare(chart);
@@ -74,15 +74,15 @@ public sealed class GeographicMapCompositionTests {
 
     [Fact]
     public void DatasetFormattingIsCapturedOnceAcrossPointLegendsKeysAndMarksAndRegionKeysMayInheritChartScale() {
-        var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, ThemeMode.Light).WithPointLegend();
+        var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, ThemeMode.Light).Legend(l => l.ShowPoints());
         var calls = new Dictionary<double, int>();
-        chart.Series[1].ConfigureColorDimension(options => options.ValueFormat = ChartValueFormat.Custom(value => {
+        chart.Series[1].ColorDimension(options => options.ValueFormat = ChartValueFormat.Custom(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return value.ToString(System.Globalization.CultureInfo.InvariantCulture) + " minutes";
         }));
         var inherited = chart.Series[0].ColorScale;
-        chart.Series[0].WithColorScale(null).ConfigureColorDimension(options => options.LegendStyle = ChartColorLegendStyle.Gradient);
-        chart.WithMapColorScale(inherited);
+        chart.Series[0].ColorScale((ChartColorScale?)null).ColorDimension(options => options.LegendStyle = ChartColorLegendStyle.Gradient);
+        chart.Map(m => m.ColorScale(inherited));
         var prepared = Prepare(chart);
         Assert.All(calls.Values, count => Assert.Equal(1, count));
         Assert.Contains("minutes", prepared.ToSvg());
@@ -91,7 +91,7 @@ public sealed class GeographicMapCompositionTests {
 
     [Fact]
     public void StandaloneDottedMapKeepsItsExistingUnoutlinedCaptionPaint() {
-        var chart = Chart.Create().WithDataLabels().AddDottedMap("Sites", new[] { new ChartMapPoint("Site", 5, 52, 10) });
+        var chart = Chart.Create().DataLabels().AddDottedMap("Sites", new[] { new ChartMapPoint("Site", 5, 52, 10) });
         var label = Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "dotted-map-data-label");
         Assert.Null(label.Stroke);
     }
@@ -107,9 +107,9 @@ public sealed class GeographicMapCompositionTests {
         var sites = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Sites", new[] {
             new ChartMapPoint("West depot", 0, 50, 10), new ChartMapPoint("North depot", 10, 60, 20)
         }).ReplaceMapConnectors(new[] { new ChartMapConnector("Delivery route", 0, 50, 10, 60) });
-        var chart = Chart.Create().WithSize(640, 460).WithTheme(VisualTheme.Graphite(), mode).WithHeader(false).WithLegend(false).WithMapLabels(false).WithDataLabels()
+        var chart = Chart.Create().Size(640, 460).Theme(VisualTheme.Graphite()).ThemeMode(mode).ShowHeader(false).Legend(false).Map(m => m.ShowLabels(false)).DataLabels()
             .AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("zone"), "Coverage", definition, new[] { new ChartRegionMapItem("all", 80) })
-                .WithColorScale(ChartColorScale.Sequential(blue, blue).WithValueRange(0, 100))).AddSeries(sites);
+                .ColorScale(ChartColorScale.Sequential(blue, blue).WithValueRange(0, 100))).AddSeries(sites);
         var prepared = Prepare(chart); var scene = prepared.Scene;
         var labels = scene.Nodes.OfType<VisualSceneText>().Where(IsMapCaption).ToArray();
         Assert.Equal(3, labels.Length);
@@ -134,15 +134,15 @@ public sealed class GeographicMapCompositionTests {
     [Fact]
     public void DatasetNumericKeyVisibilityOverridesChartPolicyWithoutCategoricalEntries() {
         var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, ThemeMode.Light);
-        chart.Options.MapColorDimension.ShowLegend = false;
-        foreach (var series in chart.Series) { series.ShowInLegend = false; series.ConfigureColorDimension(options => options.ShowLegend = false); }
-        chart.Series[0].ConfigureColorDimension(options => options.ShowLegend = true);
+        chart.Options.Map.ColorDimension.ShowLegend = false;
+        foreach (var series in chart.Series) { series.ShowInLegend = false; series.ColorDimension(options => options.ShowLegend = false); }
+        chart.Series[0].ColorDimension(options => options.ShowLegend = true);
         Assert.Equal("0", Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "map-color-scale-source").Metadata["data-cfx-series"]);
-        chart.Series[0].ConfigureColorDimension(options => options.ShowLegend = false);
-        chart.Series[1].ConfigureColorDimension(options => options.ShowLegend = true);
+        chart.Series[0].ColorDimension(options => options.ShowLegend = false);
+        chart.Series[1].ColorDimension(options => options.ShowLegend = true);
         Assert.Equal("1", Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "map-color-scale-source").Metadata["data-cfx-series"]);
-        chart.Series[1].ConfigureColorDimension(options => options.ShowLegend = false);
-        chart.Options.MapColorDimension.ShowLegend = true;
+        chart.Series[1].ColorDimension(options => options.ShowLegend = false);
+        chart.Options.Map.ColorDimension.ShowLegend = true;
         Assert.DoesNotContain(Prepare(chart).Scene.Nodes, node => node.Role == "map-color-scale-source");
     }
 
@@ -177,7 +177,7 @@ public sealed class GeographicMapCompositionTests {
         Assert.Throws<NotSupportedException>(() => ((IList<ChartMapPoint>)route.RoutePoints)[0] = source[0]);
         Assert.Equal(-10, sites.MapConnectors[0].RoutePoints[0].ColorValue);
         Assert.Equal(0, sites.MapConnectors[0].RoutePoints[0].Weight);
-        sites.WithObservationId(0, new ChartObservationId("start"));
+        sites.ObservationId(0, new ChartObservationId("start"));
         sites.UpdateMapPoint(0, new ChartMapPoint("Updated", 1, 2, 7).WithColorValue(-4));
         Assert.Equal("start", sites.ObservationIds[0].Value); Assert.Equal(-4, sites.MapPoints[0].ColorValue); Assert.Equal(7, sites.MapPoints[0].Weight);
         Assert.Throws<ArgumentException>(() => sites.ReplaceMapConnectors(new[] { default(ChartMapConnector) }));
@@ -210,12 +210,12 @@ public sealed class GeographicMapCompositionTests {
         var first = new ChartMapPoint("Shared", 21, 52, 3).WithColorValue(-5);
         var peer = new ChartMapPoint("shared", 21, 52, 9).WithColorValue(5);
         var destination = new ChartMapPoint("Other", 10, 60, 12);
-        var chart = Chart.Create().WithSize(640, 460).WithLegend(false).WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().Size(640, 460).Legend(false).Map(m => m.Viewport(ChartMapViewport.Europe()))
             .AddDottedMap("First", acrossDatasets ? new[] { first, destination } : new[] { first, peer, destination });
         if (acrossDatasets) chart.AddDottedMap("Second", new[] { peer });
         if (acrossDatasets) chart.AddMapConnectorBetweenPoints("Shared route", "SHARED", "Other");
         else chart.AddMapRouteBetweenPoints("Shared route", " SHARED ", "Other");
-        var connector = Assert.Single(chart.Options.MapConnectors);
+        var connector = Assert.Single(chart.Options.Map.Connectors);
         Assert.Equal((21d, 52d, 10d, 60d),
             (connector.FromLongitude, connector.FromLatitude, connector.ToLongitude, connector.ToLatitude));
         Assert.Equal(3, chart.Series.Sum(series => series.MapPoints.Count));
@@ -240,7 +240,7 @@ public sealed class GeographicMapCompositionTests {
             .AddDottedMap("Second", new[] { new ChartMapPoint("Shared", longitude, latitude), new ChartMapPoint("Other", 10, 60) });
         var error = Assert.Throws<ArgumentException>(() => chart.AddMapRouteBetweenPoints("Ambiguous", "Shared", "Other"));
         Assert.Equal("fromPointLabel", error.ParamName);
-        Assert.Empty(chart.Options.MapConnectors);
+        Assert.Empty(chart.Options.Map.Connectors);
         Assert.Equal(3, chart.Series.Sum(series => series.MapPoints.Count));
     }
 
@@ -248,17 +248,17 @@ public sealed class GeographicMapCompositionTests {
         var definition = ChartMapGeoJson.ToMapDefinition("districts", "Districts", Geometry, new ChartMapGeoJsonOptions { Projection = projection, CoordinatePrecision = CoordinatePrecision });
         var regions = ChartSeries.CreateRegionMap(new ChartSeriesId("coverage"), "District coverage", definition,
             new[] { new ChartRegionMapItem("A", 0), new ChartRegionMapItem("B", 100) })
-            .WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
-        regions.ConfigureColorDimension(options => options.Name = "Coverage");
+            .ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
+        regions.ColorDimension(options => options.Name = "Coverage");
         var points = new[] { new ChartMapPoint("West gateway", 0, 50, 0).WithColorValue(-10), new ChartMapPoint("North gateway", 10, 60, 100).WithColorValue(30) };
         var sites = ChartSeries.CreateDottedMap(new ChartSeriesId("gateways"), "Gateway delays", points)
-            .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-20, 40));
-        sites.ConfigureColorDimension(options => options.Name = "Delay");
-        sites.WithObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("north") });
+            .ColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-20, 40));
+        sites.ColorDimension(options => options.Name = "Delay");
+        sites.ObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("north") });
         sites.ReplaceMapConnectors(new[] { new ChartMapConnector("Gateway route", new[] { points[0], new ChartMapPoint("Transfer", 6, 52), points[1] }) });
-        return Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(width, 460).WithTitle("Districts and gateways")
-            .WithSubtitle("Independent coverage and delay colors; marker size shows traffic")
-            .WithLegend(true).WithMapLabels(false).WithDataLabels().AddSeries(regions).AddSeries(sites);
+        return Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(width, 460).Title("Districts and gateways")
+            .Subtitle("Independent coverage and delay colors; marker size shows traffic")
+            .Legend(true).Map(m => m.ShowLabels(false)).DataLabels().AddSeries(regions).AddSeries(sites);
     }
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

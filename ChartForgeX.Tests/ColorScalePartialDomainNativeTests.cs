@@ -25,7 +25,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
         var chart = Create(family, new double?[] { 10, 20, 30, null }, width, dark: width == 360);
         SetScale(chart, family, scale);
         Dimension(chart, family).LegendStyle = gradient ? ChartColorLegendStyle.Gradient : ChartColorLegendStyle.Swatches;
-        if (family == "region-map") chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (family == "region-map") chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg()); var image = Image(prepared);
         var prefix = Prefix(family); var key = Role(document, prefix).Single();
         var low = fixMinimum ? 0 : 10; var high = fixMinimum ? 30 : 40;
@@ -91,7 +91,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
         var automatic = ChartColorScale.Diverging(Low, ChartColor.White, High, 0).WithNoDataColor(Missing).WithLabels(null, "Center", null);
         var partial = automatic.WithValueRange(fixMinimum ? 15 : null, fixMinimum ? null : -15);
         var chart = Create(family, new double?[] { null, null, null }, 360); SetScale(chart, family, partial);
-        if (family == "region-map") chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (family == "region-map") chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var calls = 0;
         Dimension(chart, family).ValueFormat = ChartValueFormat.Custom(value => { calls++; return value.ToString(CultureInfo.InvariantCulture); });
         foreach (var scale in new[] { partial, partial.WithValueRange(null, null) }) {
@@ -155,8 +155,8 @@ public sealed partial class ColorScalePartialDomainNativeTests {
     public void ExecutablePartialRangeExamplesKeepTheirPinnedConstraintAcrossViewportAndTheme(ChartSeriesKind kind, bool compact, bool dark) {
         var variant = compact ? "compact-partial-color-range" : "partial-color-range";
         var chart = V2GalleryModels.Create(kind, variant, dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithDataLabels(false).WithPngSupersampling(1)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Size(compact ? 360 : 800, compact ? 360 : 440).DataLabels(false).Png(p => p.SupersamplingScale(1))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var key = Role(document, kind == ChartSeriesKind.TileMap ? "map-scale" : "color-scale-0").Single();
         Assert.Equal(kind == ChartSeriesKind.TileMap ? "0" : "55", (string?)key.Attribute("data-cfx-min-value"));

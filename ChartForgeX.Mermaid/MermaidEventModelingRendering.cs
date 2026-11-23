@@ -14,10 +14,10 @@ public static partial class MermaidEventModelingRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         using var scope = MermaidResourceGuard.BeginIfAbsent(document.CapturedResourceLimits);
         ValidateModel(document); options ??= new MermaidTopologyRenderOptions();
-        var chart = TopologyChart.Create().WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-event-modeling" : options.Id!.Trim())
-            .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Event Modeling"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle)).WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.Swimlane, TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Id(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-event-modeling" : options.Id!.Trim())
+            .Title(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Event Modeling"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle)).Viewport(new TopologyViewport(options.Width, options.Height, options.Padding))
+            .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         var render = new TopologyRenderOptions { IncludeLegend = false, IncludeStatusBadges = false, IncludeGroupStatusDots = false,
             WrapNodeLabels = true, AllowMultilineNodeLabels = true, CardSubtitleMode = TopologyCardSubtitleMode.Text,
             CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Plain, NodeSurfaceStyle = TopologyNodeSurfaceStyle.Card };

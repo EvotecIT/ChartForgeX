@@ -4,6 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Xunit;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Tests;
 
@@ -44,7 +45,7 @@ public sealed class V2SvgEmbeddingTests {
     [Fact]
     public void AccessibleAlternativeAndLanguage_AreEscapedAndAssociatedWithThisRoot() {
         var chart = Chart();
-        chart.Accessibility.WithTextAlternative("CPU < 50% & stable", "A \"quoted\" description", "pl-PL");
+        chart.Accessibility.TextAlternative("CPU < 50% & stable", "A \"quoted\" description", "pl-PL");
         var root = XDocument.Parse(chart.Prepare(Context("Load")).ToSvg()).Root!;
         Assert.Equal("img", (string?)root.Attribute("role"));
         Assert.Equal("CPU < 50% & stable", (string?)root.Attribute("aria-label"));
@@ -58,7 +59,7 @@ public sealed class V2SvgEmbeddingTests {
     [Fact]
     public void DecorativeVisual_IsHiddenAndDoesNotAcquireAnImageRole() {
         var chart = Chart();
-        chart.Accessibility.WithTextAlternative("Decorative chart", "Decoration", "en-GB").AsDecorative();
+        chart.Accessibility.TextAlternative("Decorative chart", "Decoration", "en-GB").Decorative();
         var prepared = chart.Prepare(Context("Decoration"));
         var root = XDocument.Parse(prepared.ToSvg()).Root!;
         Assert.Equal("true", (string?)root.Attribute("aria-hidden"));

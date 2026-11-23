@@ -72,28 +72,28 @@ public static class EnhanceRecipe {
     /// <summary>The last seven days as stacked columns; each segment carries its records' keys, its day and its kind.</summary>
     public static Chart Week(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
         var days = Enumerable.Range(23, 7).Select(d => Start.AddDays(d)).ToArray();
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithLegend(true)
-            .WithXLabels(days.Select(d => d.ToString("ddd d", CultureInfo.InvariantCulture)).ToArray())
-            .ConfigureYAxis(axis => axis.IntegerTicks = true);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Bars(b => b.Stacked()).Legend(true)
+            .XLabels(days.Select(d => d.ToString("ddd d", CultureInfo.InvariantCulture)).ToArray())
+            .YAxis(axis => axis.IntegerTicks = true);
         foreach (var kind in Kinds) {
             var points = days.Select((day, i) => {
                 var marks = Marks(records.Where(r => r.Day == day && r.Kind == kind.Id), new Dictionary<string, object> { ["day"] = day });
                 return new ChartPoint(i + 1, marks.Keys.Count).WithMarkOptions(marks);
             });
             chart.AddBar(kind.Name, points, Series(kind.Slot, mode));
-            chart.Series[chart.Series.Count - 1].WithMarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["kind"] = kind.Id }));
+            chart.Series[chart.Series.Count - 1].MarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["kind"] = kind.Id }));
         }
         return chart;
     }
 
     /// <summary>Records per day for the month on a time axis, all records as an area and updates as a line.</summary>
     public static Chart Trend(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(true)
-            .ConfigureXAxis(axis => {
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(true)
+            .XAxis(axis => {
                 axis.Scale = ChartScaleKind.Time; axis.TickCount = 5;
                 axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("d MMM", CultureInfo.InvariantCulture));
             })
-            .ConfigureYAxis(axis => axis.IntegerTicks = true);
+            .YAxis(axis => axis.IntegerTicks = true);
         ChartPoint Day(int d, Func<Record, bool> include) {
             var day = Start.AddDays(d);
             var marks = Marks(records.Where(r => r.Day == day && include(r)), new Dictionary<string, object> { ["day"] = day });
@@ -107,27 +107,27 @@ public static class EnhanceRecipe {
     /// <summary>Records per product and week; each cell carries its records' keys, its product and its week.</summary>
     public static Chart Heatmap(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
         var weeks = records.Select(r => r.Week).Distinct().OrderBy(w => w).ToArray();
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(false)
-            .WithXLabels(weeks.Select(w => w.ToString("d MMM", CultureInfo.InvariantCulture)).ToArray())
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(false)
+            .XLabels(weeks.Select(w => w.ToString("d MMM", CultureInfo.InvariantCulture)).ToArray())
             // The colour key names what a cell counts.
-            .ConfigureHeatmapColorDimension(colors => colors.Name = "Records");
+            .Heatmap(heatmap => heatmap.ColorDimension(colors => colors.Name = "Records"));
         foreach (var product in Products) {
             var cells = weeks.Select((week, i) => {
                 var marks = Marks(records.Where(r => r.Product == product.Name && r.Week == week), new Dictionary<string, object> { ["week"] = week });
                 return new ChartPoint(i + 1, marks.Keys.Count).WithMarkOptions(marks);
             });
             chart.AddHeatmapRow(product.Short, cells, Series(1, mode));
-            chart.Series[chart.Series.Count - 1].WithMarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["product"] = product.Name }));
+            chart.Series[chart.Series.Count - 1].MarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["product"] = product.Name }));
         }
         return chart;
     }
 
     /// <summary>Support windows with the current release as the current row; bars carry the product's records.</summary>
     public static Chart Support(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(false)
-            .WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
-            .WithXAxisBounds(new DateTime(2024, 7, 1).ToOADate(), new DateTime(2030, 1, 1).ToOADate())
-            .ConfigureXAxis(axis => {
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(false)
+            .Gantt(g => g.OpenEndStyle(ChartGanttOpenEndStyle.Fade))
+            .XAxis(x => x.Bounds(new DateTime(2024, 7, 1).ToOADate(), new DateTime(2030, 1, 1).ToOADate()))
+            .XAxis(axis => {
                 axis.Scale = ChartScaleKind.Time; axis.TickCount = 4;
                 axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("yyyy", CultureInfo.InvariantCulture));
             });
@@ -140,9 +140,9 @@ public static class EnhanceRecipe {
             chart.AddSeries(ChartSeries.CreateGanttTask(new ChartSeriesId("release-" + i.ToString(CultureInfo.InvariantCulture)), label, start, end ?? new DateTime(2030, 1, 1),
                     color: ended ? Secondary(mode) : Series(1, mode))
                 .ReplaceGanttItems(new[] { item })
-                .WithRowOptions(new ChartMarkOptions(current: name == "Windows 11 25H2", fields: fields)));
+                .RowOptions(new ChartMarkOptions(current: name == "Windows 11 25H2", fields: fields)));
         }
-        return chart.WithGanttToday(Today);
+        return chart.GanttToday(Today);
     }
 
     private static ChartMarkOptions Marks(IEnumerable<Record> records, IReadOnlyDictionary<string, object> fields) =>

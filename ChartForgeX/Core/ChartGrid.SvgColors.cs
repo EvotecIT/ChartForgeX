@@ -10,12 +10,4 @@ public sealed partial class ChartGrid {
     /// frame; each panel retains its chart mapping or literal colours. PNG output always uses literal colours.
     /// </summary>
     public SvgColorVariables? SvgColorVariables { get; set; }
-
-    /// <summary>Writes mapped colours in the grid SVG as CSS custom properties with the literal colour as fallback.</summary>
-    /// <param name="variables">The colour variables, or null to write literal colours.</param>
-    /// <returns>The current grid.</returns>
-    public ChartGrid WithSvgColorVariables(SvgColorVariables? variables) {
-        SvgColorVariables = variables;
-        return this;
-    }
 }

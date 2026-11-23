@@ -26,7 +26,7 @@ internal static partial class SmokeTests {
     }
 
     private static void DottedMapRendersWorldDotsAndPoints() {
-        var chart = Chart.Create().WithSize(760, 420).WithTitle("Travel Map").AddDottedMap("Visited", new[] {
+        var chart = Chart.Create().Size(760, 420).Title("Travel Map").AddDottedMap("Visited", new[] {
             new ChartMapPoint("Indonesia", 113.9213, -.7893, ChartColor.FromHex("#22C55E")),
             new("Spain", -3.7038, 40.4168), new("United States", -98.5795, 39.8283)
         });
@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
         Verify.Contains(prepared.Regions, region => region.Role == "dotted-map-point" && region.Label!.Contains("Indonesia"));
         Verify.True(prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "dotted-map-boundary" && node.Fill.HasValue).Sum(node => node.Commands.Count) > 100);
         Verify.NotEmpty(prepared.ToPng());
-        var dark = PreparedFamily(Chart.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
+        var dark = PreparedFamily(Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
         Verify.Contains(dark.Scene.Nodes, node => node.Role == "dotted-map-land-dot");
         AssertThrows<ArgumentException>(() => new ChartMapPoint(" ", 0, 0), "Map labels must be nonempty.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapPoint("Bad", 181, 0), "Longitude must remain geographic.");
@@ -55,7 +55,7 @@ internal static partial class SmokeTests {
     private static void DottedMapWorldViewportSuppressesPolarPointsOutsideMapBand() => AssertPolarMapPoints(false);
     private static void DottedMapDataLabelsSuppressPolarPointsOutsideMapBand() => AssertPolarMapPoints(true);
     private static void AssertPolarMapPoints(bool labels) {
-        var chart = Chart.Create().WithSize(360, 220).WithDataLabels(labels).AddDottedMap("Extremes", new[] {
+        var chart = Chart.Create().Size(360, 220).DataLabels(labels).AddDottedMap("Extremes", new[] {
             new ChartMapPoint("North Pole", 0, 90), new("South Pole", 0, -90)
         });
         var prepared = PreparedFamily(chart);
@@ -68,13 +68,13 @@ internal static partial class SmokeTests {
     }
 
     private static void DottedMapClusteredLabelsUseAlternatePlacements() {
-        var chart = Chart.Create().WithSize(520, 300).WithDataLabels().AddDottedMap("Cluster",
+        var chart = Chart.Create().Size(520, 300).DataLabels().AddDottedMap("Cluster",
             new[] { "A", "B", "C", "D" }.Select(label => new ChartMapPoint(label, 0, 0)));
         var prepared = PreparedFamily(chart); AssertMapCaptionsAvoidMarks(prepared, 4); Verify.NotEmpty(prepared.ToPng());
     }
 
     private static void DottedMapDenseClustersUseDiagonalLabelPlacements() {
-        var chart = Chart.Create().WithSize(520, 300).WithDataLabels().AddDottedMap("Cluster",
+        var chart = Chart.Create().Size(520, 300).DataLabels().AddDottedMap("Cluster",
             new[] { "Alpha Market", "Beta Market", "Central Market", "Delta Market", "Eastern Market", "Frontier Market" }.Select(label => new ChartMapPoint(label, 0, 0)));
         var prepared = PreparedFamily(chart); AssertMapCaptionsAvoidMarks(prepared, 4);
         Verify.Equal(6, FamilyGroups(prepared, "dotted-map-data-label-source").Length);
@@ -85,7 +85,7 @@ internal static partial class SmokeTests {
         .Count(element => (string?)element.Attribute("data-cfx-role") == "dotted-map-data-label");
 
     private static void DottedMapPreservesMapAspectRatioInTallCards() {
-        var chart = Chart.Create().WithSize(420, 620).AddDottedMap("Visited", new[] { new ChartMapPoint("Equator", 0, 0) });
+        var chart = Chart.Create().Size(420, 620).AddDottedMap("Visited", new[] { new ChartMapPoint("Equator", 0, 0) });
         var prepared = PreparedFamily(chart); var marker = Verify.Single(MapMarkers(prepared));
         Verify.InRange(marker.Cy, prepared.Size.Height * .3, prepared.Size.Height * .7);
         Verify.True(prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "dotted-map-boundary" && node.Fill.HasValue).Sum(node => node.Commands.Count) > 100);
@@ -93,7 +93,7 @@ internal static partial class SmokeTests {
     }
 
     private static void DottedMapViewportFocusesRegionalMaps() {
-        var chart = Chart.Create().WithSize(420, 320).WithMapViewport(ChartMapViewport.Europe()).AddDottedMap("Visited", new[] {
+        var chart = Chart.Create().Size(420, 320).Map(m => m.Viewport(ChartMapViewport.Europe())).AddDottedMap("Visited", new[] {
             new ChartMapPoint("Spain", -3.7038, 40.4168), new("Poland", 19.1451, 51.9194), new("United States", -98.5795, 39.8283)
         });
         var prepared = PreparedFamily(chart);
@@ -103,11 +103,11 @@ internal static partial class SmokeTests {
         Verify.Equal(new[] { "true", "true", "false" }, sources.Select(source => source.Metadata["data-cfx-visible"]));
         Verify.Contains(prepared.Scene.Nodes, node => node.Role == "dotted-map-boundary");
         Verify.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "dotted-map-land-dot");
-        var poland = PreparedFamily(Chart.Create().WithSize(420, 320).WithMapViewport(ChartMapViewport.Poland())
+        var poland = PreparedFamily(Chart.Create().Size(420, 320).Map(m => m.Viewport(ChartMapViewport.Poland()))
             .AddDottedMap("Cities", new[] { new ChartMapPoint("Warsaw", 21.0122, 52.2297) }));
         Verify.Contains(poland.Scene.Nodes, node => node.Role == "dotted-map-outline");
         Verify.NotEmpty(poland.ToPng());
-        var custom = PreparedFamily(Chart.Create().WithMapViewport(new ChartMapViewport("Iberia", -10, 5, 35, 45))
+        var custom = PreparedFamily(Chart.Create().Map(m => m.Viewport(new ChartMapViewport("Iberia", -10, 5, 35, 45)))
             .AddDottedMap("Cities", new[] { new ChartMapPoint("Madrid", -3.7038, 40.4168) }));
         Verify.Contains(custom.Scene.Nodes, node => node.Role == "dotted-map-land-dot");
         AssertThrows<ArgumentException>(() => new ChartMapViewport(" ", -10, 10, -10, 10), "Viewports need a name.");
@@ -115,15 +115,15 @@ internal static partial class SmokeTests {
     }
 
     private static void DottedMapRegionalLabelsAvoidMarkerHalos() {
-        var chart = Chart.Create().WithSize(360, 260).WithMapViewport(ChartMapViewport.Poland()).WithDataLabels().AddDottedMap("Cities", new[] {
+        var chart = Chart.Create().Size(360, 260).Map(m => m.Viewport(ChartMapViewport.Poland())).DataLabels().AddDottedMap("Cities", new[] {
             new ChartMapPoint("Gdansk", 18.6466, 54.3520), new("Warsaw", 21.0122, 52.2297), new("Krakow", 19.9450, 50.0647)
         });
         var prepared = PreparedFamily(chart); AssertMapCaptionsAvoidMarks(prepared, 3); Verify.NotEmpty(prepared.ToPng());
     }
 
     private static void DottedMapRendersWeightedRevenueMarkers() {
-        var chart = Chart.Create().WithSize(520, 320).WithMapViewport(ChartMapViewport.Europe()).WithDataLabels()
-            .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
+        var chart = Chart.Create().Size(520, 320).Map(m => m.Viewport(ChartMapViewport.Europe())).DataLabels()
+            .FormatValuesBy(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddDottedMap("Revenue", new[] {
                 new ChartMapPoint("Poland", 19.1451, 51.9194, 142, ChartColor.FromHex("#DC2626")),
                 new("Germany", 10.4515, 51.1657, 214, ChartColor.FromHex("#22C55E")), new("Spain", -3.7038, 40.4168, 96, ChartColor.FromHex("#F59E0B"))
@@ -139,7 +139,7 @@ internal static partial class SmokeTests {
     }
 
     private static void DottedMapRendersConnectorRoutes() {
-        var chart = Chart.Create().WithSize(520, 300).WithMapViewport(ChartMapViewport.Europe()).AddDottedMap("Visited", new[] {
+        var chart = Chart.Create().Size(520, 300).Map(m => m.Viewport(ChartMapViewport.Europe())).AddDottedMap("Visited", new[] {
             new ChartMapPoint("Spain", -3.7038, 40.4168), new("Warsaw", 21.0122, 52.2297), new("Oslo", 10.7522, 59.9139)
         }).AddMapRouteBetweenPoints("Spain to Warsaw", "Spain", "Warsaw", ChartColor.FromHex("#22C55E"))
             .AddMapConnectorBetweenPoints("Warsaw to Oslo", "Warsaw", "Oslo");
@@ -152,7 +152,7 @@ internal static partial class SmokeTests {
         Verify.True(prepared.Scene.Nodes.ToList().IndexOf(paths[0]) < prepared.Scene.Nodes.ToList().IndexOf(marker));
         Verify.Equal(ChartColor.FromHex("#22C55E").R, paths[0].Stroke!.Value.R);
         Verify.NotEmpty(prepared.ToPng());
-        var labelled = PreparedFamily(chart.WithDataLabels());
+        var labelled = PreparedFamily(chart.DataLabels());
         var captions = FamilyLabels(labelled, "dotted-map-connector-label");
         var sources = FamilyGroups(labelled, "dotted-map-connector-label-source");
         Verify.Equal(new[] { "Spain to Warsaw", "Warsaw to Oslo" }, sources.Select(source => source.Metadata["data-cfx-full-label"]));
@@ -166,13 +166,13 @@ internal static partial class SmokeTests {
         }
         if (captions.Length < 2 || captions.Any(caption => FamilyContent(caption) != labelled.Regions.Single(region => region.Id == caption.Id).Label))
             Verify.Contains(labelled.Diagnostics, diagnostic => diagnostic.Code == "map.label-overflow");
-        Verify.Equal(2, FamilyLabels(PreparedFamily(chart.WithSize(900, 520)), "dotted-map-connector-label").Length);
+        Verify.Equal(2, FamilyLabels(PreparedFamily(chart.Size(900, 520)), "dotted-map-connector-label").Length);
         AssertThrows<ArgumentException>(() => Chart.Create().AddMapConnector(" ", 0, 0, 1, 1), "Routes need a label.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddMapConnector("Bad", -181, 0, 1, 1), "Route coordinates must be geographic.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddMapRouteBetweenPoints("Bad", "Spain", "Warsaw"), "Bound routes require source points.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }).AddMapRouteBetweenPoints("Bad", "Spain", "Missing"), "Bound routes require known endpoints.");
         var ports = new[] { new ChartMapPoint("Rotterdam", 4.4792, 51.9244), new ChartMapPoint("Singapore", 103.8198, 1.3521) };
-        var sea = Chart.Create().WithSize(760, 420).AddDottedMap("Ports", ports)
+        var sea = Chart.Create().Size(760, 420).AddDottedMap("Ports", ports)
             .AddMapRoute("Via Suez", new[] { ports[0], new ChartMapPoint("Suez", 32.5498, 29.9668), ports[1] })
             .AddMapRoute("Via Cape", new[] { ports[0], new ChartMapPoint("Cape", 18.4741, -34.3587), ports[1] });
         var seaPrepared = PreparedFamily(sea);

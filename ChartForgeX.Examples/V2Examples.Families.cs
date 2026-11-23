@@ -115,7 +115,7 @@ public static partial class V2Examples {
                 compact ? 360 : 800, compact ? 360 : 440, true, ExampleRecipes.Named("mixed-radial"), new[] { "RadialColumn", "Radar" }, compact: compact);
           }
             var reversedVariant = compact ? "compact-mixed-angular-reversal" : "mixed-angular-reversal";
-            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal()),
+            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial().XAxis(axis => axis.Reversed()),
                 "family-radial-column-" + reversedVariant + "-" + mode.ToString().ToLowerInvariant(), "radial-column", "Regional counts and targets", reversedVariant,
                 "Columns, reference area and target line share reversed category angles", mode, compact ? 360 : 800, compact ? 360 : 440, true,
                 ExampleRecipes.Named("mixed-radial"), new[] { "RadialColumn", "Radar" }, compact: compact);
@@ -176,8 +176,8 @@ public static partial class V2Examples {
         var context = GalleryContext(width, height, mode, title, subtitle, legend);
         if (model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
             // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
-            var natural = topology.WithTitle(title).WithSubtitle(subtitle)
-                .WithTheme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
+            var natural = topology.Title(title).Subtitle(subtitle)
+                .Theme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
             ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), natural.ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true }));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), natural.ToPng());
             WriteThumbnail(output, model, id, title, family, mode, legend);

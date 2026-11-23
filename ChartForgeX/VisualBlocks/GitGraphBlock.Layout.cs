@@ -18,10 +18,4 @@ public sealed partial class GitGraphBlock {
     public bool ParallelCommits { get; set; }
     /// <summary>Gets or sets whether commit captions are tilted 45 degrees. Tags and branch captions stay upright.</summary>
     public bool RotateCommitLabels { get; set; }
-    /// <summary>Sets physical ancestry progression without changing source or parent identities.</summary>
-    public GitGraphBlock WithDirection(GitGraphDirection direction) { Direction = direction; return this; }
-    /// <summary>Sets ancestry-depth placement for independent branches.</summary>
-    public GitGraphBlock WithParallelCommits(bool parallel = true) { ParallelCommits = parallel; return this; }
-    /// <summary>Sets tilted commit captions without rotating the graph geometry.</summary>
-    public GitGraphBlock WithRotatedCommitLabels(bool rotated = true) { RotateCommitLabels = rotated; return this; }
 }

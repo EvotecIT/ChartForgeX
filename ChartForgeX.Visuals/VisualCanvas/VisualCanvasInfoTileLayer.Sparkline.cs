@@ -9,7 +9,7 @@ public sealed partial class VisualCanvasInfoTileLayer {
     internal int MiniChartSampleCount => SparklineData?.Values.Count ?? MiniChartValues.Count;
 
     /// <summary>Sets shared compact samples and presentation, retaining missing slots and real zeroes.</summary>
-    public VisualCanvasInfoTileLayer WithSparkline(SparklineData data, SparklineStyle style = SparklineStyle.Line) {
+    public VisualCanvasInfoTileLayer Sparkline(SparklineData data, SparklineStyle style = SparklineStyle.Line) {
         if (data == null) throw new ArgumentNullException(nameof(data));
         if (!Enum.IsDefined(typeof(SparklineStyle), style)) throw new ArgumentOutOfRangeException(nameof(style));
         SparklineData = data; _miniChartValues.Clear();

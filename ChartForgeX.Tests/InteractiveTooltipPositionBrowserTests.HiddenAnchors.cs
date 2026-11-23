@@ -132,8 +132,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [InlineData(HtmlChartTooltipAnchor.Chart, true)]
     public async Task PinnedKeyboardOnlyFactKeepsReadoutAvailabilityWhilePointerMoves(HtmlChartTooltipAnchor anchor, bool precision) {
         if (!Enabled) return;
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithHeader(false)
-            .WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false).WithTheme(VisualTheme.Graphite()), false, "Observed",
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440).ShowHeader(false)
+            .Legend(false).Axes(false).ShowGrid(false).DataLabels(false).Theme(VisualTheme.Graphite()), false, "Observed",
             new ChartPoint(1, precision ? 1 : 0), new ChartPoint(2, 100000000));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

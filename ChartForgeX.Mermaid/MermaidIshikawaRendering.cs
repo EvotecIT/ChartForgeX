@@ -17,17 +17,17 @@ public static class MermaidIshikawaRendering {
         if (document.Root == null) throw new InvalidOperationException("Mermaid Ishikawa diagrams require a root effect line.");
         options ??= new MermaidIshikawaRenderOptions();
         var block = FishboneDiagramBlock.Create(document.Root.Text)
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width ?? MermaidIshikawaRenderOptions.PreviewWidth, options.Height ?? MermaidIshikawaRenderOptions.PreviewHeight)
-            .WithPadding(document.Configuration.Ishikawa?.Padding ?? options.Padding);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width ?? MermaidIshikawaRenderOptions.PreviewWidth, options.Height ?? MermaidIshikawaRenderOptions.PreviewHeight)
+            .Padding(document.Configuration.Ishikawa?.Padding ?? options.Padding);
 
         foreach (var child in document.Root.Children) CopyCause(child, block.AddCause(child.Text));
         MermaidPresentation.Apply(block, document, options.Presentation);
         document.Configuration.Ishikawa?.Apply(block, options.Presentation);
         // Without a host frame the diagram measures its cause lanes and trims to them.
         var hostFrame = options.Width.HasValue || options.Height.HasValue;
-        if (!hostFrame || VisualBlockRendering.FishboneNeedsNaturalLayout(block)) block.WithNaturalSize(options.Width ?? 0, options.Height ?? 0);
+        if (!hostFrame || VisualBlockRendering.FishboneNeedsNaturalLayout(block)) block.NaturalSize(options.Width ?? 0, options.Height ?? 0);
         return block;
     }
 

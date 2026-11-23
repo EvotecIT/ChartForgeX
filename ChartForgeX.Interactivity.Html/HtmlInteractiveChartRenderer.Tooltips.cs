@@ -10,10 +10,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
     // HTML-only metadata: native SVG/PNG captions and custom numeric policies stay untouched.
     private static void AppendTooltipMetadata(StringBuilder json, Chart chart) {
         json.Append(",\"tooltip\":{\"axes\":{");
-        Axis("x", chart.XAxisTitle, chart.Options.XAxis, false);
-        Axis("y", chart.YAxisTitle, chart.Options.YAxis, true);
-        Axis("secondaryX", chart.SecondaryXAxisTitle, chart.Options.SecondaryXAxis, true);
-        Axis("secondaryY", chart.SecondaryYAxisTitle, chart.Options.SecondaryYAxis, true);
+        Axis("x", chart.Options.XAxis.Title, chart.Options.XAxis, false);
+        Axis("y", chart.Options.YAxis.Title, chart.Options.YAxis, true);
+        Axis("secondaryX", chart.Options.SecondaryXAxis.Title, chart.Options.SecondaryXAxis, true);
+        Axis("secondaryY", chart.Options.SecondaryYAxis.Title, chart.Options.SecondaryYAxis, true);
         json.Append("},\"sizeLabel\":").Append(HtmlJsonString.Encode(chart.Options.Bubble.SizeDimension.Name ?? chart.Options.Labels.Size))
             .Append(",\"series\":[");
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);

@@ -14,136 +14,6 @@ namespace ChartForgeX.Topology;
 /// Provides convenience rendering and export methods for topology charts.
 /// </summary>
 public static partial class TopologyChartExtensions {
-    /// <summary>
-    /// Sets the topology chart id.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="id">The chart id.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithId(this TopologyChart chart, string id) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Id = RequiredText(id, nameof(id), "Topology chart ids");
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology chart title.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="title">The chart title.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithTitle(this TopologyChart chart, string title) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Title = title;
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology chart subtitle.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="subtitle">The chart subtitle.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithSubtitle(this TopologyChart chart, string subtitle) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Subtitle = subtitle;
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology chart layout mode.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="layoutMode">The layout mode.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithLayout(this TopologyChart chart, TopologyLayoutMode layoutMode) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        ValidateEnum(typeof(TopologyLayoutMode), layoutMode, nameof(layoutMode), "Topology layout modes");
-        chart.LayoutMode = layoutMode;
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology chart layout mode and flow direction.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="layoutMode">The layout mode.</param>
-    /// <param name="layoutDirection">The layout flow direction.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithLayout(this TopologyChart chart, TopologyLayoutMode layoutMode, TopologyLayoutDirection layoutDirection) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        ValidateEnum(typeof(TopologyLayoutMode), layoutMode, nameof(layoutMode), "Topology layout modes");
-        ValidateEnum(typeof(TopologyLayoutDirection), layoutDirection, nameof(layoutDirection), "Topology layout directions");
-        chart.LayoutMode = layoutMode;
-        chart.LayoutDirection = layoutDirection;
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology chart layout flow direction.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="layoutDirection">The layout flow direction.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithLayoutDirection(this TopologyChart chart, TopologyLayoutDirection layoutDirection) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        ValidateEnum(typeof(TopologyLayoutDirection), layoutDirection, nameof(layoutDirection), "Topology layout directions");
-        chart.LayoutDirection = layoutDirection;
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology viewport.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="width">The viewport width.</param>
-    /// <param name="height">The viewport height.</param>
-    /// <param name="padding">The viewport padding.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithViewport(this TopologyChart chart, double width, double height, double padding = 24) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        ValidatePositive(width, nameof(width), "Topology viewport widths");
-        ValidatePositive(height, nameof(height), "Topology viewport heights");
-        ValidateNonNegative(padding, nameof(padding), "Topology viewport padding");
-        chart.Viewport = new TopologyViewport { Width = width, Height = height, Padding = padding };
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the longitude/latitude viewport used by geographic topology layouts.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="viewport">The map viewport.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithMapViewport(this TopologyChart chart, ChartMapViewport viewport) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.MapViewport = viewport;
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the render options used when a render, prepare, diagnostics, or export call passes none.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="options">The options to draw the chart with by default, or null to clear them. The chart keeps its own copy.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithRenderOptions(this TopologyChart chart, TopologyRenderOptions? options) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.DefaultRenderOptions = options?.Clone();
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets the topology legend.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="legend">The legend to use.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithLegend(this TopologyChart chart, TopologyLegend? legend) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Legend = legend;
-        return chart;
-    }
 
     /// <summary>
     /// Sets the topology theme.
@@ -152,17 +22,10 @@ public static partial class TopologyChartExtensions {
     /// <param name="theme">The theme to use.</param>
     /// <returns>The current topology chart.</returns>
     /// <param name="mode">An explicit mode, or null to retain the current mode.</param>
-    public static TopologyChart WithTheme(this TopologyChart chart, VisualTheme theme, ThemeMode? mode = null) {
+    public static TopologyChart Theme(this TopologyChart chart, VisualTheme theme, ThemeMode? mode = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         if (mode.HasValue) chart.ThemeMode = mode.Value;
-        return chart;
-    }
-
-    /// <summary>Sets the explicit light or dark mode without changing the shared theme.</summary>
-    public static TopologyChart WithThemeMode(this TopologyChart chart, ThemeMode mode) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.ThemeMode = mode;
         return chart;
     }
 
@@ -282,170 +145,6 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
-    /// Sets a node-specific display mode and optional badge text.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="nodeId">The node id.</param>
-    /// <param name="displayMode">The node display mode.</param>
-    /// <param name="badge">Optional short badge text.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodeDisplay(this TopologyChart chart, string nodeId, TopologyNodeDisplayMode displayMode, string? badge = null) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
-        ValidateEnum(typeof(TopologyNodeDisplayMode), displayMode, nameof(displayMode), "Topology node display modes");
-        foreach (var node in chart.Nodes) {
-            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
-            node.DisplayMode = displayMode;
-            node.Badge = badge;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
-    }
-
-    /// <summary>
-    /// Sets a display mode for all nodes of a kind and optionally assigns a badge.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="kind">The node kind to update.</param>
-    /// <param name="displayMode">The node display mode.</param>
-    /// <param name="badge">Optional short badge text.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodesDisplay(this TopologyChart chart, TopologyNodeKind kind, TopologyNodeDisplayMode displayMode, string? badge = null) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
-        ValidateEnum(typeof(TopologyNodeDisplayMode), displayMode, nameof(displayMode), "Topology node display modes");
-        foreach (var node in chart.Nodes) {
-            if (node.Kind != kind) continue;
-            node.DisplayMode = displayMode;
-            if (badge != null) node.Badge = badge;
-        }
-
-        return chart;
-    }
-
-    /// <summary>
-    /// Sets optional short badge text on a topology node.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="nodeId">The node id.</param>
-    /// <param name="badge">The badge text.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodeBadge(this TopologyChart chart, string nodeId, string? badge) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
-        foreach (var node in chart.Nodes) {
-            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
-            node.Badge = badge;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
-    }
-
-    /// <summary>
-    /// Sets longitude/latitude coordinates for a topology node used by geographic layouts.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="nodeId">The node id.</param>
-    /// <param name="longitude">The longitude in degrees.</param>
-    /// <param name="latitude">The latitude in degrees.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodeCoordinates(this TopologyChart chart, string nodeId, double longitude, double latitude) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
-        ValidateCoordinate(longitude, latitude);
-        foreach (var node in chart.Nodes) {
-            if (!string.Equals(node.Id, nodeId, StringComparison.Ordinal)) continue;
-            node.Longitude = longitude;
-            node.Latitude = latitude;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology node '" + nodeId + "' was not found.", nameof(nodeId));
-    }
-
-    /// <summary>
-    /// Sets an optional short group symbol.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="groupId">The group id.</param>
-    /// <param name="symbol">The symbol text or built-in token such as region.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithGroupSymbol(this TopologyChart chart, string groupId, string? symbol) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
-        foreach (var group in chart.Groups) {
-            if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
-            group.Symbol = symbol;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
-    }
-
-    /// <summary>
-    /// Sets an optional group accent color independent from the group health status.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="groupId">The group id.</param>
-    /// <param name="color">The group accent color.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithGroupColor(this TopologyChart chart, string groupId, string? color) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
-        foreach (var group in chart.Groups) {
-            if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
-            group.Color = color;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
-    }
-
-    /// <summary>
-    /// Sets the preferred node arrangement policy for a group when using dense grouped layouts.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="groupId">The group id.</param>
-    /// <param name="layoutPolicy">The dense group layout policy.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithGroupLayout(this TopologyChart chart, string groupId, TopologyGroupLayoutPolicy layoutPolicy) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
-        ValidateEnum(typeof(TopologyGroupLayoutPolicy), layoutPolicy, nameof(layoutPolicy), "Topology group layout policies");
-        foreach (var group in chart.Groups) {
-            if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
-            group.LayoutPolicy = layoutPolicy;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
-    }
-
-    /// <summary>
-    /// Sets longitude/latitude coordinates for a topology group used by geographic layouts.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="groupId">The group id.</param>
-    /// <param name="longitude">The longitude in degrees.</param>
-    /// <param name="latitude">The latitude in degrees.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithGroupCoordinates(this TopologyChart chart, string groupId, double longitude, double latitude) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
-        ValidateCoordinate(longitude, latitude);
-        foreach (var group in chart.Groups) {
-            if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
-            group.Longitude = longitude;
-            group.Latitude = latitude;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
-    }
-
-    /// <summary>
     /// Adds an edge to the topology chart.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -484,7 +183,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="edgeId">The edge id.</param>
     /// <param name="waypoints">The route bend points.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeWaypoints(this TopologyChart chart, string edgeId, params ChartPoint[] waypoints) {
+    public static TopologyChart EdgeWaypoints(this TopologyChart chart, string edgeId, params ChartPoint[] waypoints) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
         foreach (var edge in chart.Edges) {
@@ -498,59 +197,13 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
-    /// Adjusts the rendered label position for a specific edge without changing the route geometry.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="x">The horizontal label offset in pixels.</param>
-    /// <param name="y">The vertical label offset in pixels.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeLabelOffset(this TopologyChart chart, string edgeId, double x, double y) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        TopologyModelGuards.Finite(x, nameof(x));
-        TopologyModelGuards.Finite(y, nameof(y));
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.LabelOffsetX = x;
-            edge.LabelOffsetY = y;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
-    /// Sets preferred attachment sides for an edge.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="sourcePort">The preferred source attachment side.</param>
-    /// <param name="targetPort">The preferred target attachment side.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgePorts(this TopologyChart chart, string edgeId, TopologyEdgePort sourcePort, TopologyEdgePort targetPort) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        ValidateEnum(typeof(TopologyEdgePort), sourcePort, nameof(sourcePort), "Topology edge ports");
-        ValidateEnum(typeof(TopologyEdgePort), targetPort, nameof(targetPort), "Topology edge ports");
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.SourcePort = sourcePort;
-            edge.TargetPort = targetPort;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
     /// Sets a deterministic orthogonal route lane offset for an edge.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
     /// <param name="edgeId">The edge id.</param>
     /// <param name="routeLane">The route lane offset in pixels.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeRouteLane(this TopologyChart chart, string edgeId, double routeLane) {
+    public static TopologyChart EdgeRouteLane(this TopologyChart chart, string edgeId, double routeLane) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
         ValidateFinite(routeLane, nameof(routeLane), "Topology edge route lanes");
@@ -572,7 +225,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="spacing">The spacing between adjacent lanes in pixels.</param>
     /// <param name="edgeIds">The related edge ids in visual lane order.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeRouteBundle(this TopologyChart chart, double centerLane, double spacing, params string[] edgeIds) {
+    public static TopologyChart EdgeRouteBundle(this TopologyChart chart, double centerLane, double spacing, params string[] edgeIds) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateFinite(centerLane, nameof(centerLane), "Topology edge route bundle center lanes");
         ValidateFinite(spacing, nameof(spacing), "Topology edge route bundle spacing");
@@ -580,7 +233,7 @@ public static partial class TopologyChartExtensions {
         if (edgeIds == null || edgeIds.Length == 0) throw new ArgumentException("Topology edge route bundles require at least one edge id.", nameof(edgeIds));
         for (var i = 0; i < edgeIds.Length; i++) {
             var lane = centerLane + (i - (edgeIds.Length - 1) / 2.0) * spacing;
-            chart.WithEdgeRouteLane(edgeIds[i], lane);
+            chart.EdgeRouteLane(edgeIds[i], lane);
         }
 
         return chart;
@@ -592,7 +245,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="chart">The topology chart.</param>
     /// <param name="spacing">The spacing between adjacent lanes in pixels.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithReciprocalEdgeRouteBundles(this TopologyChart chart, double spacing = 18) {
+    public static TopologyChart ReciprocalEdgeRouteBundles(this TopologyChart chart, double spacing = 18) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateFinite(spacing, nameof(spacing), "Topology reciprocal edge route bundle spacing");
         if (spacing <= 0) throw new ArgumentOutOfRangeException(nameof(spacing), "Topology reciprocal edge route bundle spacing must be greater than zero.");
@@ -617,97 +270,12 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
-    /// Sets an explicit line style for an edge independent from health status.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="lineStyle">The edge line style.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeLineStyle(this TopologyChart chart, string edgeId, TopologyEdgeLineStyle lineStyle) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        ValidateEnum(typeof(TopologyEdgeLineStyle), lineStyle, nameof(lineStyle), "Topology edge line styles");
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.LineStyle = lineStyle;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
-    /// Sets edge visual emphasis independently from health status and line style.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="emphasis">The edge visual emphasis.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeEmphasis(this TopologyChart chart, string edgeId, TopologyEdgeEmphasis emphasis) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        ValidateEnum(typeof(TopologyEdgeEmphasis), emphasis, nameof(emphasis), "Topology edge emphasis values");
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.Emphasis = emphasis;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
-    /// Applies reusable visual styling to all edges of a given kind.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="kind">The edge kind to update.</param>
-    /// <param name="lineStyle">Optional line style to apply.</param>
-    /// <param name="emphasis">Optional visual emphasis to apply.</param>
-    /// <param name="isMuted">Optional muted-state override to apply.</param>
-    /// <param name="color">Optional edge color to apply independent from health status.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgesOfKind(this TopologyChart chart, TopologyEdgeKind kind, TopologyEdgeLineStyle? lineStyle = null, TopologyEdgeEmphasis? emphasis = null, bool? isMuted = null, string? color = null) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        ValidateEnum(typeof(TopologyEdgeKind), kind, nameof(kind), "Topology edge kinds");
-        if (lineStyle.HasValue) ValidateEnum(typeof(TopologyEdgeLineStyle), lineStyle.Value, nameof(lineStyle), "Topology edge line styles");
-        if (emphasis.HasValue) ValidateEnum(typeof(TopologyEdgeEmphasis), emphasis.Value, nameof(emphasis), "Topology edge emphasis values");
-        foreach (var edge in chart.Edges) {
-            if (edge.Kind != kind) continue;
-            if (lineStyle.HasValue) edge.LineStyle = lineStyle.Value;
-            if (emphasis.HasValue) edge.Emphasis = emphasis.Value;
-            if (isMuted.HasValue) edge.IsMuted = isMuted.Value;
-            if (color != null) edge.Color = color;
-        }
-
-        return chart;
-    }
-
-    /// <summary>
-    /// Marks an edge as a quiet structural relationship instead of a status route.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="isMuted">Whether the edge is muted.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithEdgeMuted(this TopologyChart chart, string edgeId, bool isMuted = true) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.IsMuted = isMuted;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
     /// Configures the current topology theme.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart ConfigureTheme(this TopologyChart chart, Action<VisualThemeBuilder> configure) {
+    public static TopologyChart Theme(this TopologyChart chart, Action<VisualThemeBuilder> configure) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         chart.Theme = chart.Theme.Configure(configure);

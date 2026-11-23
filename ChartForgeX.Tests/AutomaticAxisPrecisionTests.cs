@@ -35,7 +35,7 @@ public sealed class AutomaticAxisPrecisionTests {
     [Fact]
     public void ExplicitLabelsAndAxisThenChartFormattersRemainAuthoritativeAndLazy() {
         var ticks = new[] { .0001, .0002, .0003 }; var axisCalls = 0; var chartCalls = 0;
-        var axis = new ChartAxis().WithLabelFormatter(_ => { axisCalls++; return "Axis"; });
+        var axis = new ChartAxis().LabelBy(_ => { axisCalls++; return "Axis"; });
         axis.Labels.Add(new ChartAxisLabel(ticks[0], "Authored"));
         string Fallback(double value) { chartCalls++; return "Chart"; }
         var format = ChartAxisValueFormatter.Create(axis, ticks, Fallback);
@@ -45,10 +45,10 @@ public sealed class AutomaticAxisPrecisionTests {
         axis.LabelFormatter = null;
         Assert.Equal(new[] { "Authored", "Chart", "Chart" }, ticks.Select(ChartAxisValueFormatter.Create(axis, ticks, Fallback)));
         Assert.Equal(2, chartCalls);
-        axis.WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
+        axis.ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         Assert.Equal(new[] { "Authored", "0.00", "0.00" }, ticks.Select(ChartAxisValueFormatter.Create(axis, ticks)));
         Assert.Equal("-0.00", ChartAxisValueFormatter.Create(axis, new[] { -.0001 })(-.0001));
-        var chart = Chart.Create().WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         Assert.Equal(new[] { "0.00", "0.00", "0.00" }, ChartNumericFormatter.FormatScaleValues(chart.Options, ticks));
         Assert.Equal(new[] { "-0.00" }, ChartNumericFormatter.FormatScaleValues(chart.Options, new[] { -.0001 }));
     }
@@ -61,12 +61,12 @@ public sealed class AutomaticAxisPrecisionTests {
         var chart = Chart.Create();
         Assert.Equal(expected, chart.Options.ValueFormat.Format(value));
         Assert.Equal(expected, ChartNumericFormatter.FormatValue(chart.Options, value));
-        chart.WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
+        chart.ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         Assert.Equal(value < 0 ? "-0.00" : "0.00", ChartNumericFormatter.FormatValue(chart.Options, value));
-        chart.WithValueFormat(ChartValueFormat.Compact());
+        chart.ValueFormat(ChartValueFormat.Compact());
         Assert.Equal(value < 0 ? "-0" : "0", ChartNumericFormatter.FormatValue(chart.Options, value));
         var calls = 0;
-        chart.WithValueFormatter(number => { calls++; return "Authored zero"; });
+        chart.FormatValuesBy(number => { calls++; return "Authored zero"; });
         Assert.Equal("Authored zero", ChartNumericFormatter.FormatValue(chart.Options, value));
         Assert.Equal(1, calls);
     }
@@ -74,10 +74,10 @@ public sealed class AutomaticAxisPrecisionTests {
     [Fact]
     public void TinyTrendPointSemanticsAndVisibleLabelsShareTruthfulDefaultDisplayAndDetachedFacts() {
         var observations = Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3));
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithDataLabels().AddTrendLine("Regression", observations);
+        var chart = Chart.Create().Size(640, 400).Legend(false).DataLabels().AddTrendLine("Regression", observations);
         // Leave room around both endpoints: this contract checks display text, not edge-label fitting.
-        chart.Options.XAxis.WithBounds(-1, 11);
-        chart.Options.YAxis.WithBounds(-.0012, -.0002);
+        chart.Options.XAxis.Bounds(-1, 11);
+        chart.Options.YAxis.Bounds(-.0012, -.0002);
         var points = chart.Series[0].Points.ToArray();
         var captions = points.Select(point => point.Y.ToString("G6", CultureInfo.InvariantCulture)).ToArray();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -89,7 +89,7 @@ public sealed class AutomaticAxisPrecisionTests {
             Assert.Equal(points[index].Y, double.Parse((string)marks[index].Attribute("data-cfx-value")!, CultureInfo.InvariantCulture));
             Assert.Contains(captions[index], (string?)marks[index].Attribute("data-cfx-description"));
         }
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("Late formatter"));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("Late formatter"));
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -99,8 +99,8 @@ public sealed class AutomaticAxisPrecisionTests {
     [InlineData(true)]
     public void PreparedPrimaryAndSecondaryTicksRetainSmallSignedFactsAndDetachedExports(bool secondary) {
         var observations = Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3));
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).AddTrendLine("Regression", observations);
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
+        var chart = Chart.Create().Size(640, 400).Legend(false).AddTrendLine("Regression", observations);
+        if (secondary) chart.Series[0].SecondaryAxis();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = secondary ? "axis-secondary-y-label" : "axis-y-label";
         var captions = Captions(prepared, role);
@@ -109,21 +109,21 @@ public sealed class AutomaticAxisPrecisionTests {
         Assert.Contains("-0.0009", captions); Assert.Equal(captions.Length, captions.Distinct().Count());
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal(captions, Texts(svg, role));
-        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithLabelFormatter(_ => throw new InvalidOperationException("Late formatter"));
+        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).LabelBy(_ => throw new InvalidOperationException("Late formatter"));
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
     [Fact]
     public void PreparedCloseNumericXAxisAndProjectedValueAxisKeepDistinctCaptions() {
-        var x = Chart.Create().WithSize(900, 400).WithLegend(false)
+        var x = Chart.Create().Size(900, 400).Legend(false)
             .AddLine("Values", new[] { new ChartPoint(1_000_001, 1), new ChartPoint(1_000_005, 2) });
-        x.Options.XAxis.WithBounds(1_000_001, 1_000_005);
+        x.Options.XAxis.Bounds(1_000_001, 1_000_005);
         Assert.Equal(new[] { "1,000,001", "1,000,002", "1,000,003", "1,000,004", "1,000,005" },
             Captions(x.Prepare(VisualExportRequest.ForChart(x).Context), "axis-x-label"));
-        var horizontal = Chart.Create().WithSize(640, 400).WithLegend(false)
+        var horizontal = Chart.Create().Size(640, 400).Legend(false)
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, .0001), new ChartPoint(2, .0005) });
-        horizontal.Options.XAxis.WithBounds(0, .0005);
+        horizontal.Options.XAxis.Bounds(0, .0005);
         var captions = Captions(horizontal.Prepare(VisualExportRequest.ForChart(horizontal).Context), "axis-x-label");
         Assert.True(captions.Length > 1);
         Assert.Equal(captions.Length, captions.Distinct(StringComparer.Ordinal).Count());
@@ -133,9 +133,9 @@ public sealed class AutomaticAxisPrecisionTests {
     [Fact]
     public void AxisCallbacksRunOncePerPreparedTickAndAreNotInvokedByDetachedExports() {
         var calls = new Dictionary<double, int>();
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false)
             .AddLine("Values", new[] { new ChartPoint(1, .0001), new ChartPoint(2, .0005) });
-        chart.Options.YAxis.WithBounds(.0001, .0005).WithLabelFormatter(value => {
+        chart.Options.YAxis.Bounds(.0001, .0005).LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return value.ToString("0.0000", CultureInfo.InvariantCulture);
         });
@@ -152,9 +152,9 @@ public sealed class AutomaticAxisPrecisionTests {
     [InlineData(ChartScaleKind.Logarithmic, .0001, .01)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic, -.0005, .0005)]
     public void NonlinearNumericAxesRetainSmallSignedTickFacts(ChartScaleKind scale, double minimum, double maximum) {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false)
             .AddLine("Values", new[] { new ChartPoint(1, minimum), new ChartPoint(2, maximum) });
-        chart.Options.YAxis.WithScale(scale).WithBounds(minimum, maximum);
+        chart.Options.YAxis.Scale(scale).Bounds(minimum, maximum);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var regions = prepared.Regions.Where(region => region.Role == "axis-y-label").ToArray();
         Assert.True(regions.Length > 1);
@@ -170,11 +170,11 @@ public sealed class AutomaticAxisPrecisionTests {
 
     [Fact]
     public void NumericScheduleTicksKeepDefaultPrecisionAndAuthoredValueNotation() {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).AddTimelineRange("Window", .0001, .0005);
+        var chart = Chart.Create().Size(640, 400).Legend(false).AddTimelineRange("Window", .0001, .0005);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var captions = prepared.Regions.Where(region => region.Role == "schedule-tick-label").Select(region => region.Label).ToArray();
         Assert.Equal(new[] { "0.0001", "0.0002", "0.0003", "0.0004", "0.0005" }, captions);
-        chart.WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
+        chart.ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.All(prepared.Regions.Where(region => region.Role == "schedule-tick-label"), region => Assert.Equal("0.00", region.Label));
     }
@@ -182,7 +182,7 @@ public sealed class AutomaticAxisPrecisionTests {
     [Fact]
     public void MatrixColumnsShareHonestAutomaticCaptionsWithoutChangingExplicitCallbackInvocations() {
         var values = new[] { .0001, .0002, .0003 };
-        Chart Matrix() => Chart.Create().WithSize(640, 400).WithLegend(false)
+        Chart Matrix() => Chart.Create().Size(640, 400).Legend(false)
             .AddHeatmapRow("First", values.Select(value => new ChartPoint(value, 1)))
             .AddHeatmapRow("Second", values.Select(value => new ChartPoint(value, 2)));
         var chart = Matrix(); var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -190,7 +190,7 @@ public sealed class AutomaticAxisPrecisionTests {
             .Where(region => region.Role == "heatmap-column-label").Select(region => region.Label));
         Assert.Contains(prepared.Regions, region => region.Label == "First, 0.0001: 1");
         var calls = 0; chart = Matrix();
-        chart.Options.XAxis.WithLabelFormatter(value => { calls++; return "Column " + value; });
+        chart.Options.XAxis.LabelBy(value => { calls++; return "Column " + value; });
         prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(15, calls); // Three measurement, six cell, three width, three placement resolutions.
         _ = prepared.ToSvg(); _ = prepared.ToPng();

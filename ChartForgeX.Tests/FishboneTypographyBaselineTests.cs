@@ -21,7 +21,7 @@ public sealed class FishboneTypographyBaselineTests {
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; builder.Light.Axis = builder.Dark.Axis = builder.Light.Grid = builder.Dark.Grid = builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF0000"); });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.Transparent }; });
-        var block = FishboneDiagramBlock.Create("Effect").WithSize(800, 400).WithTheme(theme).WithCard(false).WithTransparentBackground();
+        var block = FishboneDiagramBlock.Create("Effect").Size(800, 400).Theme(theme).ShowCard(false).TransparentBackground();
         block.AddCause("Cause").AddChild("MMMM");
         var native = block.RenderRgba();
         var raster = SvgRasterizer.Rasterize(block.ToSvg(), 800, 400);

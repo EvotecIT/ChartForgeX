@@ -32,10 +32,10 @@ public sealed class ChartViewportPresentationIsolationTests {
     [InlineData(false)]
     [InlineData(true)]
     public void LogarithmicFullEndpointWindowsCannotLeakIntoLaterFullPreparation(bool reversed) {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false).DataLabels(false)
             .AddLine("Logarithmic", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(4, 30) })
-            .WithXAxisBounds(1, 4);
-        chart.Options.XAxis.WithLogarithmicScale(2).WithReversal(reversed);
+            .XAxis(x => x.Bounds(1, 4));
+        chart.Options.XAxis.LogarithmicScale(2).Reversed(reversed);
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(2, "Two"));
         AssertFullResetIsolation(chart, "x");
     }
@@ -50,10 +50,10 @@ public sealed class ChartViewportPresentationIsolationTests {
             new ChartTimeSession(friday, friday.AddHours(8)),
             new ChartTimeSession(monday, monday.AddHours(8)) });
         var dates = new[] { friday, friday.AddHours(4), monday, monday.AddHours(8) };
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false).DataLabels(false)
             .AddLine("Included time", dates.Select((date, index) => new ChartPoint(ChartDateTime.ToOADate(date), index + 1)))
-            .WithXAxisBounds(ChartDateTime.ToOADate(friday), ChartDateTime.ToOADate(monday.AddHours(8)));
-        chart.Options.XAxis.WithTimeSessions(domain).WithReversal(reversed);
+            .XAxis(x => x.Bounds(ChartDateTime.ToOADate(friday), ChartDateTime.ToOADate(monday.AddHours(8))));
+        chart.Options.XAxis.TimeSessions(domain).Reversed(reversed);
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(friday, "Open"));
         AssertFullResetIsolation(chart, "x");
         Assert.Same(domain, chart.Options.XAxis.TimeSessions);
@@ -63,7 +63,7 @@ public sealed class ChartViewportPresentationIsolationTests {
         var axes = Axes(chart);
         var labels = axes.Select(axis => axis.Labels).ToArray();
         var labelValues = labels.Select(values => values.ToArray()).ToArray();
-        var authoredBounds = axes.Select(axis => (axis.Minimum, axis.Maximum)).ToArray();
+        var authoredBounds = axes.Select(axis => (axis.Min, axis.Max)).ToArray();
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)));
         var renderer = new HtmlInteractiveChartRenderer();
         var full = chart.Prepare(context);
@@ -111,15 +111,15 @@ public sealed class ChartViewportPresentationIsolationTests {
         for (var index = 0; index < axes.Length; index++) {
             Assert.Same(axes[index], current[index]); Assert.Same(labels[index], current[index].Labels);
             Assert.Equal(values[index], current[index].Labels.ToArray());
-            Assert.Equal(bounds[index].Minimum, current[index].Minimum); Assert.Equal(bounds[index].Maximum, current[index].Maximum);
+            Assert.Equal(bounds[index].Minimum, current[index].Min); Assert.Equal(bounds[index].Maximum, current[index].Max);
         }
     }
     private static Chart Numeric(bool horizontal) {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 100) };
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false).DataLabels(false)
             .AddLine("Primary", points).AddLine("Secondary", points);
-        chart.Series[1].UseSecondaryValueAxis();
-        if (horizontal) chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Series[1].SecondaryAxis();
+        if (horizontal) chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         return chart;
     }
     private static ChartAxis[] Axes(Chart chart) => new[] {

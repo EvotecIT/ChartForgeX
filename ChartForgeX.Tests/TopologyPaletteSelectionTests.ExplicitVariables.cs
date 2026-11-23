@@ -50,7 +50,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     [Fact]
     public void ArtworkSelectionAndExternalFallbackKeepExplicitVariableStatusPixels() {
         var png = PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 125, 180, 225, 255 }));
-        var chart = TopologyChart.Create().WithViewport(420, 180, 20).WithLegend(null).WithTheme(Theme())
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 180, 20)).Legend((TopologyLegend?)null).Theme(Theme())
             .AddArtworkNode("embedded", "Embedded", TopologyIconArtwork.Image("data:image/png;base64," + Convert.ToBase64String(png)), 40, 50, width: 100, height: 70)
             .AddArtworkNode("external", "External", TopologyIconArtwork.Image("/assets/owner.png"), 250, 50, width: 100, height: 70);
         foreach (var node in chart.Nodes) { node.Color = "var(--custom)"; node.PaletteIndex = 1; node.Status = TopologyHealthStatus.Healthy; }

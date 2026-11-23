@@ -171,7 +171,7 @@ public sealed class MermaidFontSizeTests {
     [Fact]
     public void ExplicitNativeContextOverridesAuthoredTypographyWithoutMutatingIt() {
         var topology = Assert.IsType<TopologyChart>(MermaidRenderer.Render(Source("flowchart LR\nA[API] --> B[Store]")).Artifact!.Model);
-        topology.WithTheme(topology.Theme.WithFontFamily("Arial"));
+        topology.Theme(topology.Theme.WithFontFamily("Arial"));
         Assert.Equal(18.5, topology.Theme.Typography.DataLabelSize);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 360)),
             VisualTheme.Graphite().WithTypography(new VisualTypography("Georgia", dataLabelSize: 14)), frame: new VisualFrame(showLegend: false));

@@ -12,8 +12,8 @@ public sealed class IndependentColorNameFormattingTests {
     [InlineData(ChartSeriesKind.Treemap)]
     [InlineData(ChartSeriesKind.Sunburst)]
     public void RenamingAnIndependentColorMeasurementPreservesItsUnformattedReadout(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(640, 440).WithDataLabels(false)
-            .WithValueFormat(ChartValueFormat.Number("0.0 'items'"));
+        var chart = Chart.Create().Size(640, 440).DataLabels(false)
+            .ValueFormat(ChartValueFormat.Number("0.0 'items'"));
         var items = new[] { new ChartHierarchyItem("measured", "Measured", value: 9, colorValue: 7.125) };
         if (kind == ChartSeriesKind.Scatter) chart.AddScatter("Samples", new[] { new ChartPoint(1, 9).WithColorValue(7.125) });
         else if (kind == ChartSeriesKind.Bubble) chart.AddBubble("Samples", new[] { new ChartBubble(1, 9, 4).WithColorValue(7.125) });

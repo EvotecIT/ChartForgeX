@@ -27,9 +27,9 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         var expectedDisplayY = new[] { "5.15", "-1E-12", "0.10" };
         var expectedTitles = new[] { "0.025", "1E-10", "0.1" };
         var compact = mode == HtmlChartTooltipMode.SharedX;
-        var chart = Chart.Create().WithSize(compact ? 316 : 596, 338).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), compact ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Observed numeric values").AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", values));
+        var chart = Chart.Create().Size(compact ? 316 : 596, 338).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(compact ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Observed numeric values").AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", values));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), compact ? 340 : 700, 500);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.numericSelection = event.detail.target)");
@@ -69,8 +69,8 @@ public sealed class InteractiveNumericReadoutBrowserTests {
     public async Task CapturedCaptionsIncludingEmptyStringsOwnTheReadout(HtmlChartTooltipMode mode, bool empty) {
         if (!Enabled) return;
         var xCaption = empty ? "" : "Sample <A>"; var valueCaption = empty ? "" : "5.15 ms";
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false)
-            .WithXLabels(new[] { new ChartAxisLabel(.025, "Mapped coordinate") })
+        var chart = Chart.Create().Size(596, 338).Legend(false)
+            .XLabels(new[] { new ChartAxisLabel(.025, "Mapped coordinate") })
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", new[] { new ChartPoint(.025, 5.15) }));
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode);
         const string source = "data-cfx-source-id=\"series-0-point-0\"";
@@ -98,7 +98,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
     [BrowserFact]
     public async Task SharedRowsKeepEqualXGroupingAndSeparateAdjacentUnequalNumbers() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false)
+        var chart = Chart.Create().Size(596, 338).Legend(false)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", new[] { new ChartPoint(.025, 5.15), new ChartPoint(.10000000000000002, 8) }))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("peer"), "Peer", new[] { new ChartPoint(.025, 2), new ChartPoint(.10000000000000003, 3) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX));

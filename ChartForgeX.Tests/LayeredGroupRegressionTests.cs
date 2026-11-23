@@ -8,8 +8,8 @@ namespace ChartForgeX.Tests;
 public sealed class LayeredGroupRegressionTests {
     [Fact]
     public void AutomaticLeftToRightChainFollowsEdgesAcrossNodeKinds() {
-        var chart = TopologyChart.Create().WithViewport(1100, 260).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1100, 260)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoNode("client", "Client", TopologyNodeKind.Endpoint)
             .AddAutoNode("api", "Application API", TopologyNodeKind.Service)
             .AddAutoNode("cluster", "Database cluster", TopologyNodeKind.Group)
@@ -28,7 +28,7 @@ public sealed class LayeredGroupRegressionTests {
     [InlineData(TopologyLayoutDirection.TopToBottom)]
     [InlineData(TopologyLayoutDirection.BottomToTop)]
     public void GroupDeclarationOrderDoesNotReverseDependencyFlow(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithViewport(300, 330).WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(300, 330)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoGroup("b", "B").AddAutoGroup("a", "A")
             .AddAutoNode("source", "Source", groupId: "a").AddAutoNode("target", "Target", groupId: "b")
             .AddEdge("link", "source", "target");
@@ -44,8 +44,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void InterleavedGroupPackingKeepsEveryDependencyInRankOrder() {
-        var chart = TopologyChart.Create().WithViewport(1200, 500).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 500)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
             .AddAutoNode("a1", "A1", groupId: "a").AddAutoNode("b1", "B1", groupId: "b")
             .AddAutoNode("a2", "A2", groupId: "a")
@@ -62,8 +62,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void GroupCompactionKeepsWideUngroupedRanksBetweenGroupMembers() {
-        var chart = TopologyChart.Create().WithViewport(1600, 600).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1600, 600)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
             .AddAutoNode("a1", "A1", groupId: "a").AddAutoNode("middle", "Wide ungrouped service")
             .AddAutoNode("a2", "A2", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
@@ -79,8 +79,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void GroupRankCompactionDoesNotOverlapUngroupedPeersWithReversedCrossOrder() {
-        var chart = TopologyChart.Create().WithViewport(1400, 620).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1400, 620)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("group", "Grouped services")
             .AddAutoNode("source-a", "Source A").AddAutoNode("source-b", "Source B")
             .AddAutoNode("group-one", "Grouped one", groupId: "group").AddAutoNode("peer-one", "Peer one")
@@ -105,8 +105,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void ThreeInterleavedGroupShellsAreRecheckedUntilAllAreSeparated() {
-        var chart = TopologyChart.Create().WithViewport(1300, 700).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1300, 700)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B").AddAutoGroup("c", "Group C")
             .AddAutoNode("a1", "A1", groupId: "a").AddAutoNode("b1", "B1", groupId: "b")
             .AddAutoNode("c1", "C1", groupId: "c").AddAutoNode("a2", "A2", groupId: "a")
@@ -134,8 +134,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void AutomaticGroupPackingFindsAFreeIntervalBetweenReversedExplicitShells() {
-        var chart = TopologyChart.Create().WithViewport(1200, 620).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 620)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddGroup("before", "Explicit before", 300, 0, 220, 300)
             .AddAutoGroup("middle", "Automatic middle")
             .AddGroup("after", "Explicit after", 0, 0, 220, 300)
@@ -155,8 +155,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void AutomaticGroupRankOriginIgnoresExplicitNodeCoordinates() {
-        var chart = TopologyChart.Create().WithViewport(1000, 500).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 500)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("automatic", "Automatic group")
             .AddAutoNode("member", "Automatic member", groupId: "automatic")
             .AddAutoNode("fixed", "Explicit node");
@@ -173,8 +173,8 @@ public sealed class LayeredGroupRegressionTests {
     [Fact]
     public void SameRankRelationshipLabelDoesNotWidenLayeredRankGaps() {
         static TopologyChart Create(bool longSameRankLabel) {
-            var chart = TopologyChart.Create().WithViewport(900, 320).WithLayout(TopologyLayoutMode.Layered)
-                .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(900, 320)).LayoutMode(TopologyLayoutMode.Layered)
+                .LayoutDirection(TopologyLayoutDirection.LeftToRight)
                 .AddAutoNode("a", "A").AddAutoNode("peer", "Peer").AddAutoNode("target", "Target")
                 .AddEdge("forward", "a", "target", "short");
             if (longSameRankLabel) chart.AddEdge("peer-link", "peer", "peer", new string('L', 80));
@@ -188,8 +188,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void SeparatedGroupsKeepHierarchyRoutesClearAfterAutomaticLayout() {
-        var chart = TopologyChart.Create().WithViewport(1000, 700).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 700)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("parent-group", "Parent group").AddAutoGroup("child-group", "Child group")
             .AddAutoNode("peer", "Peer", groupId: "child-group")
             .AddHierarchy(new[] {
@@ -214,8 +214,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void WaypointEdgeWithMissingEndpointReachesTopologyValidation() {
-        var chart = TopologyChart.Create().WithViewport(800, 420).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 420)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
             .AddAutoNode("source", "Source", groupId: "a").AddAutoNode("target", "Target", groupId: "b")
             .AddEdge("broken", "source", "missing", "invalid");
@@ -228,8 +228,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void ViewFilteredEdgesRetainTheirAuthoredRouteAndPortsAfterGroupPacking() {
-        var chart = TopologyChart.Create().WithViewport(1200, 700).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 700)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
             .AddAutoNode("a0", "A0", groupId: "a").AddAutoNode("b1", "B1", groupId: "b")
             .AddAutoNode("a2", "A2", groupId: "a").AddAutoNode("b3", "B3", groupId: "b")
@@ -256,7 +256,7 @@ public sealed class LayeredGroupRegressionTests {
     [InlineData(TopologyLayoutDirection.LeftToRight)]
     [InlineData(TopologyLayoutDirection.TopToBottom)]
     public void GroupCompactionPreservesAuthoredRankAndNodeSpacing(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithViewport(500, 500).WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(500, 500)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoGroup("a", "A").AddAutoGroup("b", "B")
             .AddAutoNode("one", "One", groupId: "a").AddAutoNode("peer", "Peer", groupId: "a")
             .AddAutoNode("far", "Far", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
@@ -277,7 +277,7 @@ public sealed class LayeredGroupRegressionTests {
     [InlineData(TopologyLayoutDirection.LeftToRight)]
     [InlineData(TopologyLayoutDirection.TopToBottom)]
     public void PackedGroupLongEdgeAvoidsItsIntermediateNode(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithViewport(1200, 800).WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 800)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoGroup("a", "A").AddAutoGroup("b", "B")
             .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
             .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
@@ -299,8 +299,8 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void PackedGroupRouteRepairPreservesSupportedDuplicateEdgeIds() {
-        var chart = TopologyChart.Create().WithViewport(1200, 800).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 800)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("a", "A").AddAutoGroup("b", "B")
             .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
             .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
@@ -315,7 +315,7 @@ public sealed class LayeredGroupRegressionTests {
 
     [Fact]
     public void OrthogonalSkipEdgesRouteAroundIntermediateCards() {
-        var chart = TopologyChart.Create().WithViewport(900, 300, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(900, 300, 0)).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 30, 110, width: 110, height: 64)
             .AddNode("middle", "Intermediate", 380, 92, width: 150, height: 100)
             .AddNode("target", "Target", 740, 110, width: 110, height: 64)

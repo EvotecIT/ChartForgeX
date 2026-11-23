@@ -9,7 +9,7 @@ public sealed class HtmlChartLocalizationTests {
     [Fact]
     public void ChartsInheritNativeLanguageAndDashboardsCopyConfiguredTranslationsToChildren() {
         var chart = Chart.Create().AddLine("Observations", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) })
-            .ConfigureAccessibility(options => options.Language = "pl-PL");
+            .Accessibility(options => options.Language = "pl-PL");
         Assert.Contains("<html lang=\"pl-PL\"", chart.ToInteractiveHtmlPage());
         var html = new HtmlInteractiveDashboardRenderer().RenderPage(new[] { chart, chart }, options => {
             options.Localization.Language = "de-DE";

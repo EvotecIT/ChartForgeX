@@ -63,7 +63,7 @@ public sealed class TopologyHiddenNodeRoutingTests {
     }
 
     private static TopologyChart Chart(TopologyEdgeRouting routing) {
-        var chart = TopologyChart.Create().WithId("hidden-node-route").WithViewport(760, 320, 24).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Id("hidden-node-route").Viewport(new TopologyViewport(760, 320, 24)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 60, 120, width: 140, height: 72)
             .AddNode("hidden", "Hidden", 310, 110, width: 140, height: 92)
             .AddNode("target", "Target", 560, 120, width: 140, height: 72)

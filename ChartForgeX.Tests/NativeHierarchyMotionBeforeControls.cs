@@ -42,8 +42,8 @@ public sealed class NativeHierarchyMotionBeforeControls {
             new ChartHierarchyItem("branch", "H", "root", authoredTotal ? 60 : null), new ChartHierarchyItem("leaf-a", "H", "branch", reading),
             new ChartHierarchyItem("leaf-b", "H", "branch", 20), new ChartHierarchyItem("leaf-c", "H", "root", 20) };
         var series = sunburst ? ChartSeries.CreateSunburst(new ChartSeriesId("areas"), "H", items) : ChartSeries.CreateTreemap(new ChartSeriesId("areas"), "H", items);
-        var chart = Chart.Create().WithSize(760, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithHeader(false).WithLegend(false).WithDataLabels(true).AddSeries(series);
-        if (sunburst) chart.ConfigureSunburst(options => options.ParentValuePolicy = authoredTotal ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate);
+        var chart = Chart.Create().Size(760, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ShowHeader(false).Legend(false).DataLabels(true).AddSeries(series);
+        if (sunburst) chart.Sunburst(options => options.ParentValuePolicy = authoredTotal ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate);
         return chart;
     }
 }

@@ -61,7 +61,7 @@ public sealed class ScheduleTickPlacementTests {
     [InlineData(ChartSeriesKind.StateTimeline)]
     [InlineData(ChartSeriesKind.GanttLane)]
     public void ExplicitAllRetainsEveryAuthoredTickAndStyleEvenWhenTheirMeasuredBoxesOverlap(ChartSeriesKind kind) {
-        var chart = Fixture(kind, 20).ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
+        var chart = Fixture(kind, 20).XAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
         var expected = chart.Options.XAxis.Labels.Select(label => label.Text).ToArray();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = TickLabels(prepared);
@@ -87,8 +87,8 @@ public sealed class ScheduleTickPlacementTests {
     [InlineData(ChartSeriesKind.Gantt, 360)]
     [InlineData(ChartSeriesKind.Gantt, 800)]
     public void AutomaticCalendarTicksChooseAnEvenReadableStepBeforeGridAndLabelPainting(ChartSeriesKind kind, int width) {
-        var chart = Fixture(kind, 12).WithSize(width, 360);
-        chart.ConfigureXAxis(axis => { axis.Labels.Clear(); axis.TickCount = 13; axis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture); });
+        var chart = Fixture(kind, 12).Size(width, 360);
+        chart.XAxis(axis => { axis.Labels.Clear(); axis.TickCount = 13; axis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture); });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, "schedule-calendar-" + kind + "-" + width);
         var labels = TickLabels(prepared);
@@ -110,8 +110,8 @@ public sealed class ScheduleTickPlacementTests {
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
         Assert.Equal(13, chart.Options.XAxis.TickCount);
-        Assert.Equal(Start.ToOADate(), chart.Options.XAxis.Minimum);
-        Assert.Equal(Start.AddHours(12).ToOADate(), chart.Options.XAxis.Maximum);
+        Assert.Equal(Start.ToOADate(), chart.Options.XAxis.Min);
+        Assert.Equal(Start.AddHours(12).ToOADate(), chart.Options.XAxis.Max);
         Assert.NotEmpty(prepared.ToPng());
     }
 
@@ -119,7 +119,7 @@ public sealed class ScheduleTickPlacementTests {
     [InlineData(-45)]
     [InlineData(45)]
     public void RotatedEndCaptionsReserveTheirRealFootprintAndRotateAroundTheirOwnTick(double angle) {
-        var chart = Fixture(ChartSeriesKind.StateTimeline, 12).WithSize(720, 360).ConfigureXAxis(axis => {
+        var chart = Fixture(ChartSeriesKind.StateTimeline, 12).Size(720, 360).XAxis(axis => {
             axis.Labels.RemoveRange(1, axis.Labels.Count - 2); axis.LabelAngle = angle; axis.LabelDensity = ChartLabelDensity.All;
         });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -187,8 +187,8 @@ public sealed class ScheduleTickPlacementTests {
 
     [Fact]
     public void FixedGanttIntervalsKeepTheirTicksWhileSparseCaptionsStayOnAnEvenStride() {
-        var chart = Fixture(ChartSeriesKind.Gantt, 12).ConfigureXAxis(axis => axis.Labels.Clear())
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour));
+        var chart = Fixture(ChartSeriesKind.Gantt, 12).XAxis(axis => axis.Labels.Clear())
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").OrderBy(line => line.Start.X).ToArray();
         Assert.Equal(13, grid.Length);
@@ -200,18 +200,17 @@ public sealed class ScheduleTickPlacementTests {
             Assert.Equal(grid[shown[index]].Start.X, regions[shown[index]].Bounds.Left + regions[shown[index]].Bounds.Width / 2, 7);
             if (index > 1) Assert.Equal(shown[1] - shown[0], shown[index] - shown[index - 1]);
         }
-        Assert.Equal(ChartTimeTickUnit.Hour, chart.Options.GanttTickInterval!.Unit);
-        Assert.Equal(1, chart.Options.GanttTickInterval.Count);
+        Assert.Equal(ChartTimeTickUnit.Hour, chart.Options.Gantt.TickInterval!.Unit);
+        Assert.Equal(1, chart.Options.Gantt.TickInterval.Count);
         Assert.NotEmpty(prepared.ToPng());
     }
 
     [Fact]
     public void OverBudgetFixedIntervalsUseMeasuredAutomaticTicksWithoutChangingTheConfiguredInterval() {
-        var chart = Chart.Create().WithSize(240, 360).WithLegend(false).WithHeader(false).WithPngFont(
-            Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .ConfigureGridStyle(style => style.ShowVerticalLines = true)
+        var chart = Chart.Create().Size(240, 360).Legend(false).ShowHeader(false).Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddGanttTask("Window", Start, Start.AddDays(7))
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100));
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, "schedule-fixed-budget-fallback");
         var labels = TickLabels(prepared);
@@ -228,16 +227,16 @@ public sealed class ScheduleTickPlacementTests {
         });
         Assert.Equal(labels.Length, labels.Select(label => label.Text.Lines.Single().Text).Distinct(StringComparer.Ordinal).Count());
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
-        Assert.Equal(ChartTimeTickUnit.Millisecond, chart.Options.GanttTickInterval!.Unit);
-        Assert.Equal(100, chart.Options.GanttTickInterval.Count);
+        Assert.Equal(ChartTimeTickUnit.Millisecond, chart.Options.Gantt.TickInterval!.Unit);
+        Assert.Equal(100, chart.Options.Gantt.TickInterval.Count);
         Assert.Equal(Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
         Assert.Equal(Start.AddDays(7).ToOADate(), chart.Series[0].GanttItems[0].End);
         Assert.NotEmpty(prepared.ToPng());
     }
 
     private static Chart LongEndpointFixture(ChartSeriesKind kind, int height, double angle) =>
-        Fixture(kind, 12).WithSize(720, height).WithHeader(false).WithPadding(14, 14, 14, 14).WithXAxis("Release window")
-            .ConfigureXAxis(axis => {
+        Fixture(kind, 12).Size(720, height).ShowHeader(false).Padding(14, 14, 14, 14).XAxis(x => x.Title("Release window"))
+            .XAxis(axis => {
                 axis.Labels.Clear(); axis.LabelAngle = angle; axis.LabelDensity = ChartLabelDensity.All;
                 foreach (var time in new[] { Start, Start.AddHours(12) }) axis.Labels.Add(new ChartAxisLabel(time.ToOADate(),
                     time.ToString("O", CultureInfo.InvariantCulture) + " (UTC / Europe/Warsaw)"));
@@ -247,9 +246,9 @@ public sealed class ScheduleTickPlacementTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The licensed Carlito fixture must be available for repeatable edge-label measurements.");
         var end = Start.AddHours(12);
-        var chart = Chart.Create().WithSize(360, 360).WithTheme(VisualTheme.Graphite()).WithPngFont(font)
-            .WithLegend(false).WithXAxisTimeScale().ConfigureGridStyle(style => style.ShowVerticalLines = true)
-            .ConfigureTickLabelStyle(style => style.WithFontSize(fontSize).WithWeight("700").WithColor(TickColor));
+        var chart = Chart.Create().Size(360, 360).Theme(VisualTheme.Graphite()).Png(p => p.FontPath(font))
+            .Legend(false).XAxis(x => x.TimeScale()).GridLineStyle(style => style.ShowVerticalLines = true)
+            .TickLabelStyle(style => style.FontSize(fontSize).FontWeight("700").Color(TickColor));
         switch (kind) {
             case ChartSeriesKind.StateTimeline: chart.AddStateTimelineLane("Primary", new[] { new ChartStateTimelineSegment(Start, end, "up") }); break;
             case ChartSeriesKind.GanttLane: chart.AddGanttLane("Primary", new[] { new ChartGanttLaneItem(Start, end, "up") }); break;
@@ -257,8 +256,8 @@ public sealed class ScheduleTickPlacementTests {
             case ChartSeriesKind.Gantt: chart.AddGanttTask("Primary", Start, end, .5); break;
             default: throw new ArgumentOutOfRangeException(nameof(kind));
         }
-        chart.ConfigureXAxis(axis => {
-            axis.Minimum = Start.ToOADate(); axis.Maximum = end.ToOADate();
+        chart.XAxis(axis => {
+            axis.Min = Start.ToOADate(); axis.Max = end.ToOADate();
             for (var index = 0; index < 13; index++) {
                 var time = Start.AddHours(index);
                 axis.Labels.Add(new ChartAxisLabel(time.ToOADate(), time.ToString("HH:mm", CultureInfo.InvariantCulture)));

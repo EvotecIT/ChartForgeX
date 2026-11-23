@@ -7,8 +7,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void GitGraphBlockRendersStaticSvgAndPng() {
         var block = GitGraphBlock.Create()
-            .WithTitle("Release History")
-            .WithSize(760, 340)
+            .Title("Release History")
+            .Size(760, 340)
             .AddBranch("main", 0)
             .AddBranch("develop", 1)
             .AddCommit("base", "main", type: GitGraphCommitType.Normal, tag: "v1")

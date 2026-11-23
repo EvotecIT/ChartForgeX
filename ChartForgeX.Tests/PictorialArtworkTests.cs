@@ -22,7 +22,7 @@ public sealed class PictorialArtworkTests {
     [InlineData(ChartPictorialFillDirection.TopToBottom, true)]
     public void ImagePartialDirectionsRetainSourceAspectAndMatchSvgNativePixels(ChartPictorialFillDirection direction, bool fromSvg) {
         var artwork = fromSvg ? ChartPictorialArtwork.FromSvg(ArtworkSvg, 8, 4) : ChartPictorialArtwork.FromImage(Image());
-        var chart = Model(.25).WithPictorialArtwork(artwork).WithPictorialFillDirection(direction);
+        var chart = Model(.25).Pictorial(p => p.Artwork(artwork).FillDirection(direction));
         var prepared = Prepare(chart, fromSvg ? ThemeMode.Dark : ThemeMode.Light);
         var image = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneImage>(), node => node.Role == "pictorial-fill");
         Assert.Equal(2, image.Bounds.Width / image.Bounds.Height, 10);
@@ -55,9 +55,9 @@ public sealed class PictorialArtworkTests {
     [InlineData(ChartPictorialFillDirection.BottomToTop)]
     [InlineData(ChartPictorialFillDirection.TopToBottom)]
     public void BuiltInAndCustomHoleContoursShareTheSamePartialRectangle(ChartPictorialFillDirection direction) {
-        var chart = Model(.5).WithPictorialShape(ChartPictorialShape.Square).WithPictorialFillDirection(direction);
+        var chart = Model(.5).Pictorial(p => p.Shape(ChartPictorialShape.Square).SvgPathData(null).FillDirection(direction));
         var square = Prepare(chart); var squareClip = FillClip(square.Scene);
-        chart.WithPictorialSvgPath("M0 0H24V24H0Z M8 8V16H16V8Z"); var hole = Prepare(chart); var contourClip = FillClip(hole.Scene);
+        chart.Pictorial(p => p.SvgPath("M0 0H24V24H0Z M8 8V16H16V8Z")); var hole = Prepare(chart); var contourClip = FillClip(hole.Scene);
         Assert.Equal(squareClip, contourClip);
         Assert.Equal(2, VisualSceneGeometry.Flatten(Assert.Single(hole.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "pictorial-fill"), 1).Count);
         Save(hole, "contour-" + direction);
@@ -66,13 +66,13 @@ public sealed class PictorialArtworkTests {
     [Fact]
     public void CapturedImageAndRepeatedExportsRemainDetachedFromSourceEdits() {
         var source = Image(); var artwork = ChartPictorialArtwork.FromImage(source); source.Pixels[0] = 255;
-        var chart = Model(2.5).WithPictorialColumns(4).WithPictorialArtwork(artwork);
+        var chart = Model(2.5).Pictorial(p => p.Columns(4).Artwork(artwork));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal(8, artwork.Width); Assert.Equal(4, artwork.Height);
         var uris = XDocument.Parse(svg).Descendants().Where(node => node.Name.LocalName == "image").Select(node => (string)node.Attribute("href")!).Distinct().ToArray();
         var uri = Assert.Single(uris); var decoded = RasterImageDecoder.Decode(Convert.FromBase64String(uri.Substring(uri.IndexOf(',') + 1)));
         Assert.Equal((byte)51, decoded.Pixels[0]); Assert.Equal((byte)102, decoded.Pixels[1]);
-        chart.WithPictorialArtwork(null).WithPictorialFillDirection(ChartPictorialFillDirection.BottomToTop);
+        chart.Pictorial(p => p.Artwork((ChartPictorialArtwork?)null).FillDirection(ChartPictorialFillDirection.BottomToTop));
         chart.Series[0].Points[0] = new ChartPoint(1, 0);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.DoesNotContain("data-cfx-image-artwork", chart.ToSvg(), StringComparison.Ordinal);
@@ -81,21 +81,20 @@ public sealed class PictorialArtworkTests {
     [Fact]
     public void NullArtworkAndDefaultDirectionRestoreExactBuiltInAndCustomContourBytes() {
         var chart = Model(.5); var builtInSvg = chart.ToSvg(); var builtInPng = chart.ToPng();
-        chart.WithPictorialArtwork(null).WithPictorialFillDirection(ChartPictorialFillDirection.LeftToRight);
+        chart.Pictorial(p => p.Artwork((ChartPictorialArtwork?)null).FillDirection(ChartPictorialFillDirection.LeftToRight));
         Assert.Equal(builtInSvg, chart.ToSvg()); Assert.Equal(builtInPng, chart.ToPng());
-        chart.WithPictorialSvgPath("M0 0H24V24H0Z M8 8V16H16V8Z"); var contourSvg = chart.ToSvg(); var contourPng = chart.ToPng();
-        chart.WithPictorialArtwork(ChartPictorialArtwork.FromImage(Image())); Assert.Contains("data-cfx-image-artwork", chart.ToSvg());
-        chart.WithPictorialArtwork(null); Assert.Equal(contourSvg, chart.ToSvg()); Assert.Equal(contourPng, chart.ToPng());
-        chart.WithPictorialShape(ChartPictorialShape.Square); chart.WithPictorialSvgPath("M");
-        chart.WithPictorialArtwork(ChartPictorialArtwork.FromImage(Image())); Assert.NotEmpty(chart.ToPng());
-        Assert.Equal("M", chart.Options.PictorialSvgPathData); // Artwork precedence does not rewrite fallback configuration.
+        chart.Pictorial(p => p.SvgPath("M0 0H24V24H0Z M8 8V16H16V8Z")); var contourSvg = chart.ToSvg(); var contourPng = chart.ToPng();
+        chart.Pictorial(p => p.Artwork(ChartPictorialArtwork.FromImage(Image()))); Assert.Contains("data-cfx-image-artwork", chart.ToSvg());
+        chart.Pictorial(p => p.Artwork((ChartPictorialArtwork?)null)); Assert.Equal(contourSvg, chart.ToSvg()); Assert.Equal(contourPng, chart.ToPng());
+        chart.Pictorial(p => p.Shape(ChartPictorialShape.Square).SvgPathData(null)); chart.Pictorial(p => p.SvgPath("M"));
+        chart.Pictorial(p => p.Artwork(ChartPictorialArtwork.FromImage(Image()))); Assert.NotEmpty(chart.ToPng());
+        Assert.Equal("M", chart.Options.Pictorial.SvgPathData); // Artwork precedence does not rewrite fallback configuration.
     }
 
-    internal static Chart Model(double value) => Chart.Create().WithSize(480, 220).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-        .WithPictorialColumns(1).WithPictorialValuePerSymbol(1).WithPictorialValues(false).WithPictorialEmptyOpacity(0)
-        .WithPictorialShape(ChartPictorialShape.Square).WithXLabels("Team")
+    internal static Chart Model(double value) => Chart.Create().Size(480, 220).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+        .Pictorial(p => p.Columns(1).ValuePerSymbol(1).ShowValues(false).EmptyOpacity(0).Shape(ChartPictorialShape.Square).SvgPathData(null)).XLabels("Team")
         .AddSeries(new ChartSeries(new ChartSeriesId("assessments"), "Assessments", ChartSeriesKind.Pictorial,
-            new[] { new ChartPoint(1, value) }).WithPointColor(0, ChartColor.FromHex("#336699")));
+            new[] { new ChartPoint(1, value) }).PointColor(0, ChartColor.FromHex("#336699")));
     internal static PreparedVisual Prepare(Chart chart, ThemeMode mode = ThemeMode.Light) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(480, 220)), VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode,
         new VisualFrame(showLegend: false, transparentBackground: true)));

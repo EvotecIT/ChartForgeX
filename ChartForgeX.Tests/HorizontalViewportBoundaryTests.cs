@@ -31,10 +31,10 @@ public sealed class HorizontalViewportBoundaryTests {
     }
 
     private static Chart Model(bool step) {
-        var chart = Chart.Create().WithSize(800, 400).WithHeader(false).WithLegend(false)
-            .WithXAxisBounds(0, 40).WithYAxisBounds(0, 4).WithLineMarkers(ChartLineMarkerMode.All);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        chart.Options.ShowDataLabels = true;
+        var chart = Chart.Create().Size(800, 400).ShowHeader(false).Legend(false)
+            .XAxis(x => x.Bounds(0, 40)).YAxis(y => y.Bounds(0, 4)).Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        chart.Options.DataLabels.Visible = true;
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) };
         return step ? chart.AddStepLine("Values", points) : chart.AddLine("Values", points);
     }

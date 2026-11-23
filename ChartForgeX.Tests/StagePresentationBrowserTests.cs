@@ -87,7 +87,7 @@ public sealed class StagePresentationBrowserTests {
     private static Chart Model(bool pyramid, bool cone, int width, ThemeMode mode) {
         var chart = pyramid ? PyramidPresentationRecipe.Create(width == 390 ? "compact" : "wide", mode)
             : FunnelPresentationRecipe.Create(cone ? width == 390 ? "compact-cone" : "cone" : width == 390 ? "compact" : "wide", mode);
-        return chart.WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        return chart.Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
     }
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

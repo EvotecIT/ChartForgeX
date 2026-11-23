@@ -13,8 +13,8 @@ public sealed class GraphiteHeatmapLegendTests {
     [InlineData(800, true)]
     public void NumericCaptionsStayWithTheCompactRampAtEachViewport(int width, bool zero) {
         var values = zero ? new[] { 0d, 2, 20, 120 } : new[] { 2d, 20, 120 };
-        var chart = Chart.Create().WithSize(width, 320).AddHeatmapRow("Events", values)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " events");
+        var chart = Chart.Create().Size(width, 320).AddHeatmapRow("Events", values)
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + " events");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var steps = prepared.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
         Assert.Equal(7, steps.Length);
@@ -39,11 +39,11 @@ public sealed class GraphiteHeatmapLegendTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ZeroPrecedesRampAndObservedNonZeroRangeUsesValueFormat(bool dark) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(640, 320)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + (value == 120 ? "+ events" : " events"))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(640, 320)
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + (value == 120 ? "+ events" : " events"))
             .AddHeatmapRow("Count", new[] { 0d, 2, 20, 120 });
-        chart.Options.HeatmapRelativeScale = true;
+        chart.Options.Heatmap.RelativeScale = true;
         var document = XDocument.Parse(chart.ToSvg());
         var legend = Assert.Single(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale");
         var zero = Assert.Single(legend.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-zero");
@@ -64,7 +64,7 @@ public sealed class GraphiteHeatmapLegendTests {
     [InlineData(0, 0)]
     [InlineData(5, 1)]
     public void LegendDoesNotInventNonZeroBoundsForConstantData(double value, int steps) {
-        var chart = Chart.Create().WithSize(640, 320).AddHeatmapRow("Count", new[] { value, value });
+        var chart = Chart.Create().Size(640, 320).AddHeatmapRow("Count", new[] { value, value });
         var legend = Assert.Single(XDocument.Parse(chart.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale");
         var swatches = legend.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-scale-step").ToArray();
         Assert.Equal(steps, swatches.Length);

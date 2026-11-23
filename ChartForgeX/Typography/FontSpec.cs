@@ -21,8 +21,6 @@ public sealed partial class FontSpec {
         get => _colorPaletteIndex;
         set { ValidateColorPaletteIndex(value); _colorPaletteIndex = value; }
     }
-    /// <summary>Selects a colour-font palette without changing glyph advances.</summary>
-    public FontSpec WithColorPalette(int index) { ColorPaletteIndex = index; return this; }
     internal static void ValidateColorPaletteIndex(int value) {
         if (value < 0 || value > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(value), value, "Palette index must be between 0 and 65535.");
     }
@@ -33,7 +31,7 @@ public sealed partial class FontSpec {
     public FontVariationSettings Variations { get => _variations; set => _variations = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Selects an explicit variation axis in design units.</summary>
-    public FontSpec WithVariation(string tag, double value) { Variations = Variations.WithAxis(tag, value); return this; }
+    public FontSpec Variation(string tag, double value) { Variations = Variations.WithAxis(tag, value); return this; }
 
     /// <summary>Gets or sets the CSS-compatible family or fallback stack.</summary>
     public string Family {

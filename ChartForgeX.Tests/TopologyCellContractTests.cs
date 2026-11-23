@@ -35,9 +35,9 @@ public sealed class TopologyCellContractTests {
         if (contract == "group-labels") chart = OfficeGroups();
         const string wideCaption = "東京東京東京東京東京東京";
         if (contract == "wide-caption") chart.Groups.Single(group => group.Id == "berlin").Label = wideCaption;
-        if (contract is "diagonal" or "view") chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.ForceDirected)
+        if (contract is "diagonal" or "view") chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddAutoNode("a", "First").AddAutoNode("b", "Second");
-        if (contract == "same-id") chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
+        if (contract == "same-id") chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoGroup("g", "Shell").AddAutoNode("g", "Authored node", status: TopologyHealthStatus.Warning)
             .AddAutoNode("b", "Outside").AddAutoNode("a", "Member", groupId: "g")
             .AddEdge("e", "g", "b", direction: ChartForgeX.Primitives.VisualLinkDirection.Forward);
@@ -181,8 +181,8 @@ public sealed class TopologyCellContractTests {
         }
     }
 
-    private static TopologyChart OfficeGroups() => TopologyChart.Create().WithTitle("Small office")
-        .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight).WithViewport(480, 240, 28)
+    private static TopologyChart OfficeGroups() => TopologyChart.Create().Title("Small office")
+        .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight).Viewport(new TopologyViewport(480, 240, 28))
         .AddAutoGroup("group-0", "Office LAN").AddAutoGroup("group-1", "DMZ").AddAutoGroup("group-2", "Cloud")
         .AddAutoNode("12 PCs", "12 PCs", TopologyNodeKind.Endpoint, groupId: "group-0")
         .AddAutoNode("File server", "File server", TopologyNodeKind.Storage, groupId: "group-0", subtitle: "FS01")

@@ -11,8 +11,8 @@ public static class ScatterQuadrantsRecipe {
             new ChartPoint(1.4, 8.1), new ChartPoint(3.1, 7.3), new ChartPoint(7.2, 8.8),
             new ChartPoint(8.4, 6.8), new ChartPoint(2.5, 2.1), new ChartPoint(6.5, 3.2)
         });
-        return Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels(false)
-            .WithXAxis("Effort (days)").WithYAxis("Impact (score)").AddSeries(proposed)
+        return Chart.Create().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).DataLabels(false)
+            .XAxis(x => x.Title("Effort (days)")).YAxis(y => y.Title("Impact (score)")).AddSeries(proposed)
             .AddPlotRegion(new(ChartColor.FromHex("#328c68"), xMaximum: 4, yMinimum: 6, label: "Prioritize", opacity: .18))
             .AddPlotRegion(new(ChartColor.FromHex("#5487b8"), xMinimum: 4, yMinimum: 6, label: "Plan", opacity: .15))
             .AddPlotRegion(new(ChartColor.FromHex("#ac9148"), xMaximum: 4, yMaximum: 6, label: "Consider", opacity: .13))

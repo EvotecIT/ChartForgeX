@@ -11,7 +11,7 @@ public sealed class NumericRadialPrecisionTests {
     [InlineData(false)]
     public void SmallSignedValueAxesKeepDistinctCaptionsAndOriginalPointFacts(bool bars) {
         var chart = NumericRadialSeriesTests.Add(Chart.Create(), bars, "Observed",
-            new ChartPoint(1, -.0001), new ChartPoint(2, -.0004)).WithYAxisBounds(-.0005, 0);
+            new ChartPoint(1, -.0001), new ChartPoint(2, -.0004)).YAxis(y => y.Bounds(-.0005, 0));
         var scene = NumericRadialSeriesTests.Compile(chart);
         var captions = scene.Regions.Where(region => region.Role == "radial-value-label")
             .Select(region => region.Label!).ToArray();
@@ -25,7 +25,7 @@ public sealed class NumericRadialPrecisionTests {
 
         var svg = VisualSceneSvgRenderer.Render(scene);
         var pixels = VisualSceneRasterRenderer.Render(scene).Pixels;
-        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Late formatter"));
+        chart.Options.YAxis.LabelBy(_ => throw new InvalidOperationException("Late formatter"));
         chart.Series[0].Points.Clear();
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
         Assert.Equal(pixels, VisualSceneRasterRenderer.Render(scene).Pixels);

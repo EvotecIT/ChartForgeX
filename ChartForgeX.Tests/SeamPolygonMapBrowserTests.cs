@@ -25,7 +25,7 @@ public sealed class SeamPolygonMapBrowserTests {
         var chart = SeamPolygonMapRecipe.Create(variant, mode); var width = variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800;
         var prepared = MapLabelClusterDepthTests.Prepare(chart);
         var map = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "region-map-surface").Bounds;
-        var viewport = chart.Options.MapViewport; var projection = viewport.GeographicProjection!.Value;
+        var viewport = chart.Options.Map.Viewport; var projection = viewport.GeographicProjection!.Value;
         var source = ChartGeographicProjection.Bounds(viewport, projection);
         double[] At(double longitude, double latitude) {
             var point = ChartGeographicProjection.Project(longitude, latitude, projection, viewport);

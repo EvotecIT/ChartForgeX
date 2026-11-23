@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyPreparedSceneRestorationCausalTests {
     internal static TopologyChart Source(bool subtitle) {
-        var chart = TopologyChart.Create().WithTitle("Saved title").WithViewport(900, 650, 24).WithLegend(null).WithLayout(TopologyLayoutMode.Manual);
+        var chart = TopologyChart.Create().Title("Saved title").Viewport(new TopologyViewport(900, 650, 24)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual);
         chart.Subtitle = subtitle ? "Saved subtitle" : null;
         chart.Groups.Add(new TopologyGroup { Id = "scope", Label = "Scope", X = 24, Y = 100, Width = 700, Height = 240 });
         chart.Nodes.Add(new TopologyNode { Id = "a", Label = "Accept", GroupId = "scope", X = 60, Y = 170, Width = 144, Height = 64, DisplayMode = TopologyNodeDisplayMode.Card, PreserveDisplayModeSize = true });

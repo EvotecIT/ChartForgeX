@@ -16,8 +16,8 @@ public sealed class VisualGridArtifactTests {
     [InlineData(" \t\r\n", "ChartForgeX visual grid")]
     [InlineData("Service summary", "Service summary")]
     public void EnvelopesPreserveAnAccessibleNameForBlankAndAuthoredTitles(string title, string expectedName) {
-        var child = MetricCard.Create().WithMetric("Ready", "12").WithSize(120, 70);
-        var grid = VisualGrid.Create().WithTitle(title).Add(child);
+        var child = MetricCard.Create().Metric("Ready", "12").Size(120, 70);
+        var grid = VisualGrid.Create().Title(title).Add(child);
         var artifact = grid.ToVisualArtifact();
 
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
@@ -32,7 +32,7 @@ public sealed class VisualGridArtifactTests {
     [Fact]
     public void CreatingAnEnvelopeMeasuresLogicalSizeWithoutRenderingChildren() {
         var child = new DeferredBlock();
-        var grid = VisualGrid.Create().WithColumns(1).WithPadding(10).WithPngOutputScale(3).Add(child);
+        var grid = VisualGrid.Create().Columns(1).Padding(10).PngOutputScale(3).Add(child);
 
         var artifact = grid.ToVisualArtifact("  report-grid  ", VisualArtifactSourceLanguage.Markdown);
 
@@ -53,14 +53,14 @@ public sealed class VisualGridArtifactTests {
     [InlineData(false)]
     [InlineData(true)]
     public void MixedSpanningGridsPreserveLogicalSizeAndPortableExports(bool adaptiveRows) {
-        var chart = Chart.Create().WithSize(180, 110).WithTitle("Requests");
+        var chart = Chart.Create().Size(180, 110).Title("Requests");
         chart.AddLine("Completed", ChartPoints.FromValues(3, 7, 5));
-        var grid = VisualGrid.Create().WithTitle("Service summary").WithSubtitle("Charts and facts")
-            .WithColumns(2).WithPadding(12).WithGap(9).WithAdaptiveRowHeights(adaptiveRows)
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithPngOutputScale(2)
+        var grid = VisualGrid.Create().Title("Service summary").Subtitle("Charts and facts")
+            .Columns(2).Padding(12).Gap(9).AdaptiveRowHeights(adaptiveRows)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).PngOutputScale(2)
             .Add("requests", chart, columnSpan: 2)
-            .Add("ready", MetricCard.Create().WithMetric("Ready", "12").WithSize(120, 70))
-            .Add("waiting", MetricCard.Create().WithMetric("Waiting", "3").WithSize(150, 90));
+            .Add("ready", MetricCard.Create().Metric("Ready", "12").Size(120, 70))
+            .Add("waiting", MetricCard.Create().Metric("Waiting", "3").Size(150, 90));
         var artifact = grid.ToVisualArtifact();
 
         var svg = XDocument.Parse(artifact.ToSvg()).Root!;

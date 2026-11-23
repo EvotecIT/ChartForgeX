@@ -14,7 +14,7 @@ internal static partial class VisualSpecialtyCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         if (chart.Series.Count == 0 || !chart.Series[0].ShowInLegend) return Array.Empty<VisualLegendEntry>();
         var series = chart.Series[0];
-        if (chart.Options.ShowPointLegend) return Enumerable.Range(0, series.RenderPoints.Count).Select(index =>
+        if (chart.Options.Legend.ShowPoints) return Enumerable.Range(0, series.RenderPoints.Count).Select(index =>
             new VisualLegendEntry(Category(chart, index), Color(series, index, colors), Id(index), series.Kind,
                 FillPattern(series, index), series.StateRole, series.InteractionIdentityKey)).ToArray();
         return new[] { new VisualLegendEntry(series.Name, ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind,
@@ -40,7 +40,7 @@ internal static partial class VisualSpecialtyCompiler {
 
     private static string Category(Chart chart, int index) {
         var x = chart.Series[0].RenderPoints[index].X;
-        foreach (var label in chart.Options.XAxisLabels) if (ChartMath.SameCoordinate(label.Value, x)) return label.Text;
+        foreach (var label in chart.Options.XAxis.Labels) if (ChartMath.SameCoordinate(label.Value, x)) return label.Text;
         return (index + 1).ToString(CultureInfo.InvariantCulture);
     }
     private static string Id(int index) => "series-0-point-" + index.ToString(CultureInfo.InvariantCulture);
@@ -88,12 +88,12 @@ internal static partial class VisualSpecialtyCompiler {
         var terms = ChartWordCloudLayout.Compute(chart, plot, (index, text, size) => builder.MeasureText(text,
             Style(chart, context, index, Color(series, index, colors), size)));
         var eligible = series.RenderPoints.Count(point => point.Y > 0);
-        if (chart.Options.WordCloudMaximumTerms.HasValue) eligible = Math.Min(eligible, chart.Options.WordCloudMaximumTerms.Value);
+        if (chart.Options.WordCloud.MaxTerms.HasValue) eligible = Math.Min(eligible, chart.Options.WordCloud.MaxTerms.Value);
         if (terms.Count < eligible) builder.AddDiagnostic(new VisualDiagnostic("word-cloud.overflow", "Some words do not fit the fixed viewport; complete source terms remain in descriptive regions."));
         var placed = new HashSet<int>(terms.Select(term => term.PointIndex));
         using var group = builder.PushGroup("word-cloud", "word-cloud", new Dictionary<string, string> {
-            ["data-cfx-density"] = N(chart.Options.WordCloudDensity), ["data-cfx-edge-padding"] = N(ChartWordCloudLayout.EdgePadding(plot)),
-            ["data-cfx-maximum-terms"] = chart.Options.WordCloudMaximumTerms?.ToString(CultureInfo.InvariantCulture) ?? "all"
+            ["data-cfx-density"] = N(chart.Options.WordCloud.Density), ["data-cfx-edge-padding"] = N(ChartWordCloudLayout.EdgePadding(plot)),
+            ["data-cfx-maximum-terms"] = chart.Options.WordCloud.MaxTerms?.ToString(CultureInfo.InvariantCulture) ?? "all"
         });
         // Limits, zero weights and lack of space affect paint, never the detached source inventory.
         for (var index = 0; index < series.RenderPoints.Count; index++) {

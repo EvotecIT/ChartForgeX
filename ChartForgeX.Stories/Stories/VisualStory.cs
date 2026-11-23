@@ -165,7 +165,7 @@ public sealed partial class VisualStory {
     public bool ReflowPanels { get; set; }
 
     /// <summary>Sets a sharing format. Authoring stays in logical units; raster scale controls pixel density.</summary>
-    public VisualStory WithFormat(VisualStoryFormat format, int shortSide = 720) {
+    public VisualStory Format(VisualStoryFormat format, int shortSide = 720) {
         if (!Enum.IsDefined(typeof(VisualStoryFormat), format)) throw new ArgumentOutOfRangeException(nameof(format));
         if (shortSide < 480 || shortSide > 1215) throw new ArgumentOutOfRangeException(nameof(shortSide));
         var longSide = (int)Math.Round(shortSide * 16d / 9);
@@ -173,9 +173,6 @@ public sealed partial class VisualStory {
         Height = format == VisualStoryFormat.Portrait ? longSide : shortSide;
         ReflowPanels = true; return this;
     }
-
-    /// <summary>Enables portrait stacking for split scenes without changing explicit stacked layouts.</summary>
-    public VisualStory WithPanelReflow(bool enabled = true) { ReflowPanels = enabled; return this; }
 
     private VisualTheme _theme = VisualStoryThemes.Premium();
     /// <summary>Gets or sets the immutable theme shared by story surfaces and text.</summary>
@@ -193,25 +190,12 @@ public sealed partial class VisualStory {
     /// <summary>Captures a detached presentation for deterministic seeking and repeated exports.</summary>
     public PreparedVisualStory Prepare(VisualStoryPlaybackOptions? playback = null) => new(this, playback ?? new VisualStoryPlaybackOptions());
 
-    /// <summary>Sets the accessible story description.</summary>
-    public VisualStory WithDescription(string description) {
-        Description = description;
-        return this;
-    }
-
     /// <summary>Sets logical output dimensions.</summary>
-    public VisualStory WithSize(int width, int height) {
+    public VisualStory Size(int width, int height) {
         if (width < 480 || width > 3840) throw new ArgumentOutOfRangeException(nameof(width));
         if (height < 320 || height > 2160) throw new ArgumentOutOfRangeException(nameof(height));
         Width = width;
         Height = height;
-        return this;
-    }
-
-    /// <summary>Sets the visual-story theme.</summary>
-    public VisualStory WithTheme(VisualTheme theme, ThemeMode? mode = null) {
-        Theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue) ThemeMode = mode.Value;
         return this;
     }
 

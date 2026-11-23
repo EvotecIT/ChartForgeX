@@ -85,8 +85,8 @@ public sealed class ScheduleReversalDepthTests {
 
     [Fact]
     public void ExplicitWindowEdgesKeepTheSameInstantFloorAndClippingUnderReversal() {
-        var chart = Chart.Create().WithSize(800, 420).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 10).AddTimelineRange("Minimum instant", 0, 0).AddTimelineRange("Maximum instant", 10, 10)
+        var chart = Chart.Create().Size(800, 420).ShowHeader(false).Legend(false).Axes(false).DataLabels(false)
+            .XAxis(x => x.Bounds(0, 10)).AddTimelineRange("Minimum instant", 0, 0).AddTimelineRange("Maximum instant", 10, 10)
             .AddTimelineRange("Clipped start", -2, 3).AddTimelineRange("Clipped end", 7, 12);
         var normal = Prepare(chart); var before = SourceRegions(normal); chart.Options.XAxis.Reversed = true;
         var reverse = Prepare(chart); var sum = normal.Scene.DataProjection!.Plot.Left + reverse.Scene.DataProjection!.Plot.Right;
@@ -99,7 +99,7 @@ public sealed class ScheduleReversalDepthTests {
 
     [Fact]
     public void ReversedOpenLaneEndsPointTowardTheCapturedCurrentInstantAndPackingRemainsSourceStable() {
-        var chart = Fixture(ChartSeriesKind.GanttLane, 800, false); chart.WithGanttToday(7);
+        var chart = Fixture(ChartSeriesKind.GanttLane, 800, false); chart.Gantt(g => g.Today(7));
         var before = ChartGanttLaneModel.Build(chart, 500); chart.Options.XAxis.Reversed = true; chart.Options.YAxis.Reversed = true;
         var after = ChartGanttLaneModel.Build(chart, 500);
         Assert.Equal(before.Rows.SelectMany(row => row.Items).Select(item => (item.PointIndex, item.SubRow, item.End)), after.Rows.SelectMany(row => row.Items).Select(item => (item.PointIndex, item.SubRow, item.End)));
@@ -108,16 +108,16 @@ public sealed class ScheduleReversalDepthTests {
     }
 
     internal static Chart Fixture(ChartSeriesKind kind, int width, bool dark) {
-        var chart = Chart.Create().WithSize(width, 460).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
+        var chart = Chart.Create().Size(width, 460).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
         if (kind == ChartSeriesKind.Timeline) chart.AddTimelineRange("First", 1, 4).AddTimelineRange("Second", 6, 9);
         else if (kind == ChartSeriesKind.Gantt) chart.AddGanttTask("First", 1, 4, .5).AddGanttTask("Second", 6, 9);
         else if (kind == ChartSeriesKind.StateTimeline) chart.AddStateTimelineLane("First", new[] { new ChartStateTimelineSegment(1, 4, "up") })
             .AddStateTimelineLane("Second", new[] { new ChartStateTimelineSegment(6, 9, "up") });
         else chart.AddGanttLane("First", new[] { new ChartGanttLaneItem(1, 4, "up"), new ChartGanttLaneItem(2, 5, "up") })
-            .AddGanttLane("Second", new[] { new ChartGanttLaneItem(6, null, "up") }).WithGanttToday(9);
-        for (var index = 0; index < chart.Series.Count; index++) chart.Series[index].WithObservationId(0, new ChartObservationId("source-" + index));
+            .AddGanttLane("Second", new[] { new ChartGanttLaneItem(6, null, "up") }).Gantt(g => g.Today(9));
+        for (var index = 0; index < chart.Series.Count; index++) chart.Series[index].ObservationId(0, new ChartObservationId("source-" + index));
         return chart;
     }
 

@@ -24,10 +24,9 @@ public sealed class ChartAxisWindowFamilyTests {
         var series = kind == ChartSeriesKind.Bubble
             ? ChartSeries.CreateBubble(new ChartSeriesId("observations"), "Observations", points.Select(point => new ChartBubble(point.X, point.Y, point.Y + 101)))
             : new ChartSeries(new ChartSeriesId("observations"), "Observations", kind, points);
-        if (smooth) series.WithSmooth();
-        for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("reading-" + index));
-        var chart = Chart.Create().WithLegend(false).WithXAxisScale(ChartScaleKind.Time)
-            .WithXAxisBounds(first, first + 10).AddSeries(series);
+        if (smooth) series.Smooth();
+        for (var index = 0; index < 3; index++) series.ObservationId(index, new ChartObservationId("reading-" + index));
+        var chart = Chart.Create().Legend(false).XAxis(x => x.Scale(ChartScaleKind.Time).Bounds(first, first + 10)).AddSeries(series);
         chart.Options.XAxis.Reversed = true;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 380)), VisualTheme.Graphite());
         var full = chart.Prepare(context);
@@ -52,16 +51,16 @@ public sealed class ChartAxisWindowFamilyTests {
             Assert.Equal("118", (string?)groups[1].Attribute("data-cfx-size"));
         }
         Assert.NotEmpty(window.ToPng());
-        Assert.Equal(first, chart.Options.XAxis.Minimum); Assert.Equal(first + 10, chart.Options.XAxis.Maximum);
+        Assert.Equal(first, chart.Options.XAxis.Min); Assert.Equal(first + 10, chart.Options.XAxis.Max);
         Assert.Equal(3, series.SourcePointCount);
     }
 
     [Fact]
     public void MixedSmoothAreaAndScatterKeepCrossingPaintWithoutInventingObservations() {
-        var chart = Chart.Create().WithLegend(false).WithAxes(false).WithGrid(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Legend(false).Axes(false).ShowGrid(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddArea("Area", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) })
             .AddScatter("Readings", new[] { new ChartPoint(0, 3), new ChartPoint(10, 7) });
-        chart.Series[0].WithSmooth();
+        chart.Series[0].Smooth();
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280)), VisualTheme.Graphite());
         var prepared = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)));
         Assert.NotNull(prepared.XProjection);

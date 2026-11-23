@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class ZenUmlPresentationDepthTests {
     [Fact]
     public void DetachedEditableCommonJsonRestoresAllTypedNativeSequenceRecords() {
-        var source=SequenceArtifact.Create("typed-roundtrip").WithTitle("Typed editable sequence").WithSubtitle("Every supported typed record").WithSize(1800,1800);
+        var source=SequenceArtifact.Create("typed-roundtrip").Title("Typed editable sequence").Subtitle("Every supported typed record").Width(1800).Height(1800);
         foreach(var kind in Enum.GetValues<SequenceArtifactParticipantKind>())source.AddParticipant("p"+(int)kind,kind.ToString(),kind);
         var first=source.Participants[0];first.Stereotype="Service";first.Symbol="🚀";first.MinimumWidth=180;first.Fill=ChartColor.FromHex("#336699");first.Href="https://example.invalid/details";first.Metadata["opaque"]="kept";
         foreach(var kind in Enum.GetValues<SequenceArtifactMessageKind>())source.AddMessage("p0","p1",kind.ToString(),kind==SequenceArtifactMessageKind.Return?SequenceArtifactMessageLineStyle.Dashed:SequenceArtifactMessageLineStyle.Solid,kind);

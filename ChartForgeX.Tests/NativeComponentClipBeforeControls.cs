@@ -30,18 +30,18 @@ public sealed class NativeComponentClipBeforeControls {
         NativeRadialMotionBeforeControls.Capture(from, "clip-ordinary-" + family); Assert.Equal(from.Html, repeat.Html); Assert.Equal(from.PreparedVisual.ToSvg(), repeat.PreparedVisual.ToSvg()); Assert.Equal(from.PreparedVisual.ToPng(), repeat.PreparedVisual.ToPng()); Assert.False(NativeRawValueSourceMotionTests.Metadata(from).TryGetProperty("nativeValueSource", out _));
     }
     internal static Chart Model(string family, double value, int width = 760, bool dark = false) {
-        var chart = Chart.Create().WithTitle("Raw values through native clip").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(false);
+        var chart = Chart.Create().Title("Raw values through native clip").Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(true).DataLabels(false);
         var id = new ChartSeriesId("delivery"); ChartSeries series;
         if (family == "bubble") {
             series = ChartSeries.CreateBubble(id, family, new[] { new ChartBubble(1, value, 20), new ChartBubble(3, 45, 30) });
-            chart.ConfigureBubble(options => { options.WithSizeDomain(0, 100); options.SizeDimension.ShowLegend = false; options.MinimumRadius = 6; options.MaximumRadius = 18; });
+            chart.Bubble(options => { options.SizeDomain(0, 100); options.SizeDimension.ShowLegend = false; options.MinimumRadius = 6; options.MaximumRadius = 18; });
         } else if (family == "range") series = ChartSeries.CreateRangeArea(id, family, new[] { new ChartRangeBand(1, value - 10, value + 10), new ChartRangeBand(3, 35, 55) });
         else if (family == "error") series = ChartSeries.CreateErrorBar(id, family, new[] { new ChartErrorBar(1, value, yBounds: new ChartErrorBounds(value - 10, value + 10)), new ChartErrorBar(3, 45, yBounds: new ChartErrorBounds(35, 55)) });
         else {
             var prices = new[] { new ChartCandlestick(1, value, value + 20, value - 10, value + 10), new ChartCandlestick(3, 45, 70, 20, 50) };
             series = family == "ohlc" ? ChartSeries.CreateOhlc(id, family, prices) : ChartSeries.CreateCandlestick(id, family, prices);
         }
-        chart.AddSeries(series.WithObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later") })); chart.ConfigureXAxis(axis => { axis.Minimum = 0; axis.Maximum = 4; }); chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 100; }); return chart;
+        chart.AddSeries(series.ObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later") })); chart.XAxis(axis => { axis.Min = 0; axis.Max = 4; }); chart.YAxis(axis => { axis.Min = 0; axis.Max = 100; }); return chart;
     }
     internal static Chart ErrorX(double lower, double upper) { var chart = Model("error", 40); var item = chart.Series[0].ErrorBars[0]; chart.Series[0].UpdateErrorBar(0, new ChartErrorBar(item.X, item.Y, new ChartErrorBounds(lower, upper), item.YBounds)); return chart; }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer, Chart chart) => renderer.PrepareSection(chart, configure: options => { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-clipped-components"; });

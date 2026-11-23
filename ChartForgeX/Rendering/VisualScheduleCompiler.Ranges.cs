@@ -21,9 +21,9 @@ internal static partial class VisualScheduleCompiler {
             var start = sourceGantt ? task.Start : series.RenderPoints[0].X;
             var end = sourceGantt ? task.End : series.RenderPoints[0].Y;
             if (sourceGantt && task.IsOpenEnded) {
-                if (!chart.Options.XAxis.Maximum.HasValue)
+                if (!chart.Options.XAxis.Max.HasValue)
                     throw new InvalidOperationException("An open-ended Gantt task requires an explicit X-axis maximum.");
-                end = Math.Max(start, chart.Options.XAxis.Maximum.Value);
+                end = Math.Max(start, chart.Options.XAxis.Max.Value);
             }
             if (!ChartMath.IsFinite(start) || !ChartMath.IsFinite(end) || end < start) throw new InvalidOperationException("Schedule endpoints must be finite and ordered.");
             var progress = sourceGantt ? task.Progress : 0;
@@ -38,22 +38,22 @@ internal static partial class VisualScheduleCompiler {
         var renderedLinks = links.Where(link => bySeries.TryGetValue(link.PredecessorIndex, out var predecessor)
             && bySeries.TryGetValue(link.SuccessorIndex, out var successor) && !predecessor.Marker && !successor.Marker).ToArray();
         var predecessors = links.GroupBy(link => link.SuccessorIndex).ToDictionary(group => group.Key, group => group.Select(link => link.PredecessorIndex).ToArray());
-        var axis = chart.Options.XAxis; var now = gantt ? chart.Options.GanttToday : null;
+        var axis = chart.Options.XAxis; var now = gantt ? chart.Options.Gantt.Today : null;
         var min = frame?.Model.Min ?? items.Min(item => item.Start); var max = frame?.Model.Max ?? items.Max(item => item.End);
         foreach (var annotation in chart.Annotations.Where(annotation => annotation.Kind == ChartAnnotationKind.VerticalLine)) {
             min = Math.Min(min, annotation.Value); max = Math.Max(max, annotation.Value);
         }
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
-        min = axis.Minimum ?? min; max = axis.Maximum ?? max;
-        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
-        var fixedTicks = frame == null && axis.Labels.Count == 0 && gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
-            ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
+        min = axis.Min ?? min; max = axis.Max ?? max;
+        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Min.HasValue, axis.Max.HasValue);
+        var fixedTicks = frame == null && axis.Labels.Count == 0 && gantt && axis.Scale == ChartScaleKind.Time && chart.Options.Gantt.TickInterval != null
+            ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.Gantt.TickInterval) : null;
         var ticks = frame?.Model.Ticks ?? fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
         if (gantt && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && fixedTicks == null
             && (max - min < 1 || axis.LabelDensity == ChartLabelDensity.All))
             ticks = ScheduleProjectWindowTicks(ticks, min, max);
-        var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
-        var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.GanttTickInterval?.Unit;
+        var milliseconds = fixedTicks != null && chart.Options.Gantt.TickInterval?.Unit == ChartTimeTickUnit.Millisecond;
+        var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.Gantt.TickInterval?.Unit;
         var projectDates = gantt && axis.Scale == ChartScaleKind.Time && (fixedTicks == null || effectiveInterval >= ChartTimeTickUnit.Day) && axis.Labels.Count == 0
             && axis.ValueFormat == null && axis.LabelDensity != ChartLabelDensity.All && max - min >= 1;
         var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
@@ -68,14 +68,14 @@ internal static partial class VisualScheduleCompiler {
         // task's arbitrary clock time. An automatic window includes that first
         // midnight; exact task instants and authored clipping bounds are retained.
         // Timelines share this: an axis whose first item starts mid-day still opens on that day's tick.
-        if (frame == null && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && !axis.Minimum.HasValue
+        if (frame == null && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && !axis.Min.HasValue
             && max - min >= 1 && axis.LabelDensity != ChartLabelDensity.All
             && (fixedTicks == null || effectiveInterval >= ChartTimeTickUnit.Day)
             && ChartTimeScale.HasDayCaptionPrecision(axis, Format, min)
             && ChartTimeScale.DisplayDayStart(axis, min) is { } dayStart && dayStart < min) {
             min = dayStart;
-            if (fixedTicks != null && chart.Options.GanttTickInterval != null)
-                fixedTicks = ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval);
+            if (fixedTicks != null && chart.Options.Gantt.TickInterval != null)
+                fixedTicks = ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.Gantt.TickInterval);
             ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
         }
         var sectionWidth = gantt && frame == null ? RangeSectionWidth(chart, context, builder, items) : 0;
@@ -153,8 +153,8 @@ internal static partial class VisualScheduleCompiler {
                             builder.Path(shape, fill, role: "gantt-milestone-shape", close: true, paint: VisualChartPaint.Fill(fillPaint));
                         } else {
                             var radius = Math.Min(context.Theme.BarRadius, height / 2); shape = VisualStateSceneTools.RoundedRect(bounds, radius);
-                            var style = chart.Options.ResolvePreparedBarVisualStyle();
-                            if (openEnded && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade)
+                            var style = chart.Options.Bars.ResolvePreparedVisualStyle();
+                            if (openEnded && chart.Options.Gantt.OpenEndStyle == ChartGanttOpenEndStyle.Fade)
                                 OpenEndFade(chart, builder, bounds, fill, fillPaint, radius, "gantt-task-shape");
                             else if (style.Kind == ChartBarStyle.Solid)
                                 builder.RectGradient(bounds, new ChartPoint(bounds.Left, bounds.Top), new ChartPoint(bounds.Left, bounds.Bottom),
@@ -164,7 +164,7 @@ internal static partial class VisualScheduleCompiler {
                                         VisualChartPaint.BarGradient(fill, fillRole, false, 1)) },
                                     radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape");
                             else builder.Rect(bounds, fill, radius: radius, role: item.Gantt ? "gantt-task-shape" : "timeline-item-shape", paint: VisualChartPaint.Fill(fillPaint));
-                            if (openEnded && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Arrow)
+                            if (openEnded && chart.Options.Gantt.OpenEndStyle == ChartGanttOpenEndStyle.Arrow)
                                 OpenEndArrow(chart, builder, bounds, ChartColorMath.AccessibleTextOnBackground(fill));
                             if (item.Gantt && item.Progress > 0) {
                                 var progressEnd = ChartHeatmapSurface.InterpolateObservedRange(item.Start, item.End, item.Progress);

@@ -12,17 +12,17 @@ public sealed class ChartLinkedSourceContractsTests {
         var series = ChartSeries.CreateHistogram(new ChartSeriesId("readings"), "Readings", new[] { .2, .4, 1.5 },
             ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 2 }));
         var ids = new[] { new ChartObservationId("north"), new ChartObservationId("south"), new ChartObservationId("west") };
-        Assert.Same(series, series.WithObservationIds(ids));
+        Assert.Same(series, series.ObservationIds(ids));
         ids[0] = new ChartObservationId("changed-input");
         Assert.Equal(new[] { "north", "south", "west" }, series.ObservationIds.OrderBy(item => item.Key).Select(item => item.Value.Value));
-        Assert.Throws<ArgumentException>(() => series.WithObservationIds(new[] { new ChartObservationId("one") }));
-        Assert.Throws<ArgumentException>(() => series.WithObservationIds(new[] { new ChartObservationId("one"), new ChartObservationId("one"), new ChartObservationId("three") }));
-        Assert.Throws<InvalidOperationException>(() => series.WithObservationIds(FailingIds()));
+        Assert.Throws<ArgumentException>(() => series.ObservationIds(new[] { new ChartObservationId("one") }));
+        Assert.Throws<ArgumentException>(() => series.ObservationIds(new[] { new ChartObservationId("one"), new ChartObservationId("one"), new ChartObservationId("three") }));
+        Assert.Throws<InvalidOperationException>(() => series.ObservationIds(FailingIds()));
         Assert.Equal("north", series.ObservationIds[0].Value);
         // Index two is a valid original sample even though only two bins are drawn.
-        series.WithObservationId(2, new ChartObservationId("east"));
+        series.ObservationId(2, new ChartObservationId("east"));
         Assert.Equal("east", series.ObservationIds[2].Value);
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.WithObservationId(3, new ChartObservationId("outside")));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.ObservationId(3, new ChartObservationId("outside")));
         static IEnumerable<ChartObservationId> FailingIds() {
             yield return new ChartObservationId("partial");
             throw new InvalidOperationException("Source enumeration failed.");
@@ -33,7 +33,7 @@ public sealed class ChartLinkedSourceContractsTests {
     public void TimeBucketsCaptureCalendarRolloverAndRemainDetachedFromLaterSeriesChanges() {
         var start = new DateTime(2026, 1, 31, 12, 0, 0, DateTimeKind.Utc);
         var series = ChartSeries.CreateBar(new ChartSeriesId("months"), "Months", new[] { new ChartPoint(start.ToOADate(), 5) })
-            .WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Month));
+            .TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Month));
         var chart = Chart.Create().AddSeries(series);
         chart.Options.XAxis.Scale = ChartScaleKind.Time;
         var prepared = chart.Prepare(new VisualRenderContext());
@@ -43,10 +43,10 @@ public sealed class ChartLinkedSourceContractsTests {
         Assert.Equal(start.AddMonths(1).ToOADate(), double.Parse(mark.Attribute("data-cfx-range-end")!.Value, CultureInfo.InvariantCulture));
         Assert.Equal("time", mark.Attribute("data-cfx-range-scale")!.Value);
         Assert.Equal("true", mark.Attribute("data-cfx-range-end-exclusive")!.Value);
-        series.WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2));
+        series.TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2));
         Assert.Equal(svg, prepared.ToSvg());
         Assert.NotEqual(svg, chart.Prepare(new VisualRenderContext()).ToSvg());
-        series.WithTimeBuckets(null);
+        series.TimeBuckets(null);
         Assert.DoesNotContain("data-cfx-range-start", chart.Prepare(new VisualRenderContext()).ToSvg());
     }
 
@@ -55,7 +55,7 @@ public sealed class ChartLinkedSourceContractsTests {
         var zone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
         var start = new DateTime(2026, 3, 8, 5, 0, 0, DateTimeKind.Utc);
         var series = ChartSeries.CreateBar(new ChartSeriesId("days"), "Days", new[] { new ChartPoint(start.ToOADate(), 5) })
-            .WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
+            .TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
         var chart = Chart.Create().AddSeries(series);
         chart.Options.XAxis.Scale = ChartScaleKind.Time; chart.Options.XAxis.TimeZone = zone;
         var mark = XDocument.Parse(chart.Prepare(new VisualRenderContext()).ToSvg()).Descendants()
@@ -68,10 +68,10 @@ public sealed class ChartLinkedSourceContractsTests {
     public void TimeBucketsPreserveAuthoredSubmillisecondInstantsWhenReplacingValues() {
         var start = new DateTime(2026, 1, 31, 12, 0, 0, DateTimeKind.Utc).AddTicks(1_000);
         var series = ChartSeries.CreateBar(new ChartSeriesId("precise"), "Precise", new[] { new ChartPoint(start, 5) });
-        var chart = Chart.Create().WithXAxisTimeScale().AddSeries(series);
+        var chart = Chart.Create().XAxis(x => x.TimeScale()).AddSeries(series);
         foreach (var unit in new[] { ChartTimeTickUnit.Hour, ChartTimeTickUnit.Month }) {
             var interval = new ChartTimeTickInterval(unit);
-            series.WithTimeBuckets(interval);
+            series.TimeBuckets(interval);
             series.Points[0] = new ChartPoint(start, 7);
             Assert.Same(interval, series.TimeBucketInterval);
             var mark = XDocument.Parse(chart.Prepare(new VisualRenderContext()).ToSvg()).Descendants()
@@ -85,15 +85,15 @@ public sealed class ChartLinkedSourceContractsTests {
     [Fact]
     public void TimeBucketDeclarationsRejectUnsupportedSeriesAndNumericAxes() {
         Assert.Throws<InvalidOperationException>(() => ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", new[] { new ChartPoint(1, 2) })
-            .WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
+            .TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
         var series = ChartSeries.CreateBar(new ChartSeriesId("bars"), "Bars", new[] { new ChartPoint(1, 2) })
-            .WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
+            .TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day));
         Assert.Throws<InvalidOperationException>(() => Chart.Create().AddSeries(series).Prepare(new VisualRenderContext()));
     }
 
     [Fact]
     public void BrushAndNativeProjectionCaptureTheSameFinalScale() {
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(1, 100).WithYAxisBounds(-10, 10)
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(1, 100)).YAxis(yAxis => yAxis.Bounds(-10, 10))
             .AddBar("Readings", new[] { new ChartPoint(1, -5), new ChartPoint(100, 5) });
         chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
         chart.Options.YAxis.Scale = ChartScaleKind.SymmetricLogarithmic;
@@ -106,7 +106,7 @@ public sealed class ChartLinkedSourceContractsTests {
         Assert.Equal(2, projection.X.TransformedMaximum);
         var y = Assert.IsType<ChartDataAxisProjection>(projection.Y);
         Assert.True(y.Reversed);
-        chart.Options.YAxis.Reversed = false; chart.Options.XAxis.Maximum = 1000;
+        chart.Options.YAxis.Reversed = false; chart.Options.XAxis.Max = 1000;
         Assert.Equal(100, projection.X.Maximum);
         Assert.True(y.Reversed);
     }

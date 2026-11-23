@@ -104,17 +104,17 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
     private static Chart DailyBars(double labelAngle, bool dark) {
         var chart = Frame(dark);
         for (var day = 0; day < 90; day++)
-            chart.Options.XAxisLabels.Add(new ChartAxisLabel(day + 1, Start.AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)));
+            chart.Options.XAxis.Labels.Add(new ChartAxisLabel(day + 1, Start.AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)));
         if (labelAngle != 0) chart.Options.XAxis.LabelAngle = labelAngle;
         return chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("changes"), "Changes",
             Enumerable.Range(0, 90).Select(day => new ChartPoint(day + 1, 8 + day * 7 % 30))));
     }
 
-    private static Chart TimeLine(bool dark) => Frame(dark).WithXAxisTimeScale().AddSeries(ChartSeries.CreateLine(new ChartSeriesId("latency"), "Latency",
+    private static Chart TimeLine(bool dark) => Frame(dark).XAxis(x => x.TimeScale()).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("latency"), "Latency",
         Enumerable.Range(0, 90).Select(step => new ChartPoint(Start.AddHours(step * 8), 20 + step * 11 % 30))));
 
-    private static Chart Frame(bool dark) => Chart.Create().WithSize(900, 380).WithLegend(false).WithHeader(false)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+    private static Chart Frame(bool dark) => Chart.Create().Size(900, 380).Legend(false).ShowHeader(false)
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
 
     private static async Task CaptureAsync(HtmlBrowserSession session, string name, JsonElement observation) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

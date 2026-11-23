@@ -95,14 +95,14 @@ public sealed class FontPaletteTests {
 
     [Fact]
     public void PaletteOverridesInheritResetCloneAndValidateWithoutMutatingFallback() {
-        var style = new TextStyle { Font = FontSpec.SystemSans().WithColorPalette(2) };
+        var style = new TextStyle { Font = FontSpec.SystemSans().ColorPaletteIndex(2) };
         Assert.Equal(2, style.Clone().Font.ColorPaletteIndex);
         Assert.Equal(2, new TextStyleOverride().Resolve(style).Font.ColorPaletteIndex);
-        Assert.Equal(0, new TextStyleOverride().WithColorPalette(0).Resolve(style).Font.ColorPaletteIndex);
+        Assert.Equal(0, new TextStyleOverride().ColorPaletteIndex(0).Resolve(style).Font.ColorPaletteIndex);
         Assert.Equal(2, style.Font.ColorPaletteIndex);
         Assert.Throws<ArgumentOutOfRangeException>(() => style.Font.ColorPaletteIndex = -1);
-        Assert.Throws<ArgumentOutOfRangeException>(() => new TextStyleOverride().WithColorPalette(65536));
-        Assert.True(new TextStyleOverride().WithColorPalette(0).HasOverrides);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TextStyleOverride().ColorPaletteIndex(65536));
+        Assert.True(new TextStyleOverride().ColorPaletteIndex(0).HasOverrides);
     }
     [Fact]
     public void LanguageVariationAndFallbackViewsKeepPaletteSelection() {
@@ -110,7 +110,7 @@ public sealed class FontPaletteTests {
         Assert.Equal(1, face.ColorPaletteIndex);
         Assert.Equal(new byte[] { 255, 255, 0, 255 }, Pixel(Draw(face), 30, 60));
         WithRegisteredFont(path => {
-            var resolved = TypographyFontResolver.ResolveFace(FontSpec.FromFile(path).WithColorPalette(1));
+            var resolved = TypographyFontResolver.ResolveFace(FontSpec.FromFile(path).ColorPaletteIndex(1));
             Assert.Equal(1, resolved.Font!.ColorPaletteIndex);
         });
     }
@@ -136,7 +136,7 @@ public sealed class FontPaletteTests {
     [Fact]
     public void NativePaletteRulesSafelyRoundTripQuotedFamiliesAndSharedNames() {
         const string family = "CFX \"Palette\";{}<&";
-        var rules = TypographyPaletteCss.Rules("sans-serif", new TextStyleOverride().WithFontFamily("'" + family + "'").WithColorPalette(2));
+        var rules = TypographyPaletteCss.Rules("sans-serif", new TextStyleOverride().FontFamily("'" + family + "'").ColorPaletteIndex(2));
         Assert.DoesNotContain("<", rules);
         WithRegisteredFont(path => {
             FontRegistry.Register(family, path);
@@ -178,9 +178,9 @@ public sealed class FontPaletteTests {
     }
     [Fact]
     public void SeriesAndPointLabelStylesEmitTheirEffectivePaletteDefinitions() {
-        var chart = Chart.Create().WithDataLabels().AddBar("Observed", new[] { new ChartPoint(1, 5), new ChartPoint(2, 4) });
-        chart.Series[0].ConfigureDataLabelStyle(s => s.WithFontFamily("CFX Series").WithColorPalette(3));
-        chart.Series[0].ConfigurePointDataLabelStyle(0, s => s.WithFontFamily("CFX Point").WithColorPalette(4));
+        var chart = Chart.Create().DataLabels().AddBar("Observed", new[] { new ChartPoint(1, 5), new ChartPoint(2, 4) });
+        chart.Series[0].DataLabelStyle(s => s.FontFamily("CFX Series").ColorPaletteIndex(3));
+        chart.Series[0].PointDataLabelStyle(0, s => s.FontFamily("CFX Point").ColorPaletteIndex(4));
         var svg = chart.ToSvg();
         Assert.Contains("base-palette:3", svg); Assert.Contains("base-palette:4", svg);
         Assert.Contains("font-palette:--cfx-font-palette-3", svg);
@@ -230,12 +230,12 @@ public sealed class FontPaletteTests {
     [Fact]
     public void ChartGridPaginationAndHtmlExportNativePaletteRules() {
         WithRegisteredFont(_ => {
-            var chart = Chart.Create().WithTitle("😀").ConfigureTitleStyle(s => s.WithFontFamily("CFX Palette").WithColorPalette(1));
+            var chart = Chart.Create().Title("😀").TitleStyle(s => s.FontFamily("CFX Palette").ColorPaletteIndex(1));
             var svg = chart.ToSvg();
             Assert.Contains("@font-palette-values --cfx-font-palette-1", svg);
             Assert.Contains("font-palette:--cfx-font-palette-1", svg);
             var grid = new ChartGrid { Title = "😀", Subtitle = "😀" }; grid.Add(chart);
-            grid.TitleStyle.WithFontFamily("CFX Palette").WithColorPalette(2); grid.SubtitleStyle.WithColorPalette(0);
+            grid.TitleStyle.FontFamily("CFX Palette").ColorPaletteIndex(2); grid.SubtitleStyle.ColorPaletteIndex(0);
             var page = Assert.Single(grid.Paginate(1)); Assert.Equal(2, page.Grid.TitleStyle.ColorPaletteIndex);
             var exported = page.Grid.ToSvg(); Assert.Contains("base-palette:2", exported);
             Assert.Contains("font-palette:normal", exported);

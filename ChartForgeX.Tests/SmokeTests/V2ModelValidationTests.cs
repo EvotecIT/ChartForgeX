@@ -102,7 +102,7 @@ public sealed class V2ModelValidationTests {
     public void GridSharedAxisPreparationAcceptsZeroWeightSpecializedSiblings() {
         var grid = ChartGrid.Create().Add(Raw(ChartSeriesKind.Pie, new ChartPoint(1, 0)))
             .Add(Chart.Create().AddLine("Trend", new[] { new ChartPoint(1, 2), new ChartPoint(2, 4) }));
-        grid.WithSharedXAxis().WithSharedYAxis();
+        grid.ShareXAxis().ShareYAxis();
         Assert.NotEmpty(grid.ToSvg());
     }
 

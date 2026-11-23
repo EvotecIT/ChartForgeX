@@ -27,15 +27,15 @@ public sealed class LegendControlTests {
         var line = Assert.Single(item.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-line");
         Assert.Equal(Target.ToCss(), (string?)line.Attribute("stroke"));
         Assert.Equal("6 5", (string?)line.Attribute("stroke-dasharray"));
-        Assert.False(plain.WithLegend(true).ToPng().SequenceEqual(chart.WithLegend(true).ToPng()));
+        Assert.False(plain.Legend(true).ToPng().SequenceEqual(chart.Legend(true).ToPng()));
     }
 
     [Fact]
     public void FormatterRewritesEntryTextFromSeriesValuesAndNullKeepsTheDefault() {
         var chart = Revenue().AddLine("Cost", new[] { new ChartPoint(1, 600_000), new ChartPoint(2, 700_000) })
             .AddLegendItem(ChartLegendItem.Band("Tolerance", Target))
-            .WithValueFormat(ChartValueFormat.Compact())
-            .WithLegendFormatter(item => item.SeriesIndex == 0 ? item.Label + " — " + item.FormatValue(item.Total) + " total" : null);
+            .ValueFormat(ChartValueFormat.Compact())
+            .Legend(l => l.LabelBy(item => item.SeriesIndex == 0 ? item.Label + " — " + item.FormatValue(item.Total) + " total" : null));
         var entries = Entries(chart);
         Assert.Equal(new[] { "Revenue — 2.1M total", "Cost", "Tolerance" }, entries.Select(Label));
         Assert.Equal("Revenue — 2.1M total", (string?)entries[0].Attribute("data-cfx-description"));
@@ -44,7 +44,7 @@ public sealed class LegendControlTests {
     [Fact]
     public void KeyShapeAndSizeReplaceTheFamilyKeyAndAnItemKeepsItsOwnSize() {
         var chart = Revenue().AddBar("Orders", new[] { new ChartPoint(1, 400_000), new ChartPoint(2, 500_000) })
-            .WithLegendKey(ChartLegendKeyShape.Circle, 16)
+            .Legend(l => l.KeyShape(ChartLegendKeyShape.Circle).KeySize(16))
             .AddLegendItem(ChartLegendItem.Marker("Review", Target, ChartMarkerShape.Diamond).WithKeySize(8));
         var entries = Entries(chart);
         foreach (var entry in entries.Take(2)) {
@@ -54,12 +54,12 @@ public sealed class LegendControlTests {
         }
         var marker = Assert.Single(entries[2].Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-swatch");
         Assert.Equal("path", marker.Name.LocalName);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithLegendKey(ChartLegendKeyShape.Square, 40));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Legend(l => l.KeyShape(ChartLegendKeyShape.Square).KeySize(40)));
     }
 
     [Fact]
     public void NativeReflowKeepsCustomItemsAndRejectsTheFormatterCallback() {
-        var chart = Chart.Create().WithSize(480, 300)
+        var chart = Chart.Create().Size(480, 300)
             .AddSeries(new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Line, new[] { new ChartPoint(1, 4), new ChartPoint(2, 6) }))
             .AddSeries(new ChartSeries(new ChartSeriesId("cost"), "Cost", ChartSeriesKind.Line, new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) }))
             .AddLegendItem(ChartLegendItem.Line("Target", Target, ChartLegendItem.ReferenceDash));
@@ -67,11 +67,11 @@ public sealed class LegendControlTests {
         var view = new ChartVisibilityView(new[] { ChartVisibilityTarget.Series(new ChartSeriesId("cost")) }, ChartVisibilityLayout.Reflow);
         var svg = XDocument.Parse(renderer.PrepareVisibilitySection(chart, view).PreparedVisual.ToSvg());
         Assert.Contains("Target", svg.Descendants().Where(IsEntry).Select(Label));
-        chart.WithLegendFormatter(item => item.Label + "!");
+        chart.Legend(l => l.LabelBy(item => item.Label + "!"));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareVisibilitySection(chart, view));
     }
 
-    private static Chart Revenue() => Chart.Create().WithSize(560, 320)
+    private static Chart Revenue() => Chart.Create().Size(560, 320)
         .AddLine("Revenue", new[] { new ChartPoint(1, 1_000_000), new ChartPoint(2, 1_100_000) });
 
     private static XElement[] Entries(Chart chart) => XDocument.Parse(chart.ToSvg()).Descendants().Where(IsEntry).ToArray();

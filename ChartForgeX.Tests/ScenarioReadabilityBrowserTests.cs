@@ -20,18 +20,18 @@ public sealed class ScenarioReadabilityBrowserTests {
     public async Task ScenarioHeadingsAndProgressRemainReadableInStandaloneAndThemedHosts(bool dark, bool host, int width) {
         if (!Enabled) return;
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(640, 280)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(640, 280)
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("counts"), "Counts", new[] { new ChartPoint(1, 7), new ChartPoint(2, 3) }));
         var interactive = new HtmlInteractiveChartRenderer().RenderFragment(chart, options => {
             options.Interaction.Enable(ChartInteractionFeatures.Scenarios | ChartInteractionFeatures.StepPlayback);
             options.Interaction.AddScenario("route", "Review route", scenario => scenario
                 .AddSeriesStep("counts", "Observe").AddSeriesStep("counts", "Confirm"));
         });
-        var topology = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(640, 240, 20)
+        var topology = TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(640, 240, 20))
             .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 340, 100)
             .AddScenario("route", "Topology route", scenario => scenario.AddNodeStep("a").AddNodeStep("b"));
         var topologyHtml = new HtmlInteractiveTopologyRenderer().RenderFragment(topology,
-            new TopologyRenderOptions { ActiveScenarioId = "route", EnableHtmlSelectionPanel = false });
+            new TopologyRenderOptions { ActiveScenarioId = "route", Html = { SelectionPanel = false } });
         var background = dark ? "#0f172a" : "#ffffff";
         var foreground = dark ? "#e5e7eb" : "#0f172a";
         var hostCard = dark ? "#203247" : "#fff5e6";

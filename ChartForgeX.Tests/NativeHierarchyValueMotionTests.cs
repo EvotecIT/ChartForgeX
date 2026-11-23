@@ -47,8 +47,8 @@ public sealed class NativeHierarchyValueMotionTests {
         var from = renderer.PrepareHierarchySection(chart); var to = renderer.PrepareHierarchySection(NativeHierarchyMotionBeforeControls.Model(true, true, 40));
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3));
         NativeRadialValueMotionTests.Capture(from, to, frames, payload, "hierarchy-detached"); var svg = frames.Select(row => row.ToSvg()).ToArray(); var png = frames.Select(row => row.ToPng()).ToArray();
-        chart.Series[0].ReplaceHierarchyItems(new[] { new ChartHierarchyItem("other", "Changed", value: 90) }); chart.Series[0].WithColor(ChartColor.Black);
-        chart.ConfigureSunburst(options => options.CornerRadius = 9).WithFontFamily("Changed caller family").WithValueFormat(ChartValueFormat.Custom(_ => "Changed"));
+        chart.Series[0].ReplaceHierarchyItems(new[] { new ChartHierarchyItem("other", "Changed", value: 90) }); chart.Series[0].Color(ChartColor.Black);
+        chart.Sunburst(options => options.CornerRadius = 9).FontFamily("Changed caller family").ValueFormat(ChartValueFormat.Custom(_ => "Changed"));
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null);
             Assert.Equal(svg, repeated.Select(row => row.ToSvg())); for (var index = 0; index < repeated.Count; index++) Assert.Equal(png[index], repeated[index].ToPng());
             Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3)));
@@ -59,7 +59,7 @@ public sealed class NativeHierarchyValueMotionTests {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeHierarchyMotionBeforeControls.Model(true, false, 30); var from = renderer.PrepareHierarchySection(chart);
         var items = chart.Series[0].HierarchyItems.Select(item => item.Id == "leaf-a" ? new ChartHierarchyItem(condition == "identity" ? "new-id" : item.Id, item.Label, condition == "parent" ? "root" : item.ParentId, 40, item.ColorValue)
             : condition == "authored-shape" && item.Id == "branch" ? new ChartHierarchyItem(item.Id, item.Label, item.ParentId, 70, item.ColorValue) : item).ToArray(); chart.Series[0].ReplaceHierarchyItems(items);
-        if (condition == "callback") chart.ConfigureSunburst(options => options.SecondaryLabelFormatter = context => context.FormattedValue);
+        if (condition == "callback") chart.Sunburst(options => options.SecondaryLabelFormatter = context => context.FormattedValue);
         var to = renderer.PrepareHierarchySection(chart); Exception? failure = null; try { _ = renderer.PrepareNativeTransitionJson(from, to,
             new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3)); } catch (Exception exception) { failure = exception; }
         NativeRadialMotionBeforeControls.Capture(from, "hierarchy-reject-" + condition + "-from"); NativeRadialMotionBeforeControls.Capture(to, "hierarchy-reject-" + condition + "-to");
@@ -92,7 +92,7 @@ public sealed class NativeHierarchyValueMotionTests {
     [Fact]
     public void OrdinaryCustomSecondaryCallbackKeepsItsNativeInvocationCountAndIsNotRetained() {
         var calls = 0; var chart = NativeHierarchyMotionBeforeControls.Model(true, false, 30);
-        chart.ConfigureSunburst(options => options.SecondaryLabelFormatter = context => { calls++; return context.FormattedValue; });
+        chart.Sunburst(options => options.SecondaryLabelFormatter = context => { calls++; return context.FormattedValue; });
         var renderer = new HtmlInteractiveChartRenderer(); var prepared = renderer.PrepareHierarchySection(chart);
         NativeRadialMotionBeforeControls.Capture(prepared, "hierarchy-callback-control"); NativeRadialMotionBeforeControls.Save("hierarchy-callback-control.facts.json", JsonSerializer.Serialize(new { calls }));
         Assert.Equal(chart.Series[0].HierarchyItems.Count, calls); Assert.Null(prepared.PreparedVisual.Scene.ValueCapture);

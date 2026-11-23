@@ -13,7 +13,7 @@ namespace ChartForgeX.Tests;
 public sealed class FinancialDashOptionsTests {
     [Fact]
     public void NonrepeatingSubpixelPatternUsesTheSameHighDpiResolutionAcrossRasterPaths() {
-        var chart = Chart.Create().WithSize(1200, 100).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(1200, 100).ShowHeader(false).Legend(false).DataLabels(false);
         chart.AddOhlc("Price", new[] { new ChartCandlestick(1, 4, 9, 1, 7), new ChartCandlestick(2, 7, 9, 1, 4) });
         var pattern = Enumerable.Repeat(.0001, 65).ToArray(); pattern[64] = .0002;
         chart.Series[0].Financial.Rising.DashPattern = pattern;
@@ -110,7 +110,7 @@ public sealed class FinancialDashOptionsTests {
     [InlineData(ChartSeriesKind.Candlestick)]
     [InlineData(ChartSeriesKind.Ohlc)]
     public void PreparationCapturesPatternPhaseAndScaledLegendIndependentlyOfLaterChanges(ChartSeriesKind kind) {
-        var chart = FinancialMarkOptionsTests.Prices(kind).WithLegend(true);
+        var chart = FinancialMarkOptionsTests.Prices(kind).Legend(true);
         var item = chart.Series[0].Financial.Rising;
         item.DashPattern = new[] { 6d, 10d }; item.DashOffset = -4; item.StrokeWidth = 3;
         if (kind == ChartSeriesKind.Candlestick) { item.FillOpacity = 0; item.Wick.DashOffset = 2; }
@@ -158,7 +158,7 @@ public sealed class FinancialDashOptionsTests {
     [InlineData(ChartSeriesKind.Ohlc)]
     public void NativeFinancialStrokesPaintTheSameDashPhaseAsSvgAndRetainVisibleGaps(ChartSeriesKind kind) {
         var chart = FinancialMarkOptionsTests.Prices(kind);
-        chart.Series[0].ConfigureFinancial(financial => {
+        chart.Series[0].Financial(financial => {
             financial.Rising.DashPattern = new[] { 6d, 10d }; financial.Rising.DashOffset = 2;
             financial.Rising.StrokeWidth = 2;
             if (kind == ChartSeriesKind.Candlestick) financial.Rising.FillOpacity = 0;
@@ -204,7 +204,7 @@ public sealed class FinancialDashOptionsTests {
     [InlineData(double.MaxValue)]
     [InlineData(-double.MaxValue)]
     public void LargeFinitePhaseRendersAsItsEquivalentSeventeenPixelPeriod(double offset) {
-        var chart = FinancialMarkOptionsTests.Prices(ChartSeriesKind.Candlestick).WithLegend(true);
+        var chart = FinancialMarkOptionsTests.Prices(ChartSeriesKind.Candlestick).Legend(true);
         var item = chart.Series[0].Financial.Rising;
         item.FillOpacity = 0; item.DashPattern = new[] { 6d, 11d }; item.DashOffset = offset;
         var captured = Prepare(chart);

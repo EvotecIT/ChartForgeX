@@ -9,11 +9,11 @@ namespace ChartForgeX.Tests;
 public sealed class CartesianHorizontalFormatterTests {
     [Fact]
     public void ProjectedAxesCaptureTheirDistinctFormattersOnceBeforeDetachedExports() {
-        var chart = Chart.Create().WithSize(700, 400).WithLegend(false)
+        var chart = Chart.Create().Size(700, 400).Legend(false)
             .AddHorizontalBar("Work", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
         var values = new Dictionary<double, int>(); var categories = new Dictionary<double, int>();
-        chart.Options.XAxis.WithLabelFormatter(value => Capture(values, value, "Value "));
-        chart.Options.YAxis.WithLabelFormatter(value => Capture(categories, value, "Department "));
+        chart.Options.XAxis.LabelBy(value => Capture(values, value, "Value "));
+        chart.Options.YAxis.LabelBy(value => Capture(categories, value, "Department "));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var valueRegions = prepared.Regions.Where(region => region.Role == "axis-x-label").ToArray();
         var categoryRegions = prepared.Regions.Where(region => region.Role == "axis-y-label").ToArray();
@@ -25,8 +25,8 @@ public sealed class CartesianHorizontalFormatterTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Contains(">Value ", svg); Assert.Contains(">Department ", svg);
 
-        chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed value callback"));
-        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
+        chart.Options.XAxis.LabelBy(_ => throw new InvalidOperationException("Changed value callback"));
+        chart.Options.YAxis.LabelBy(_ => throw new InvalidOperationException("Changed category callback"));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.All(values.Values.Concat(categories.Values), count => Assert.Equal(1, count));
     }

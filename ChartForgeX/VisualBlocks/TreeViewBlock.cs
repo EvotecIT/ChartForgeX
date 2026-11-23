@@ -47,7 +47,7 @@ public sealed class TreeViewBlock : VisualBlock<TreeViewBlock> {
     /// <summary>Measures a complete fixed-width frame with bounded natural height.</summary>
     public ChartSize MeasureNaturalSize(int width = 520, int minimumHeight = 0) => VisualBlockRendering.TreeViewNaturalSize(this, width, minimumHeight);
     /// <summary>Captures the measured fixed-width natural frame without silently dropping rows.</summary>
-    public TreeViewBlock WithNaturalSize(int width = 520, int minimumHeight = 0) {
+    public TreeViewBlock NaturalSize(int width = 520, int minimumHeight = 0) {
         Options.Size = MeasureNaturalSize(width, minimumHeight); return this;
     }
     private static void Bounded(double value, double minimum, double maximum, string parameter) {

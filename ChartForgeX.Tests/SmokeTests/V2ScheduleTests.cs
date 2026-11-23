@@ -19,16 +19,16 @@ public sealed class V2ScheduleTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var numericMarkup = SmokeTests.NumericMarkup(svg);
         Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
-        chart.Options.GanttToday = 90; chart.Options.Labels.Now = "Changed"; chart.ClearSeries();
+        chart.Options.Gantt.Today = 90; chart.Options.Labels.Now = "Changed"; chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, prepared.Size.Width); Assert.Equal(400, prepared.Size.Height);
     }
 
     [Fact]
     public void StateLanesCoalesceAdjacentBucketsButPreserveGapProvenanceAndSummaries() {
-        var chart = Chart.Create().WithStateCategories(new ChartStateCategory("up", "Available", ChartColor.FromHex("#1d8a52")))
+        var chart = Chart.Create().StateCategories(new ChartStateCategory("up", "Available", ChartColor.FromHex("#1d8a52")))
             .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 2, "up"), new ChartStateTimelineSegment(2, 3, "up"), new ChartStateTimelineSegment(4, 5, "pending") }, "99%", "Production");
-        chart.Options.LaneSummaryHeader = "Availability";
+        chart.Options.StateTimeline.SummaryHeader = "Availability";
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var segments = ByRole(document, "state-timeline-segment"); Assert.Equal(2, segments.Length);
         Assert.Equal("0,1", segments[0].Attribute("data-cfx-source-points")?.Value);
@@ -40,10 +40,10 @@ public sealed class V2ScheduleTests {
 
     [Fact]
     public void GanttLanePackingUsesPreparedWidthAndOpenItemsEndAtSnapshottedNow() {
-        var chart = Chart.Create().WithSize(4000, 400).WithGanttToday(4d)
-            .WithStateCategories(new ChartStateCategory("high", "High", ChartColor.FromHex("#d4302f")))
+        var chart = Chart.Create().Size(4000, 400).Gantt(g => g.Today(4d))
+            .StateCategories(new ChartStateCategory("high", "High", ChartColor.FromHex("#d4302f")))
             .AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "high", "first"), new ChartGanttLaneItem(2, null, "high", "ongoing") }, "Production", "2");
-        chart.Options.XAxis.WithBounds(0, 5);
+        chart.Options.XAxis.Bounds(0, 5);
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var bars = prepared.Regions.Where(region => region.Role == "gantt-lane-item").ToArray(); Assert.Equal(2, bars.Length);
         Assert.True(bars[1].Bounds.Top >= bars[0].Bounds.Bottom);
@@ -57,8 +57,8 @@ public sealed class V2ScheduleTests {
     [Fact]
     public void ClassicGanttPreservesMilestoneDependencyProgressAndExplicitWindow() {
         var chart = Fixture(ChartSeriesKind.Gantt);
-        chart.AddGanttMilestone("Ship", 4, dependsOn: chart.Series[1]).WithGanttToday(2.5);
-        chart.Options.XAxis.WithBounds(1.5, 4.5);
+        chart.AddGanttMilestone("Ship", 4, dependsOn: chart.Series[1]).Gantt(g => g.Today(2.5));
+        chart.Options.XAxis.Bounds(1.5, 4.5);
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         Assert.Single(ByRole(document, "gantt-milestone")); Assert.Equal(2, ByRole(document, "gantt-dependency").Length);
         Assert.NotEmpty(ByRole(document, "gantt-progress"));
@@ -73,7 +73,7 @@ public sealed class V2ScheduleTests {
     [Fact]
     public void CompactLanesKeepPlotAndMarksInsideFixedViewport() {
         var chart = Chart.Create().AddGanttLane("Long service name", new[] { new ChartGanttLaneItem(1, 3, "high") }, summary: "Long summary");
-        chart.Options.LaneSummaryHeader = "Summary";
+        chart.Options.StateTimeline.SummaryHeader = "Summary";
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(120, 80), 2),
             frame: new VisualFrame(showLegend: false)));
         Assert.All(prepared.Regions.Where(region => region.Role == "gantt-lane-item"), region => {
@@ -87,7 +87,7 @@ public sealed class V2ScheduleTests {
     public void TimeLanesRetainDisplayTimezoneAndExplicitTickLabels() {
         var start = new DateTime(2026, 10, 7, 0, 0, 0, DateTimeKind.Utc);
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus2", TimeSpan.FromHours(2), "Plus2", "Plus2");
-        var chart = Chart.Create().WithXAxisTimeScale(zone, true, "TEST")
+        var chart = Chart.Create().XAxis(x => x.TimeScale(timeZone: zone, showTimeZone: true, label: "TEST"))
             .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(start, start.AddHours(2), "up", "Full detail") });
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(start.ToOADate(), "Start"));
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(start.AddHours(2).ToOADate(), "Finish"));
@@ -98,7 +98,7 @@ public sealed class V2ScheduleTests {
     [Fact]
     public void GanttProgressRetainsExplicitSourceColorWhenItMatchesAStateToken() {
         var context = Context(); var same = context.Theme.Resolve(context.ThemeMode).Status.Medium.Fill;
-        var chart = Chart.Create().AddGanttTask("Task", 1, 3, .5).WithBarStyle(ChartBarStyle.Flat);
+        var chart = Chart.Create().AddGanttTask("Task", 1, 3, .5).Bars(b => b.Style(ChartBarStyle.Flat));
         chart.Series[0].StateRole = ChartSeriesState.Warning; chart.Series[0].PointColors.Add(same);
         var variables = new SvgColorVariables().Add("--source", same, SvgColorRole.Series).Add("--state", same, SvgColorRole.Status);
         var svg = XDocument.Parse(chart.Prepare(context).ToSvg(new VisualSvgOptions(colorVariables: variables)));
@@ -115,7 +115,7 @@ public sealed class V2ScheduleTests {
     [InlineData(ThemeMode.Dark, ChartBarStyle.Solid)]
     public void GanttTaskBodiesRemainReadableAtEveryCompletion(ThemeMode mode, ChartBarStyle style) {
         var chart = Chart.Create().AddGanttTask("Completed", 1, 3, 1)
-            .AddGanttTask("In progress", 2, 4, .5).AddGanttTask("Planned", 3, 5).WithBarStyle(style);
+            .AddGanttTask("In progress", 2, 4, .5).AddGanttTask("Planned", 3, 5).Bars(b => b.Style(style));
         var color = ChartColor.FromHex("#3478E5");
         foreach (var series in chart.Series) series.PointColors.Add(color);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: mode);

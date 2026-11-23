@@ -24,7 +24,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [InlineData(ChartSeriesKind.Slope, "slope-line", "stroke")]
     [InlineData(ChartSeriesKind.TrendLine, "trend-line", "stroke")]
     public void CartesianExtensionMarksRetainStateAndAuthoredSeriesProvenance(ChartSeriesKind kind, string role, string attribute) {
-        var chart = V2GalleryModels.Create(kind).WithBarStyle(ChartBarStyle.Flat);
+        var chart = V2GalleryModels.Create(kind).Bars(b => b.Style(ChartBarStyle.Flat));
         foreach (var series in chart.Series) series.StateRole = ChartSeriesState.Danger;
         Assert.All(Paints(chart.Prepare(Context()), Variables(), role, attribute), paint => Assert.Contains("var(--status,", paint));
         foreach (var series in chart.Series) series.Color = Shared;
@@ -36,13 +36,13 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [InlineData(ChartSeriesKind.Ohlc, "ohlc-stem", "stroke")]
     [InlineData(ChartSeriesKind.Waterfall, "waterfall-bar", "fill")]
     public void FinancialDefaultsUseStatusAndExplicitPointsUseSeriesPaint(ChartSeriesKind kind, string role, string attribute) {
-        var chart = V2GalleryModels.Create(kind).WithBarStyle(ChartBarStyle.Flat);
+        var chart = V2GalleryModels.Create(kind).Bars(b => b.Style(ChartBarStyle.Flat));
         // A waterfall's derived total is a level, not a change, so it takes the series role.
         var levels = kind == ChartSeriesKind.Waterfall ? 1 : 0;
         var defaults = Paints(chart.Prepare(Context()), Variables(), role, attribute);
         Assert.All(defaults.Take(defaults.Count() - levels), paint => Assert.Contains("var(--status,", paint));
         Assert.All(defaults.Skip(defaults.Count() - levels), paint => Assert.Contains("var(--series,", paint));
-        chart.Series[0].WithPointColor(0, Shared);
+        chart.Series[0].PointColor(0, Shared);
         var paints = Paints(chart.Prepare(Context()), Variables(), role, attribute);
         Assert.Contains("var(--series,", paints[0]);
         Assert.All(paints.Skip(1).Take(paints.Count() - 1 - levels), paint => Assert.Contains("var(--status,", paint));
@@ -53,7 +53,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Bubble); chart.Series[0].StateRole = ChartSeriesState.Danger;
         // One stateful series: its first point carries the authored alpha and every other point keeps the status paint.
         foreach (var other in chart.Series.Skip(1).ToArray()) chart.RemoveSeries(other);
-        chart.Series[0].WithPointColor(0, Shared.WithAlpha(128));
+        chart.Series[0].PointColor(0, Shared.WithAlpha(128));
         var prepared = chart.Prepare(Context()); var variables = Variables();
         var marks = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "bubble").ToArray();
         Assert.Equal(ChartColorMath.WithOpacity(Shared.WithAlpha(128), ChartVisualPrimitives.BubbleFillOpacity), marks[0].Fill!.Value);
@@ -71,8 +71,8 @@ public sealed partial class V2PreparedFamilyPaintTests {
 
     [Fact]
     public void RangeBoundariesRetainLayerOpacityWhileDerivedSheenStaysLiteral() {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.RangeArea).WithLineVisualStyle(ChartLineVisualStyle.Premium());
-        chart.Series[0].StateRole = ChartSeriesState.Danger; chart.Series[0].WithPointColor(0, Shared);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.RangeArea).Lines(l => l.VisualStyle(ChartLineVisualStyle.Premium()));
+        chart.Series[0].StateRole = ChartSeriesState.Danger; chart.Series[0].PointColor(0, Shared);
         var prepared = chart.Prepare(Context()); var variables = Variables();
         foreach (var role in new[] { "range-area", "range-upper", "range-upper-halo", "range-lower", "range-midline" })
             Assert.All(Paints(prepared, variables, role, role == "range-area" ? "fill" : "stroke"), paint => Assert.Contains("var(--status,", paint));
@@ -92,15 +92,15 @@ public sealed partial class V2PreparedFamilyPaintTests {
 
     [Fact]
     public void WaterfallGradientAndSegmentedRangeCapsKeepTheirSourceRoles() {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Waterfall).WithBarStyle(ChartBarStyle.Solid);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Waterfall).Bars(b => b.Style(ChartBarStyle.Solid));
         var document = XDocument.Parse(chart.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: Variables())));
         var stops = document.Descendants().Where(element => element.Name.LocalName == "stop").Select(element => element.Attribute("stop-color")!.Value).ToArray();
         Assert.NotEmpty(stops);
         // Changes keep their status roles; the derived total is a level and takes the series role.
         Assert.All(stops, paint => { Assert.Contains("color-mix(in srgb,", paint); Assert.True(paint.Contains("var(--status,") || paint.Contains("var(--series,"), paint); });
         Assert.Contains(stops, paint => paint.Contains("var(--status,")); Assert.Contains(stops, paint => paint.Contains("var(--series,"));
-        var range = V2GalleryModels.Create(ChartSeriesKind.RangeBar).WithBarStyle(ChartBarStyle.SegmentedCapsule);
-        range.Series[0].StateRole = ChartSeriesState.Danger; range.Series[0].WithPointColor(0, Shared);
+        var range = V2GalleryModels.Create(ChartSeriesKind.RangeBar).Bars(b => b.Style(ChartBarStyle.SegmentedCapsule));
+        range.Series[0].StateRole = ChartSeriesState.Danger; range.Series[0].PointColor(0, Shared);
         var caps = Paints(range.Prepare(Context()), Variables(), "range-bar-cap", "stroke");
         Assert.All(caps.Take(2), paint => Assert.Contains("var(--series,", paint));
         Assert.All(caps.Skip(2), paint => Assert.Contains("var(--status,", paint));

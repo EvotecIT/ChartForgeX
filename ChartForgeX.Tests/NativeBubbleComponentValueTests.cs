@@ -48,7 +48,7 @@ public sealed class NativeBubbleComponentValueTests {
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3));
         Capture(from, to, ordinary, frames, payload, null, "bubble-detached");
         Assert.Equal(ordinary.PreparedVisual.ToSvg(), from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(), from.PreparedVisual.ToPng());
-        chart.Series[0].UpdateBubble(0, new ChartBubble(1, 90, 500).WithColorValue(99)); chart.ConfigureBubble(options => options.WithSizeDomain(0, 1000)); chart.WithFontFamily("mutated caller");
+        chart.Series[0].UpdateBubble(0, new ChartBubble(1, 90, 500).WithColorValue(99)); chart.Bubble(options => options.SizeDomain(0, 1000)); chart.FontFamily("mutated caller");
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null);
             Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)));
             for (var index = 0; index < frames.Count; index++) { Assert.Equal(frames[index].ToSvg(), repeated[index].ToSvg()); Assert.Equal(frames[index].ToPng(), repeated[index].ToPng()); }
@@ -59,12 +59,12 @@ public sealed class NativeBubbleComponentValueTests {
         var renderer = new HtmlInteractiveChartRenderer(); var from = NativeBubbleComponentBeforeControls.Section(renderer, NativeBubbleComponentBeforeControls.Model(30, 10));
         var chart = NativeBubbleComponentBeforeControls.Model(50, 70);
         if (condition == "x") chart.Series[0].UpdateBubble(0, new ChartBubble(2, 50, 70).WithColorValue(7));
-        if (condition == "id") chart.Series[0].WithObservationId(0, new ChartObservationId("foreign"));
+        if (condition == "id") chart.Series[0].ObservationId(0, new ChartObservationId("foreign"));
         if (condition == "color") chart.Series[0].UpdateBubble(0, new ChartBubble(1, 50, 70).WithColorValue(8));
-        if (condition == "size-domain") chart.ConfigureBubble(options => options.WithSizeDomain(0, 200));
-        if (condition == "size-map") chart.ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
-        if (condition == "callback") chart.ConfigureBubble(options => options.SizeDimension.ValueFormat = ChartValueFormat.Custom(_ => "callback"));
-        if (condition == "automatic-size") chart.ConfigureBubble(options => options.UseAutomaticSizeDomain());
+        if (condition == "size-domain") chart.Bubble(options => options.SizeDomain(0, 200));
+        if (condition == "size-map") chart.Bubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
+        if (condition == "callback") chart.Bubble(options => options.SizeDimension.ValueFormat = ChartValueFormat.Custom(_ => "callback"));
+        if (condition == "automatic-size") chart.Bubble(options => options.AutomaticSizeDomain());
         HtmlChartSection? to = null; var error = Record.Exception(() => { to = NativeBubbleComponentBeforeControls.Section(renderer, chart); _ = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); });
         NativeRadialMotionBeforeControls.Capture(from, "bubble-reject-" + condition + "-from"); if (to != null) NativeRadialMotionBeforeControls.Capture(to, "bubble-reject-" + condition + "-to");
         NativeRadialMotionBeforeControls.Save("bubble-reject-" + condition + ".facts.json", JsonSerializer.Serialize(new { condition, error = error?.ToString() }));
@@ -88,7 +88,7 @@ public sealed class NativeBubbleComponentValueTests {
     public void SecondaryValueAxisRetainsItsOwnCapturedYDomain(bool area) {
         var renderer = new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value) { var chart = NativeBubbleComponentBeforeControls.Model(value, 35, area);
-            chart.Series[0].UseSecondaryValueAxis(); chart.ConfigureSecondaryYAxis(axis => { axis.Minimum = 0; axis.Maximum = 200; });
+            chart.Series[0].SecondaryAxis(); chart.SecondaryYAxis(axis => { axis.Min = 0; axis.Max = 200; });
             return NativeBubbleComponentBeforeControls.Section(renderer, chart); }
         var from = Section(90); var to = Section(130); var middle = Section(ChartMath.InterpolateRange(90, 130, .5));
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3));
@@ -100,9 +100,9 @@ public sealed class NativeBubbleComponentValueTests {
     [Fact]
     public void UnpaintedAuthoredPointPaintStillBindsSourceIdentity() {
         var renderer = new HtmlInteractiveChartRenderer();
-        Chart Model(bool changed) { var chart = NativeBubbleComponentBeforeControls.Model(30, 10).WithLegend(false).WithDataLabels(false);
-            foreach (var row in chart.Series) row.ConfigureMarkers(markers => markers.Enabled = false);
-            if (changed) chart.Series[0].WithPointColor(0, ChartColor.Black); return chart; }
+        Chart Model(bool changed) { var chart = NativeBubbleComponentBeforeControls.Model(30, 10).Legend(false).DataLabels(false);
+            foreach (var row in chart.Series) row.Markers(markers => markers.Enabled = false);
+            if (changed) chart.Series[0].PointColor(0, ChartColor.Black); return chart; }
         var from = NativeBubbleComponentBeforeControls.Section(renderer, Model(false)); var to = NativeBubbleComponentBeforeControls.Section(renderer, Model(true));
         NativeRadialMotionBeforeControls.Capture(from, "bubble-unpainted-source-from"); NativeRadialMotionBeforeControls.Capture(to, "bubble-unpainted-source-to");
         var a = NativeRawValueSourceMotionTests.Metadata(from).GetProperty("nativeValueSource"); var b = NativeRawValueSourceMotionTests.Metadata(to).GetProperty("nativeValueSource");

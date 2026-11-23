@@ -5,7 +5,7 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Resolves state keys through <see cref="ChartOptions.StateCategories"/> and lays out the shared categorical legend
+/// Resolves state keys through <see cref="ChartStateTimelineOptions.Categories"/> and lays out the shared categorical legend
 /// used by state timelines and categorical heatmaps, so both families and both renderers use one vocabulary.
 /// </summary>
 internal sealed class ChartStateCategoryLegend {
@@ -22,9 +22,9 @@ internal sealed class ChartStateCategoryLegend {
 
     public ChartStateCategoryLegend(Chart chart, ChartColor? fallback = null) {
         _chart = chart;
-        foreach (var category in chart.Options.StateCategories) _categories[category.Key] = category;
+        foreach (var category in chart.Options.StateTimeline.Categories) _categories[category.Key] = category;
         _fallback = fallback ?? chart.Options.ResolvedTheme.MutedText;
-        Categories = new List<ChartStateCategory>(chart.Options.StateCategories);
+        Categories = new List<ChartStateCategory>(chart.Options.StateTimeline.Categories);
     }
 
     /// <summary>Gets the registered categories in legend order.</summary>

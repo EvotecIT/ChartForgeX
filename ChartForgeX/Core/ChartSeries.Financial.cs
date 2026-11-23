@@ -10,14 +10,6 @@ public sealed partial class ChartSeries {
     }
     private ChartFinancialOptions _financial = new();
 
-    /// <summary>Configures financial body, wick and OHLC paint without changing the source observations.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureFinancial(Action<ChartFinancialOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Financial = ChartOptionConfiguration.Configure(Financial, configure, options => options.Clone()); return this;
-    }
-
     internal void ValidateFinancialOptions() {
         if (!Financial.IsConfigured) return;
         if (Kind != ChartSeriesKind.Candlestick && Kind != ChartSeriesKind.Ohlc)

@@ -12,9 +12,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void LollipopSeriesRenderStemsAndMarkers() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithXLabels("A", "B", "C")
+            .Size(640, 360)
+            .DataLabels()
+            .XLabels("A", "B", "C")
             .AddLollipop("Coverage", Points(74, 88, 96), ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"lollipop-stem\"") == 3, "Lollipop charts should render one stem per point.");
@@ -25,9 +25,9 @@ internal static partial class SmokeTests {
 
     private static void RangeBarSeriesRenderIntervals() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithXLabels("DNS", "TCP", "TLS")
+            .Size(640, 360)
+            .DataLabels()
+            .XLabels("DNS", "TCP", "TLS")
             .AddRangeBar("Observed range", new[] {
                 new ChartInterval(1, 20, 42),
                 new ChartInterval(2, 44, 88),
@@ -42,9 +42,9 @@ internal static partial class SmokeTests {
 
     private static void BoxPlotSeriesRenderStatisticalSummaries() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithXLabels("DNS", "TCP")
+            .Size(640, 360)
+            .DataLabels()
+            .XLabels("DNS", "TCP")
             .AddBoxPlot("Latency spread", new[] {
                 new ChartBoxPlot(1, 18, 24, 31, 38, 48),
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104)
@@ -56,21 +56,21 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-q1=\"24\"", StringComparison.Ordinal), "Box plots should expose quartile metadata for HTML inspection.");
         CartesianMetadata(CartesianPoint(svg, 0, 0), ("minimum", "18"), ("q1", "24"), ("median", "31"), ("q3", "38"), ("maximum", "48"));
         Assert(svg.Contains(">31</text>", StringComparison.Ordinal), "Box plot data labels should render medians when enabled.");
-        var raw = Chart.Create().WithSize(640, 360).WithDataLabels().AddBoxPlot("Raw samples", 1, new[] { 18d, 24d, 31d, 38d, 48d }, ChartColor.FromRgb(37, 99, 235)).ToSvg();
+        var raw = Chart.Create().Size(640, 360).DataLabels().AddBoxPlot("Raw samples", 1, new[] { 18d, 24d, 31d, 38d, 48d }, ChartColor.FromRgb(37, 99, 235)).ToSvg();
         Assert(raw.Contains(">31</text>", StringComparison.Ordinal), "Raw-value box plot overload should compute the median.");
         Assert(chart.ToPng().Length > 64, "Box plots should render PNG output.");
     }
 
     private static void BubbleSeriesRenderScaledMarkers() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
-            .WithDataLabels()
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
+            .DataLabels()
             .AddBubble("Risk clusters", new[] {
                 new ChartBubble(1, 24, 8),
                 new ChartBubble(2, 42, 18),
                 new ChartBubble(3, 31, 42)
             }, ChartColor.FromRgb(37, 99, 235))
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
+            .Bubble(bubble => { bubble.SizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bubble\"") == 3, "Bubble charts should render one scaled marker per bubble.");
         Assert(CartesianMarkAttribute(svg, 0, 2, "bubble", "rx") > CartesianMarkAttribute(svg, 0, 0, "bubble", "rx"), "Larger bubble sizes must produce larger native marks.");
@@ -86,8 +86,8 @@ internal static partial class SmokeTests {
             new ChartPoint(4, 33),
             new ChartPoint(5, 41)
         };
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
             .AddScatter("Observed", points, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", points, ChartColor.FromRgb(245, 158, 11));
         var svg = chart.ToSvg();
@@ -100,8 +100,8 @@ internal static partial class SmokeTests {
 
     private static void ErrorBarSeriesRenderBoundsAndMarkers() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
+            .Size(640, 360)
+            .DataLabels()
             .AddErrorBar("Confidence", new[] {
                 new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
                 new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66)),
@@ -117,8 +117,8 @@ internal static partial class SmokeTests {
 
     private static void CandlestickSeriesRenderOhlcBodiesAndWicks() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
+            .Size(640, 360)
+            .DataLabels()
             .AddCandlestick("Windows", new[] {
                 new ChartCandlestick(1, 42, 51, 35, 48),
                 new ChartCandlestick(2, 58, 66, 49, 54),
@@ -136,8 +136,8 @@ internal static partial class SmokeTests {
 
     private static void OhlcSeriesRenderOpenAndCloseTicks() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
+            .Size(640, 360)
+            .DataLabels()
             .AddOhlc("Windows", new[] {
                 new ChartCandlestick(1, 42, 51, 35, 48),
                 new ChartCandlestick(2, 58, 66, 49, 54),
@@ -157,8 +157,8 @@ internal static partial class SmokeTests {
 
     private static void RangeBandSeriesRenderFilledEnvelopes() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
+            .Size(640, 360)
+            .DataLabels()
             .AddRangeBand("Forecast band", new[] {
                 new ChartRangeBand(1, 32, 44),
                 new ChartRangeBand(2, 38, 58),
@@ -174,8 +174,8 @@ internal static partial class SmokeTests {
 
     private static void RangeAreaSeriesRenderFilledIntervalAreas() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
+            .Size(640, 360)
+            .DataLabels()
             .AddRangeArea("Prediction interval", new[] {
                 new ChartRangeBand(1, 32, 44),
                 new ChartRangeBand(2, 38, 58),
@@ -191,10 +191,10 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedAreaSeriesRenderCumulativeFilledBands() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
+            .DataLabels()
+            .XLabels("Mon", "Tue", "Wed")
             .AddSmoothStackedArea("Passed", Points(120, 160, 190), ChartColor.FromRgb(16, 185, 129))
             .AddSmoothStackedArea("Warnings", Points(24, 18, 12), ChartColor.FromRgb(251, 191, 36));
         var svg = chart.ToSvg();
@@ -208,9 +208,9 @@ internal static partial class SmokeTests {
     }
 
     private static void SlopeSeriesRenderEndpointComparisons() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
-            .WithDataLabels()
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
+            .DataLabels()
             .AddSlope("DMARC", 58, 88, "Before", "After", ChartColor.FromRgb(37, 99, 235))
             .AddSlope("DNSSEC", 42, 74, ChartColor.FromRgb(16, 185, 129));
         var svg = chart.ToSvg();
@@ -225,8 +225,8 @@ internal static partial class SmokeTests {
 
     private static void DumbbellSeriesRenderPairedComparisons() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
+            .Size(640, 360)
+            .DataLabels()
             .AddDumbbell("Before/after", new[] {
                 new ChartDumbbell(1, 32, 44),
                 new ChartDumbbell(2, 38, 58),
@@ -243,9 +243,9 @@ internal static partial class SmokeTests {
 
     private static void ParetoItemsRenderSortedBarsAndCumulativeLine() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
+            .Size(640, 360)
+            .DataLabels()
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .AddPareto("Findings", new[] {
                 new ChartParetoItem("Medium", 30),
                 new ChartParetoItem("Critical", 50),
@@ -256,7 +256,7 @@ internal static partial class SmokeTests {
         Assert(chart.Series.Count == 2, "Pareto charts should add contribution bars and a cumulative line.");
         Assert(chart.Series[0].Kind == ChartSeriesKind.Bar, "Pareto contribution values should render as bars.");
         Assert(chart.Series[1].Kind == ChartSeriesKind.Line, "Pareto cumulative values should render as a line.");
-        Assert(chart.Options.XAxisLabels[0].Text == "Critical", "Pareto charts should sort categories by descending value.");
+        Assert(chart.Options.XAxis.Labels[0].Text == "Critical", "Pareto charts should sort categories by descending value.");
         Assert(Math.Abs(chart.Series[0].Points[0].Y - 50) < 0.001, "Pareto contribution bars should use percentage share.");
         Assert(Math.Abs(chart.Series[1].Points[2].Y - 100) < 0.001, "Pareto cumulative line should end at one hundred percent.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 3, "Pareto charts should render one bar per item.");
@@ -268,12 +268,11 @@ internal static partial class SmokeTests {
     }
 
     private static void BarLineComboRendersBarsAndLine() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360).WithLineMarkers(ChartLineMarkerMode.All)
-            .WithYAxis("Volume")
-            .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithSecondaryYAxisBounds(0, 100)
-            .WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360).Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
+            .YAxis(y => y.Title("Volume"))
+            .SecondaryYAxis(s => s.Title("Rate").LabelBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%").Bounds(0, 100))
+            .XLabels("Mon", "Tue", "Wed")
             .AddBarLineCombo(
                 "Volume",
                 Points(4200, 6400, 5800),
@@ -299,13 +298,13 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Pass rate</text>", StringComparison.Ordinal), "Bar-line combos should render the line legend label.");
         Assert(chart.ToPng().Length > 64, "Bar-line combos should render PNG output.");
 
-        var secondaryOnly = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
-        secondaryOnly.Series[0].UseSecondaryValueAxis();
+        var secondaryOnly = Chart.Create().Theme(VisualTheme.Graphite()).Size(420, 280).SecondaryYAxis(s => s.Title("Rate")).AddLine("Rate", Points(88, 93, 91));
+        secondaryOnly.Series[0].SecondaryAxis();
         Assert(!secondaryOnly.ToSvg().Contains("Infinity", StringComparison.Ordinal), "Secondary-axis-only charts should still render finite SVG geometry.");
     }
 
     private static void MultipleBarSeriesRenderAsGroupedBars() {
-        var svg = Chart.Create().WithSize(640, 360).WithXLabels("Mon", "Tue", "Wed").AddBar("Current", Points(10, 20, 30)).AddBar("Previous", Points(8, 18, 22)).ToSvg();
+        var svg = Chart.Create().Size(640, 360).XLabels("Mon", "Tue", "Wed").AddBar("Current", Points(10, 20, 30)).AddBar("Previous", Points(8, 18, 22)).ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 6, "Two bar series with three points each should render six bar rectangles.");
         var firstCurrent = CartesianMarkAttribute(svg, 0, 0, "bar", "x");
         var firstPrevious = CartesianMarkAttribute(svg, 1, 0, "bar", "x");
@@ -313,10 +312,10 @@ internal static partial class SmokeTests {
     }
 
     private static void HorizontalBarSeriesRenderCategoryBars() {
-        var svg = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithXLabels("SPF alignment", "DMARC policy", "DNSSEC coverage")
+        var svg = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
+            .DataLabels()
+            .XLabels("SPF alignment", "DMARC policy", "DNSSEC coverage")
             .AddHorizontalBar("Coverage", Points(100, 76, 58), ChartColor.FromRgb(37, 99, 235))
             .ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"horizontal-bar\"") == 3, "Horizontal bar series should render one rectangle per category.");
@@ -326,17 +325,16 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedHorizontalBarsRenderSegmentsAndTotals() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(700, 380)
-            .WithStackedHorizontalBars()
-            .WithStackTotals()
-            .WithXLabels("Mail authentication", "Transport security")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(700, 380)
+            .Bars(b => b.Stacked().ShowTotals())
+            .XLabels("Mail authentication", "Transport security")
             .AddHorizontalBar("Complete", Points(40, 55), ChartColor.FromRgb(16, 185, 129))
             .AddHorizontalBar("Partial", Points(15, 20), ChartColor.FromRgb(245, 158, 11))
             .AddHorizontalBar("Missing", Points(5, 10), ChartColor.FromRgb(239, 68, 68));
 
         var svg = chart.ToSvg();
-        Assert(chart.Options.BarMode == ChartBarMode.Stacked, "Stacked horizontal bars should use stacked bar mode.");
+        Assert(chart.Options.Bars.Mode == ChartBarMode.Stacked, "Stacked horizontal bars should use stacked bar mode.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"horizontal-bar\"") == 6, "Stacked horizontal bars should render one segment per series point.");
         var firstCompleteY = CartesianMarkAttribute(svg, 0, 0, "horizontal-bar", "y");
         var firstPartialY = CartesianMarkAttribute(svg, 1, 0, "horizontal-bar", "y");
@@ -349,14 +347,14 @@ internal static partial class SmokeTests {
     }
 
     private static void HeatmapRowsRenderMatrixCells() {
-        var svg = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(720, 420)
-            .WithDataLabels()
-            .WithXAxis("Control")
-            .WithYAxis("Domain group")
-            .WithHeatmapScale(ChartHeatmapScale.Semantic)
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("SPF", "DMARC", "DNSSEC")
+        var svg = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(720, 420)
+            .DataLabels()
+            .XAxis(x => x.Title("Control"))
+            .YAxis(y => y.Title("Domain group"))
+            .Heatmap(h => h.Scale(ChartHeatmapScale.Semantic))
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
+            .XLabels("SPF", "DMARC", "DNSSEC")
             .AddHeatmapRow("Primary", Points(100, 60, 0))
             .AddHeatmapRow("Parked", Points(82, 40, 20))
             .ToSvg();
@@ -385,9 +383,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Primary</text>", StringComparison.Ordinal), "Heatmaps should render row labels.");
         Assert(svg.Contains(">DMARC</text>", StringComparison.Ordinal), "Heatmaps should render column labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Heatmaps should render optional data labels.");
-        var edgeSvg = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(520, 320)
-            .WithXLabels("Very long first control", "Middle", "Very long final control")
+        var edgeSvg = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(520, 320)
+            .XLabels("Very long first control", "Middle", "Very long final control")
             .AddHeatmapRow("Domains", Points(100, 60, 0))
             .ToSvg();
         var edgeLabels = System.Xml.Linq.XDocument.Parse(edgeSvg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-column-label").ToArray();
@@ -399,9 +397,9 @@ internal static partial class SmokeTests {
 
     private static void GanttTasksRenderProgressDependenciesAndMilestones() {
         var chart = Chart.Create()
-            .WithSize(900, 480)
-            .WithDataLabels()
-            .WithGanttToday(new DateTime(2026, 2, 10))
+            .Size(900, 480)
+            .DataLabels()
+            .GanttToday(new DateTime(2026, 2, 10))
             .AddGanttTask("Inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 1, 24), 0.75, color: ChartColor.FromRgb(37, 99, 235))
             .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.55, color: ChartColor.FromRgb(16, 185, 129))
             .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 2), color: ChartColor.FromRgb(245, 158, 11));
@@ -430,16 +428,16 @@ internal static partial class SmokeTests {
         const string escapedLabel = "A &lt; B &amp; C &quot;quoted&quot;";
         var outputs = new[] {
             ("bullet", Chart.Create().AddBullet(unsafeLabel, 80, 90).ToSvg()),
-            ("heatmap", Chart.Create().WithXLabels(unsafeLabel).AddHeatmapRow(unsafeLabel, Points(96)).ToSvg()),
-            ("funnel", Chart.Create().WithXLabels(unsafeLabel).AddFunnel("Funnel", Points(96)).ToSvg()),
-            ("radar", Chart.Create().WithXLabels(unsafeLabel, "Safe", "Also safe").AddRadar("Radar", Points(96, 88, 74)).ToSvg()),
-            ("polar area", Chart.Create().WithXLabels(unsafeLabel, "Safe", "Also safe").AddPolarArea("Polar", Points(96, 88, 74)).ToSvg()),
+            ("heatmap", Chart.Create().XLabels(unsafeLabel).AddHeatmapRow(unsafeLabel, Points(96)).ToSvg()),
+            ("funnel", Chart.Create().XLabels(unsafeLabel).AddFunnel("Funnel", Points(96)).ToSvg()),
+            ("radar", Chart.Create().XLabels(unsafeLabel, "Safe", "Also safe").AddRadar("Radar", Points(96, 88, 74)).ToSvg()),
+            ("polar area", Chart.Create().XLabels(unsafeLabel, "Safe", "Also safe").AddPolarArea("Polar", Points(96, 88, 74)).ToSvg()),
             ("timeline", Chart.Create().AddTimelineItem(unsafeLabel, new DateTime(2026, 1, 1), new DateTime(2026, 2, 1)).ToSvg()),
             ("gantt", Chart.Create().AddGanttTask(unsafeLabel, new DateTime(2026, 1, 1), new DateTime(2026, 2, 1), 0.5).ToSvg()),
-            ("sankey", Chart.Create().WithDataLabels().AddSankey("Flow", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartFlowLink("flow-1", unsafeLabel, "Safe", 10) }).ToSvg()),
+            ("sankey", Chart.Create().DataLabels().AddSankey("Flow", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartFlowLink("flow-1", unsafeLabel, "Safe", 10) }).ToSvg()),
             ("tree", Chart.Create().AddTree("Tree", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartTreeLink(unsafeLabel, "Safe") }).ToSvg()),
             ("gauge", Chart.Create().AddGauge(unsafeLabel, 87).ToSvg()),
-            ("donut", Chart.Create().WithXLabels(unsafeLabel).AddDonut(unsafeLabel, Points(100)).ToSvg())
+            ("donut", Chart.Create().XLabels(unsafeLabel).AddDonut(unsafeLabel, Points(100)).ToSvg())
         };
         foreach (var output in outputs) {
             Assert(output.Item2.Contains(escapedLabel, StringComparison.Ordinal), output.Item1 + " labels should be escaped in SVG text nodes.");
@@ -450,21 +448,21 @@ internal static partial class SmokeTests {
     private static void SpecializedChartsFitLongSvgLabels() {
         const string longLabel = "Extremely long remediation status label that must fit";
         var funnel = Chart.Create()
-            .WithSize(320, 220)
-            .WithXLabels(longLabel, "Verified")
-            .AddFunnel("Funnel", Points(96, 72)).WithDataLabels();
+            .Size(320, 220)
+            .XLabels(longLabel, "Verified")
+            .AddFunnel("Funnel", Points(96, 72)).DataLabels();
         AssertFamilyTextFitsReservedRegion(PreparedFamily(funnel), "funnel-label", longLabel);
 
         // Room for a shortened caption that keeps six characters before its ellipsis.
         var gauge = Chart.Create()
-            .WithSize(460, 300)
-            .WithValueFormatter(_ => longLabel)
+            .Size(460, 300)
+            .FormatValuesBy(_ => longLabel)
             .AddGauge(longLabel, 87);
         AssertFamilyTextFitsReservedRegion(PreparedFamily(gauge), "gauge-label", longLabel);
 
         var donutChart = Chart.Create()
-            .WithSize(280, 180)
-            .WithXLabels(longLabel)
+            .Size(280, 180)
+            .XLabels(longLabel)
             .AddDonut(longLabel, Points(100));
         var donut = PreparedFamily(donutChart);
         Assert(donut.Regions.Any(region => region.Role == "donut-title" && region.Label == longLabel), "A fitted donut caption should retain its complete source text.");
@@ -473,24 +471,24 @@ internal static partial class SmokeTests {
         Assert(donut.ToPng().Length > 64, "Fitted donut content should render through the native painter.");
 
         var bullet = Chart.Create()
-            .WithSize(320, 220)
-            .WithValueFormatter(_ => longLabel)
+            .Size(320, 220)
+            .FormatValuesBy(_ => longLabel)
             .AddBullet(longLabel, 82, 90);
         AssertFamilyTextFitsReservedRegion(PreparedFamily(bullet), "bullet-row-label", longLabel);
 
         var heatmap = Chart.Create()
-            .WithSize(320, 220)
-            .WithDataLabels()
-            .WithValueFormatter(_ => longLabel)
-            .WithXLabels(longLabel)
+            .Size(320, 220)
+            .DataLabels()
+            .FormatValuesBy(_ => longLabel)
+            .XLabels(longLabel)
             .AddHeatmapRow(longLabel, Points(96))
             .ToSvg();
         Assert(heatmap.Contains("data-cfx-role=\"heatmap-row-label\"", StringComparison.Ordinal), "Heatmaps should mark fitted row labels.");
         Assert(heatmap.Contains("…</text>", StringComparison.Ordinal), "Heatmap row, column, and cell labels should shorten inside constrained regions.");
 
         var timeline = Chart.Create()
-            .WithSize(320, 220)
-            .WithXDateLabels(new[] { new DateTime(2026, 1, 1), new DateTime(2026, 1, 15) }, longLabel)
+            .Size(320, 220)
+            .XDateLabels(new[] { new DateTime(2026, 1, 1), new DateTime(2026, 1, 15) }, longLabel)
             .AddTimelineItem(longLabel, new DateTime(2026, 1, 1), new DateTime(2026, 1, 15))
             .ToSvg();
         Assert(timeline.Contains("data-cfx-role=\"schedule-row-label\"", StringComparison.Ordinal), "Timelines should use the shared fitted schedule row labels.");
@@ -500,12 +498,12 @@ internal static partial class SmokeTests {
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {
-        var svg = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 420)
-            .WithDataLabels()
-            .WithXAxis("Change")
-            .WithYAxis("Open findings")
-            .WithXLabels("Opened", "Resolved", "Suppressed", "New risk")
+        var svg = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(760, 420)
+            .DataLabels()
+            .XAxis(x => x.Title("Change"))
+            .YAxis(y => y.Title("Open findings"))
+            .XLabels("Opened", "Resolved", "Suppressed", "New risk")
             .AddWaterfall("Finding delta", Points(18, -42, -12, 9), ChartColor.FromRgb(52, 211, 153))
             .ToSvg();
         Assert(svg.Contains("data-cfx-kind=\"Waterfall\"", StringComparison.Ordinal), "Waterfall charts should expose a role marker.");
@@ -519,7 +517,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Opened</text>", StringComparison.Ordinal), "Waterfall charts should render category labels.");
         Assert(svg.Contains(">Total</text>", StringComparison.Ordinal), "Waterfall charts should render a total category.");
         Assert(svg.Contains(">+18</text>", StringComparison.Ordinal), "Waterfall charts should render positive delta labels.");
-        Assert(Chart.Create().WithTheme(VisualTheme.Graphite()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
+        Assert(Chart.Create().Theme(VisualTheme.Graphite()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
     }
 
 
@@ -529,10 +527,10 @@ internal static partial class SmokeTests {
 
     private static void TimelineItemsRenderDateRanges() {
         var svg = Chart.Create()
-            .WithSize(760, 420)
-            .WithDataLabels()
-            .WithXAxis("Schedule")
-            .WithYAxis("Workstream")
+            .Size(760, 420)
+            .DataLabels()
+            .XAxis(x => x.Title("Schedule"))
+            .YAxis(y => y.Title("Workstream"))
             .AddTimelineItem("Certificate renewal", new DateTime(2026, 1, 1), new DateTime(2026, 2, 1), ChartColor.FromRgb(37, 99, 235))
             .AddTimelineItem("DMARC rollout", new DateTime(2026, 1, 15), new DateTime(2026, 3, 1), ChartColor.FromRgb(14, 165, 233))
             .ToSvg();
@@ -553,15 +551,15 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">31d</text>", StringComparison.Ordinal), "Timelines should render optional duration labels.");
 
         var numericTimeline = Chart.Create()
-            .WithSize(640, 360)
-            .WithDataLabels()
-            .WithXAxisValueFormatter(value => "W" + value.ToString("0", CultureInfo.InvariantCulture))
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "w")
+            .Size(640, 360)
+            .DataLabels()
+            .XAxis(x => x.LabelBy(value => "W" + value.ToString("0", CultureInfo.InvariantCulture)))
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "w")
             .AddTimelineRange("Numeric rollout", 1, 4)
             .ToSvg();
         var numericGantt = Chart.Create()
-            .WithSize(640, 360)
-            .WithXAxisValueFormatter(value => "W" + value.ToString("0", CultureInfo.InvariantCulture))
+            .Size(640, 360)
+            .XAxis(x => x.LabelBy(value => "W" + value.ToString("0", CultureInfo.InvariantCulture)))
             .AddGanttTask("Numeric task", 1, 4, 0.5)
             .ToSvg();
         Assert(FamilyMetadata(numericTimeline, "timeline-item", ("series", "0")).Tooltip() == "Numeric rollout: W1 – W4, 3w", "Numeric timelines should use custom x-axis and duration formatters in summaries.");
@@ -569,21 +567,21 @@ internal static partial class SmokeTests {
     }
 
     private static void MultipleBarSeriesCanRenderAsStackedBars() {
-        var svg = Chart.Create().WithSize(640, 360).WithStackedBars().WithXLabels("Mon", "Tue", "Wed").AddBar("Passed", Points(40, 55, 65)).AddBar("Warnings", Points(15, 25, 20)).AddBar("Failed", Points(5, 8, 10)).ToSvg();
+        var svg = Chart.Create().Size(640, 360).Bars(b => b.Stacked()).XLabels("Mon", "Tue", "Wed").AddBar("Passed", Points(40, 55, 65)).AddBar("Warnings", Points(15, 25, 20)).AddBar("Failed", Points(5, 8, 10)).ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 9, "Three stacked bar series with three points each should render nine bar segments.");
         Assert(Math.Abs(CartesianMarkAttribute(svg, 0, 0, "bar", "x") - CartesianMarkAttribute(svg, 1, 0, "bar", "x")) < 0.001, "Stacked bars for the same category should share the same x position.");
         Assert(CartesianMarkAttribute(svg, 1, 0, "bar", "y") < CartesianMarkAttribute(svg, 0, 0, "bar", "y"), "Second stacked segment should render above the first positive segment.");
     }
 
     private static void StackedBarsCanRenderTotalLabels() {
-        var svg = Chart.Create().WithSize(640, 360).WithStackedBars().WithStackTotals().WithXLabels("Mon", "Tue", "Wed").AddBar("Passed", Points(40, 55, 65)).AddBar("Warnings", Points(15, 25, 20)).AddBar("Failed", Points(5, 8, 10)).ToSvg();
+        var svg = Chart.Create().Size(640, 360).Bars(b => b.Stacked().ShowTotals()).XLabels("Mon", "Tue", "Wed").AddBar("Passed", Points(40, 55, 65)).AddBar("Warnings", Points(15, 25, 20)).AddBar("Failed", Points(5, 8, 10)).ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"stack-total-label\"") == 3, "Stacked bars should render one total label per category when enabled.");
         Assert(svg.Contains(">60</text>", StringComparison.Ordinal), "Stacked bar total labels should render summed category values.");
         Assert(!svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Stack total labels should not implicitly enable segment data labels.");
     }
 
     private static void DonutChartRendersSlices() {
-        var chart = Chart.Create().WithTitle("Result mix").WithSize(640, 360).WithXLabels("Passed", "Warning", "Failed").AddDonut("Checks", Points(70, 20, 10));
+        var chart = Chart.Create().Title("Result mix").Size(640, 360).XLabels("Passed", "Warning", "Failed").AddDonut("Checks", Points(70, 20, 10));
         var svg = chart.ToSvg();
         Assert(svg.Contains(" A ", StringComparison.Ordinal), "Donut chart should render SVG arc paths.");
         Assert(svg.Contains(">Passed</text>", StringComparison.Ordinal), "Donut chart should render slice labels.");
@@ -592,7 +590,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SingleSliceDonutRendersFullRing() {
-        var svg = Chart.Create().WithSize(360, 240).WithXLabels("All").AddDonut("Total", Points(100)).ToSvg();
+        var svg = Chart.Create().Size(360, 240).XLabels("All").AddDonut("Total", Points(100)).ToSvg();
         Assert(svg.Contains(" A ", StringComparison.Ordinal), "Single-slice donut should render arc commands.");
         Assert(!NumericMarkup(svg).Contains("NaN", StringComparison.Ordinal), "Single-slice donut should not contain invalid numeric values.");
     }

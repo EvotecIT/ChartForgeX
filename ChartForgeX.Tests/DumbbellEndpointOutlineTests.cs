@@ -13,7 +13,7 @@ public sealed class DumbbellEndpointOutlineTests {
     [InlineData(true)]
     public void AuthoredOutlineFallbacksAgreeWithTheLegendAndPreserveExplicitWidths(bool horizontal) {
         foreach (var mode in new[] { "unconfigured", "endpoint-color", "shared-color", "outline-color", "dash-only", "explicit-zero", "explicit-four" }) {
-            var chart = Chart.Create().WithSize(600, 360).WithLegend().AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10, 30) });
+            var chart = Chart.Create().Size(600, 360).Legend().AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10, 30) });
             chart.Options.DumbbellOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             var series = chart.Series[0]; series.Dumbbell.StartMarker.Stroke = ChartColor.Black;
             if (mode == "shared-color") series.Markers.Stroke = ChartColor.Black;

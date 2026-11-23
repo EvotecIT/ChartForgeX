@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -35,7 +36,7 @@ public sealed class SvgColorVariablesApplyTests {
     [Fact]
     public void Apply_RenderedChart_MatchesThePatternReplacement() {
         var variables = Variables();
-        var svg = ChartForgeX.Core.Chart.Create().WithSize(500, 300).WithTitle("Apply")
+        var svg = ChartForgeX.Core.Chart.Create().Size(500, 300).Title("Apply")
             .AddBar("A", new[] { new ChartPoint(1, 2), new ChartPoint(2, 4) }, ChartColor.FromHex("#1E40AF"))
             .AddLine("B", new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) }, ChartColor.FromHex("#FFFFFF")).ToSvg();
         var applied = variables.Apply(svg);

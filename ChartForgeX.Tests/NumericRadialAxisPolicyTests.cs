@@ -18,7 +18,7 @@ public sealed class NumericRadialAxisPolicyTests {
     [InlineData(true, true, true)]
     public void RelativeLabelsFollowProjectedAxesWithIndependentOffsetsAndReversal(bool bars, bool reversed, bool rounded) {
         var chart = RelativeChart(bars, reversed);
-        if (rounded) chart.WithRadialGeometry(new(0, 240, .2, .25, .1, cornerRadius: 6));
+        if (rounded) chart.RadialGeometry(new(0, 240, .2, .25, .1, cornerRadius: 6));
         var scene = Prepare(chart).Scene;
         var captions = NumericRadialAxisTextTests.Footprints(scene).Where(item => item.Text.Role is "radial-category-label" or "radial-value-label").ToArray();
         foreach (var prefix in new[] { "radial-category-label-", "radial-value-label-Primary-", "radial-value-label-Secondary-" }) {
@@ -53,7 +53,7 @@ public sealed class NumericRadialAxisPolicyTests {
     [InlineData(false)]
     [InlineData(true)]
     public void RelativeOffsetsKeepEquivalentFullTurnsAndDoNotRotateTitlesOrDataLabels(bool bars) {
-        var chart = RelativeChart(bars).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        var chart = RelativeChart(bars).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var pixels = prepared.ToRgba().Pixels;
         chart.Options.XAxis.LabelAngle += 720;
         chart.Options.YAxis.LabelAngle -= 360;
@@ -92,7 +92,7 @@ public sealed class NumericRadialAxisPolicyTests {
     }
 
     internal static Chart RelativeChart(bool bars, bool reversed = false) {
-        var chart = NumericRadialAxisTextTests.Configured(bars, 800).WithRadialGeometry(new(0, 240, .2, .25, .1));
+        var chart = NumericRadialAxisTextTests.Configured(bars, 800).RadialGeometry(new(0, 240, .2, .25, .1));
         chart.Options.XAxis.LabelOrientation = chart.Options.YAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
         chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
         chart.Options.XAxis.LabelAngle = 15; chart.Options.YAxis.LabelAngle = -10; chart.Options.SecondaryYAxis.LabelAngle = 5;

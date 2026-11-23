@@ -69,7 +69,7 @@ internal static partial class SmokeTests {
             Assert(empty.Diagnostics.Any(item => item.Code == "cartesian.no-data"), "Empty mapped data reaches the native no-data scene.");
             if (series.Kind == ChartSeriesKind.Bubble) series.ReplaceBubbles(ChartBubbles.FromXYSize(new[] { 1d }, new[] { 2d }, new[] { 3d }));
             else foreach (var point in ChartPoints.FromXY(new[] { 1d }, new[] { 2d })) series.Points.Add(point);
-            series.WithObservationId(0, new ChartObservationId("arrived"));
+            series.ObservationId(0, new ChartObservationId("arrived"));
             var filled = emptyChart.Prepare(new VisualRenderContext());
             Assert(series.Id == id && series.ObservationCount == 1 && series.SourcePointCount == 1, "A filtered-empty chart refills through its retained series.");
             Assert(filled.ToSvg().Contains("data-cfx-observation-id=\"arrived\"", StringComparison.Ordinal) && filled.ToPng().Length > 200,
@@ -93,7 +93,7 @@ internal static partial class SmokeTests {
         var grid = ChartGrid.FromFacets(
             rows,
             row => row.Region,
-            (region, facet) => Chart.Create().WithTitle(region).AddLine("Value", facet, row => row.Order, row => row.Value),
+            (region, facet) => Chart.Create().Title(region).AddLine("Value", facet, row => row.Order, row => row.Value),
             columns: 2);
 
         Assert(grid.Charts.Count == 2, "Faceting should create one native chart per dataset group.");

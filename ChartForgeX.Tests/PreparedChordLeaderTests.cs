@@ -30,11 +30,11 @@ public sealed class PreparedChordLeaderTests {
             new ChartFlowLink("P0", "N0", "N1", 2), new ChartFlowLink("P1", "N0", "N1", 7),
             new ChartFlowLink("S", "N3", "N3", 5), new ChartFlowLink("Z", "N7", "N2", 0)
         });
-        var chart = Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Directed regional transfers").WithLegend(false).WithDataLabels()
+        var chart = Chart.Create().Size(width, 420).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Directed regional transfers").Legend(false).DataLabels()
             .AddChord("Regional transfers", nodes, flows);
         // Pin the same portable face that exposed the original compact crossing.
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);
         var captions = NumericRadialAxisTextTests.Footprints(prepared.Scene).Where(item => item.Text.Role == "chord-node-label").ToArray();

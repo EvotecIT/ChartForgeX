@@ -16,7 +16,7 @@ public sealed class ChartAxisWindowTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void CrossingPathsRemainPaintedWithoutAnyObservationInsideTheWindow(bool step, bool reversed) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) };
         if (step) chart.AddStepLine("Observed", points, Blue); else chart.AddLine("Observed", points, Blue);
         chart.Series[0].Markers.Enabled = false;
@@ -43,7 +43,7 @@ public sealed class ChartAxisWindowTests {
     [InlineData(false)]
     [InlineData(true)]
     public void BreakBeforePreventsAnInventedCrossingWhileRetainingSourceIdentity(bool step) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(10, 8, breakBefore: true) };
         if (step) chart.AddStepLine("Disconnected", points, Blue); else chart.AddLine("Disconnected", points, Blue);
         chart.Series[0].Markers.Enabled = false;
@@ -56,17 +56,17 @@ public sealed class ChartAxisWindowTests {
 
     [Fact]
     public void ExactWindowClipsEdgeMarkersWithoutAutomaticXExpansionOrPointColorChanges() {
-        var chart = Bare().WithYAxisBounds(0, 10)
+        var chart = Bare().YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 5), new ChartPoint(3, 5), new ChartPoint(7, 5), new ChartPoint(10, 5) }, Blue);
         chart.Options.ClipMarksToPlot = false;
-        chart.Series[0].ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 14; });
+        chart.Series[0].Markers(markers => { markers.Enabled = true; markers.Radius = 14; });
         var second = new ChartColor(220, 60, 20);
-        chart.Series[0].WithPointColor(2, second);
+        chart.Series[0].PointColor(2, second);
         var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(3, 7)));
         var projection = Assert.IsType<ChartAxisProjection>(prepared.XProjection);
         Assert.Equal(3, projection.Minimum); Assert.Equal(7, projection.Maximum);
         Assert.True(projection.FullMinimum < 0); Assert.True(projection.FullMaximum > 10);
-        Assert.Null(chart.Options.XAxis.Minimum); Assert.Null(chart.Options.XAxis.Maximum);
+        Assert.Null(chart.Options.XAxis.Min); Assert.Null(chart.Options.XAxis.Max);
         var markers = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
         Assert.Equal(2, markers.Length); Assert.Equal(Blue, markers[0].Fill); Assert.Equal(second, markers[1].Fill);
         Assert.Equal(projection.PlotBounds.Left, markers[0].Cx); Assert.Equal(projection.PlotBounds.Right, markers[1].Cx);
@@ -75,11 +75,11 @@ public sealed class ChartAxisWindowTests {
 
     [Fact]
     public void FullDataYAndSecondaryYRemainFixedWhileXTicksAreRecomputed() {
-        var chart = Chart.Create().WithLegend(false).WithGrid(false)
+        var chart = Chart.Create().Legend(false).ShowGrid(false)
             .AddLine("Primary", new[] { new ChartPoint(0, -100), new ChartPoint(5, 4), new ChartPoint(10, 100) })
             .AddStepLine("Secondary", new[] { new ChartPoint(0, 1), new ChartPoint(5, 10), new ChartPoint(10, 1000) });
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
-        foreach (var series in chart.Series) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 9; });
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
+        foreach (var series in chart.Series) series.Markers(markers => { markers.Enabled = true; markers.Radius = 9; });
         var full = chart.Prepare(Context());
         var view = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)));
         Assert.Equal(AxisLabels(full, "axis-y-label"), AxisLabels(view, "axis-y-label"));
@@ -92,15 +92,15 @@ public sealed class ChartAxisWindowTests {
             var id = "series-" + series + "-point-1";
             Assert.Equal(NormalizedY(full, id), NormalizedY(view, id), 10);
         }
-        Assert.Null(chart.Options.XAxis.Minimum); Assert.Null(chart.Options.XAxis.Maximum);
-        Assert.Null(chart.Options.YAxis.Minimum); Assert.Null(chart.Options.SecondaryYAxis.Maximum);
+        Assert.Null(chart.Options.XAxis.Min); Assert.Null(chart.Options.XAxis.Max);
+        Assert.Null(chart.Options.YAxis.Min); Assert.Null(chart.Options.SecondaryYAxis.Max);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void PlotRegionsClampToVisibleXAndKeepAuthoredBoundsAndAnnotationFacts(bool reversed) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue)
             .AddPlotRegion(new(new ChartColor(220, 180, 40), xMinimum: 1, xMaximum: 5, yMinimum: 2, yMaximum: 8, opacity: 1, label: "Authored", showLabel: false))
             .AddPlotRegion(new(ChartColor.Black, xMinimum: 8, xMaximum: 9, label: "Outside", showLabel: false))
@@ -127,7 +127,7 @@ public sealed class ChartAxisWindowTests {
 
     [Fact]
     public void PreparationIsDetachedAndOrdinaryPrepareResetsWithoutChangingTheModel() {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(5, 5), new ChartPoint(10, 8) }, Blue);
         chart.Series[0].Markers.Enabled = false;
         var axis = chart.Options.XAxis;
@@ -139,11 +139,11 @@ public sealed class ChartAxisWindowTests {
         Assert.Equal(originalPng, fullWindow.ToPng());
         Assert.Equal(full.XProjection.PlotBounds, fullWindow.XProjection!.PlotBounds);
         Assert.Same(axis, chart.Options.XAxis);
-        Assert.Equal(0, chart.Options.XAxis.Minimum); Assert.Equal(10, chart.Options.XAxis.Maximum);
+        Assert.Equal(0, chart.Options.XAxis.Min); Assert.Equal(10, chart.Options.XAxis.Max);
         Assert.Equal(3, chart.Series[0].Points.Count);
         var projection = view.XProjection!; var captured = projection.Project(5);
-        chart.Options.XAxis.Reversed = true; chart.WithXAxisBounds(-100, 100).WithYAxisBounds(-100, 100);
-        chart.Series[0].Points.Clear(); chart.WithTitle("Changed");
+        chart.Options.XAxis.Reversed = true; chart.XAxis(x => x.Bounds(-100, 100)).YAxis(y => y.Bounds(-100, 100));
+        chart.Series[0].Points.Clear(); chart.Title("Changed");
         Assert.Equal(captured, projection.Project(5)); Assert.Equal(viewSvg, view.ToSvg()); Assert.Equal(viewPng, view.ToPng());
         Assert.Equal(originalSvg, full.ToSvg()); Assert.Equal(originalPng, full.ToPng());
     }
@@ -158,7 +158,7 @@ public sealed class ChartAxisWindowTests {
     [InlineData(true, 1, 2d)]
     [InlineData(true, 8, 9d)]
     public void OffWindowReferencesRetainSourceFactsWithoutGuideOrCaptionPaint(bool reversed, double value, double? end) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue);
         chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
         var window = new ChartAxisWindow(3, 7);
@@ -182,7 +182,7 @@ public sealed class ChartAxisWindowTests {
     [InlineData(true, 1, 5)]
     [InlineData(true, 5, 9)]
     public void PartiallyVisibleReferenceBandsUseTheirVisibleIntersection(bool reversed, double start, double end) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue)
             .AddVerticalBand(start, end, "Reference");
         chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
@@ -198,7 +198,7 @@ public sealed class ChartAxisWindowTests {
 
     [Fact]
     public void StatefulAxisFormatterResultsAreSharedByFullLayoutVisibleTicksAndPaint() {
-        var chart = Chart.Create().WithLegend(false).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
+        var chart = Chart.Create().Legend(false).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
         var calls = new Dictionary<double, int>();
         chart.Options.XAxis.LabelFormatter = value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
@@ -221,7 +221,7 @@ public sealed class ChartAxisWindowTests {
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "axis-x-label");
     }
 
-    private static Chart Bare() => Chart.Create().WithSize(420, 280).WithAxes(false).WithGrid(false).WithLegend(false);
+    private static Chart Bare() => Chart.Create().Size(420, 280).Axes(false).ShowGrid(false).Legend(false);
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(420, 280)),
         VisualTheme.Graphite(), frame: new VisualFrame(showLegend: false));
     private static string?[] AxisLabels(PreparedVisual prepared, string role) => prepared.Regions.Where(region => region.Role == role).Select(region => region.Label).ToArray();

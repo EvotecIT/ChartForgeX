@@ -77,7 +77,7 @@ internal static partial class VisualSpecialtyCompiler {
 
             void Add(int index, string component, string text, ChartValueLabelOptions policy, bool inside, bool secondary = false) {
                 if (!policy.Visible) return;
-                var inherited = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+                var inherited = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
                 var placement = policy.Placement ?? inherited;
                 if (placement == ChartDataLabelPlacement.Auto) placement = inside && !_cone ? ChartDataLabelPlacement.Inside
                     : Horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;

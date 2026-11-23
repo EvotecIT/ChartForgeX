@@ -10,10 +10,10 @@ namespace ChartForgeX.Tests;
 public sealed class WaterfallObservationLifecycleTests {
     [Fact]
     public void UpdatesPreserveAuthoredIdentityAndPresentationAcrossCheckpointChanges() {
-        var series = Create().WithObservationId(1, new ChartObservationId("stage"))
-            .WithObservationId(2, new ChartObservationId("late-change"))
-            .WithPointColor(1, "#B34C89").WithPointFillPattern(1, ChartFillPattern.Crosshatch)
-            .WithPointLabel(1, "Retained caption").WithState(ChartSeriesState.Warning);
+        var series = Create().ObservationId(1, new ChartObservationId("stage"))
+            .ObservationId(2, new ChartObservationId("late-change"))
+            .PointColor(1, "#B34C89").PointFillPattern(1, ChartFillPattern.Crosshatch)
+            .PointLabel(1, "Retained caption").StateRole(ChartSeriesState.Warning);
         var chart = Chart.Create().AddSeries(series);
         var prepared = chart.Prepare(Context()); var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         series.UpdateWaterfallItem(1, ChartWaterfallItem.Delta(2, -4));
@@ -32,7 +32,7 @@ public sealed class WaterfallObservationLifecycleTests {
 
     [Fact]
     public void FailedUpdatesAndReplacementsLeaveTheCompleteSourceAndMetadataIntact() {
-        var series = Create().WithObservationId(2, new ChartObservationId("last")).WithPointColor(2, "#B34C89");
+        var series = Create().ObservationId(2, new ChartObservationId("last")).PointColor(2, "#B34C89");
         var chart = Chart.Create().AddSeries(series); var before = chart.Prepare(Context()).ToSvg();
         Assert.Throws<ArgumentException>(() => series.UpdateWaterfallItem(2, ChartWaterfallItem.Total(1)));
         Assert.Throws<ArgumentException>(() => series.UpdateWaterfallItem(1, ChartWaterfallItem.OpeningBalance(2, 50)));
@@ -49,10 +49,10 @@ public sealed class WaterfallObservationLifecycleTests {
 
     [Fact]
     public void ReplacementClearsObservationOverridesRetainsSeriesSettingsAndSnapshotsInput() {
-        var series = Create().WithObservationId(0, new ChartObservationId("old"))
-            .WithPointLabel(0, "Old label").WithPointColor(0, "#B34C89").WithPointFillPattern(0, ChartFillPattern.Crosshatch)
-            .ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFFFF"))
-            .WithName("Localized movement").WithState(ChartSeriesState.Warning).UseSecondaryValueAxis();
+        var series = Create().ObservationId(0, new ChartObservationId("old"))
+            .PointLabel(0, "Old label").PointColor(0, "#B34C89").PointFillPattern(0, ChartFillPattern.Crosshatch)
+            .PointDataLabelStyle(0, style => style.Color(ChartColor.FromHex("#FFFFFF")))
+            .Name("Localized movement").StateRole(ChartSeriesState.Warning).SecondaryAxis();
         series.Color = ChartColor.FromHex("#123456");
         var input = new[] { ChartWaterfallItem.OpeningBalance(5, 12), ChartWaterfallItem.Total(6) };
         series.ReplaceWaterfallItems(input); input[0] = ChartWaterfallItem.Delta(5, 999);
@@ -78,7 +78,7 @@ public sealed class WaterfallObservationLifecycleTests {
         series.ReplaceWaterfallItems(new[] { ChartWaterfallItem.Delta(1, 20) });
         var mark = Assert.Single(Marks(chart));
         Assert.Equal("delta", (string?)mark.Attribute("data-cfx-waterfall-kind"));
-        series.WithObservationId(0, new ChartObservationId("filled")).ReplaceWaterfallItems(Array.Empty<ChartWaterfallItem>());
+        series.ObservationId(0, new ChartObservationId("filled")).ReplaceWaterfallItems(Array.Empty<ChartWaterfallItem>());
         Assert.Empty(series.ObservationIds); Assert.Empty(Marks(chart)); Assert.True(series.Points.IsReadOnly);
         series.ReplaceWaterfallItems(new[] { ChartWaterfallItem.Total(2) });
         Assert.Equal(1, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
@@ -88,7 +88,7 @@ public sealed class WaterfallObservationLifecycleTests {
     [Fact]
     public void ReplacingNumericInputSwitchesOwnershipOnlyAfterSuccessfulValidation() {
         var series = new ChartSeries(new ChartSeriesId("numeric"), "Numeric", ChartSeriesKind.Waterfall, new[] { new ChartPoint(1, 10) })
-            .WithObservationId(0, new ChartObservationId("numeric-source"));
+            .ObservationId(0, new ChartObservationId("numeric-source"));
         Assert.Throws<ArgumentException>(() => series.ReplaceWaterfallItems(new[] { ChartWaterfallItem.Total(1), ChartWaterfallItem.Delta(1, 2) }));
         Assert.False(series.Points.IsReadOnly); Assert.Single(series.Points); Assert.Single(series.ObservationIds);
         series.ReplaceWaterfallItems(Array.Empty<ChartWaterfallItem>());
@@ -101,10 +101,10 @@ public sealed class WaterfallObservationLifecycleTests {
 
     [Fact]
     public void AuthoredItemIdsRemainDistinctFromCompactNumericContributorOrdinalsInExportsAndLegends() {
-        var series = Create().WithObservationId(0, new ChartObservationId("first"))
-            .WithObservationId(1, new ChartObservationId("checkpoint"))
-            .WithObservationId(2, new ChartObservationId("last"));
-        var chart = Chart.Create().WithPointLegend().AddSeries(series);
+        var series = Create().ObservationId(0, new ChartObservationId("first"))
+            .ObservationId(1, new ChartObservationId("checkpoint"))
+            .ObservationId(2, new ChartObservationId("last"));
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).AddSeries(series);
         var marks = Marks(chart);
         Assert.Equal(new[] { "first", "checkpoint", "last" }, marks.Select(mark => (string?)mark.Attribute("data-cfx-observation-id")));
         Assert.Equal(new[] { "0", "1", "2" }, marks.Select(mark => (string?)mark.Attribute("data-cfx-observation-index")));

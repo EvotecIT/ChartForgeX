@@ -126,7 +126,7 @@ public sealed class BlockHierarchyDepthTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AncestorConnectorsTerminateOnTheFacingChildSurfaceRatherThanCrossingItsInterior(bool reverse) {
-        var block = BlockLayoutBlock.Create().WithSize(640, 360).WithColumns(1).AddComposite("parent", columns: 1)
+        var block = BlockLayoutBlock.Create().Size(640, 360).Columns(1).AddComposite("parent", columns: 1)
             .AddItem("child", "Child", "parent", shape: BlockLayoutShape.Circle).AddEdge(reverse ? "child" : "parent", reverse ? "parent" : "child");
         var svg = XDocument.Parse(block.ToSvg()); var cells = Cells(svg); var child = cells["child"];
         var edge = Assert.Single(svg.Descendants(), node => Role(node) == "block-layout-edge");
@@ -142,7 +142,7 @@ public sealed class BlockHierarchyDepthTests {
     [InlineData(390, false)]
     [InlineData(1100, true)]
     public void NestedCircleConnectorsRetainTheAnalyticPaintedBoundary(int width, bool reverse) {
-        var block = BlockLayoutBlock.Create().WithSize(width, 420).WithColumns(2)
+        var block = BlockLayoutBlock.Create().Size(width, 420).Columns(2)
             .AddComposite("group", columns: 1).AddItem("round", "Round", "group", shape: BlockLayoutShape.Circle)
             .AddItem("outside", "Outside", shape: BlockLayoutShape.Hexagon).AddEdge(reverse ? "outside" : "round", reverse ? "round" : "outside");
         var svg = XDocument.Parse(block.ToSvg()); var circle = Cells(svg)["round"];
@@ -209,22 +209,22 @@ public sealed class BlockHierarchyDepthTests {
 
     [Fact]
     public void UnsupportedCaptionDecorationIsRejectedRatherThanSilentlyPaintedAsPlainText() {
-        var block = BlockLayoutBlock.Create().AddItem("a", "A"); block.Items[0].TextStyle.WithUnderline();
+        var block = BlockLayoutBlock.Create().AddItem("a", "A"); block.Items[0].TextStyle.Underline();
         Assert.Throws<NotSupportedException>(() => block.ToSvg());
     }
 
     [Fact]
     public void ItemCloneDetachesTypographyAndMetadataWhileRetainingImmutableStroke() {
         var item = new BlockLayoutItem("a", "A") { ParentId = "parent", Fill = ChartColor.FromHex("#cceeff"), Stroke = new ChartStrokeStyle(width: 2) };
-        item.TextStyle.WithFontSize(18); item.Metadata["source"] = "original"; var copy = item.Clone();
+        item.TextStyle.FontSize(18); item.Metadata["source"] = "original"; var copy = item.Clone();
         item.TextStyle.FontSize = 90; item.Metadata["source"] = "changed";
         Assert.Equal(18d, copy.TextStyle.FontSize); Assert.Equal("original", copy.Metadata["source"]); Assert.Same(item.Stroke, copy.Stroke); Assert.Equal("parent", copy.ParentId);
     }
 
     [Fact]
     public void EmptyParentAndOmittedOptionsKeepTheIncumbentFlatSvgAndPngBytes() {
-        var first = BlockLayoutBlock.Create().WithSize(640, 320).WithColumns(2).AddItem("a", "A").AddItem("b", "B", shape: BlockLayoutShape.Circle).AddEdge("a", "b");
-        var second = BlockLayoutBlock.Create().WithSize(640, 320).WithColumns(2).AddItem("a", "A", "").AddItem("b", "B", "", shape: BlockLayoutShape.Circle).AddEdge("a", "b");
+        var first = BlockLayoutBlock.Create().Size(640, 320).Columns(2).AddItem("a", "A").AddItem("b", "B", shape: BlockLayoutShape.Circle).AddEdge("a", "b");
+        var second = BlockLayoutBlock.Create().Size(640, 320).Columns(2).AddItem("a", "A", "").AddItem("b", "B", "", shape: BlockLayoutShape.Circle).AddEdge("a", "b");
         second.Items[0].TextStyle.FontSize = null;
         Assert.Equal(first.RenderSvg("same-default"), second.RenderSvg("same-default")); Assert.Equal(first.ToPng(), second.ToPng());
     }
@@ -232,7 +232,7 @@ public sealed class BlockHierarchyDepthTests {
     internal static BlockLayoutBlock Parsed(int width, bool dark) {
         var parsed = new MermaidParser().ParseBlock(Source); Assert.False(parsed.HasErrors);
         return parsed.Document!.ToBlockLayoutBlock(new MermaidBlockRenderOptions { Width = width, Height = 620, Title = "Source blocks" })
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
     }
     internal static Dictionary<string, XElement> Cells(XDocument document) => document.Descendants()
         .Where(node => Role(node) is "block-layout-composite" or "block-layout-item").ToDictionary(node => node.Attribute("data-block-id")!.Value, StringComparer.Ordinal);

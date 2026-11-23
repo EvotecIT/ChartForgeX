@@ -11,9 +11,9 @@ public static class SunburstBranchHighlightExamples {
     /// <param name="graphite">Whether to use the Graphite palette.</param>
     /// <returns>The chart model.</returns>
     public static Chart CreateChart(int width = 800, bool dark = false, bool graphite = true) {
-        var chart = Chart.Create().WithSize(width, width < 500 ? 360 : 460).WithDataLabels()
-            .WithTitle("Work allocation").WithSubtitle("Hover or focus a team to follow its branch; click to pin a reading")
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().Size(width, width < 500 ? 360 : 460).DataLabels()
+            .Title("Work allocation").Subtitle("Hover or focus a team to follow its branch; click to pin a reading")
+            .Theme(graphite ? VisualTheme.Graphite() : VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation"), "Allocated work", new[] {
                 new ChartHierarchyItem("all", "All teams"),
                 new ChartHierarchyItem("engineering", "Engineering", "all", colorValue: 12),
@@ -23,11 +23,11 @@ public static class SunburstBranchHighlightExamples {
                 new ChartHierarchyItem("operations-support", "Support", "operations", 40),
                 new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
             }));
-        chart.ConfigureSunburst(options => {
+        chart.Sunburst(options => {
             options.ColorDimension.Name = "Change (%)";
             options.ColorScale = ChartColorScale.Diverging(ChartColor.FromHex("#8b7bd4"), ChartColor.FromHex("#b8b8b8"), ChartColor.FromHex("#dd8e59"), 0).WithValueRange(-10, 15);
         });
-        chart.Series[0].WithNodeState("engineering-support", ChartSeriesState.Warning).WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+        chart.Series[0].NodeState("engineering-support", ChartSeriesState.Warning).PointFillPattern(4, ChartFillPattern.DiagonalForward);
         return chart;
     }
 

@@ -19,13 +19,13 @@ public sealed class CartesianLabelLaneTests {
     [InlineData(true, false, -1)]
     [InlineData(true, true, -1)]
     public void VisibleAxesStayOutsideSignedAndReversedStackTotalLanes(bool horizontal, bool reversed, int sign) {
-        var chart = Frame().WithStackedBars().WithStackTotals().WithDataLabels(false);
+        var chart = Frame().Bars(b => b.Stacked().ShowTotals()).DataLabels(false);
         var first = Enumerable.Range(1, 4).Select(x => new ChartPoint(x, 10 * sign));
         var second = Enumerable.Range(1, 4).Select(x => new ChartPoint(x, 20 * sign));
         if (horizontal) chart.AddHorizontalBar("Completed", first).AddHorizontalBar("Remaining", second);
         else chart.AddBar("Completed", first).AddBar("Remaining", second);
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis)
-            .WithBounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).WithReversal(reversed);
+            .Bounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).Reversed(reversed);
         var prepared = Prepare(chart);
         AssertLanes(prepared, "stack-total-label", 4);
         var expected = (30 * sign).ToString(CultureInfo.InvariantCulture);
@@ -44,9 +44,9 @@ public sealed class CartesianLabelLaneTests {
     [InlineData(360)]
     [InlineData(640)]
     public void PublishedNormalizedGroupedRecipeKeepsAllTotalsAndCategoryNames(int width) {
-        var chart = BarRecipe.Create("compact-options").WithSize(width, 360)
-            .WithTitle("Completed orders").WithSubtitle("Normalized grouped stacks")
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = BarRecipe.Create("compact-options").Size(width, 360)
+            .Title("Completed orders").Subtitle("Normalized grouped stacks")
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = Prepare(chart);
         AssertLanes(prepared, "stack-total-label", 8);
         Assert.All(Totals(prepared), total => Assert.Equal("100", Text(total)));
@@ -62,17 +62,17 @@ public sealed class CartesianLabelLaneTests {
 
     [Fact]
     public void GroupedCategoriesSecondaryAxisAndAnnotationsKeepIndependentCaptionLanes() {
-        var chart = Frame().WithSize(640, 380).WithStackedBars().WithStackTotals().WithDataLabels(false)
-            .WithSecondaryYAxis("Secondary")
-            .WithXLabels(Enumerable.Range(1, 4).Select(x => new ChartAxisLabel(x, "Region " + x, x <= 2 ? "First half" : "Second half")));
+        var chart = Frame().Size(640, 380).Bars(b => b.Stacked().ShowTotals()).DataLabels(false)
+            .SecondaryYAxis(s => s.Title("Secondary"))
+            .XLabels(Enumerable.Range(1, 4).Select(x => new ChartAxisLabel(x, "Region " + x, x <= 2 ? "First half" : "Second half")));
         for (var index = 0; index < 4; index++) {
             var series = ChartSeries.CreateBar(new ChartSeriesId("measure-" + index), "Measure " + index,
                 Enumerable.Range(1, 4).Select(x => new ChartPoint(x, index % 2 == 0 ? 10 : 20)));
-            if (index >= 2) series.UseSecondaryValueAxis();
+            if (index >= 2) series.SecondaryAxis();
             chart.AddSeries(series);
         }
-        chart.Options.YAxis.WithBounds(0, 30);
-        chart.Options.SecondaryYAxis.WithBounds(0, 30).WithReversal();
+        chart.Options.YAxis.Bounds(0, 30);
+        chart.Options.SecondaryYAxis.Bounds(0, 30).Reversed();
         chart.AddHorizontalLine(15, "Capacity").AddHorizontalBand(5, 8, "Review window");
         var prepared = Prepare(chart);
         AssertLanes(prepared, "stack-total-label", 8);
@@ -87,9 +87,9 @@ public sealed class CartesianLabelLaneTests {
     [InlineData(false, -1)]
     [InlineData(true, 1)]
     public void OrdinaryLowerBarCaptionsDoNotUseTheCategoryCaptionStrip(bool reversed, int sign) {
-        var chart = Frame().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Below)
+        var chart = Frame().DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Below))
             .AddBar("Completed", Enumerable.Range(1, 4).Select(x => new ChartPoint(x, 30 * sign)));
-        chart.Options.YAxis.WithBounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).WithReversal(reversed);
+        chart.Options.YAxis.Bounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).Reversed(reversed);
         var prepared = Prepare(chart);
         AssertLanes(prepared, "data-label", 4);
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
@@ -99,9 +99,9 @@ public sealed class CartesianLabelLaneTests {
         });
     }
 
-    private static Chart Frame() => Chart.Create().WithSize(360, 360).WithLegend(false).WithHeader(false)
-        .WithXAxis("Region").WithYAxis("Orders").WithXLabels("North", "South", "East", "West")
-        .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+    private static Chart Frame() => Chart.Create().Size(360, 360).Legend(false).ShowHeader(false)
+        .XAxis(x => x.Title("Region")).YAxis(y => y.Title("Orders")).XLabels("North", "South", "East", "West")
+        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Totals(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "stack-total-label").ToArray();

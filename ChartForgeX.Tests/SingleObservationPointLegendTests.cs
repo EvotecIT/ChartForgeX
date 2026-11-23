@@ -21,8 +21,8 @@ public sealed class SingleObservationPointLegendTests {
         };
         Assert.Equal(1, series.ObservationCount);
         Assert.Equal(1, series.SourcePointCount);
-        series.WithObservationId(0, new ChartObservationId("north"));
-        var chart = Chart.Create().WithSize(640, 400).WithXLabels("North").WithPointLegend().WithLegend().AddSeries(series);
+        series.ObservationId(0, new ChartObservationId("north"));
+        var chart = Chart.Create().Size(640, 400).XLabels("North").Legend(l => l.ShowPoints()).Legend().AddSeries(series);
         var prepared = chart.Prepare(new VisualRenderContext());
         var nodes = XDocument.Parse(prepared.ToSvg()).Descendants().ToArray();
         var legend = Assert.Single(nodes, node => (string?)node.Attribute("data-cfx-role") == "legend-entry");

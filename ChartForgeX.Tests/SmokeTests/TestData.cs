@@ -15,13 +15,13 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static Chart SampleChart() {
         return Chart.Create()
-            .WithTitle("A < B & C")
-            .WithSubtitle("No JS, no CDN")
-            .WithXAxis("Run")
-            .WithYAxis("Checks")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(640, 360)
-            .WithXLabels("Mon", "Tue", "Wed")
+            .Title("A < B & C")
+            .Subtitle("No JS, no CDN")
+            .XAxis(x => x.Title("Run"))
+            .YAxis(y => y.Title("Checks"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(640, 360)
+            .XLabels("Mon", "Tue", "Wed")
             .AddSmoothArea("Passed", Points(100, 180, 260))
             .AddSmoothLine("Failed", Points(20, 14, 9), ChartColor.FromRgb(248, 113, 113));
     }

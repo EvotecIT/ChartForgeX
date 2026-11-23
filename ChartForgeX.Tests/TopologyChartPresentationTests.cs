@@ -12,7 +12,7 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void DefaultRenderOptions_AreUsedWhenACallPassesNone() {
-        var chart = Chart().WithRenderOptions(Tiles);
+        var chart = Chart().DefaultRenderOptions(Tiles);
 
         Assert.Equal(Chart().ToSvg(Tiles), chart.ToSvg());
         Assert.Equal(Chart().ToPng(Tiles), chart.ToPng());
@@ -24,7 +24,7 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void DefaultRenderOptions_ReachArtifactInterchangeAndInteractiveHtml() {
-        var chart = Chart().WithRenderOptions(Tiles);
+        var chart = Chart().DefaultRenderOptions(Tiles);
 
         Assert.Equal(Chart().ToVisualArtifact().ToSvg(new VisualArtifactRenderOptions { Topology = Tiles }), chart.ToVisualArtifact().ToSvg());
         var fitted = Chart().ToVisualArtifact();
@@ -43,7 +43,7 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void DefaultRenderOptions_AreReplacedByOptionsPassedToACall() {
-        var chart = Chart().WithRenderOptions(Tiles);
+        var chart = Chart().DefaultRenderOptions(Tiles);
         var cards = new TopologyRenderOptions();
         Assert.Equal(Chart().ToSvg(cards), chart.ToSvg(cards));
     }
@@ -51,12 +51,12 @@ public sealed class TopologyChartPresentationTests {
     [Fact]
     public void WithRenderOptions_KeepsItsOwnCopy() {
         var options = Tiles.Clone();
-        var chart = Chart().WithRenderOptions(options);
+        var chart = Chart().DefaultRenderOptions(options);
         var before = chart.ToSvg();
         options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
         options.ReadableDenseLayout = false;
         Assert.Equal(before, chart.ToSvg());
-        Assert.Equal(Chart().ToSvg(), chart.WithRenderOptions(null).ToSvg());
+        Assert.Equal(Chart().ToSvg(), chart.DefaultRenderOptions((TopologyRenderOptions?)null).ToSvg());
     }
 
     [Theory]
@@ -66,7 +66,7 @@ public sealed class TopologyChartPresentationTests {
     [InlineData(TopologyEdgeLineStyle.Dashed, TopologyEdgeLineStyle.Solid, "8 5")]
     [InlineData(TopologyEdgeLineStyle.Solid, TopologyEdgeLineStyle.Dashed, "none")]
     public void LegendEdgeSample_FollowsTheEdgesOfItsKind(TopologyEdgeLineStyle itemStyle, TopologyEdgeLineStyle edgeStyle, string expectedDash) {
-        var chart = Chart().WithLegend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication, lineStyle: itemStyle));
+        var chart = Chart().Legend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication, lineStyle: itemStyle));
         foreach (var edge in chart.Edges) edge.LineStyle = edgeStyle;
 
         var sample = XDocument.Parse(chart.ToSvg()).Descendants()
@@ -78,8 +78,8 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void LegendEdgeSample_IsDashedWhenEveryEdgeHasADashPattern() {
-        var chart = Chart().WithLegend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));
-        foreach (var edge in chart.Edges) chart.WithEdgeStroke(edge.Id, dashPattern: new[] { 6.0, 3.0 });
+        var chart = Chart().Legend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));
+        foreach (var edge in chart.Edges) chart.EdgeStroke(edge.Id, dashPattern: new[] { 6.0, 3.0 });
 
         var sample = XDocument.Parse(chart.ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-legend-kind") == "edge")
@@ -92,8 +92,8 @@ public sealed class TopologyChartPresentationTests {
     [InlineData(.0001, .0001)]
     [InlineData(.123456789, 1e-20)]
     public void CustomEdgeDashesPreserveAcceptedNumericValuesAcrossExports(double dash, double gap) {
-        var chart = Chart().WithLegend(null);
-        foreach (var edge in chart.Edges) chart.WithEdgeStroke(edge.Id, dashPattern: new[] { dash, gap });
+        var chart = Chart().Legend((TopologyLegend?)null);
+        foreach (var edge in chart.Edges) chart.EdgeStroke(edge.Id, dashPattern: new[] { dash, gap });
         var patterns = XDocument.Parse(chart.ToSvg()).Descendants().Attributes("stroke-dasharray").ToArray();
         Assert.NotEmpty(patterns);
         Assert.All(patterns, pattern => Assert.Equal(new[] { dash, gap }, pattern.Value.Split(' ')
@@ -103,7 +103,7 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void LegendEdgeSample_IsSolidWhenEdgesOfTheKindDiffer() {
-        var chart = Chart().WithLegend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));
+        var chart = Chart().Legend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));
         chart.Edges[0].Status = TopologyHealthStatus.Critical;
 
         var sample = XDocument.Parse(chart.ToSvg()).Descendants()
@@ -114,7 +114,7 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void ReadableTileCaption_WrapsAtSeparatorsBeforeItIsShortened() {
-        var chart = TopologyChart.Create().WithId("captions").WithViewport(520, 260, 24).WithLegend(null)
+        var chart = TopologyChart.Create().Id("captions").Viewport(new TopologyViewport(520, 260, 24)).Legend((TopologyLegend?)null)
             .AddNode("a", "REGION-SouthEastAsia", 80, 80, width: 64, height: 40)
             .AddNode("b", "Short", 300, 80, width: 64, height: 40);
 
@@ -133,7 +133,7 @@ public sealed class TopologyChartPresentationTests {
 
     [Fact]
     public void ReadableTileCaption_ShortensOnlyTheLastAllowedLine() {
-        var chart = TopologyChart.Create().WithId("long-caption").WithViewport(520, 260, 24).WithLegend(null)
+        var chart = TopologyChart.Create().Id("long-caption").Viewport(new TopologyViewport(520, 260, 24)).Legend((TopologyLegend?)null)
             .AddNode("a", "Alpha-Bravo-Charlie-Delta-Echo-Foxtrot-Golf-Hotel", 200, 80, width: 64, height: 40);
         chart.Nodes[0].MaximumLabelCharacters = 64;
 
@@ -148,7 +148,7 @@ public sealed class TopologyChartPresentationTests {
     [InlineData(2)]
     [InlineData(3)]
     public void ReadableTileCaption_OverTheCharacterLimit_EndsWithOneEllipsisOnTheLastLine(int maxLines) {
-        var chart = TopologyChart.Create().WithId("limit-caption").WithViewport(640, 280, 24).WithLegend(null)
+        var chart = TopologyChart.Create().Id("limit-caption").Viewport(new TopologyViewport(640, 280, 24)).Legend((TopologyLegend?)null)
             .AddNode("a", "Alpha.Bravo.Charlie.Delta.Echo.Foxtrot.Golf.Hotel.India.Juliet.Kilo.Lima.Mike", 240, 80, width: 150, height: 40);
         chart.Nodes[0].MaximumLabelCharacters = 10;
         var options = Tiles.Clone();
@@ -169,9 +169,9 @@ public sealed class TopologyChartPresentationTests {
             .ToArray();
     }
 
-    private static TopologyChart Chart() => TopologyChart.Create().WithId("presentation").WithTitle("Presentation").WithViewport(720, 420, 24)
-        .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-        .WithLegend(TopologyLegend.Create("Legend").AddStatus("Healthy", TopologyHealthStatus.Healthy))
+    private static TopologyChart Chart() => TopologyChart.Create().Id("presentation").Title("Presentation").Viewport(new TopologyViewport(720, 420, 24))
+        .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
+        .Legend(TopologyLegend.Create("Legend").AddStatus("Healthy", TopologyHealthStatus.Healthy))
         .AddAutoGroup("left", "Left", TopologyHealthStatus.Healthy)
         .AddAutoGroup("right", "Right", TopologyHealthStatus.Healthy)
         .AddAutoNode("a", "Server A", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "left", width: 100, height: 40)

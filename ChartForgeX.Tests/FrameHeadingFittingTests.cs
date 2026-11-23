@@ -15,9 +15,9 @@ public sealed class FrameHeadingFittingTests {
     public async Task ChangingOnlyDataLabelSizePreservesOrdinaryHeadingRoles(int size) {
         var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var chart = Chart.Create().WithTheme(theme).WithSize(520, 260)
-            .WithTitle("Average KPI").WithSubtitle("Company standard").WithLegend(false)
-            .WithAxes(false).WithGrid(false).WithPadding(32, 80, 32, 26)
+        var chart = Chart.Create().Theme(theme).Size(520, 260)
+            .Title("Average KPI").Subtitle("Company standard").Legend(false)
+            .Axes(false).ShowGrid(false).Padding(32, 80, 32, 26)
             .AddBar("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var texts = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Equal(theme.Typography.TitleSize, (double)Assert.Single(texts, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
@@ -29,9 +29,9 @@ public sealed class FrameHeadingFittingTests {
     [Fact]
     public async Task LargeCompactTitleRetainsItsOrdinarySubtitle() {
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithTheme(theme).WithSize(520, 260)
-            .WithTitle("Average KPI").WithSubtitle("Company standard").WithLegend(false)
-            .ConfigureTitleStyle(style => style.WithFontSize(64))
+        var chart = Chart.Create().Theme(theme).Size(520, 260)
+            .Title("Average KPI").Subtitle("Company standard").Legend(false)
+            .TitleStyle(style => style.FontSize(64))
             .AddLine("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var texts = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Equal(64, (double)Assert.Single(texts, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
@@ -45,10 +45,10 @@ public sealed class FrameHeadingFittingTests {
     [InlineData(300, 210, 34)]
     public async Task CompactDashboardHeadingsRetainTheThemesOrdinaryRoleSizes(int width, int height, int topPadding) {
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithTheme(theme).WithSize(width, height)
-            .WithTitle("Average KPI").WithSubtitle("Company standard")
-            .WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithPadding(24, topPadding, 24, 26)
+        var chart = Chart.Create().Theme(theme).Size(width, height)
+            .Title("Average KPI").Subtitle("Company standard")
+            .Legend(false).Axes(false).ShowGrid(false)
+            .Padding(24, topPadding, 24, 26)
             .AddBar("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var headings = XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(element => element.Name.LocalName == "text").ToArray();
@@ -61,9 +61,9 @@ public sealed class FrameHeadingFittingTests {
     [Fact]
     public void OrdinaryLongTitlesRetainTheirSizeAndDoNotShrinkAShortSubtitle() {
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithTheme(theme).WithSize(320, 700)
-            .WithTitle("An ordinary report heading that wraps across the available width")
-            .WithSubtitle("Short subtitle").WithLegend(false)
+        var chart = Chart.Create().Theme(theme).Size(320, 700)
+            .Title("An ordinary report heading that wraps across the available width")
+            .Subtitle("Short subtitle").Legend(false)
             .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         var document = XDocument.Parse(chart.ToSvg());
         var headings = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "frame-heading")
@@ -77,8 +77,8 @@ public sealed class FrameHeadingFittingTests {
 
     [Fact]
     public void OversizedTitleWidthFittingPreservesAnOrdinarySubtitle() {
-        var chart = Chart.Create().WithSize(320, 1200).WithTitle("Oversized heading").WithSubtitle("Short subtitle")
-            .ConfigureTitleStyle(style => style.WithFontSize(256)).WithLegend(false)
+        var chart = Chart.Create().Size(320, 1200).Title("Oversized heading").Subtitle("Short subtitle")
+            .TitleStyle(style => style.FontSize(256)).Legend(false)
             .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);

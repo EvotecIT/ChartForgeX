@@ -13,10 +13,10 @@ public sealed class StaticFragmentBrowserTests {
     [InlineData(true)]
     public async Task ChartAndGridFragmentsScaleInsideCompactHostsWithoutPageCss(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Capacity")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().Size(640, 360).Title("Capacity")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddLine("Used", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3) });
-        var grid = ChartGrid.Create().WithColumns(2).WithPanelSize(320, 200).Add(chart).Add(chart);
+        var grid = ChartGrid.Create().Columns(2).PanelSize(320, 200).Add(chart).Add(chart);
         var html = "<!doctype html><html><body style=\"margin:0;background:" + chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background.ToCss() + "\">"
             + "<div id=\"chart-host\" style=\"width:280px\">" + chart.ToHtmlFragment("compact-chart") + "</div>"
             + "<div id=\"grid-host\" style=\"width:280px\">" + grid.ToHtmlFragment("compact-grid") + "</div></body></html>";

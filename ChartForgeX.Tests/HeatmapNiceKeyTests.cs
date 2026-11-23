@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class HeatmapNiceKeyTests {
     [Fact]
     public void ZeroAndMissingEntriesStayInsideThePlotWidth() {
-        var chart = Chart.Create().WithSize(390, 300).AddHeatmapRow("Events", new double?[] { 0, null });
+        var chart = Chart.Create().Size(390, 300).AddHeatmapRow("Events", new double?[] { 0, null });
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var right = prepared.Regions.Single(region => region.Role == "matrix-plot").Bounds.Right;
@@ -25,7 +25,7 @@ public sealed class HeatmapNiceKeyTests {
     [InlineData(800, ThemeMode.Light)]
     [InlineData(800, ThemeMode.Dark)]
     public void DefaultKeyUsesNamedRoundedStepsWithTrueEndpointsAndMeasuredGaps(int width, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(width, 440).WithThemeMode(mode).WithDataLabels(false)
+        var chart = Chart.Create().Size(width, 440).ThemeMode(mode).DataLabels(false)
             .AddHeatmapRow("Service score", new[] { 41d, 55, 70, 92 });
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -46,16 +46,16 @@ public sealed class HeatmapNiceKeyTests {
             labels[index].LineLeft(labels[index].Text.Lines[0]) - labels[index - 1].LineLeft(labels[index - 1].Text.Lines[0])
                 - labels[index - 1].Text.Metrics.Width >= 3.9, "Key captions need a visible gap.");
         Assert.NotEmpty(prepared.ToPng());
-        chart.WithValueFormat(ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("de-DE")));
+        chart.ValueFormat(ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("de-DE")));
         var authored = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(authored.Regions, region => region.Role == "heatmap-scale-step" && region.Label == "50,0 °C");
-        chart.WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")));
+        chart.Heatmap(h => h.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB"))));
         var configured = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().ToArray();
         Assert.Contains(configured, node => node.Role == "heatmap-scale-title" && node.Text.Lines.Single().Text == "Service score");
         Assert.Contains(configured, node => node.Role == "heatmap-scale-label" && node.Text.Lines.Single().Text == "70,0 °C");
 
-        chart.WithValueFormat(ChartValueFormat.Number("0 '°C'", CultureInfo.InvariantCulture))
-            .WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")).WithValueRange(-30, 55));
+        chart.ValueFormat(ChartValueFormat.Number("0 '°C'", CultureInfo.InvariantCulture))
+            .Heatmap(h => h.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DAE8F8"), ChartColor.FromHex("#1C5CAB")).WithValueRange(-30, 55)));
         var temperature = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var bands = temperature.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
         Assert.Equal(new[] { "-30 °C–-20 °C", "-20 °C–0 °C", "0 °C–20 °C", "20 °C–40 °C", "40 °C–55 °C" }, bands.Select(region => region.Label));

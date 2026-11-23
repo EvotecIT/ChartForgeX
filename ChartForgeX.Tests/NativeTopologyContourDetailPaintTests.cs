@@ -42,7 +42,7 @@ public sealed class NativeTopologyContourDetailPaintTests {
         Assert.Equal(before.ToSvg(), after.ToSvg()); Assert.Equal(before.ToPng(), after.ToPng()); Assert.Equal(before.ToArtifact().ToInterchangeJson(), after.ToArtifact().ToInterchangeJson());
     }
     private static TopologyChart Source(TopologyNodeShape shape, bool fitted) {
-        var chart = TopologyChart.Create().WithId("contour-details").WithTitle("").WithViewport(360, 260, 16).WithLegend(null);
+        var chart = TopologyChart.Create().Id("contour-details").Title("").Viewport(new TopologyViewport(360, 260, 16)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Hidden", Shape = shape, X = fitted ? 1400 : 90, Y = 70, Width = 180, Height = 120,
             Color = "#123456", BackgroundColor = "#ffeedd", ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true }); return chart;
     }

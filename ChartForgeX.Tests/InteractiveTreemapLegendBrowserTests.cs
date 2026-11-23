@@ -24,8 +24,8 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         if (missing) items = items.Where(item => item.Id != FirstId);
         if (reordered) items = items.Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == FirstId ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
-        var chart = Chart.Create().WithPointLegend().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Work by team").AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocation", items));
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Work by team").AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocation", items));
         return chart;
     }
 
@@ -36,7 +36,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     [InlineData(true, 360)]
     public async Task RepeatedLeafKeysReadRawFactsAndMuteOrIsolateOnlyTheirAuthoredNode(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Model(dark).WithSize(width, 360);
+        var chart = Model(dark).Size(width, 360);
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, width + 24, 490);
         var page = session.Page; var key = page.Locator(Key(FirstId));
         var identities = await page.Locator("[data-cfx-role=legend-item]").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.cfxTargetId)");
@@ -86,7 +86,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     public async Task SyncedLeafKeysResolveIDsAcrossReorderAndRenameAndSkipAbsentItems(bool dark) {
         if (!Enabled) return;
         var html = new[] { Model(dark), Model(dark, reordered: true), Model(dark, missing: true) }
-            .Select(chart => chart.WithSize(360, 330)).ToInteractiveHtmlDashboardPage(options => {
+            .Select(chart => chart.Size(360, 330)).ToInteractiveHtmlDashboardPage(options => {
                 options.Interaction.GroupName = "allocation-peers";
                 options.Interaction.Enable(ChartInteractionFeatures.SynchronizedCharts);
             });
@@ -118,7 +118,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     [BrowserFact]
     public async Task LeafKeysHonorTheLegendToggleFeatureGate() {
         if (!Enabled) return;
-        var html = Model(false).WithSize(540, 350).ToInteractiveHtmlPage(options => options.Interaction.Features =
+        var html = Model(false).Size(540, 350).ToInteractiveHtmlPage(options => options.Interaction.Features =
             ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Selection);
         await using var session = await OpenAsync(html);
         var key = session.Page.Locator(Key(FirstId)); await key.FocusAsync();
@@ -132,8 +132,8 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     [InlineData(true)]
     public async Task LeafKeysKeepZeroAndTinyRawValuesWithoutInventingPaintedArea(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithDataLabels().WithPointLegend().WithSize(540, 350)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Sizes", new[] {
+        var chart = Chart.Create().DataLabels().Legend(l => l.ShowPoints()).Size(540, 350)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Sizes", new[] {
                 new ChartHierarchyItem("large", "Large", value: 1e308),
                 new ChartHierarchyItem("tiny", "Tiny", value: 1e-310), new ChartHierarchyItem("zero", "Zero", value: 0)
             });
@@ -171,7 +171,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     [BrowserFact]
     public async Task LeafKeysOutsideTheNativeLegendBudgetRemainDescriptiveWithoutKeyboardTargets() {
         if (!Enabled) return;
-        var chart = Model(false).WithSize(360, 360); chart.Options.LegendMaximumHeightFraction = .03;
+        var chart = Model(false).Size(360, 360); chart.Options.Legend.MaxHeightFraction = .03;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var omitted = session.Page.Locator("[data-cfx-role=legend-entry-omitted]");
         Assert.Equal(3, await omitted.CountAsync());
@@ -187,16 +187,16 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         if (!Enabled) return;
         var red = ChartColor.FromRgb(255, 0, 0); var blue = ChartColor.FromRgb(0, 0, 255);
         var missing = ChartColor.FromRgb(13, 47, 81);
-        var chart = Chart.Create().WithPointLegend().WithSize(width, 360)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Colors", new[] {
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).Size(width, 360)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Colors", new[] {
                 new ChartHierarchyItem("low", "Low", value: 4, colorValue: 0),
                 new ChartHierarchyItem("explicit", "Explicit", value: 3, colorValue: 100),
                 new ChartHierarchyItem("missing", "Missing", value: 2)
-            }).ConfigureTreemap(options => {
+            }).Treemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(red, blue).WithValueRange(0, 100).WithNoDataColor(missing);
                 options.ColorDimension.ShowLegend = false;
             });
-        chart.Series[0].WithPointColor(1, blue);
+        chart.Series[0].PointColor(1, blue);
         chart.Options.SvgColorVariables = new SvgColorVariables().Add("--host-low", red, SvgColorRole.Ramp)
             .Add("--host-explicit", blue, SvgColorRole.Series).Add("--host-missing", missing, SvgColorRole.Ramp);
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, width + 24, 490);

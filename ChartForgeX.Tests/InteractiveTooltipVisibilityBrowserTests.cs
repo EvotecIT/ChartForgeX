@@ -7,6 +7,7 @@ using ChartForgeX.Themes;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Tests;
 
@@ -19,9 +20,9 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     [InlineData("display:none", false, 700, false, true)]
     public async Task SharedRowsRequireVisiblePrimaryBarPaintAndRefreshAfterHostStyleChanges(string hiddenStyle, bool dark, int width, bool hidePoint, bool wrapMark) {
         if (!Enabled) return;
-        var chart = Frame(dark, "Visible bar observations").WithBarStyle(ChartBarStyle.Solid)
+        var chart = Frame(dark, "Visible bar observations").Bars(b => b.Style(ChartBarStyle.Solid))
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Baseline", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[1].WithPointColor(1, "#7b61e8");
+        chart.Series[1].PointColor(1, "#7b61e8");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
         var page = session.Page;
         var hidden = hidePoint ? Point(1, 1) : Point(1, 1) + " [data-cfx-role='bar']";
@@ -54,9 +55,9 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     [InlineData(true, 340)]
     public async Task AuthoredBarHatchRetainsSharedObservationUntilWholePointIsHidden(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Frame(dark, "Pattern-only bar observations").WithBarStyle(ChartBarStyle.Solid)
+        var chart = Frame(dark, "Pattern-only bar observations").Bars(b => b.Style(ChartBarStyle.Solid))
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Baseline", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[1].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        chart.Series[1].PointColor(1, "#7b61e8").PointFillPattern(1, ChartFillPattern.Crosshatch);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
         var page = session.Page;
         var point = Point(1, 1);
@@ -85,7 +86,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     [InlineData(true, 340)]
     public async Task DecorativeSvgRetainsSharedPointerTooltipsForVisuallyPaintedObservations(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Frame(dark, "Decorative observations").AsDecorative()
+        var chart = Frame(dark, "Decorative observations").Accessibility(a => a.Decorative())
             .AddScatter("Current", new[] { new ChartPoint(1, 7), new ChartPoint(2, 5) })
             .AddScatter("Baseline", new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -142,7 +143,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     [BrowserFact]
     public async Task VisibleLinePathOverridesInheritedHiddenSeriesVisibility() {
         if (!Enabled) return;
-        var chart = Frame(true, "Restored connected surface").WithLineMarkers(ChartLineMarkerMode.All)
+        var chart = Frame(true, "Restored connected surface").Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
             .AddLine("Current", ChartPoints.FromValues(3, 7, 5))
             .AddLine("Baseline", ChartPoints.FromValues(1, 2, 1), ChartColor.FromHex("#7b61e8"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), 340, 560);
@@ -169,7 +170,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     [InlineData(true, 340)]
     public async Task HiddenLineMarkersRetainVisibleSeriesPaintButHiddenPathsDoNotUseLegendPaint(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Frame(dark, "Line surface visibility").WithLineMarkers(ChartLineMarkerMode.All)
+        var chart = Frame(dark, "Line surface visibility").Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
             .AddLine("Current", ChartPoints.FromValues(3, 7, 5))
             .AddLine("Baseline", ChartPoints.FromValues(1, 2, 1), ChartColor.FromHex("#7b61e8"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
@@ -240,8 +241,8 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Frame(bool dark, string title) => Chart.Create().WithSize(596, 338).WithTitle(title)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+    private static Chart Frame(bool dark, string title) => Chart.Create().Size(596, 338).Title(title)
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
 
     private static Task<string[][]> RowsAsync(IPage page) => page.EvaluateAsync<string[][]>("() => Array.from(document.querySelectorAll('.cfx-tooltip dt')).map(row => [row.textContent, row.nextElementSibling.textContent, row.querySelector('.cfx-tooltip__swatch') ? getComputedStyle(row.querySelector('.cfx-tooltip__swatch')).backgroundColor : ''])");
 

@@ -27,11 +27,11 @@ public sealed class NativeCartesianValueTransitionTests {
         Chart Model(double value) {
             var time = policy is "calendar-bands" or "sessions";
             var chart = NativeCartesianValueBeforeControls.Model(bar, time ? "elapsed-time" : "linear", value);
-            if (policy == "calendar-bands") chart.ConfigureXAxis(axis => { axis.Minimum = null; axis.Maximum = null; axis.TimeSpacing = ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Day)); });
-            if (policy == "sessions") { var first = new DateTime(2026, 1, 1).ToOADate(); chart.ConfigureXAxis(axis => axis.TimeSessions = new ChartTimeSessionDomain(new[] {
+            if (policy == "calendar-bands") chart.XAxis(axis => { axis.Min = null; axis.Max = null; axis.TimeSpacing = ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Day)); });
+            if (policy == "sessions") { var first = new DateTime(2026, 1, 1).ToOADate(); chart.XAxis(axis => axis.TimeSessions = new ChartTimeSessionDomain(new[] {
                 new ChartTimeSession(first, first + 1), new ChartTimeSession(first + 2, first + 3) })); }
-            if (policy == "symmetric-log") chart.ConfigureYAxis(axis => { axis.Scale = ChartScaleKind.SymmetricLogarithmic; axis.Minimum = -100; axis.SymmetricLogarithmThreshold = 2; });
-            if (policy == "reversed") chart.ConfigureYAxis(axis => axis.Reversed = true);
+            if (policy == "symmetric-log") chart.YAxis(axis => { axis.Scale = ChartScaleKind.SymmetricLogarithmic; axis.Min = -100; axis.SymmetricLogarithmThreshold = 2; });
+            if (policy == "reversed") chart.YAxis(axis => axis.Reversed = true);
             return chart;
         }
         if (bar && policy == "sessions") {
@@ -57,9 +57,9 @@ public sealed class NativeCartesianValueTransitionTests {
     [Theory] [InlineData(false)] [InlineData(true)]
     public void CapturedBuiltinReadoutsPreserveAuthoredLabelsExplicitAxisLabelsAndNamedCulture(bool authored) {
         Chart Model(double value) {
-            var chart = Styled("line-default-last", value).WithValueFormat(ChartValueFormat.Number("0.0 'units'", CultureInfo.GetCultureInfo("pl-PL")));
-            chart.ConfigureYAxis(axis => axis.Labels.Add(new ChartAxisLabel(50, "Native midpoint")));
-            if (authored) chart.Series[0].WithPointLabel(1, "Authored caption"); return chart;
+            var chart = Styled("line-default-last", value).ValueFormat(ChartValueFormat.Number("0.0 'units'", CultureInfo.GetCultureInfo("pl-PL")));
+            chart.YAxis(axis => axis.Labels.Add(new ChartAxisLabel(50, "Native midpoint")));
+            if (authored) chart.Series[0].PointLabel(1, "Authored caption"); return chart;
         }
         Prove(Model(20), Model(80), Model(50), "readout-" + authored);
     }
@@ -69,8 +69,8 @@ public sealed class NativeCartesianValueTransitionTests {
             var chart = NativeCartesianValueBeforeControls.Model(bar, "linear", value);
             var points = new[] { new ChartPoint(0, 600), new ChartPoint(1, secondary), new ChartPoint(2, 1200) };
             var extra = bar ? ChartSeries.CreateBar(new ChartSeriesId("alternate"), "Alternate", points) : ChartSeries.CreateLine(new ChartSeriesId("alternate"), "Alternate", points);
-            extra.UseSecondaryValueAxis().WithObservationId(0, new ChartObservationId("earlier")).WithObservationId(1, new ChartObservationId("current")).WithObservationId(2, new ChartObservationId("later"));
-            return chart.AddSeries(extra).ConfigureSecondaryYAxis(axis => { axis.Minimum = 0; axis.Maximum = 2000; });
+            extra.SecondaryAxis().ObservationId(0, new ChartObservationId("earlier")).ObservationId(1, new ChartObservationId("current")).ObservationId(2, new ChartObservationId("later"));
+            return chart.AddSeries(extra).SecondaryYAxis(axis => { axis.Min = 0; axis.Max = 2000; });
         }
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareSection(Model(20, 1000)); var to = renderer.PrepareSection(Model(80, 1800)); var expected = renderer.PrepareSection(Model(50, 1400));
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null);
@@ -89,8 +89,8 @@ public sealed class NativeCartesianValueTransitionTests {
         var expected = renderer.PrepareVisibilitySection(Styled("line-pattern-markers", 50), view);
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var svg = frames.Select(frame => frame.ToSvg()).ToArray(); var png = frames.Select(frame => frame.ToPng()).ToArray();
         Capture(from, to, expected, frames, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3)), "detached-view");
-        source.Series[0].Points[1] = new ChartPoint(999, -999); source.Series[0].PointColors.Clear(); source.Series[0].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Fill = ChartColor.Black; });
-        source.WithFontFamily("Changed later").WithValueFormat(ChartValueFormat.Custom(_ => "Changed later"));
+        source.Series[0].Points[1] = new ChartPoint(999, -999); source.Series[0].PointColors.Clear(); source.Series[0].Markers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Fill = ChartColor.Black; });
+        source.FontFamily("Changed later").ValueFormat(ChartValueFormat.Custom(_ => "Changed later"));
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null);
             Assert.Equal(svg, repeated.Select(frame => frame.ToSvg())); for (var index = 0; index < repeated.Count; index++) Assert.Equal(png[index], repeated[index].ToPng());
             NativeValueIdentityProof.AssertEqual(expected.PreparedVisual, repeated[1], "cartesian-detached-view");
@@ -100,11 +100,11 @@ public sealed class NativeCartesianValueTransitionTests {
     public void ChangedTopologyDomainsPaintCallbacksAndUnrepresentedLayersRejectWithoutBlockingOrdinaryRendering() {
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareSection(Styled("line-default-last", 20));
         var changes = new Action<Chart>[] {
-            chart => chart.Series[0].Points[1] = new ChartPoint(1.5, 80), chart => chart.ConfigureYAxis(axis => axis.Maximum = 200),
-            chart => chart.Series[0].WithColor(ChartColor.Black), chart => chart.WithDataLabels(true),
-            chart => chart.WithValueFormat(ChartValueFormat.Custom(value => value.ToString(CultureInfo.InvariantCulture))),
-            chart => chart.Series[0].WithObservationId(1, new ChartObservationId("other")), chart => chart.Series[0].WithInterpolation(ChartInterpolation.Step),
-            chart => chart.ConfigureSecondaryXAxis(axis => axis.Reversed = true)
+            chart => chart.Series[0].Points[1] = new ChartPoint(1.5, 80), chart => chart.YAxis(axis => axis.Max = 200),
+            chart => chart.Series[0].Color(ChartColor.Black), chart => chart.DataLabels(true),
+            chart => chart.ValueFormat(ChartValueFormat.Custom(value => value.ToString(CultureInfo.InvariantCulture))),
+            chart => chart.Series[0].ObservationId(1, new ChartObservationId("other")), chart => chart.Series[0].Interpolation(ChartInterpolation.Step),
+            chart => chart.SecondaryXAxis(axis => axis.Reversed = true)
         };
         var failures = new List<object>(); var errors = new List<Exception?>(); var number = 0;
         foreach (var change in changes) { var chart = Styled("line-default-last", 80); change(chart); var to = renderer.PrepareSection(chart); Exception? failure = null;
@@ -117,7 +117,7 @@ public sealed class NativeCartesianValueTransitionTests {
         }
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) { Directory.CreateDirectory(output); File.WriteAllText(Path.Combine(output, "cartesian-rejections.json"), JsonSerializer.Serialize(failures)); }
         Assert.All(errors, error => Assert.IsType<NotSupportedException>(error));
-        var bar = NativeCartesianValueBeforeControls.Model(true, "linear", 80).WithBarMode(ChartBarMode.Stacked); var stacked = renderer.PrepareSection(bar);
+        var bar = NativeCartesianValueBeforeControls.Model(true, "linear", 80).Bars(b => b.Mode(ChartBarMode.Stacked)); var stacked = renderer.PrepareSection(bar);
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, stacked, 3));
         var toValue = renderer.PrepareSection(Styled("line-default-last", 80));
         Assert.NotEmpty(renderer.PrepareNativeTransitionJson(from, toValue, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValueFlash, 3, ChartColor.White)));
@@ -125,13 +125,13 @@ public sealed class NativeCartesianValueTransitionTests {
     }
     internal static Chart Styled(string policy, double value) {
         var bar = policy.StartsWith("bar", StringComparison.Ordinal); var chart = NativeCartesianValueBeforeControls.Model(bar, "linear", value);
-        chart.ConfigureYAxis(axis => { axis.Minimum = -100; axis.Maximum = 100; });
-        if (!bar) { chart.Options.LineMarkerMode = null;
-            if (policy == "line-pattern-markers") { chart.WithLineMarkers(ChartLineMarkerMode.All); chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward; chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Stroke = ChartColor.Black; marker.StrokeWidth = 2; }); }
-            if (policy == "line-step") chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
-            if (policy == "line-smooth-broken") { chart.Series[0].WithInterpolation(ChartInterpolation.Smooth); chart.Series[0].Points[2] = new ChartPoint(2, 60, true); chart.WithLuminousLineStyle(); }
-        } else { chart.WithBarVisualStyle(policy.Contains("capsule", StringComparison.Ordinal) ? ChartBarVisualStyle.DashboardCapsule()
-                : policy == "bar-gradient" ? ChartBarVisualStyle.Solid() : ChartBarVisualStyle.Flat());
+        chart.YAxis(axis => { axis.Min = -100; axis.Max = 100; });
+        if (!bar) { chart.Options.Lines.MarkerMode = null;
+            if (policy == "line-pattern-markers") { chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.All)); chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward; chart.Series[0].Markers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Stroke = ChartColor.Black; marker.StrokeWidth = 2; }); }
+            if (policy == "line-step") chart.Series[0].Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            if (policy == "line-smooth-broken") { chart.Series[0].Interpolation(ChartInterpolation.Smooth); chart.Series[0].Points[2] = new ChartPoint(2, 60, true); chart.Lines(l => l.LuminousStyle()); }
+        } else { chart.Bars(b => b.VisualStyle(policy.Contains("capsule", StringComparison.Ordinal) ? ChartBarVisualStyle.DashboardCapsule()
+                : policy == "bar-gradient" ? ChartBarVisualStyle.Solid() : ChartBarVisualStyle.Flat()));
             if (policy == "bar-gradient") chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward;
         } return chart;
     }

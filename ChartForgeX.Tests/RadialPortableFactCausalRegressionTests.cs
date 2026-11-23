@@ -11,7 +11,7 @@ public sealed class RadialPortableFactCausalRegressionTests {
         var series = Source(); var chart = Chart.Create().AddSeries(series); var artifact = chart.ToVisualArtifact("radial-facts");
         var captured = artifact.ToInterchangeEnvelope();
         Assert.Equal("0.2", captured.Extensions["chart.series.0.radial.innerRatio"]);
-        series.WithRadialBand(new ChartRadialBand(.3, .9));
+        series.RadialBand(new ChartRadialBand(.3, .9));
         Assert.Equal(.3, series.RadialBand!.InnerRatio);
         var edited = artifact.ToInterchangeEnvelope();
         Assert.Equal("0.3", edited.Extensions["chart.series.0.radial.innerRatio"]);
@@ -23,7 +23,7 @@ public sealed class RadialPortableFactCausalRegressionTests {
     public void RestoringOrdinaryGeometryRemovesStaleBandFactsFromTheExistingMutableArtifact() {
         var series = Source(); var chart = Chart.Create().AddSeries(series); var artifact = chart.ToVisualArtifact("radial-reset");
         Assert.Equal("0.2", artifact.ToInterchangeEnvelope().Extensions["chart.series.0.radial.innerRatio"]);
-        series.WithRadialBand(null); Assert.Null(series.RadialBand);
+        series.RadialBand((ChartRadialBand?)null); Assert.Null(series.RadialBand);
         var restored = artifact.ToInterchangeEnvelope();
         Assert.DoesNotContain("chart.series.0.radial.innerRatio", restored.Extensions.Keys);
         Assert.DoesNotContain("chart.series.0.radial.outerRatio", restored.Extensions.Keys);
@@ -31,5 +31,5 @@ public sealed class RadialPortableFactCausalRegressionTests {
     }
 
     private static ChartSeries Source() => new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Donut,
-        new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) }).WithRadialBand(new ChartRadialBand(.2, .8));
+        new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) }).RadialBand(new ChartRadialBand(.2, .8));
 }

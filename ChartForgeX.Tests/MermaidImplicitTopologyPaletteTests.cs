@@ -60,7 +60,7 @@ public sealed class MermaidImplicitTopologyPaletteTests {
     }
     [Fact]
     public void NativeGraphiteNullPaintFieldsKeepTheirOrdinaryContract() {
-        var chart = TopologyChart.Create().WithId("implicit-palette-native-control").WithViewport(400, 300, 24).WithTitle("").WithLegend(null)
+        var chart = TopologyChart.Create().Id("implicit-palette-native-control").Viewport(new TopologyViewport(400, 300, 24)).Title("").Legend((TopologyLegend?)null)
             .AddNode("work", "Work", 60, 60, width: 140, height: 70);
         var artifact = chart.ToVisualArtifact(); CaptureArtifact("native-null", artifact); var saved = artifact.ToInterchangeEnvelope(); var restored = saved.ToTopologyChart().Prepare(); CaptureArtifact("native-null-restored", restored.Visual.ToArtifact());
         Assert.Equal(VisualTheme.Graphite().ToJson(), chart.Theme.ToJson()); Assert.Null(chart.Nodes[0].BackgroundColor); Assert.Null(chart.Nodes[0].BorderColor); Assert.Null(chart.Nodes[0].LabelColor); Assert.Equal(artifact.ToPng(), restored.ToPng());

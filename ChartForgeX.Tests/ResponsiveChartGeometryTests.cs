@@ -13,7 +13,7 @@ public sealed class ResponsiveChartGeometryTests {
     [BrowserFact]
     public async Task RemovingCompressedHostBeforeDecodeCompletesDoesNotCreateAnObserver() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Chart.Create().WithSize(760, 280).WithHeader(false).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(760, 280).ShowHeader(false).Legend(false).DataLabels(false)
             .AddBar("Count", new[] { new ChartPoint(1, 1) });
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 800, compressLayouts: true);
         await using var session = await InteractiveChartBrowser.OpenAsync("<html><body><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script></body></html>");
@@ -37,8 +37,8 @@ public sealed class ResponsiveChartGeometryTests {
     [BrowserFact]
     public async Task InertFragmentsMountAndSparseBarsRespectTheirCapAcrossTheNativeClampTransition() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Chart.Create().WithSize(760, 280).WithPadding(0, 0, 0, 0).WithHeader(false).WithLegend(false)
-            .WithAxes(false).WithDataLabels(false).WithCard(false).WithBarStyle(ChartBarStyle.Flat).WithMaximumBarWidth(220)
+        var chart = Chart.Create().Size(760, 280).Padding(0, 0, 0, 0).ShowHeader(false).Legend(false)
+            .Axes(false).DataLabels(false).ShowCard(false).Bars(b => b.Style(ChartBarStyle.Flat).MaxWidth(220))
             .AddBar("A", new[] { new ChartPoint(1, 1) });
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
         var html = "<html><body style='margin:0'><div id='panel' style='width:320px'></div><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script></body></html>";
@@ -61,8 +61,8 @@ public sealed class ResponsiveChartGeometryTests {
     [BrowserFact]
     public async Task ResizedStackedColumnsKeepTheNativeBandWidth() {
         if (!InteractiveChartBrowser.Enabled) return;
-        Chart Build(int width) => Chart.Create().WithSize(width, 280).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(ChartBarStyle.Flat).WithStackedBars()
+        Chart Build(int width) => Chart.Create().Size(width, 280).ShowHeader(false).Legend(false).DataLabels(false)
+            .Bars(b => b.Style(ChartBarStyle.Flat).Stacked())
             .AddBar("Count", Enumerable.Range(0, 7).Select(i => new ChartPoint(i, 100 + i * 40)).ToArray());
         var native = Build(1120);
         var expected = native.Prepare(VisualExportRequest.ForChart(native).Context).Scene.Nodes.OfType<VisualSceneRectangle>().First(n => n.Role == "bar").Bounds.Width;
@@ -82,8 +82,8 @@ public sealed class ResponsiveChartGeometryTests {
     [InlineData(true)]
     public async Task ContainerResizeKeepsCssPixelGeometryAndTypographyWithPlainOrCompressedSpecifications(bool compressed) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Chart.Create().WithSize(760, 280).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .AddLine("Count", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3), new ChartPoint(3, 2) }).WithYAxisIntegerTicks();
+        var chart = Chart.Create().Size(760, 280).ShowHeader(false).Legend(false).DataLabels(false)
+            .AddLine("Count", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3), new ChartPoint(3, 2) }).YAxis(y => y.IntegerTicks());
         var html = "<html><body style='margin:0'><div id='panel' style='width:1120px'>" +
             new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600, compressLayouts: compressed) + "</div></body></html>";
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 600);
@@ -104,9 +104,9 @@ public sealed class ResponsiveChartGeometryTests {
     [InlineData(false)]
     [InlineData(true)]
     public void LayoutSpecificationRetainsSourceValuesAndRestoresAuthoredAxisPolicies(bool bars) {
-        var chart=Chart.Create().WithSize(760,280).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart=Chart.Create().Size(760,280).ShowHeader(false).Legend(false).DataLabels(false);
         var values=new[]{new ChartPoint(1,1),new ChartPoint(2,3),new ChartPoint(3,2)};
-        if(bars)chart.WithBarStyle(ChartBarStyle.Flat).WithStackedBars().AddBar("A",values).AddBar("B",values);else chart.AddLine("A",values);
+        if(bars)chart.Bars(b => b.Style(ChartBarStyle.Flat).Stacked()).AddBar("A",values).AddBar("B",values);else chart.AddLine("A",values);
         var axis=chart.Options.XAxis;
         var fragment=new HtmlResponsiveChartRenderer().RenderFragment(chart,480,1600,printWidth:320);
         Assert.Equal(760,chart.Options.Size.Width);Assert.Same(axis,chart.Options.XAxis);
@@ -124,7 +124,7 @@ public sealed class ResponsiveChartGeometryTests {
     [BrowserFact]
     public async Task ArbitraryFractionalWidthsDebounceAndPrintAtTheActualPanelWidth() {
         if(!InteractiveChartBrowser.Enabled)return;
-        var chart=Chart.Create().WithSize(760,280).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisIntegerTicks()
+        var chart=Chart.Create().Size(760,280).ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.IntegerTicks())
             .AddBar("Count",new[]{new ChartPoint(1,1),new ChartPoint(2,3),new ChartPoint(3,2)});
         var html="<html><head><style>@media print{#panel{width:640px!important}}</style></head><body style='margin:0'><div id='panel' style='width:1120px'>"+
             new HtmlResponsiveChartRenderer().RenderFragment(chart,240,1600)+"</div></body></html>";
@@ -151,7 +151,7 @@ public sealed class ResponsiveChartGeometryTests {
     [BrowserFact]
     public async Task HiddenChartMeasuresItsLegendAndTicksWhenRevealedAndWrapsWithoutScalingText() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Chart.Create().WithSize(760, 280).WithHeader(false).WithDataLabels(false).WithMaximumBarWidth(40)
+        var chart = Chart.Create().Size(760, 280).ShowHeader(false).DataLabels(false).Bars(b => b.MaxWidth(40))
             .AddBar("Verified observations", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) })
             .AddBar("Pending observations", new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) });
         var html = "<html><body style='margin:0'><div id='panel' style='display:none;width:320px'>" +

@@ -15,14 +15,14 @@ internal static partial class VisualScheduleCompiler {
             return Array.Empty<VisualLegendEntry>();
         if (ChartSeriesKindTraits.IsMixedSchedule(chart)) {
             var states = chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane)
-                ? chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors))
+                ? chart.Options.StateTimeline.Categories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.StateTimeline.PinColorsInForcedColors))
                 : Enumerable.Empty<VisualLegendEntry>();
             return states.Concat(chart.Series.Select((series, index) => new { Series = series, Index = index })
                 .Where(item => (item.Series.Kind is ChartSeriesKind.Gantt or ChartSeriesKind.Timeline) && item.Series.ShowInLegend && item.Series.HasSourceData)
                 .Select(item => RangeLegendEntry(item.Series, item.Index, colors))).ToArray();
         }
         if (chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane))
-            return chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray();
+            return chart.Options.StateTimeline.Categories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.StateTimeline.PinColorsInForcedColors)).ToArray();
         return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend && item.Series.HasSourceData)
             .Select(item => RangeLegendEntry(item.Series, item.Index, colors)).ToArray();
     }
@@ -158,7 +158,7 @@ internal static partial class VisualScheduleCompiler {
                         if (!item.Visible) continue;
                         var mark = ChartStateMark.For(placed.Category, backdrop);
                         using (builder.PushClip(plot)) {
-                            if (placed.Item.IsOpen && chart.Options.GanttOpenEndStyle == ChartGanttOpenEndStyle.Fade)
+                            if (placed.Item.IsOpen && chart.Options.Gantt.OpenEndStyle == ChartGanttOpenEndStyle.Fade)
                                 OpenEndFade(chart, builder, bounds, mark.Color.WithOpacity(mark.FillOpacity),
                                     SvgPaint.Of(mark.Color, SvgColorRole.Status).WithOpacity(mark.Color.WithOpacity(mark.FillOpacity), mark.FillOpacity),
                                     ChartGanttLaneModel.BarRadius, "gantt-lane-item-shape");

@@ -10,17 +10,4 @@ public sealed partial class Chart {
         set => _accessibility = value ?? throw new ArgumentNullException(nameof(value));
     }
     private VisualAccessibility _accessibility = new();
-
-    /// <summary>Configures the chart text alternative and language metadata.</summary>
-    public Chart ConfigureAccessibility(Action<VisualAccessibility> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Accessibility = ChartOptionConfiguration.Configure(Accessibility, configure, options => options.Clone());
-        return this;
-    }
-
-    /// <summary>Marks the chart as decorative for capable renderers.</summary>
-    public Chart AsDecorative(bool decorative = true) {
-        Accessibility.IsDecorative = decorative;
-        return this;
-    }
 }

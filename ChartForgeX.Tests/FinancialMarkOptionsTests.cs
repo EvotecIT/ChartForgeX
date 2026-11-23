@@ -15,7 +15,7 @@ public sealed class FinancialMarkOptionsTests {
 
     [Fact]
     public void AllEqualCandleRegionCoversItsMinimumBodyAndOutline() {
-        var chart = Chart.Create().WithSize(400, 280).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(400, 280).ShowHeader(false).Legend(false)
             .AddCandlestick("Flat price", new[] { new ChartCandlestick(1, 10, 10, 10, 10) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var body = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "candlestick-body");
@@ -46,8 +46,8 @@ public sealed class FinancialMarkOptionsTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => options.Falling.StrokeOpacity = 1.1);
         Assert.Throws<ArgumentOutOfRangeException>(() => options.Rising.Wick.StrokeOpacity = 1.1);
         var line = Chart.Create().AddLine("Line", new[] { new ChartPoint(1, 2) });
-        Assert.Throws<ArgumentNullException>(() => line.Series[0].ConfigureFinancial(null!));
-        line.Series[0].ConfigureFinancial(financial => financial.Rising.StrokeWidth = 0);
+        Assert.Throws<ArgumentNullException>(() => line.Series[0].Financial((Action<ChartFinancialOptions>)null!));
+        line.Series[0].Financial(financial => financial.Rising.StrokeWidth = 0);
         Assert.Contains("does not support financial options", Assert.Throws<InvalidOperationException>(() => line.ToSvg()).Message);
         Assert.Throws<InvalidOperationException>(() => line.ToPng());
         foreach (var configure in new Action<ChartFinancialOptions>[] {
@@ -55,7 +55,7 @@ public sealed class FinancialMarkOptionsTests {
             financial => financial.Rising.Wick.StrokeWidth = 0
         }) {
             var ohlc = Prices(ChartSeriesKind.Ohlc);
-            ohlc.Series[0].ConfigureFinancial(configure);
+            ohlc.Series[0].Financial(configure);
             Assert.Contains("stroke options only", Assert.Throws<InvalidOperationException>(() => Prepare(ohlc)).Message);
         }
     }
@@ -64,7 +64,7 @@ public sealed class FinancialMarkOptionsTests {
     [InlineData(ChartSeriesKind.Candlestick)]
     [InlineData(ChartSeriesKind.Ohlc)]
     public void UnconfiguredDirectionsRetainTheirDefaultGeometryPaintAndLegend(ChartSeriesKind kind) {
-        var chart = Prices(kind).WithLegend(true);
+        var chart = Prices(kind).Legend(true);
         var before = Prepare(chart).ToSvg();
         var item = chart.Series[0].Financial.Rising;
         item.StrokeWidth = 9; item.Stroke = Green; item.StrokeOpacity = .5;
@@ -89,14 +89,14 @@ public sealed class FinancialMarkOptionsTests {
     public void ObservationColorsOverrideAuthoredPartsAndAlphaMultipliersRemainIndependent(bool observationOverride) {
         var chart = Prices(ChartSeriesKind.Candlestick);
         var series = chart.Series[0]; series.StateRole = ChartSeriesState.Warning;
-        series.ConfigureFinancial(financial => {
+        series.Financial(financial => {
             financial.Rising.Fill = Orange.WithAlpha(128); financial.Rising.FillOpacity = .25;
             financial.Rising.Stroke = Green.WithAlpha(128); financial.Rising.StrokeOpacity = .5;
             financial.Rising.StrokeWidth = 6;
             financial.Rising.Wick.Stroke = Blue.WithAlpha(128); financial.Rising.Wick.StrokeOpacity = .75;
             financial.Rising.Wick.StrokeWidth = 3;
         });
-        if (observationOverride) series.WithPointColor(0, Blue.WithAlpha(200));
+        if (observationOverride) series.PointColor(0, Blue.WithAlpha(200));
         var prepared = Prepare(chart);
         var body = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "candlestick-body");
         var wick = prepared.Scene.Nodes.OfType<VisualSceneLine>().First(node => node.Role == "candlestick-wick");
@@ -122,8 +122,8 @@ public sealed class FinancialMarkOptionsTests {
     [InlineData(ChartSeriesKind.Candlestick)]
     [InlineData(ChartSeriesKind.Ohlc)]
     public void StrokeOverridesInheritSeriesWidthAndZeroRemovesInkWithoutRemovingSource(ChartSeriesKind kind) {
-        var chart = Prices(kind); var series = chart.Series[0].WithStrokeWidth(7);
-        series.ConfigureFinancial(financial => { financial.Rising.Stroke = Green; financial.Rising.StrokeOpacity = .5; });
+        var chart = Prices(kind); var series = chart.Series[0].StrokeWidth(7);
+        series.Financial(financial => { financial.Rising.Stroke = Green; financial.Rising.StrokeOpacity = .5; });
         var scene = Prepare(chart).Scene;
         var strokes = scene.Nodes.OfType<VisualSceneMark>().Where(node => node.Role == "candlestick-body" || node.Role == "candlestick-wick" || node.Role?.StartsWith("ohlc-", StringComparison.Ordinal) == true);
         Assert.All(strokes, mark => Assert.Equal(7, mark.StrokeWidth));
@@ -153,14 +153,14 @@ public sealed class FinancialMarkOptionsTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void HollowCandlesLeaveTheInteriorTransparentAcrossReversalAndBothHollowInputs(bool reversed, bool transparentColor) {
-        var chart = Prices(ChartSeriesKind.Candlestick).WithAxes(false).WithGrid(false);
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch).ConfigureFinancial(financial => {
+        var chart = Prices(ChartSeriesKind.Candlestick).Axes(false).ShowGrid(false);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch).Financial(financial => {
             if (transparentColor) financial.Rising.Fill = ChartColor.Transparent;
             else financial.Rising.FillOpacity = 0;
             financial.Rising.Stroke = Green; financial.Rising.StrokeWidth = 3;
             financial.Rising.Wick.Stroke = Blue; financial.Rising.Wick.StrokeWidth = 2;
         });
-        chart.Options.YAxis.WithReversal(reversed);
+        chart.Options.YAxis.Reversed(reversed);
         var prepared = Prepare(chart);
         var body = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "candlestick-body");
         Assert.Null(body.Fill);
@@ -184,12 +184,12 @@ public sealed class FinancialMarkOptionsTests {
     [InlineData(ChartSeriesKind.Ohlc, false)]
     [InlineData(ChartSeriesKind.Ohlc, true)]
     public void ConfiguredLegendsUseFinancialGlyphsAndPrepareFreezesAllOptions(ChartSeriesKind kind, bool pointLegend) {
-        var chart = Prices(kind).WithLegend(true).WithPointLegend(pointLegend);
-        chart.Series[0].ConfigureFinancial(financial => {
+        var chart = Prices(kind).Legend(true).Legend(l => l.ShowPoints(pointLegend));
+        chart.Series[0].Financial(financial => {
             financial.Rising.Stroke = Green; financial.Falling.Stroke = Orange;
             financial.Rising.StrokeWidth = 3; financial.Falling.StrokeWidth = 4;
             if (kind == ChartSeriesKind.Candlestick) financial.Rising.FillOpacity = 0;
-        }).WithPointColor(0, Blue);
+        }).PointColor(0, Blue);
         var prepared = Prepare(chart);
         var role = kind == ChartSeriesKind.Candlestick ? "legend-financial-body" : "legend-financial-stem";
         var glyphs = prepared.Scene.Nodes.OfType<VisualSceneMark>().Where(node => node.Role == role).ToArray();
@@ -213,7 +213,7 @@ public sealed class FinancialMarkOptionsTests {
     [InlineData(ChartSeriesKind.Ohlc)]
     public void PaintedStrokeUnionDeterminesObservationBounds(ChartSeriesKind kind) {
         var chart = Prices(kind);
-        chart.Series[0].ConfigureFinancial(financial => {
+        chart.Series[0].Financial(financial => {
             financial.Rising.StrokeWidth = 8;
             if (kind == ChartSeriesKind.Candlestick) financial.Rising.Wick.StrokeWidth = 12;
         });
@@ -235,7 +235,7 @@ public sealed class FinancialMarkOptionsTests {
     }
 
     internal static Chart Prices(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(400, 280).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(400, 280).ShowHeader(false).Legend(false).DataLabels(false);
         var source = new[] { new ChartCandlestick(1, 4, 9, 1, 7), new ChartCandlestick(2, 7, 9, 1, 4) };
         return kind == ChartSeriesKind.Candlestick ? chart.AddCandlestick("Price", source) : chart.AddOhlc("Price", source);
     }
@@ -243,7 +243,7 @@ public sealed class FinancialMarkOptionsTests {
     private static PreparedVisual Prepare(Chart chart) {
         var request = VisualExportRequest.ForChart(chart).Context;
         return chart.Prepare(new VisualRenderContext(request.Layout, request.Theme, request.ThemeMode,
-            new VisualFrame(showLegend: chart.Options.ShowLegend, transparentBackground: true), request.Font));
+            new VisualFrame(showLegend: chart.Options.Legend.Visible, transparentBackground: true), request.Font));
     }
 
     private static SvgColorVariables Variables() {

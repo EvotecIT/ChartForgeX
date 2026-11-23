@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyForceGraphStyleReducesStaticNoise() {
         var chart = CreateForceGraphFixture("force-style", 5, 7)
-            .WithTitle("Force graph style");
+            .Title("Force graph style");
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithForceGraphStyle()
-            .WithFitContentToViewport();
+            .ForceGraphStyle()
+            .FitContentToViewport();
         var svg = chart.ToSvg(options);
 
         Assert(options.UseForceGraphPresentation, "Force graph style should mark render options for lower-ink graph presentation.");
@@ -32,11 +32,11 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceGraphRelationshipProfileSpreadsBusyGraphs() {
         var chart = CreateBusyForceGraphFixture("force-busy-style", 8, 15)
-            .WithTitle("Busy force graph");
+            .Title("Busy force graph");
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithForceGraphStyle()
-            .WithFitContentToViewport();
+            .ForceGraphStyle()
+            .FitContentToViewport();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var dotNodes = prepared.Nodes.Where(node => node.Kind != TopologyNodeKind.Hub).ToList();
         var hubNodes = prepared.Nodes.Where(node => node.Kind == TopologyNodeKind.Hub).ToList();
@@ -57,11 +57,11 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceGraphHtmlPagesExposeGraphControls() {
         var chart = CreateForceGraphFixture("force-html", 4, 6)
-            .WithTitle("Interactive force graph");
+            .Title("Interactive force graph");
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithForceGraphStyle()
-            .WithHtmlForceGraphControls();
+            .ForceGraphStyle()
+            .HtmlForceGraphControls();
         var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("data-cfx-force-graph-controls=\"true\"", StringComparison.Ordinal), "Force graph HTML should opt into graph-specific controls.");
@@ -90,14 +90,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyForceGraphHtmlGroupFiltersUsePreparedView() {
         var chart = CreateForceGraphFixture("force-html-view", 3, 4)
-            .WithTitle("Interactive force graph view");
+            .Title("Interactive force graph view");
 
         var options = new TopologyRenderOptions {
                 IncludeLegend = false,
                 View = new TopologyView { GroupIds = { "group-01" } }
             }
-            .WithForceGraphStyle()
-            .WithHtmlForceGraphControls();
+            .ForceGraphStyle()
+            .HtmlForceGraphControls();
         var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("<option value=\"group-01\">Group 2</option>", StringComparison.Ordinal), "Force graph group filters should include groups that remain in the prepared view.");
@@ -107,13 +107,13 @@ internal static partial class SmokeTests {
 
     private static void TopologyRelationshipRadialHtmlPagesExposeFocusControls() {
         var chart = CreateForceGraphFixture("radial-html", 5, 8)
-            .WithTitle("Interactive radial graph")
-            .WithLayout(TopologyLayoutMode.RelationshipRadial);
+            .Title("Interactive radial graph")
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial);
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithForceGraphStyle()
-            .WithHtmlForceGraphControls()
-            .WithRelationshipRadialFocus("group-00-hub", maxDepth: 2, maxFanout: 12);
+            .ForceGraphStyle()
+            .HtmlForceGraphControls()
+            .RelationshipRadialFocus("group-00-hub", maxDepth: 2, maxFanout: 12);
         var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("data-layout-mode=\"RelationshipRadial\"", StringComparison.Ordinal), "Relationship-radial HTML should preserve the graph-exploration layout mode.");
@@ -124,10 +124,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyRelationshipRadialLayoutExpandsFromRootByHop() {
         var chart = TopologyChart.Create()
-            .WithId("radial-talks")
-            .WithViewport(920, 640, 28)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .Id("radial-talks")
+            .Viewport(new TopologyViewport(920, 640, 28))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoNode("root", "Root", TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 42, height: 42, symbol: "R");
 
         for (var i = 0; i < 5; i++) {
@@ -142,8 +142,8 @@ internal static partial class SmokeTests {
         }
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithRelationshipRadialFocus("root", maxDepth: 2, maxFanout: 5)
-            .WithFitContentToViewport();
+            .RelationshipRadialFocus("root", maxDepth: 2, maxFanout: 5)
+            .FitContentToViewport();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var root = prepared.Nodes.Single(node => node.Id == "root");
         var firstHop = prepared.Nodes.Where(node => node.Id.StartsWith("first-", StringComparison.Ordinal) && !node.Id.Contains("-second-", StringComparison.Ordinal)).ToList();
@@ -163,10 +163,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyRelationshipRadialFanoutIgnoresVisitedParent() {
         var chart = TopologyChart.Create()
-            .WithId("radial-parent-fanout")
-            .WithViewport(720, 480, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .Id("radial-parent-fanout")
+            .Viewport(new TopologyViewport(720, 480, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoNode("root", "Root", TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 42, height: 42)
             .AddAutoNode("branch", "Branch", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 30, height: 30)
             .AddEdge("root-branch", "root", "branch", "root edge", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Bidirectional);
@@ -177,7 +177,7 @@ internal static partial class SmokeTests {
                 .AddEdge("branch-" + leaf, "branch", leaf, "leaf", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
         }
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }.WithRelationshipRadialFocus("root", maxDepth: 2, maxFanout: 3));
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }.RelationshipRadialFocus("root", maxDepth: 2, maxFanout: 3));
         var leaves = prepared.Nodes.Where(node => node.Id.StartsWith("leaf-", StringComparison.Ordinal)).ToList();
 
         Assert(leaves.Count == 3, "The fanout fixture should include three second-hop leaves.");
@@ -187,10 +187,10 @@ internal static partial class SmokeTests {
 
     private static void TopologyRelationshipRadialLayoutHandlesLargeEgoGraphs() {
         var chart = TopologyChart.Create()
-            .WithId("large-radial")
-            .WithViewport(1680, 1060, 32)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .Id("large-radial")
+            .Viewport(new TopologyViewport(1680, 1060, 32))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoNode("root", "Root", TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 42, height: 42, symbol: "R");
 
         for (var branch = 0; branch < 36; branch++) {
@@ -205,8 +205,8 @@ internal static partial class SmokeTests {
         }
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithRelationshipRadialFocus("root", maxDepth: 2, maxFanout: 40)
-            .WithFitContentToViewport();
+            .RelationshipRadialFocus("root", maxDepth: 2, maxFanout: 40)
+            .FitContentToViewport();
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var root = prepared.Nodes.Single(node => node.Id == "root");
         var firstHop = prepared.Nodes.Where(node => node.Id.StartsWith("branch-", StringComparison.Ordinal) && !node.Id.Contains("-leaf-", StringComparison.Ordinal)).ToList();
@@ -225,10 +225,10 @@ internal static partial class SmokeTests {
 
     private static TopologyChart CreateForceGraphFixture(string id, int groupCount, int nodesPerGroup) {
         var chart = TopologyChart.Create()
-            .WithId(id)
-            .WithViewport(1180, 760, 28)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.ForceDirected);
+            .Id(id)
+            .Viewport(new TopologyViewport(1180, 760, 28))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.ForceDirected);
 
         for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
             var groupId = "group-" + groupIndex.ToString("00", CultureInfo.InvariantCulture);
@@ -259,7 +259,7 @@ internal static partial class SmokeTests {
 
     private static TopologyChart CreateBusyForceGraphFixture(string id, int groupCount, int nodesPerGroup) {
         var chart = CreateForceGraphFixture(id, groupCount, nodesPerGroup)
-            .WithViewport(1500, 920, 32);
+            .Viewport(new TopologyViewport(1500, 920, 32));
 
         for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
             var groupId = "group-" + groupIndex.ToString("00", CultureInfo.InvariantCulture);

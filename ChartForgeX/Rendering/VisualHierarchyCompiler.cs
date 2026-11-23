@@ -17,7 +17,7 @@ internal static partial class VisualHierarchyCompiler {
         if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
             var surface = (colorScales ??= new ChartColorPresentationSet(chart)).HierarchySurface(colors);
             if (surface.Scale != null && surface.ShowLegend) return Array.Empty<VisualLegendEntry>();
-            if (series.Kind == ChartSeriesKind.Treemap && chart.Options.ShowPointLegend) return series.HierarchyItems.Select((item, index) => (item, index))
+            if (series.Kind == ChartSeriesKind.Treemap && chart.Options.Legend.ShowPoints) return series.HierarchyItems.Select((item, index) => (item, index))
                 .Where(entry => series.Relationships!.Children(entry.index).Count == 0 && (chart.HierarchyPreparation?.Contains(entry.index) ?? true))
                 .Select(entry => {
                     var blend = surface.Blend(entry.index);
@@ -64,7 +64,7 @@ internal static partial class VisualHierarchyCompiler {
     }
 
     private static void Tree(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var series = chart.Series[0]; var showLabels = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
+        var series = chart.Series[0]; var showLabels = series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false);
         var model = ChartTreeLayout.Build(chart, plot, fitViewport: true,
             requestedNodeHeight: showLabels ? (index, width) => LabelBodyHeight(chart, context, builder, index, width) : (Func<int, double, double>?)null,
             nodeStrokeWidth: context.Theme.AxisStrokeWidth, nodeGap: Math.Max(1, context.Theme.Spacing / 4),

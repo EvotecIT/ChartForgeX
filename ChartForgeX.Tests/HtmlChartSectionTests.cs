@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 public sealed class HtmlChartSectionTests {
     [Fact]
     public void SectionAndExportShareOnePreparationAndRemainDetachedFromTheChartAndCallback() {
-        var chart = Line().WithThemeMode(ThemeMode.Light);
+        var chart = Line().ThemeMode(ThemeMode.Light);
         var calls = new Dictionary<double, int>();
         chart.Options.XAxis.LabelFormatter = value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
@@ -30,7 +30,7 @@ public sealed class HtmlChartSectionTests {
         var html = section.Html; var svg = section.PreparedVisual.ToSvg(); var png = section.PreparedVisual.ToPng();
         var countAfterPreparation = calls.Values.Sum();
         retained!.IdScope = "changed-section";
-        chart.WithTitle("Changed").WithXAxisBounds(-100, 100).WithYAxisBounds(-100, 100);
+        chart.Title("Changed").XAxis(x => x.Bounds(-100, 100)).YAxis(y => y.Bounds(-100, 100));
         chart.Options.XAxis.Reversed = true; chart.Series[0].Points.Clear();
         Assert.Equal(html, section.Html); Assert.Equal(svg, section.PreparedVisual.ToSvg()); Assert.Equal(png, section.PreparedVisual.ToPng());
         Assert.Equal(countAfterPreparation, calls.Values.Sum());
@@ -52,7 +52,7 @@ public sealed class HtmlChartSectionTests {
         Assert.NotEqual(AxisLabels(full.PreparedVisual, "axis-x-label"), AxisLabels(narrowed.PreparedVisual, "axis-x-label"));
         Assert.Equal(full.Html, reset.Html); Assert.Equal(full.PreparedVisual.ToPng(), reset.PreparedVisual.ToPng());
         Assert.Equal(full.Html, renderer.RenderFragmentWithoutAssets(chart));
-        Assert.Equal(0, chart.Options.XAxis.Minimum); Assert.Equal(10, chart.Options.XAxis.Maximum);
+        Assert.Equal(0, chart.Options.XAxis.Min); Assert.Equal(10, chart.Options.XAxis.Max);
         using var metadata = Metadata(narrowed.Html);
         var facts = metadata.RootElement.GetProperty("xProjection"); var projection = narrowed.PreparedVisual.XProjection!;
         Assert.Equal(projection.FullMinimum, facts.GetProperty("fullMinimum").GetDouble());
@@ -69,10 +69,10 @@ public sealed class HtmlChartSectionTests {
     [Fact]
     public void OffWindowObservationsRetainStableSourceIdentityWithoutInventingVisibleMarkers() {
         var chart = Line();
-        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = true);
-        chart.Series[0].WithObservationId(0, new ChartObservationId("before-window"))
-            .WithObservationId(1, new ChartObservationId("inside-window"))
-            .WithObservationId(2, new ChartObservationId("after-window"));
+        chart.Series[0].Markers(markers => markers.Enabled = true);
+        chart.Series[0].ObservationId(0, new ChartObservationId("before-window"))
+            .ObservationId(1, new ChartObservationId("inside-window"))
+            .ObservationId(2, new ChartObservationId("after-window"));
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7)));
         var points = EmbeddedSvg(section.Html).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(new[] { "before-window", "inside-window", "after-window" }, points.Select(node => (string?)node.Attribute("data-cfx-observation-id")));
@@ -87,7 +87,7 @@ public sealed class HtmlChartSectionTests {
         var series = metadata.RootElement.GetProperty("series")[0];
         Assert.Equal("observations", series.GetProperty("key").GetString());
         Assert.Equal(chart.Series[0].SourcePointIndices, series.GetProperty("indices").EnumerateArray().Select(value => value.GetInt32()));
-        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].Markers(markers => markers.Enabled = false);
         var markerFree = EmbeddedSvg(new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))).Html)
             .Descendants().Single(node => (string?)node.Attribute("data-cfx-observation-id") == "inside-window");
         Assert.Empty(markerFree.Elements());
@@ -98,7 +98,7 @@ public sealed class HtmlChartSectionTests {
     public void UnsupportedAndEmptySectionsRemainRenderableWithoutAdvertisingANativeProjection() {
         var empty = Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>());
         var nonCartesian = Chart.Create().AddPie("Slices", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
-        var horizontal = Line(); horizontal.Options.LineOrientation = ChartOrientation.Horizontal;
+        var horizontal = Line(); horizontal.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var sparkline = Line(); sparkline.Options.IsSparkline = true;
         var renderer = new HtmlInteractiveChartRenderer();
         foreach (var chart in new[] { empty, nonCartesian, sparkline }) {
@@ -115,8 +115,8 @@ public sealed class HtmlChartSectionTests {
         Assert.Throws<ArgumentNullException>(() => renderer.PrepareSection(null!));
     }
 
-    private static Chart Line() => Chart.Create().WithTitle("Captured observations").WithSize(520, 320).WithLegend(false)
-        .WithXAxisBounds(0, 10)
+    private static Chart Line() => Chart.Create().Title("Captured observations").Size(520, 320).Legend(false)
+        .XAxis(x => x.Bounds(0, 10))
         .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(0, -100), new ChartPoint(5, 4), new ChartPoint(10, 100) }));
 
     private static string?[] AxisLabels(PreparedVisual visual, string role) => visual.Regions.Where(region => region.Role == role).Select(region => region.Label).ToArray();

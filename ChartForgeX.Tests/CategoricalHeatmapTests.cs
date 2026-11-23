@@ -45,7 +45,7 @@ public sealed class CategoricalHeatmapTests {
 
     [Fact]
     public void MissingCellOutlinesRemainVisibleOnDarkCards() {
-        var chart = CreateChart().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+        var chart = CreateChart().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
         var colors = chart.Options.Theme.Resolve(ThemeMode.Dark);
         var missing = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-missing-cell"));
         var stroke = ChartColor.FromHex((string)missing.Attribute("stroke")!);
@@ -59,7 +59,7 @@ public sealed class CategoricalHeatmapTests {
         var labels = ByRole(XDocument.Parse(chart.ToSvg()), "data-label").Select(label => label.Value).ToArray();
         Assert.Equal(new[] { "3", "1" }, labels);
 
-        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        chart.Options.Heatmap.ValueTextMode = ChartHeatmapValueTextMode.Hidden;
         Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
     }
 
@@ -114,14 +114,14 @@ public sealed class CategoricalHeatmapTests {
         Assert.Throws<InvalidOperationException>(() => mixed.ToSvg());
 
         var duplicate = CreateChart();
-        duplicate.Options.StateCategories.Add(new ChartStateCategory("pass", "Again", Critical));
+        duplicate.Options.StateTimeline.Categories.Add(new ChartStateCategory("pass", "Again", Critical));
         Assert.Throws<InvalidOperationException>(() => duplicate.ToPng());
     }
 
     [Fact]
     public void ToSvg_TitleAndWrappingLegend_StayBelowColumnLabelsWithoutOverlap() {
         var categories = Enumerable.Range(0, 9).Select(index => new ChartStateCategory("s" + index.ToString(CultureInfo.InvariantCulture), "Category number " + index.ToString(CultureInfo.InvariantCulture), Pass)).ToArray();
-        var chart = Chart.Create().WithSize(520, 360).WithLegendPosition(ChartLegendPosition.Bottom).WithXAxis("Checks").WithStateCategories(categories).WithXLabels("A", "B", "C")
+        var chart = Chart.Create().Size(520, 360).Legend(l => l.Position(ChartLegendPosition.Bottom)).XAxis(x => x.Title("Checks")).StateCategories(categories).XLabels("A", "B", "C")
             .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("s0"), new ChartHeatmapCell("s1"), new ChartHeatmapCell("s2"));
         var svg = XDocument.Parse(chart.ToSvg());
         var legendRows = ByRole(svg, "state-legend-swatch").Select(swatch => Number(swatch, "y")).Distinct().ToArray();
@@ -146,7 +146,7 @@ public sealed class CategoricalHeatmapTests {
 
     [Fact]
     public void ToSvg_UnregisteredKeyAndTrailingMask_FallBackAndKeepColumns() {
-        var chart = Chart.Create().WithSize(520, 260).WithXLabels("A", "B", "C")
+        var chart = Chart.Create().Size(520, 260).XLabels("A", "B", "C")
             .AddHeatmapCategoryRow("DC01", new List<ChartHeatmapCell> { new("pending"), new("pending") })
             .AddHeatmapCategoryRow("DC02", new ChartHeatmapCell("pending"), null, null);
         var svg = XDocument.Parse(chart.ToSvg());
@@ -162,7 +162,7 @@ public sealed class CategoricalHeatmapTests {
     [InlineData(720)]
     public void Render_ManyStyledCategories_BudgetLegendAndKeepCellsVisible(int width) {
         var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Pass)).ToArray();
-        var chart = Chart.Create().WithSize(width, 400).WithStateCategories(states).WithXLabels("A", "B")
+        var chart = Chart.Create().Size(width, 400).StateCategories(states).XLabels("A", "B")
             .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("s0", "1", href: "#evidence"), new ChartHeatmapCell("s1"));
         chart.Options.LegendStyle.FontSize = 32;
         var svg = XDocument.Parse(chart.ToSvg());
@@ -177,7 +177,7 @@ public sealed class CategoricalHeatmapTests {
 
     [Fact]
     public void ToSvg_RepeatedTooltips_KeepDistinctStableCellIdentities() {
-        var chart = Chart.Create().WithSize(390, 300).WithXLabels("A", "B")
+        var chart = Chart.Create().Size(390, 300).XLabels("A", "B")
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"))
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("pass", tooltip: "Open evidence"), new ChartHeatmapCell("pass", tooltip: "Open evidence"));
         var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
@@ -190,15 +190,15 @@ public sealed class CategoricalHeatmapTests {
 
     [Fact]
     public void ToPng_AutoMode_RetainsShortTextThatFitsDenseCategoricalCells() {
-        var chart = Chart.Create().WithSize(560, 240)
+        var chart = Chart.Create().Size(560, 240)
             .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
         chart.Options.ShowAxes = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
         Assert.All(cells, cell => Assert.InRange(Number(cell, "width"), 34, 45));
         Assert.Equal(12, ByRole(XDocument.Parse(chart.ToSvg()), "data-label").Length);
         var auto = chart.ToPng();
-        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Always;
+        chart.Options.Heatmap.ValueTextMode = ChartHeatmapValueTextMode.Always;
         Assert.Equal(chart.ToPng(), auto);
     }
 
@@ -207,36 +207,36 @@ public sealed class CategoricalHeatmapTests {
     [InlineData("LONG COUNT", 13)]
     [InlineData("1", 80)]
     public void AutoMode_HidesCategoricalTextThatDoesNotFitAtConfiguredSize(string text, double fontSize) {
-        var chart = Chart.Create().WithSize(560, 240)
+        var chart = Chart.Create().Size(560, 240)
             .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", text)).ToArray());
         chart.Options.ShowAxes = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.DataLabelStyle.FontSize = fontSize;
         Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
         var auto = chart.ToPng();
-        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        chart.Options.Heatmap.ValueTextMode = ChartHeatmapValueTextMode.Hidden;
         Assert.Equal(chart.ToPng(), auto);
     }
 
     [Fact]
     public void AutoMode_MeasuresPointLabelOverrideInBothRenderers() {
-        var chart = Chart.Create().WithSize(560, 240)
+        var chart = Chart.Create().Size(560, 240)
             .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
         chart.Options.ShowAxes = false;
-        chart.Options.ShowLegend = false;
-        foreach (var index in Enumerable.Range(0, 12)) chart.Series[0].WithPointLabel(index, "LONG COUNT");
+        chart.Options.Legend.Visible = false;
+        foreach (var index in Enumerable.Range(0, 12)) chart.Series[0].PointLabel(index, "LONG COUNT");
         Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"));
         var auto = chart.ToPng();
-        chart.Options.HeatmapValueTextMode = ChartHeatmapValueTextMode.Hidden;
+        chart.Options.Heatmap.ValueTextMode = ChartHeatmapValueTextMode.Hidden;
         Assert.Equal(chart.ToPng(), auto);
     }
 
     [Fact]
     public void AutoMode_UsesReadableMinimumForTinyConfiguredFonts() {
-        var chart = Chart.Create().WithSize(560, 240)
+        var chart = Chart.Create().Size(560, 240)
             .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
         chart.Options.ShowAxes = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.DataLabelStyle.FontSize = 2;
         Assert.All(ByRole(XDocument.Parse(chart.ToSvg()), "data-label"), label => Assert.True(Number(label, "font-size") >= 8));
         var tiny = chart.ToPng();
@@ -249,24 +249,24 @@ public sealed class CategoricalHeatmapTests {
     [InlineData(ChartDataLabelPlacement.Right)]
     [InlineData(ChartDataLabelPlacement.Outside)]
     public void CategoricalCenteredLabels_DoNotReserveUnusedSideLanes(ChartDataLabelPlacement placement) {
-        var chart = Chart.Create().WithSize(560, 240).WithDataLabels()
+        var chart = Chart.Create().Size(560, 240).DataLabels()
             .AddHeatmapCategoryRow("Service", Enumerable.Range(0, 12).Select(_ => new ChartHeatmapCell("pass", "1")).ToArray());
         chart.Options.ShowAxes = false;
-        chart.Options.ShowLegend = false;
-        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Center;
+        chart.Options.Legend.Visible = false;
+        chart.Options.DataLabels.Placement = ChartDataLabelPlacement.Center;
         var centered = chart.ToSvg();
         var centeredPng = chart.ToPng();
-        chart.Options.DataLabelPlacement = placement;
+        chart.Options.DataLabels.Placement = placement;
         Assert.Equal(centered, chart.ToSvg());
         Assert.Equal(centeredPng, chart.ToPng());
     }
 
-    private static Chart CreateChart() => Chart.Create().WithSize(720, 320)
-        .WithStateCategories(
+    private static Chart CreateChart() => Chart.Create().Size(720, 320)
+        .StateCategories(
             new ChartStateCategory("pass", "Passed", Pass),
             new ChartStateCategory("critical", "Critical", Critical),
             new ChartStateCategory("notEvaluated", "Not evaluated", Neutral, ChartStatePattern.Hatched))
-        .WithXLabels("Replication", "LDAP", "Backup")
+        .XLabels("Replication", "LDAP", "Backup")
         .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass"), new ChartHeatmapCell("critical", "3", href: "#dc01-ldap"), new ChartHeatmapCell("notEvaluated"))
         .AddHeatmapCategoryRow("DC02", new ChartHeatmapCell("pass"), null, new ChartHeatmapCell("critical", "1", "Backup is 9 days old", "evidence/dc02.html#backup"));
 

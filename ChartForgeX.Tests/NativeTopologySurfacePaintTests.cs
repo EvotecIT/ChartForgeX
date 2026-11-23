@@ -104,14 +104,14 @@ public sealed class NativeTopologySurfacePaintTests {
     [Fact]
     public void LiveForceGraphCannotSilentlyDropNativeSurfacePaints() {
         var chart=Chart();chart.Nodes[0].StrokeWidth=3;Capture(chart.ToVisualArtifact(),"native-surface-before-live-host-rejection");
-        Assert.Throws<NotSupportedException>(()=>chart.ToSvg(new TopologyRenderOptions{EnableHtmlInteractions=true,EnableHtmlForceGraphControls=true}));
+        Assert.Throws<NotSupportedException>(()=>chart.ToSvg(new TopologyRenderOptions{ Html = { Interactions = true, ForceGraphControls = true } }));
     }
 
     [Theory]
     [InlineData(TopologyNodeShape.Actor, TopologyNodeDisplayMode.Card)]
     [InlineData(TopologyNodeShape.DoubleCircle, TopologyNodeDisplayMode.Icon)]
     public void CapturedFigureSurfaceWidthsAndDashesRetainOneOriginalUnitProjection(TopologyNodeShape shape, TopologyNodeDisplayMode mode) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(360, 260, 16).WithLegend(null);
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(360, 260, 16)).Legend((TopologyLegend?)null);
         foreach (var x in new[] { 100d, 800d }) {
             var node = new TopologyNode { Id = "node-" + x, X = x, Y = 80, Width = 140, Height = 150,
                 Shape = shape, DisplayMode = mode, PreserveDisplayModeSize = true, ShowLabel = false,
@@ -166,7 +166,7 @@ public sealed class NativeTopologySurfacePaintTests {
     }
 
     private static TopologyChart Chart() {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(300,250,0).WithLegend(null);
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(300, 250, 0)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode{Id="node",Label="Node",X=60,Y=60,Width=100,Height=80,Shape=TopologyNodeShape.Rectangle,BackgroundColor="#ff0000",Color="#ff0000",ShowStatusBadge=false,PreserveDisplayModeSize=true});return chart;
     }
     private static PreparedVisual Prepare(TopologyChart chart)=>chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(300,250),0),

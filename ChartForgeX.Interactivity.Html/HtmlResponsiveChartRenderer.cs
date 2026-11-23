@@ -93,7 +93,7 @@ public sealed class HtmlResponsiveChartRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (minimumWidth < 160 || maximumWidth < minimumWidth || maximumWidth > 8192) throw new ArgumentOutOfRangeException(nameof(minimumWidth));
         if (height <= 0 || printWidth <= 0) throw new ArgumentOutOfRangeException(nameof(height));
-        var size = chart.Options.Size; var x = chart.Options.XAxis; var y = chart.Options.YAxis; var window = chart.Options.HeatmapColumnWindow;
+        var size = chart.Options.Size; var x = chart.Options.XAxis; var y = chart.Options.YAxis; var window = chart.Options.Heatmap.ColumnWindow;
         var drawingHeight = height ?? size.Height;
         var fallbackWidth = printWidth ?? Math.Max(minimumWidth, Math.Min(maximumWidth, size.Width));
         var auto = AutoTheme(chart);
@@ -108,7 +108,7 @@ public sealed class HtmlResponsiveChartRenderer {
             var runtime = HtmlRadialLayoutSpecification.Supports(chart) ? RadialScript.Value + Script.Value : Script.Value;
             return "<div data-cfx-responsive-chart" + auto?.RootAttributes + " style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
                 (assets ? "<style>" + Stylesheet + "</style>" + auto?.StyleElement : "") + fallback + payload + (assets ? (scriptNonce == null ? "<script>" : "<script nonce=\"" + WebUtility.HtmlEncode(scriptNonce) + "\">") + runtime + "</script>" : "") + "</div>";
-        } finally { if (auto != null) chart.Options.SvgColorVariables = null; chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.HeatmapColumnWindow = window; }
+        } finally { if (auto != null) chart.Options.SvgColorVariables = null; chart.Size(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.Heatmap.ColumnWindow = window; }
     }
     private static string Compress(string text) {
         using var buffer = new MemoryStream();

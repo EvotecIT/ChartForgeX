@@ -7,11 +7,11 @@ public static class FlowRecipe {
         if (variant is not ("wide" or "expanded"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or expanded.");
 
-        return FlowArtifact.Create("assessment-flow").WithSize(800, 533)
+        return FlowArtifact.Create("assessment-flow").Width(800).Height(533).Padding(24)
             .AddLane("service", "Service").AddLane("review", "Review")
             .AddStep("received", "Request received", FlowArtifactStepKind.Start, "service")
             .AddStep("decision", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
-            .ConfigureStep("decision", step => step.Width = 200)
+            .UpdateStep("decision", step => step.Width = 200)
             .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", Tone.Warning)
             .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", Tone.Success)
             .AddConnector("received", "decision", "Evaluate")

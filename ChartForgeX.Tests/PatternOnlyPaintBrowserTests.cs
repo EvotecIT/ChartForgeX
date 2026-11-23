@@ -69,8 +69,8 @@ public sealed class PatternOnlyPaintBrowserTests {
     [InlineData(true)]
     public async Task PatternSwatchWithoutCaptionInkRemainsAPhysicalLegendTarget(bool pointLegend) {
         if (!Enabled) return;
-        var chart = Create(ChartSeriesKind.Bar, false).WithTransparentBackground().WithCard(false).WithPlotBackground(false).WithPointLegend(pointLegend)
-            .ConfigureLegendStyle(style => style.WithColor("#00000000"));
+        var chart = Create(ChartSeriesKind.Bar, false).TransparentBackground().ShowCard(false).ShowPlotBackground(false).Legend(l => l.ShowPoints(pointLegend))
+            .LegendStyle(style => style.Color(ChartColor.FromHex("#00000000")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var name = "pattern-only-legend-" + (pointLegend ? "point" : "series"); await NativeAsync(prepared, name);
         var fragment = chart.ToInteractiveHtmlFragment();
@@ -125,7 +125,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         if (!Enabled) return;
         var chart = NumericRadialEncodedGeometryTests.Create(bars);
         if (!collapse) chart.Series[0].Points[0] = new ChartPoint(1, 0);
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         var name = "pattern-retained-" + (bars ? "bar" : "column") + "-" + (collapse ? "collapse" : "zero");
         await NativeAsync(chart.Prepare(VisualExportRequest.ForChart(chart).Context), name);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
@@ -156,7 +156,7 @@ public sealed class PatternOnlyPaintBrowserTests {
     [InlineData(true)]
     public async Task PatternedSharedCollapsedSliceRequiresItsPaintedSeparator(bool donut) {
         if (!Enabled) return;
-        var chart = NumericRadialEncodedGeometryTests.SharedStrokedSlice(donut); chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        var chart = NumericRadialEncodedGeometryTests.SharedStrokedSlice(donut); chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         chart.Series[0].Points.Clear();
         foreach (var replacement in new[] { new ChartPoint(1, 100000000), new ChartPoint(2, 1), new ChartPoint(3, 70000000) }) chart.Series[0].Points.Add(replacement);
         var name = "pattern-collapsed-" + (donut ? "donut" : "pie");
@@ -179,12 +179,12 @@ public sealed class PatternOnlyPaintBrowserTests {
     [BrowserFact]
     public async Task EncodedCollapsedSunburstPatternCannotReplaceAnAbsentSeparator() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).Legend(false).DataLabels(false)
             .AddSunburst("Observed", new[] { new ChartHierarchyItem("Root", "Root"),
                 new ChartHierarchyItem("Large A", "Large A", "Root", 100000000),
                 new ChartHierarchyItem("Tiny", "Tiny", "Root", 1),
                 new ChartHierarchyItem("Large B", "Large B", "Root", 70000000) });
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch).WithDataLabels(false);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch).ShowDataLabels(false);
         const string name = "pattern-collapsed-sunburst";
         await NativeAsync(chart.Prepare(VisualExportRequest.ForChart(chart).Context), name);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
@@ -201,8 +201,8 @@ public sealed class PatternOnlyPaintBrowserTests {
     }
 
     internal static Chart Create(ChartSeriesKind kind, bool dark) {
-        var chart = Chart.Create().WithSize(dark ? 360 : 760, dark ? 360 : 440).WithHeader(false).WithLegend().WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(dark ? 360 : 760, dark ? 360 : 440).ShowHeader(false).Legend().Axes(false).ShowGrid(false)
+            .DataLabels(false).Bars(b => b.Style(ChartBarStyle.Flat)).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 70), new ChartPoint(3, 50) };
         switch (kind) {
             case ChartSeriesKind.Bar: chart.AddBar("Hatched observations", points); break;
@@ -213,10 +213,10 @@ public sealed class PatternOnlyPaintBrowserTests {
             case ChartSeriesKind.RadialBar: chart.AddRadialBar("Hatched observations", points); break;
             case ChartSeriesKind.RadialColumn: chart.AddRadialColumn("Hatched observations", points); break;
         }
-        chart.WithYAxisBounds(0, 100);
-        chart.Series[0].WithColor((dark ? ChartColor.FromRgb(0, 0, 0) : ChartColor.FromRgb(255, 255, 255)).WithAlpha(0)).WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.YAxis(y => y.Bounds(0, 100));
+        chart.Series[0].Color((dark ? ChartColor.FromRgb(0, 0, 0) : ChartColor.FromRgb(255, 255, 255)).WithAlpha(0)).FillPattern(ChartFillPattern.Crosshatch);
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Area or ChartSeriesKind.Radar)
-            chart.Series[0].ConfigureMarkers(markers => markers.Radius = kind == ChartSeriesKind.Scatter ? 12 : 0);
+            chart.Series[0].Markers(markers => markers.Radius = kind == ChartSeriesKind.Scatter ? 12 : 0);
         return chart;
     }
 

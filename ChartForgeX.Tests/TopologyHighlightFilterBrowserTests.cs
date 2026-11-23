@@ -17,13 +17,13 @@ public sealed class TopologyHighlightFilterBrowserTests {
     [InlineData(true, true)]
     public async Task FilterVisibilityRefreshesRetainedNodeAndEdgeHighlights(bool force, bool dark) {
         if (!Enabled) return;
-        var chart = TopologyChart.Create().WithViewport(900, 400, 20).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(900, 400, 20)).Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddNode("a", "API", 80, 140).AddNode("b", "Worker", 370, 140).AddNode("c", "Queue", 670, 140)
             .AddEdge("ab", "a", "b", "Dispatch");
         if (force) chart.LayoutMode = TopologyLayoutMode.ForceDirected;
         await using var session = await OpenAsync(new HtmlInteractiveTopologyRenderer().RenderPage(chart,
-            new TopologyRenderOptions { EnableHtmlSelectionPanel = false, EnableHtmlForceGraphControls = force }), dark ? 390 : 1440, 720);
+            new TopologyRenderOptions { Html = { SelectionPanel = false, ForceGraphControls = force } }), dark ? 390 : 1440, 720);
         var page = session.Page;
         var prefix = (force ? "force" : "manual") + (dark ? "-dark" : "-light");
         await Command(page, "cfx-topology-highlight", new { nodeIds = new[] { "missing" }, dim = true });

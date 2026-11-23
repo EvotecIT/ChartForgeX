@@ -49,7 +49,7 @@ public sealed class StackedAreaLogarithmicMissingDataTests {
     public void EmptyAlignedMemberHasNoInventedLogarithmicObservation(bool negative) {
         var chart = Model(negative, false, ChartStackedAreaMissingDataPolicy.Zero);
         chart.AddSeries(new ChartSeries(new ChartSeriesId("empty"), "Empty", ChartSeriesKind.StackedArea, Array.Empty<ChartPoint>())
-            .WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Zero));
+            .StackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Zero));
         var prepared = Prepare(chart); Assert.NotEmpty(prepared.ToSvg()); Assert.NotEmpty(prepared.ToPng());
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "point"));
     }
@@ -64,16 +64,16 @@ public sealed class StackedAreaLogarithmicMissingDataTests {
 
     private static Chart Model(bool negative, bool secondary, ChartStackedAreaMissingDataPolicy policy) {
         var sign = negative ? -1 : 1;
-        var chart = Chart.Create().WithSize(600, 400).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(600, 400).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
         chart.AddSeries(new ChartSeries(new ChartSeriesId("lower"), "Lower", ChartSeriesKind.StackedArea,
-            new[] { new ChartPoint(0, sign * 2), new ChartPoint(1, sign * 3), new ChartPoint(2, sign * 4) }).WithStackedAreaMissingData(policy));
+            new[] { new ChartPoint(0, sign * 2), new ChartPoint(1, sign * 3), new ChartPoint(2, sign * 4) }).StackedAreaMissingData(policy));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("upper"), "Upper", ChartSeriesKind.StackedArea,
-            new[] { new ChartPoint(0, sign * 3), new ChartPoint(1, sign * 5), new ChartPoint(2, sign * 6) }).WithStackedAreaMissingData(policy));
-        foreach (var series in chart.Series) { if (secondary) series.UseSecondaryValueAxis(); series.ConfigureMarkers(markers => markers.Enabled = false); }
+            new[] { new ChartPoint(0, sign * 3), new ChartPoint(1, sign * 5), new ChartPoint(2, sign * 6) }).StackedAreaMissingData(policy));
+        foreach (var series in chart.Series) { if (secondary) series.SecondaryAxis(); series.Markers(markers => markers.Enabled = false); }
         if (secondary) chart.AddLine("Primary context", new[] { new ChartPoint(0, 1), new ChartPoint(2, 2) });
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-        axis.WithLogarithmicScale(10, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
-            .WithBounds(negative ? -32 : 1, negative ? -1 : 32).WithReversal(negative == secondary);
+        axis.LogarithmicScale(10, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
+            .Bounds(negative ? -32 : 1, negative ? -1 : 32).Reversed(negative == secondary);
         return chart;
     }
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 400)),

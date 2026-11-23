@@ -158,7 +158,7 @@ internal static class RetainedSurfaceFixture {
     internal static readonly VisualRenderOptions Pixels = new(supersampling: 1);
 
     internal static SequenceArtifact Model(int width, bool dark) {
-        var sequence = SequenceArtifact.Create("retained-surfaces").WithSize(width, 900)
+        var sequence = SequenceArtifact.Create("retained-surfaces").Width(width).Height(900)
             .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)
             .AddMessage("A", "B", "Save").AddMessage("B", "A", "Stored");

@@ -15,16 +15,16 @@ public static class HeroSignInsWebsiteRecipe {
 #region chart
         var (series, weeks, values) = SignInData();
         var chart = Chart.Create()
-            .WithTitle("Sign-ins by method")
-            .WithSubtitle("Weekly sign-ins across the tenant, last 12 weeks")
-            .WithYAxis("Sign-ins")
-            .WithThemeMode(mode)
-            .ConfigureAccessibility(a => a.WithTextAlternative(
+            .Title("Sign-ins by method")
+            .Subtitle("Weekly sign-ins across the tenant, last 12 weeks")
+            .YAxis(y => y.Title("Sign-ins"))
+            .ThemeMode(mode)
+            .Accessibility(a => a.TextAlternative(
                 "Sign-ins by method",
                 "Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline.",
                 "en"))
-            .WithSize(800, 450)
-            .WithXLabels(weeks)
+            .Size(800, 450)
+            .XLabels(weeks)
             .AddStackedArea(series[0], Points(values[0]))
             .AddStackedArea(series[1], Points(values[1]))
             .AddStackedArea(series[2], Points(values[2]))

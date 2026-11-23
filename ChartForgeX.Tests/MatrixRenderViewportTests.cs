@@ -65,10 +65,10 @@ public sealed class MatrixRenderViewportTests {
     }
 
     private static Chart Create(bool hexagonal, int width, int height, double? angle) {
-        var chart = Chart.Create().WithSize(width, height).WithXLabels(Captions).WithDataLabels(false);
+        var chart = Chart.Create().Size(width, height).XLabels(Captions).DataLabels(false);
         if (hexagonal) chart.AddHexbinHeatmapRow("Service", Enumerable.Range(1, Captions.Length).Select(index => (double)index).ToArray());
         else chart.AddHeatmapRow("Service", Enumerable.Range(1, Captions.Length).Select(index => (double)index).ToArray());
-        if (angle.HasValue) chart.Options.XAxisLabelAngle = angle.Value;
+        if (angle.HasValue) chart.Options.XAxis.LabelAngle = angle.Value;
         return chart;
     }
 

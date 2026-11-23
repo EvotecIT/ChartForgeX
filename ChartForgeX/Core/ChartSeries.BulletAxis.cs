@@ -11,7 +11,7 @@ public sealed partial class ChartSeries {
     public ChartAxis? BulletAxis => _bulletAxis?.Clone();
 
     /// <summary>Atomically captures one bullet row's numeric bounds, scale, reversal and caption policy.</summary>
-    public ChartSeries ConfigureBulletAxis(Action<ChartAxis> configure) {
+    internal ChartSeries SetBulletAxis(Action<ChartAxis> configure) {
         RequireObservationKind(ChartSeriesKind.Bullet);
         var axis = ChartOptionConfiguration.Configure(_bulletAxis ?? new ChartAxis(), configure, candidate => candidate.Clone());
         ValidateBulletAxis(axis); _bulletAxis = axis; return this;

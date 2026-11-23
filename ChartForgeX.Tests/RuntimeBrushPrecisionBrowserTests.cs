@@ -22,12 +22,12 @@ public sealed class RuntimeBrushPrecisionBrowserTests {
         var native = instants.Select(instant => new ChartPoint(instant, 0).X).ToArray();
         var points = instants.Select((instant, index) => new ChartPoint(instant, horizontal ? 2 + index * 3 : native[index])).ToArray();
         var chart = Frame(horizontal).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("precise"), "Precise readings", points)
-            .WithObservationIds(new[] { new ChartObservationId("start"), new ChartObservationId("middle"), new ChartObservationId("last") }));
+            .ObservationIds(new[] { new ChartObservationId("start"), new ChartObservationId("middle"), new ChartObservationId("last") }));
         if (horizontal) {
-            chart.Options.LineOrientation = ChartOrientation.Horizontal;
-            chart.WithXAxisBounds(0, 10).WithYAxisBounds(native[0], native[^1]);
+            chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+            chart.XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(native[0], native[^1]));
         } else {
-            chart.WithXAxisTimeScale().WithXAxisBounds(native[0], native[^1]).WithYAxisBounds(native[0], native[^1]);
+            chart.XAxis(x => x.TimeScale().Bounds(native[0], native[^1])).YAxis(y => y.Bounds(native[0], native[^1]));
         }
         chart.Options.YAxis.Scale = ChartScaleKind.Time;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureBrush), horizontal ? 390 : 940, 620);
@@ -72,13 +72,13 @@ public sealed class RuntimeBrushPrecisionBrowserTests {
         var values = new[] { 20d, 40, 60, 80 };
         var labels = new[] { new ChartAxisLabel(0, "Low"), new ChartAxisLabel(100, "High") };
         var chart = Frame(horizontal).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("numeric"), "Measurements", values.Select(value => new ChartPoint(value, 5)))
-            .WithObservationIds(values.Select(value => new ChartObservationId("reading-" + value)).ToArray()));
+            .ObservationIds(values.Select(value => new ChartObservationId("reading-" + value)).ToArray()));
         if (horizontal) {
-            chart.Options.LineOrientation = ChartOrientation.Horizontal;
-            chart.WithXAxisBounds(0, 10).WithYAxisBounds(0, 100);
+            chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+            chart.XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100));
             chart.Options.YAxis.Labels.AddRange(labels);
         } else {
-            chart.WithXAxisBounds(0, 100).WithYAxisBounds(0, 10).WithXLabels((IEnumerable<ChartAxisLabel>)labels);
+            chart.XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 10)).XLabels((IEnumerable<ChartAxisLabel>)labels);
         }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureBrush), horizontal ? 390 : 940, 620);
         var errors = new List<string>();
@@ -107,9 +107,9 @@ public sealed class RuntimeBrushPrecisionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Frame(bool horizontal) => Chart.Create().WithSize(horizontal ? 340 : 760, 390)
-        .WithHeader(false).WithLegend(false).WithDataLabels(false)
-        .WithTheme(VisualTheme.Graphite(), horizontal ? ThemeMode.Dark : ThemeMode.Light);
+    private static Chart Frame(bool horizontal) => Chart.Create().Size(horizontal ? 340 : 760, 390)
+        .ShowHeader(false).Legend(false).DataLabels(false)
+        .Theme(VisualTheme.Graphite()).ThemeMode(horizontal ? ThemeMode.Dark : ThemeMode.Light);
 
     private static void ConfigureBrush(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

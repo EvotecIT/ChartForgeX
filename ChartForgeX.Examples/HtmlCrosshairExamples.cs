@@ -11,10 +11,10 @@ public static class HtmlCrosshairExamples {
     /// <param name="dark">Whether to use the dark Graphite palette.</param>
     /// <returns>A complete interactive HTML page.</returns>
     public static string CreatePage(HtmlChartCrosshairLineStyle lineStyle, bool dark = false) {
-        var chart = Chart.Create().WithSize(800, 440).WithTitle(lineStyle + " crosshair lines")
-            .WithSubtitle("Hover a reading or nearby plot space to see the guide")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(800, 440).Title(lineStyle + " crosshair lines")
+            .Subtitle("Hover a reading or nearby plot space to see the guide")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Processing time", new[] { new ChartPoint(2, 7), new ChartPoint(5, 5), new ChartPoint(8, 3) });
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush);

@@ -18,20 +18,20 @@ public sealed partial class StandaloneViewportBrowserTests {
     private static FamilyCase Family(string name) {
         var points = Enumerable.Range(0, 13).Select(index => new ChartPoint(index, 10 + index * 6)).ToArray();
         var id = new ChartSeriesId("samples");
-        Chart Base() => Chart.Create().WithSize(800, 440).WithTitle("Saved " + name).WithLegend().WithDataLabels(false);
-        ChartSeries Marked(ChartSeries series) => series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
+        Chart Base() => Chart.Create().Size(800, 440).Title("Saved " + name).Legend().DataLabels(false);
+        ChartSeries Marked(ChartSeries series) => series.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
         const string Observation = "[data-cfx-series-key=samples][data-cfx-point='4'] ";
         return name switch {
             "horizontal-bar" => new(name, Base().AddSeries(new ChartSeries(id, "Samples", ChartSeriesKind.HorizontalBar, points.Take(6))),
                 "[data-cfx-series-key=samples][data-cfx-point='2'] path,[data-cfx-series-key=samples][data-cfx-point='2'] rect", 11, 2,
                 "{x:{minimum:0,maximum:30},y:{minimum:0.5,maximum:3.5}}", "y", "x"),
-            "logarithmic" => new(name, Base().WithYAxisScale(ChartScaleKind.Logarithmic).AddSeries(Marked(ChartSeries.CreateLine(id, "Samples",
+            "logarithmic" => new(name, Base().YAxis(y => y.Scale(ChartScaleKind.Logarithmic)).AddSeries(Marked(ChartSeries.CreateLine(id, "Samples",
                 Enumerable.Range(0, 13).Select(index => new ChartPoint(index, Math.Pow(10, index / 3.0)))))),
                 "[data-cfx-series-key=samples][data-cfx-point='6'] :is(circle,ellipse,path)",
                 6, 100, "{x:{minimum:3,maximum:9},y:{minimum:10,maximum:1000}}", "x", Logarithmic: true),
-            "secondary-y" => new(name, Base().WithSecondaryYAxis("Throughput")
+            "secondary-y" => new(name, Base().SecondaryYAxis(s => s.Title("Throughput"))
                     .AddSeries(Marked(ChartSeries.CreateLine(id, "Samples", points)))
-                    .AddSeries(Marked(ChartSeries.CreateLine(new ChartSeriesId("throughput"), "Throughput", points.Select(point => new ChartPoint(point.X, point.Y * 1000)))).UseSecondaryValueAxis()),
+                    .AddSeries(Marked(ChartSeries.CreateLine(new ChartSeriesId("throughput"), "Throughput", points.Select(point => new ChartPoint(point.X, point.Y * 1000)))).SecondaryAxis()),
                 Observation + ":is(circle,ellipse,path)", 4, 34, "{x:{minimum:2,maximum:10},y:{minimum:20,maximum:80},secondaryY:{minimum:30000,maximum:90000}}", "x",
                 SecondaryMark: "[data-cfx-series-key=throughput][data-cfx-point='4'] :is(circle,ellipse,path)", SecondaryY: 34000),
             "bubble" => new(name, Base().AddSeries(ChartSeries.CreateBubble(id, "Samples", points.Select(point => new ChartBubble(point.X, point.Y, point.X + 1)))),
@@ -120,7 +120,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         if (!Enabled) return;
         var points = kind == ChartSeriesKind.Heatmap ? Enumerable.Range(0, 16).Select(index => new ChartPoint(index % 4, index / 4)).ToArray()
             : new[] { new ChartPoint(0, 4), new ChartPoint(1, 3), new ChartPoint(2, 2) };
-        var chart = Chart.Create().WithSize(800, 440).WithTitle("Declined " + kind).AddSeries(new ChartSeries(new ChartSeriesId("cells"), "Cells", kind, points));
+        var chart = Chart.Create().Size(800, 440).Title("Declined " + kind).AddSeries(new ChartSeries(new ChartSeriesId("cells"), "Cells", kind, points));
         await using var session = await OpenAsync(FamilyPage(chart), 980, 800);
         var page = session.Page;
         await MountAsync(page);

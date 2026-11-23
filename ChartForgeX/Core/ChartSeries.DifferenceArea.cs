@@ -10,14 +10,6 @@ public sealed partial class ChartSeries {
     }
     private ChartDifferenceAreaOptions _differenceArea = new();
 
-    /// <summary>Configures paired readout names and fills without changing authored values or boundary order.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureDifferenceArea(Action<ChartDifferenceAreaOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        DifferenceArea = ChartOptionConfiguration.Configure(DifferenceArea, configure, options => options.Clone()); return this;
-    }
-
     internal void ValidateDifferenceArea(ChartOptions options) {
         if (Kind != ChartSeriesKind.DifferenceArea) {
             if (DifferenceArea.IsConfigured) throw new InvalidOperationException("Series '" + Name + "' requires DifferenceArea for difference options.");

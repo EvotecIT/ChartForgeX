@@ -538,7 +538,7 @@ series ""Checks""
         Assert(result.Document!.Id == "result-mix", "Simple chart markup should map id.");
         Assert(result.Document.Chart.Title == "Result Mix", "Simple chart markup should map chart title.");
         Assert(result.Document.Chart.Series.Count == 1 && result.Document.Chart.Series[0].Kind == ChartSeriesKind.Pie, "Simple chart markup should build the requested chart kind.");
-        Assert(result.Document.Chart.Options.XAxisLabels.Count == 3, "Simple chart markup should preserve labels.");
+        Assert(result.Document.Chart.Options.XAxis.Labels.Count == 3, "Simple chart markup should preserve labels.");
         Assert(result.Document.Chart.ToSvg().Contains("data-cfx-role=\"pie-slice\"", StringComparison.Ordinal), "Simple chart markup should render through ChartForgeX chart SVG.");
     }
 
@@ -583,11 +583,11 @@ options:
         Assert(!result.HasErrors, "ChartForgeX chart options should parse without errors: " + Diagnostics(result));
         var chart = result.Document!.Chart;
         Assert(chart.Series[0].Kind == ChartSeriesKind.Line && chart.Series[0].Smooth, "Chart markup should map richer ChartForgeX chart type aliases.");
-        Assert(!chart.Options.ShowLegend, "Chart markup options should map ShowLegend.");
-        Assert(chart.Options.ShowDataLabels == true, "Chart markup options should map ShowDataLabels.");
-        Assert(chart.Options.LegendPosition == ChartLegendPosition.TopRight, "Chart markup options should map enum values.");
-        Assert(chart.XAxisTitle == "Month" && chart.YAxisTitle == "Count", "Chart markup options should map axis titles.");
-        Assert(chart.Options.YAxisMinimum == 0 && chart.Options.YAxisMaximum == 20, "Chart markup options should map axis bounds.");
+        Assert(!chart.Options.Legend.Visible, "Chart markup options should map ShowLegend.");
+        Assert(chart.Options.DataLabels.Visible == true, "Chart markup options should map ShowDataLabels.");
+        Assert(chart.Options.Legend.Position == ChartLegendPosition.TopRight, "Chart markup options should map enum values.");
+        Assert(chart.Options.XAxis.Title == "Month" && chart.Options.YAxis.Title == "Count", "Chart markup options should map axis titles.");
+        Assert(chart.Options.YAxis.Min == 0 && chart.Options.YAxis.Max == 20, "Chart markup options should map axis bounds.");
         Assert(!chart.Options.ShowGrid, "Chart markup options should map grid visibility.");
     }
 

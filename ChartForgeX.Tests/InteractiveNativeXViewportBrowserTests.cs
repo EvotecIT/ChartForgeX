@@ -127,11 +127,11 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     [InlineData(true, 380, ChartSeriesKind.StepLine)]
     public async Task NativeWindowWithoutObservationsKeepsCrossingPaintWithoutInventingTargets(bool dark, int width, ChartSeriesKind kind) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("A native window between observations").WithSubtitle("The connected path crosses this window; source observations remain outside")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(800, 440).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("A native window between observations").Subtitle("The connected path crosses this window; source observations remain outside")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(new ChartSeries(new ChartSeriesId("crossing"), "Crossing", kind, new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) })
-                .WithObservationId(0, new ChartObservationId("outside-left")).WithObservationId(1, new ChartObservationId("outside-right")));
+                .ObservationId(0, new ChartObservationId("outside-left")).ObservationId(1, new ChartObservationId("outside-right")));
         chart.Series[0].Markers.Enabled = false;
         var renderer = new HtmlInteractiveChartRenderer();
         var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), Configure);
@@ -199,7 +199,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         internal string BookmarkReplacement(string capability) {
             var chart = Chart();
             if (capability is "xy-missing-projections" or "legacy-unsupported" or "legacy-empty") {
-                chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).AddSeries(new ChartSeries(new ChartSeriesId("samples"), "Measurements",
+                chart = ChartForgeX.Core.Chart.Create().Size(_width, 440).AddSeries(new ChartSeries(new ChartSeriesId("samples"), "Measurements",
                     capability == "legacy-empty" ? ChartSeriesKind.Line : ChartSeriesKind.Pie,
                     capability == "legacy-empty" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(0, 3), new ChartPoint(12, 8) }));
             }
@@ -273,19 +273,19 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 ChartSeriesKind.DifferenceArea => ChartSeries.CreateDifferenceArea(id, "Measurements", points.Select(point => new ChartDifferencePoint(point.X, point.Y + 4, point.Y - 8))),
                 _ => new ChartSeries(id, "Measurements", _kind, points)
             };
-            if (_kind == ChartSeriesKind.Area) series.WithSmooth();
-            for (var index = 0; index < 13; index++) series.WithObservationId(index, new ChartObservationId("sample-" + index));
+            if (_kind == ChartSeriesKind.Area) series.Smooth();
+            for (var index = 0; index < 13; index++) series.ObservationId(index, new ChartObservationId("sample-" + index));
             if (_kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc))
-                series.ConfigureMarkers(markers => { markers.Enabled = true; if (_kind != ChartSeriesKind.Bubble) markers.Radius = _automaticBounds ? 18 : 4; });
-            var chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).WithTheme(VisualTheme.Graphite(), _dark ? ThemeMode.Dark : ThemeMode.Light)
-                .WithTitle("Inspect a native X window").WithSubtitle("Native ticks and fixed Y bounds follow the committed window")
-                .WithLegend().AddSeries(series)
+                series.Markers(markers => { markers.Enabled = true; if (_kind != ChartSeriesKind.Bubble) markers.Radius = _automaticBounds ? 18 : 4; });
+            var chart = ChartForgeX.Core.Chart.Create().Size(_width, 440).Theme(VisualTheme.Graphite()).ThemeMode(_dark ? ThemeMode.Dark : ThemeMode.Light)
+                .Title("Inspect a native X window").Subtitle("Native ticks and fixed Y bounds follow the committed window")
+                .Legend().AddSeries(series)
                 .AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.StepLine, new[] { new ChartPoint(Origin, 30), new ChartPoint(Maximum, 30) }));
-            if (!_automaticBounds) chart.WithXAxisBounds(Origin, Maximum).WithYAxisBounds(_yScale == ChartScaleKind.Logarithmic ? 1 : 0, _yScale == ChartScaleKind.Logarithmic ? 1000 : 100);
-            chart.WithYAxisScale(_yScale); chart.Options.YAxis.Reversed = _yReversed;
-            if (_time) chart.WithXAxisScale(ChartScaleKind.Time);
+            if (!_automaticBounds) chart.XAxis(x => x.Bounds(Origin, Maximum)).YAxis(y => y.Bounds(_yScale == ChartScaleKind.Logarithmic ? 1 : 0, _yScale == ChartScaleKind.Logarithmic ? 1000 : 100));
+            chart.YAxis(y => y.Scale(_yScale)); chart.Options.YAxis.Reversed = _yReversed;
+            if (_time) chart.XAxis(x => x.Scale(ChartScaleKind.Time));
             if (_sessions) {
-                chart.ConfigureXAxis(axis => axis.WithTimeSessions(new ChartTimeSessionDomain(new[] {
+                chart.XAxis(axis => axis.TimeSessions(new ChartTimeSessionDomain(new[] {
                     new ChartTimeSession(Origin, Coordinate(6)), new ChartTimeSession(Coordinate(7), Maximum)
                 })));
                 chart.AddSeries(new ChartSeries(new ChartSeriesId("companion"), "Companion", ChartSeriesKind.Line, points.Select(point => new ChartPoint(point.X, point.Y / 2))));

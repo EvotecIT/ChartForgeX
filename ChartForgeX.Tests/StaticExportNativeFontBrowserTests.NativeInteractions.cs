@@ -19,7 +19,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     public async Task CapturedRasterCaptionKeepsRealInputCuesVisibilityAndDetachedExports(string fixture, string owner) {
         if (!Enabled) return;
         var label = fixture.StartsWith("bitmap", StringComparison.Ordinal) ? "A" : "😀";
-        var chart = HtmlNativeLineInkTests.Model(fixture).WithAxes(false).WithHeader(false).WithLegend(owner == "legend");
+        var chart = HtmlNativeLineInkTests.Model(fixture).Axes(false).ShowHeader(false).Legend(owner == "legend");
         chart.ClearSeries();
         if (owner == "word") chart.AddWordCloud(label, new[] { new ChartWordCloudItem(label, 100) });
         else {
@@ -94,7 +94,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     public async Task RasterCaptionCannotReviveAHiddenSunburstObservation(string fixture) {
         if (!Enabled) return;
         var label = fixture.StartsWith("bitmap", StringComparison.Ordinal) ? "A" : "😀";
-        var chart = HtmlNativeLineInkTests.Model(fixture).WithAxes(false).WithHeader(false).WithLegend(false).WithDataLabels();
+        var chart = HtmlNativeLineInkTests.Model(fixture).Axes(false).ShowHeader(false).Legend(false).DataLabels();
         chart.ClearSeries();
         chart.AddSunburst("Items", new[] { new ChartHierarchyItem("root", label),
             new ChartHierarchyItem("a", label, "root", 60), new ChartHierarchyItem("b", label, "root", 40) });

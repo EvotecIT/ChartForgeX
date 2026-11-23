@@ -17,7 +17,7 @@ internal static partial class MermaidExamples {
                 });
                 if (parsed.HasErrors || parsed.Artifact?.Model is not ChartForgeX.Core.Chart chart)
                     throw new InvalidOperationException("The shared XY source must map to one native chart: " + string.Join("; ", parsed.Diagnostics.Select(item => item.Message)));
-                chart.WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
+                chart.Theme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily)).ThemeMode(mode);
                 var id = "mermaid-xy-source-depth-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, id + ".mmd"), source);
                 chart.SaveSvg(Path.Combine(output, id + ".svg")); chart.SavePng(Path.Combine(output, id + ".png"));

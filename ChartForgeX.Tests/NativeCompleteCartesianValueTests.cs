@@ -41,7 +41,7 @@ public sealed class NativeCompleteCartesianValueTests {
         var renderer = new HtmlInteractiveChartRenderer(); var model = Model(variant, 30); var from = renderer.PrepareSection(model); var to = renderer.PrepareSection(Model(variant, 40));
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null);
         NativeRadialValueMotionTests.Capture(from, to, frames, string.Empty, "complete-cartesian-detached-" + variant);
-        model.Series[0].Points.Clear(); model.ConfigureYAxis(axis => axis.Maximum = 300); model.WithFontFamily("Later caller font");
+        model.Series[0].Points.Clear(); model.YAxis(axis => axis.Max = 300); model.FontFamily("Later caller font");
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); for (var index = 0; index < frames.Count; index++) { Assert.Equal(frames[index].ToSvg(), repeated[index].ToSvg()); Assert.Equal(frames[index].ToPng(), repeated[index].ToPng()); } }
         finally { _ = BrowserProofFonts.Family; }
     }
@@ -49,10 +49,10 @@ public sealed class NativeCompleteCartesianValueTests {
     [Theory] [InlineData("changed-missing-policy")] [InlineData("changed-id")] [InlineData("changed-domain")] [InlineData("custom-format")]
     public void CompleteAdmissionRejectsChangedAuthoredStructurePolicyOrUncapturedFormatting(string condition) {
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareSection(Model("stacked-area-zero", 30)); var destination = Model("stacked-area-zero", 40);
-        if (condition == "changed-missing-policy") foreach (var row in destination.Series) row.WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Gap);
-        if (condition == "changed-id") destination.Series[0].WithObservationId(1, new ChartObservationId("changed"));
-        if (condition == "changed-domain") destination.ConfigureYAxis(axis => axis.Maximum = 200);
-        if (condition == "custom-format") destination.WithValueFormat(ChartValueFormat.Custom(value => "callback " + value));
+        if (condition == "changed-missing-policy") foreach (var row in destination.Series) row.StackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Gap);
+        if (condition == "changed-id") destination.Series[0].ObservationId(1, new ChartObservationId("changed"));
+        if (condition == "changed-domain") destination.YAxis(axis => axis.Max = 200);
+        if (condition == "custom-format") destination.ValueFormat(ChartValueFormat.Custom(value => "callback " + value));
         var to = renderer.PrepareSection(destination); var error = Record.Exception(() => renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)));
         NativeRadialMotionBeforeControls.Capture(from, "complete-cartesian-reject-" + condition + "-from"); NativeRadialMotionBeforeControls.Capture(to, "complete-cartesian-reject-" + condition + "-to");
         NativeRadialMotionBeforeControls.Save("complete-cartesian-reject-" + condition + ".facts.json", JsonSerializer.Serialize(new { error = error?.ToString() })); Assert.IsType<NotSupportedException>(error);

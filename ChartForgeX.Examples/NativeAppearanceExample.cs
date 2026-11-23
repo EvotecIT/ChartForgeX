@@ -47,9 +47,9 @@ public static class NativeAppearanceExample {
         if (mode != ThemeMode.Light && mode != ThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
         var width = variant == "compact" ? 390 : 760;
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithSize(width, 280).WithTheme(theme, mode)
-            .WithTitle("Capacity signals").WithXAxis("Cycle").WithYAxis("Ready")
-            .WithDataLabels(false).AddLine("Completed", new[] {
+        var chart = Chart.Create().Size(width, 280).Theme(theme).ThemeMode(mode)
+            .Title("Capacity signals").XAxis(x => x.Title("Cycle")).YAxis(y => y.Title("Ready"))
+            .DataLabels(false).AddLine("Completed", new[] {
                 new ChartPoint(1, 4), new ChartPoint(2, 8), new ChartPoint(3, 6), new ChartPoint(4, 12)
             });
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 280), 24),

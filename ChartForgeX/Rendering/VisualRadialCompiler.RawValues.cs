@@ -23,8 +23,8 @@ internal static partial class VisualRadialCompiler {
             Observe(OtherSliceLabel, aggregate);
             var total = Total(chart, GetSlices(chart, colors, series), series);
             var center = Style(chart, context, series, -1, colors.Foreground, context.Theme.Typography.CenterValueSize, 700);
-            Observe(chart.Options.DonutCenterValue ?? (total.FiniteTotal.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.FiniteTotal.Value) : FormatOverflowCenter(false)), center);
-            Observe(chart.Options.DonutCenterLabel ?? chart.Series[series].Name, aggregate);
+            Observe(chart.Options.Pie.CenterValue ?? (total.FiniteTotal.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.FiniteTotal.Value) : FormatOverflowCenter(false)), center);
+            Observe(chart.Options.Pie.CenterLabel ?? chart.Series[series].Name, aggregate);
         }
         void Observe(string value, TextStyle style) { builder.MeasureText(value, style); builder.MeasureText("Mg", style); builder.TextAscent(style); }
     }

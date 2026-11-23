@@ -10,23 +10,21 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void AxisVisibilityCanBeConfiguredIndependently() {
         var horizontal = Chart.Create()
-            .WithSize(520, 320)
-            .WithXAxis("Score")
-            .WithXAxisVisible(false)
-            .WithAxisLines(false)
-            .WithLegend(false)
-            .WithXLabels("Awareness", "Preference")
+            .Size(520, 320)
+            .XAxis(x => x.Title("Score").Visible(false))
+            .ShowAxisLines(false)
+            .Legend(false)
+            .XLabels("Awareness", "Preference")
             .AddHorizontalBar("Metric", Points(82, 64));
         var horizontalSvg = horizontal.ToSvg();
-        Assert(horizontal.Options.ShowAxes && !horizontal.Options.ShowXAxis && horizontal.Options.ShowYAxis && !horizontal.Options.ShowAxisLines, "Axis visibility should support hiding one axis while keeping the other and suppressing axis rules separately.");
+        Assert(horizontal.Options.ShowAxes && !horizontal.Options.XAxis.Visible && horizontal.Options.YAxis.Visible && !horizontal.Options.ShowAxisLines, "Axis visibility should support hiding one axis while keeping the other and suppressing axis rules separately.");
         Assert(horizontalSvg.Contains(">Awareness</text>", StringComparison.Ordinal), "Hiding the x-axis should keep horizontal bar category labels visible.");
         Assert(!horizontalSvg.Contains(">Score</text>", StringComparison.Ordinal), "Hiding the x-axis should suppress x-axis titles.");
         Assert(horizontal.ToPng().Length > 64, "Independent axis visibility should render PNG output.");
 
         var vertical = Chart.Create()
-            .WithSize(520, 320)
-            .WithYAxis("Count")
-            .WithYAxisVisible(false)
+            .Size(520, 320)
+            .YAxis(y => y.Title("Count").Visible(false))
             .AddBar("Values", Points(12, 24));
         var verticalSvg = vertical.ToSvg();
         Assert(!verticalSvg.Contains(">Count</text>", StringComparison.Ordinal), "Hiding the y-axis should suppress y-axis titles.");
@@ -36,10 +34,10 @@ internal static partial class SmokeTests {
         var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF00FF"); });
         var independentRules = Chart.Create()
-            .WithSize(360, 220)
-            .WithTheme(theme)
-            .WithGrid(false)
-            .WithLegend(false)
+            .Size(360, 220)
+            .Theme(theme)
+            .ShowGrid(false)
+            .Legend(false)
             .AddLine("Values", Points(12, 24));
         independentRules.Options.XAxis.ShowLine = false;
         independentRules.Options.YAxis.ShowLine = true;
@@ -48,11 +46,11 @@ internal static partial class SmokeTests {
         Assert(independentRules.ToPng().Length > 64, "Independent SVG and PNG axis-rule visibility should stay aligned.");
 
         var horizontalRules = Chart.Create()
-            .WithSize(420, 260)
-            .WithTheme(theme)
-            .WithGrid(false)
-            .WithLegend(false)
-            .WithXAxisVisible(false)
+            .Size(420, 260)
+            .Theme(theme)
+            .ShowGrid(false)
+            .Legend(false)
+            .XAxis(x => x.Visible(false))
             .AddHorizontalBar("Change", Points(-40, 40));
         horizontalRules.Options.XAxis.ShowLine = false;
         horizontalRules.Options.YAxis.ShowLine = true;
@@ -69,16 +67,16 @@ internal static partial class SmokeTests {
         hiddenSecondaryTheme = hiddenSecondaryTheme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF00FF"); });
         hiddenSecondaryTheme = hiddenSecondaryTheme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF00FF"); });
         var hiddenSecondary = Chart.Create()
-            .WithSize(420, 240)
-            .WithTheme(hiddenSecondaryTheme)
-            .WithGrid(false)
-            .WithLegend(false)
-            .WithXAxisVisible(false)
-            .WithYAxisVisible(false)
-            .WithSecondaryYAxis("Rate")
+            .Size(420, 240)
+            .Theme(hiddenSecondaryTheme)
+            .ShowGrid(false)
+            .Legend(false)
+            .XAxis(x => x.Visible(false))
+            .YAxis(y => y.Visible(false))
+            .SecondaryYAxis(s => s.Title("Rate"))
             .AddLine("Primary", Points(2, 4))
             .AddLine("Secondary", Points(20, 40));
-        hiddenSecondary.Series[1].UseSecondaryValueAxis();
+        hiddenSecondary.Series[1].SecondaryAxis();
         hiddenSecondary.Options.SecondaryYAxis.Visible = false;
         var hiddenSecondarySvg = hiddenSecondary.ToSvg();
         Assert(!hiddenSecondarySvg.Contains("secondary-y-axis", StringComparison.Ordinal), "A hidden secondary axis should suppress its rule, ticks, title, and layout reserve.");

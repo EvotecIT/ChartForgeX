@@ -66,27 +66,6 @@ public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
         return this;
     }
 
-    /// <summary>Sets how many bits are rendered per visual row.</summary>
-    public PacketLayoutBlock WithBitsPerRow(int bitsPerRow) { BitsPerRow = bitsPerRow; return this; }
-
-    /// <summary>Sets whether bit start and end numbers are rendered above fields.</summary>
-    public PacketLayoutBlock WithBitNumbers(bool visible = true) { ShowBitNumbers = visible; return this; }
-
-    /// <summary>Sets the visual bit direction within each row.</summary>
-    public PacketLayoutBlock WithBitOrder(PacketBitOrder order) { BitOrder = order; return this; }
-
-    /// <summary>Sets the preferred bit width; the renderer fits it to the available row width.</summary>
-    public PacketLayoutBlock WithBitWidth(double? width) { BitWidth = width; return this; }
-
-    /// <summary>Sets the preferred field height; the renderer fits it to the available row height.</summary>
-    public PacketLayoutBlock WithRowHeight(double? height) { RowHeight = height; return this; }
-
-    /// <summary>Sets the preferred gap between fields; each field retains positive width.</summary>
-    public PacketLayoutBlock WithFieldGap(double? gap) { FieldGap = gap; return this; }
-
-    /// <summary>Sets the preferred gap between rows; the renderer fits it to the available height.</summary>
-    public PacketLayoutBlock WithRowGap(double? gap) { RowGap = gap; return this; }
-
     private static double? Dimension(double? value, double minimum, string name) {
         if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value < minimum))
             throw new ArgumentOutOfRangeException(name, value, "Packet layout dimensions must be finite and meet their minimum size.");

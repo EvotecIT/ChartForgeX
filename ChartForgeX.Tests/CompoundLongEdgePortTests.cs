@@ -75,8 +75,8 @@ public sealed class CompoundLongEdgePortTests {
     [InlineData(TopologyLayoutDirection.TopToBottom, true)]
     [InlineData(TopologyLayoutDirection.BottomToTop, true)]
     public void PackedLongEdgeKeepsOrthogonalEndLegsAndASeparateTargetPort(TopologyLayoutDirection direction, bool shaped = false) {
-        var chart = TopologyChart.Create().WithViewport(1200, 800).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 800)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoGroup("a", "A").AddAutoGroup("b", "B")
             .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
             .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")

@@ -23,15 +23,14 @@ internal static class GalleryVisuals {
         Chart Composition(ThemeMode mode) {
             var palette = VisualTheme.Graphite().Resolve(mode).Palette;
             var chart = Chart.Create()
-                .WithThemeMode(mode)
-                .WithTransparentBackground()
-                .WithCard(false)
-                .WithHeader(false)
-                .WithLegend(false)
-                .WithSize(560, 300)
-                .WithStackedBars()
-                .WithStackTotals()
-                .WithXLabels(Enumerable.Reverse(categories).Select(category => category.Label).ToArray());
+                .ThemeMode(mode)
+                .TransparentBackground()
+                .ShowCard(false)
+                .ShowHeader(false)
+                .Legend(false)
+                .Size(560, 300)
+                .Bars(b => b.Stacked().ShowTotals())
+                .XLabels(Enumerable.Reverse(categories).Select(category => category.Label).ToArray());
             for (var index = 0; index < rows; index++) {
                 var row = rows - index;
                 var points = new[] { new ChartPoint(row, counts[index]) };

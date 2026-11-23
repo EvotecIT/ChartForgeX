@@ -87,10 +87,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 new ChartHierarchyItem(ids[(int)point.X - 1], labels[(int)point.X - 1], value: point.Y)))
             : new ChartSeries(new ChartSeriesId("regions-source"), "Regions", kind, ordered);
         for (var index = 0; index < ordered.Length; index++)
-            series.WithObservationId(index, new ChartObservationId(ids[(int)ordered[index].X - 1]));
-        return Chart.Create().WithSize(640, 380).WithTitle("Regional measurements")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels(labels).WithLegend().WithPointLegend().WithDataLabels(false).AddSeries(series);
+            series.ObservationId(index, new ChartObservationId(ids[(int)ordered[index].X - 1]));
+        return Chart.Create().Size(640, 380).Title("Regional measurements")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels(labels).Legend().Legend(l => l.ShowPoints()).DataLabels(false).AddSeries(series);
     }
 
     private static Task<JsonElement> PointLegendStateAsync(IPage page, string selector) => page.Locator(Root).EvaluateAsync<JsonElement>("""

@@ -18,8 +18,8 @@ public sealed class ChartAxisWindowExtendedFamilyTests {
     public void NumericAndTimeWindowsKeepTupleIdentityAndFullValueDomain(ChartSeriesKind kind, bool reversed) {
         foreach (var time in new[] { false, true }) {
             var origin = time ? new DateTime(2026, 1, 28, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
-            var chart = Create(kind, origin).WithXAxisBounds(origin, origin + 10);
-            if (time) chart.WithXAxisScale(ChartScaleKind.Time);
+            var chart = Create(kind, origin).XAxis(x => x.Bounds(origin, origin + 10));
+            if (time) chart.XAxis(x => x.Scale(ChartScaleKind.Time));
             chart.Options.XAxis.Reversed = reversed;
             var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 380)), VisualTheme.Graphite());
             var full = chart.Prepare(context);
@@ -41,7 +41,7 @@ public sealed class ChartAxisWindowExtendedFamilyTests {
             Assert.Equal(kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? "open" : kind == ChartSeriesKind.DifferenceArea ? "first" : "lower",
                 observations[1].Attributes().First(attribute => attribute.Name.LocalName is "data-cfx-open" or "data-cfx-first" or "data-cfx-lower").Name.LocalName.Substring(9));
             Assert.NotEmpty(window.ToPng());
-            Assert.Equal(origin, chart.Options.XAxis.Minimum); Assert.Equal(origin + 10, chart.Options.XAxis.Maximum);
+            Assert.Equal(origin, chart.Options.XAxis.Min); Assert.Equal(origin + 10, chart.Options.XAxis.Max);
             Assert.Equal(3, chart.Series[0].SourcePointCount);
         }
     }
@@ -51,7 +51,7 @@ public sealed class ChartAxisWindowExtendedFamilyTests {
     [InlineData(ChartSeriesKind.RangeArea, "range-area")]
     [InlineData(ChartSeriesKind.DifferenceArea, "difference-positive")]
     public void WindowBetweenPairsKeepsNativeCrossingGeometryWithoutInteractiveEndpoints(ChartSeriesKind kind, string role) {
-        var chart = Create(kind, 0).WithXAxisBounds(0, 10);
+        var chart = Create(kind, 0).XAxis(x => x.Bounds(0, 10));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context, new ChartCartesianViewport(x: new ChartAxisWindow(1, 2)));
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == role && path.Commands.Count > 3);
         var observations = XDocument.Parse(prepared.ToSvg()).Descendants()
@@ -71,14 +71,14 @@ public sealed class ChartAxisWindowExtendedFamilyTests {
             ChartSeriesKind.RangeArea => ChartSeries.CreateRangeArea(id, "Tuples", coordinates.Select((x, index) => new ChartRangeBand(x, -20 - index, 50 + index))),
             _ => ChartSeries.CreateDifferenceArea(id, "Tuples", coordinates.Select((x, index) => new ChartDifferencePoint(x, 50 + index, -20 - index)))
         };
-        if (kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) series.ConfigureMarkers(markers => markers.Enabled = true);
-        for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("tuple-" + index));
-        return Chart.Create().WithLegend(false).AddSeries(series);
+        if (kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) series.Markers(markers => markers.Enabled = true);
+        for (var index = 0; index < 3; index++) series.ObservationId(index, new ChartObservationId("tuple-" + index));
+        return Chart.Create().Legend(false).AddSeries(series);
     }
 
     [Fact]
     public void DenseFinancialWindowUsesVisibleNativeSlotsForReadableBodies() {
-        var chart = Chart.Create().WithLegend(false).WithXAxisBounds(0, 99).AddCandlestick("Daily",
+        var chart = Chart.Create().Legend(false).XAxis(x => x.Bounds(0, 99)).AddCandlestick("Daily",
             Enumerable.Range(0, 100).Select(index => new ChartCandlestick(index, 20, 40, 10, 30)));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 380)), VisualTheme.Graphite());
         var full = chart.Prepare(context);

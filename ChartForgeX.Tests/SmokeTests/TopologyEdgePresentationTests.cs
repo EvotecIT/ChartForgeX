@@ -10,16 +10,16 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyMonitoringStyleCompactsHierarchyEdges() {
         var chart = TopologyChart.Create()
-            .WithId("monitoring-edges")
-            .WithViewport(360, 180, 20)
-            .WithLegend(null)
+            .Id("monitoring-edges")
+            .Viewport(new TopologyViewport(360, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("hub", "Hub", 60, 64, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "H")
             .AddNode("branch", "Branch", 230, 64, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "S")
             .AddEdge("hierarchy", "hub", "branch", null, TopologyEdgeKind.Link, TopologyHealthStatus.Unknown, VisualLinkDirection.None, TopologyEdgeRouting.Straight)
-            .WithEdgeMuted("hierarchy");
+            .UpdateEdge("hierarchy", e => e.Muted());
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(TopologyEdgeLine(svg, "hierarchy").RenderedColor("stroke").WithAlpha(255).ToHex() == "#CBD5E1", "Monitoring style should use a lighter hierarchy edge color.");
         Assert(svg.Contains("stroke-width=\"1.05\"", StringComparison.Ordinal), "Monitoring style should render muted hierarchy edges thinner than primary paths.");
@@ -28,17 +28,17 @@ internal static partial class SmokeTests {
 
     private static void TopologySubtleEdgesPreserveStatusColor() {
         var chart = TopologyChart.Create()
-            .WithId("subtle-edge")
-            .WithViewport(300, 180, 20)
-            .WithLegend(null)
+            .Id("subtle-edge")
+            .Viewport(new TopologyViewport(300, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 60, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddNode("b", "B", 200, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddEdge("fan", "a", "b", null, TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.None, TopologyEdgeRouting.Straight)
-            .WithEdgeLineStyle("fan", TopologyEdgeLineStyle.Dashed)
-            .WithEdgeEmphasis("fan", TopologyEdgeEmphasis.Subtle);
+            .UpdateEdge("fan", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
+            .UpdateEdge("fan", e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-edge-emphasis=\"Subtle\"", StringComparison.Ordinal), "Subtle edges should expose reusable emphasis metadata.");
         Assert(TopologyEdgeLine(svg, "fan").RenderedColor("stroke").WithAlpha(255).Equals(chart.Theme.Resolve(chart.ThemeMode).Status.Pass.Fill.WithAlpha(255)), "Subtle edges should preserve the selected theme's health status color.");
@@ -49,16 +49,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgesCanBeStyledByKind() {
         var chart = TopologyChart.Create()
-            .WithId("kind-edge-style")
-            .WithViewport(360, 180, 20)
-            .WithLegend(null)
+            .Id("kind-edge-style")
+            .Viewport(new TopologyViewport(360, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("hub", "Hub", 60, 64, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "H")
             .AddNode("site", "Site", 230, 64, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, width: 58, height: 46, symbol: "S")
             .AddEdge("dependency", "hub", "site", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.None, TopologyEdgeRouting.Curved)
-            .WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed, emphasis: TopologyEdgeEmphasis.Subtle, color: "#64748B");
+            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color("#64748B"));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-edge-line-style=\"Dashed\"", StringComparison.Ordinal), "Bulk edge-kind styling should apply reusable line style metadata.");
         Assert(svg.Contains("data-edge-emphasis=\"Subtle\"", StringComparison.Ordinal), "Bulk edge-kind styling should apply reusable edge emphasis metadata.");
@@ -74,19 +74,19 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgesRenderByVisualPriority() {
         var chart = TopologyChart.Create()
-            .WithId("edge-render-priority")
-            .WithViewport(360, 180, 20)
-            .WithLegend(null)
+            .Id("edge-render-priority")
+            .Viewport(new TopologyViewport(360, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 70, 70, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "H")
             .AddNode("b", "B", 230, 70, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "H")
             .AddEdge("selected-healthy", "a", "b", "selected", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
             .AddEdge("dependency-context", "a", "b", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.None, TopologyEdgeRouting.Curved)
             .AddEdge("critical-route", "a", "b", "critical", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
-            .WithEdgesOfKind(TopologyEdgeKind.Dependency, emphasis: TopologyEdgeEmphasis.Subtle);
+            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle()
-            .WithSelectedEdge("selected-healthy");
+            .MonitoringDashboardStyle()
+            .SelectEdge("selected-healthy");
         var svg = chart.ToSvg(options);
         var dependencyIndex = svg.IndexOf("data-edge-id=\"dependency-context\"", StringComparison.Ordinal);
         var criticalIndex = svg.IndexOf("data-edge-id=\"critical-route\"", StringComparison.Ordinal);
@@ -105,17 +105,17 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelsPlaceByVisualPriority() {
         var chart = TopologyChart.Create()
-            .WithId("edge-label-placement-priority")
-            .WithViewport(420, 180, 20)
-            .WithLegend(null)
+            .Id("edge-label-placement-priority")
+            .Viewport(new TopologyViewport(420, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 60, 70, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 52, height: 42, symbol: "H")
             .AddNode("b", "B", 310, 70, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 52, height: 42, symbol: "H")
             .AddEdge("context", "a", "b", "context", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.None, TopologyEdgeRouting.Straight)
             .AddEdge("critical", "a", "b", "critical", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
-            .WithEdgesOfKind(TopologyEdgeKind.Dependency, emphasis: TopologyEdgeEmphasis.Subtle);
+            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = true }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         options.IncludeEdgeLabelBackplates = true;
         var svg = chart.ToSvg(options);
         var criticalY = GetAttribute(svg, "data-cfx-role=\"topology-edge-label\" data-edge-id=\"critical\"", "data-label-y");
@@ -128,16 +128,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelsSupportReusableOffsets() {
         var chart = TopologyChart.Create()
-            .WithId("label-offsets")
-            .WithViewport(360, 200, 20)
-            .WithLegend(null)
+            .Id("label-offsets")
+            .Viewport(new TopologyViewport(360, 200, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 56, 80, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 62, height: 46, symbol: "H")
             .AddNode("target", "Target", 242, 80, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, width: 62, height: 46, symbol: "S")
             .AddEdge("link", "source", "target", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "MPLS")
-            .WithEdgeLabelOffset("link", 24, -18);
+            .UpdateEdge("link", e => e.LabelOffsetX(24).LabelOffsetY(-18));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-label-offset-x=\"24\"", StringComparison.Ordinal), "Edge label offsets should be emitted for host validation.");
         Assert(svg.Contains("data-label-offset-y=\"-18\"", StringComparison.Ordinal), "Edge label offsets should support vertical placement control.");
@@ -147,15 +147,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelsAvoidGroupHeaders() {
         var chart = TopologyChart.Create()
-            .WithId("label-group-headers")
-            .WithViewport(360, 220, 20)
-            .WithLegend(null)
+            .Id("label-group-headers")
+            .Viewport(new TopologyViewport(360, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("site", "HQ-NYC", 50, 48, 250, 140, TopologyHealthStatus.Healthy, "32 DCs")
             .AddNode("dc1", "DC1", 82, 72, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "site", width: 46, height: 40, symbol: "DC")
             .AddNode("dc2", "DC2", 220, 72, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "site", width: 46, height: 40, symbol: "DC")
             .AddEdge("rep", "dc1", "dc2", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:312", tertiaryLabel: "7m ago");
 
-        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }.WithMonitoringDashboardStyle());
+        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }.MonitoringDashboardStyle());
         ScatterBubbleColorRenderingTests.Capture(prepared.Visual, "topology-edge-label-painted-headers");
         var badge = prepared.Visual.Scene.Regions.Single(region => region.Id == "rep-label").Bounds;
         var headers = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role is "topology-group-label" or "topology-group-subtitle").ToArray();
@@ -185,15 +185,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyMultilineEdgeLabelsAvoidOwnRoute() {
         var chart = TopologyChart.Create()
-            .WithId("label-own-route")
-            .WithViewport(420, 180, 20)
-            .WithLegend(null)
+            .Id("label-own-route")
+            .Viewport(new TopologyViewport(420, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 42, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddNode("right", "Right", 320, 70, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "DC")
             .AddEdge("rep", "left", "right", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:312", tertiaryLabel: "7m ago");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         var y = GetAttribute(svg, "data-edge-id=\"rep\"", "data-label-y");
 
@@ -204,15 +204,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyTwoLineEdgeLabelsReserveRouteClearance() {
         var chart = TopologyChart.Create()
-            .WithId("label-two-line-route")
-            .WithViewport(420, 180, 20)
-            .WithLegend(null)
+            .Id("label-two-line-route")
+            .Viewport(new TopologyViewport(420, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 42, 70, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "H")
             .AddNode("right", "Right", 320, 70, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "H")
             .AddEdge("wan", "left", "right", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "MPLS");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         var y = GetAttribute(svg, "data-edge-id=\"wan\"", "data-label-y");
 
@@ -223,16 +223,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelClearanceUsesGroupSurface() {
         var chart = TopologyChart.Create()
-            .WithId("label-clearance-surface")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("label-clearance-surface")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("region", "Region", 50, 44, 320, 130, TopologyHealthStatus.Healthy, "2 sites", symbol: "region")
             .AddNode("left", "Left", 92, 92, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "region", width: 44, height: 44, symbol: "H")
             .AddNode("right", "Right", 278, 92, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "region", width: 44, height: 44, symbol: "H")
             .AddEdge("wan", "left", "right", "142 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "MPLS");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-edge-label-clearance\"", StringComparison.Ordinal), "Grouped stacked labels should still render route clearance.");
@@ -243,15 +243,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringEdgeLabelBackplatesAreVisible() {
         var chart = TopologyChart.Create()
-            .WithId("label-plates")
-            .WithViewport(420, 180, 20)
-            .WithLegend(null)
+            .Id("label-plates")
+            .Viewport(new TopologyViewport(420, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 42, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddNode("right", "Right", 320, 70, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "DC")
             .AddEdge("rep", "left", "right", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:312", tertiaryLabel: "7m ago");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = true }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         options.IncludeEdgeLabelBackplates = true;
         var svg = chart.ToSvg(options);
 
@@ -263,15 +263,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringEdgeLabelsUseTextHalos() {
         var chart = TopologyChart.Create()
-            .WithId("label-halos")
-            .WithViewport(360, 180, 20)
-            .WithLegend(null)
+            .Id("label-halos")
+            .Viewport(new TopologyViewport(360, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("amer", "AMER Hub", 54, 72, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 66, height: 48, symbol: "H")
             .AddNode("emea", "EMEA Hub", 240, 72, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, width: 66, height: 48, symbol: "H")
             .AddEdge("wan", "amer", "emea", "82 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "MPLS");
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-edge-label-text\"", StringComparison.Ordinal), "Monitoring edge labels should expose reusable text roles.");
@@ -283,9 +283,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringRoutesUseHalosForCrossingPaths() {
         var chart = TopologyChart.Create()
-            .WithId("route-halos")
-            .WithViewport(360, 220, 20)
-            .WithLegend(null)
+            .Id("route-halos")
+            .Viewport(new TopologyViewport(360, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 70, 60, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddNode("b", "B", 246, 60, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "DC")
             .AddNode("c", "C", 70, 150, TopologyNodeKind.Server, TopologyHealthStatus.Critical, width: 44, height: 44, symbol: "DC")
@@ -294,7 +294,7 @@ internal static partial class SmokeTests {
             .AddEdge("c-b", "c", "b", "238 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-edge-route-halo\"", StringComparison.Ordinal), "Monitoring topology routes should render route halos so crossing paths remain separated.");
@@ -304,9 +304,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringEdgeLabelsReserveReadableGaps() {
         var chart = TopologyChart.Create()
-            .WithId("label-gaps")
-            .WithViewport(360, 240, 20)
-            .WithLegend(null)
+            .Id("label-gaps")
+            .Viewport(new TopologyViewport(360, 240, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 64, 62, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 40, height: 40, symbol: "DC")
             .AddNode("b", "B", 256, 150, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 40, height: 40, symbol: "DC")
             .AddNode("c", "C", 64, 150, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 40, height: 40, symbol: "DC")
@@ -315,7 +315,7 @@ internal static partial class SmokeTests {
             .AddEdge("second", "c", "d", "107 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         var firstX = GetAttribute(svg, "data-cfx-role=\"topology-edge-label\" data-edge-id=\"first\"", "data-label-x");

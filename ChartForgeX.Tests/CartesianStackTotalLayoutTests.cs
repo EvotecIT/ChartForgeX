@@ -19,19 +19,19 @@ public sealed class CartesianStackTotalLayoutTests {
     public void DenseVerticalTotalsReserveMeasuredSpaceAboveAndBelowExactValueBounds(int sign, bool reversed) {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
-        var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
-            .WithPngFont(font).WithStackedBars().WithStackTotals().ConfigureDataLabelStyle(style => style.WithFontSize(18))
-            .WithYAxisBounds(sign < 0 ? -16 : sign > 0 ? 0 : -16, sign < 0 ? 0 : 16);
-        chart.Options.YAxis.WithReversal(reversed);
+        var chart = Chart.Create().Size(300, 220).Axes(false).Legend(false).ShowHeader(false)
+            .Png(p => p.FontPath(font)).Bars(b => b.Stacked().ShowTotals()).DataLabelStyle(style => style.FontSize(18))
+            .YAxis(y => y.Bounds(sign < 0 ? -16 : sign > 0 ? 0 : -16, sign < 0 ? 0 : 16));
+        chart.Options.YAxis.Reversed(reversed);
         var signs = sign == 0 ? new[] { 1, -1 } : new[] { sign };
         foreach (var direction in signs) {
             chart.AddBar("Passed " + direction, Enumerable.Range(1, 16).Select(x => new ChartPoint(x, 13 * direction)).ToArray());
             chart.AddBar("Warnings " + direction, Enumerable.Range(1, 16).Select(x => new ChartPoint(x, 3 * direction)).ToArray());
         }
         foreach (var series in chart.Series)
-            for (var point = 0; point < series.Points.Count; point++) series.WithPointLabel(point, "Observation");
+            for (var point = 0; point < series.Points.Count; point++) series.PointLabel(point, "Observation");
         var calls = 0;
-        chart.WithValueFormatter(value => { calls++; return "Total " + value.ToString(CultureInfo.InvariantCulture); });
+        chart.FormatValuesBy(value => { calls++; return "Total " + value.ToString(CultureInfo.InvariantCulture); });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(16 * signs.Length, calls);
         var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
@@ -64,7 +64,7 @@ public sealed class CartesianStackTotalLayoutTests {
     [InlineData(-1, true)]
     public void DashboardRowsKeepEveryFullTotalBesideItsStack(int sign, bool reversed) {
         var chart = DashboardRows(sign);
-        chart.Options.XAxis.WithReversal(reversed);
+        chart.Options.XAxis.Reversed(reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
         Assert.Equal(new[] { 107 * sign, 102 * sign, 113 * sign }.Select(value => value.ToString(CultureInfo.InvariantCulture)),
@@ -89,13 +89,13 @@ public sealed class CartesianStackTotalLayoutTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OppositeTotalGuttersReuseTheResolvedFormatterSnapshot(bool reversed) {
-        var chart = DashboardRows(1).WithAxes(false);
-        chart.Options.XAxis.WithReversal(reversed);
+        var chart = DashboardRows(1).Axes(false);
+        chart.Options.XAxis.Reversed(reversed);
         chart.AddHorizontalBar("Negative", new[] { new ChartPoint(1, -18), new ChartPoint(2, -22), new ChartPoint(3, -16) });
         foreach (var series in chart.Series)
-            for (var point = 0; point < series.Points.Count; point++) series.WithPointLabel(point, "Observation");
+            for (var point = 0; point < series.Points.Count; point++) series.PointLabel(point, "Observation");
         var calls = 0;
-        chart.WithValueFormatter(value => (++calls).ToString(CultureInfo.InvariantCulture) + ":" + value.ToString(CultureInfo.InvariantCulture));
+        chart.FormatValuesBy(value => (++calls).ToString(CultureInfo.InvariantCulture) + ":" + value.ToString(CultureInfo.InvariantCulture));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(6, calls);
         var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
@@ -120,15 +120,15 @@ public sealed class CartesianStackTotalLayoutTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito fixture must make full-caption lane measurements repeatable.");
         // Every caption fits with this face; wider system fonts may correctly keep a readable subset.
-        var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
-            .WithPngFont(font).WithBarStyle(ChartBarStyle.Flat).WithStackedBars().WithStackTotals().WithDataLabels(false);
+        var chart = Chart.Create().Size(300, 220).Axes(false).Legend(false).ShowHeader(false)
+            .Png(p => p.FontPath(font)).Bars(b => b.Style(ChartBarStyle.Flat).Stacked().ShowTotals()).DataLabels(false);
         var categories = horizontal ? new[] { 1 } : Enumerable.Range(1, 12).ToArray();
         var first = categories.Select(category => new ChartPoint(category, 10 * sign));
         var second = categories.Select(category => new ChartPoint(category, 20 * sign));
         if (horizontal) chart.AddHorizontalBar("First", first).AddHorizontalBar("Second", second);
         else chart.AddBar("First", first).AddBar("Second", second);
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis)
-            .WithBounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).WithReversal(reversed);
+            .Bounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).Reversed(reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
         var regions = prepared.Regions.Where(region => region.Role == "stack-total").ToArray();
@@ -165,13 +165,13 @@ public sealed class CartesianStackTotalLayoutTests {
 
     [Fact]
     public void OppositeAxisReversalsKeepPrimaryAndSecondaryTotalGutters() {
-        var chart = Chart.Create().WithSize(620, 260).WithAxes(false).WithLegend(false).WithHeader(false)
-            .WithStackedBars().WithStackTotals().WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat);
+        var chart = Chart.Create().Size(620, 260).Axes(false).Legend(false).ShowHeader(false)
+            .Bars(b => b.Stacked().ShowTotals()).DataLabels(false).Bars(b => b.Style(ChartBarStyle.Flat));
         chart.AddBar("Primary first", new[] { new ChartPoint(1, 10) }).AddBar("Primary second", new[] { new ChartPoint(1, 20) });
         chart.AddBar("Secondary first", new[] { new ChartPoint(1, 10) }).AddBar("Secondary second", new[] { new ChartPoint(1, 20) });
         chart.Series[2].ValueAxis = ChartAxisSide.Secondary; chart.Series[3].ValueAxis = ChartAxisSide.Secondary;
-        chart.Options.YAxis.WithBounds(0, 30);
-        chart.Options.SecondaryYAxis.WithBounds(0, 30).WithReversal();
+        chart.Options.YAxis.Bounds(0, 30);
+        chart.Options.SecondaryYAxis.Bounds(0, 30).Reversed();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
         Assert.Equal(2, totals.Length);
@@ -184,8 +184,8 @@ public sealed class CartesianStackTotalLayoutTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
     }
 
-    private static Chart DashboardRows(int sign) => Chart.Create().WithSize(640, 300).WithTheme(VisualTheme.Graphite())
-        .WithDashboardStackedRowStyle(showTotals: true).WithXLabels("Engineering", "Maintenance", "HSEQ")
+    private static Chart DashboardRows(int sign) => Chart.Create().Size(640, 300).Theme(VisualTheme.Graphite())
+        .DashboardStackedRowStyle(showTotals: true).XLabels("Engineering", "Maintenance", "HSEQ")
         .AddHorizontalBar("All employee", Points(68, 62, 74, sign), ChartColor.FromHex("#7057E6"))
         .AddHorizontalBar("Terminated", Points(25, 28, 24, sign), ChartColor.FromHex("#5FD3D9"))
         .AddHorizontalBar("New hires", Points(14, 12, 15, sign), ChartColor.FromHex("#FFB05C"));

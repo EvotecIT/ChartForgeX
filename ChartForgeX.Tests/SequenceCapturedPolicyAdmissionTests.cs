@@ -15,7 +15,7 @@ public sealed class SequenceCapturedPolicyAdmissionTests {
     [InlineData("lifeline")]
     [InlineData("surface")]
     public void RepresentedNonLayoutPolicyRestoresItsPairedThemeWithoutChangingStaticPaint(string policy) {
-        var source = SequenceArtifact.Create("captured-non-layout").WithSize(1000,820)
+        var source = SequenceArtifact.Create("captured-non-layout").Width(1000).Height(820)
             .AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");
         source.ThemeMode = ThemeMode.Dark;
         source.Theme = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#112233"));

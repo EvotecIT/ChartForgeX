@@ -36,14 +36,6 @@ internal sealed partial class ResolvedTerminalStyle {
 }
 
 public sealed partial class TerminalStory {
-    /// <summary>Chooses the initial tab's explicit light or dark appearance before timeline authoring.</summary>
-    public TerminalStory WithThemeMode(ThemeMode mode) {
-        ThemeMode = mode; return this;
-    }
-    /// <summary>Sets independent cursor and title-bar options before timeline authoring.</summary>
-    public TerminalStory WithStyle(TerminalStyleOptions style) {
-        Style = style; return this;
-    }
 }
 
 /// <summary>Authored terminal palette recipes represented by the shared immutable theme type.</summary>

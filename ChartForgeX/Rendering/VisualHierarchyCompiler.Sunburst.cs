@@ -66,7 +66,7 @@ internal static partial class VisualHierarchyCompiler {
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern", cornerRadius: cornerRadius);
-                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) SunburstLabel(chart, context, builder, model, node, geometry, color, paint, secondary, color.A == 255 ? null : frameSurface.Over(color, paint));
+                if (series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)) SunburstLabel(chart, context, builder, model, node, geometry, color, paint, secondary, color.A == 255 ? null : frameSurface.Over(color, paint));
             }
             var bounds = visible ? sectorGap > 0
                 ? ChartSlicePathGeometry.Bounds(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep)

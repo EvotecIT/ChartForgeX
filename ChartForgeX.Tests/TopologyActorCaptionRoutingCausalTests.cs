@@ -17,7 +17,7 @@ public sealed class TopologyActorCaptionRoutingCausalTests {
     [InlineData("compact", ThemeMode.Dark)]
     public void OrdinaryNativeAssociationsKeepClearOfOtherActuallyMeasuredActorCaptions(string variant, ThemeMode mode) {
         var model = UseCaseAdvancedActorsRecipe.Create(variant, mode);
-        model.WithTheme(model.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
+        model.Theme(model.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
         var prepared = model.Prepare(); var envelope = prepared.ToInterchangeEnvelope(); var json = envelope.ToJson();
         var name = "actor-caption-routing-" + variant + "-" + mode;
         Capture(name, prepared.ToSvg(), prepared.ToPng(), json);

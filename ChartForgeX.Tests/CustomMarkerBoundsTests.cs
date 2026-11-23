@@ -31,8 +31,8 @@ public sealed class CustomMarkerBoundsTests {
     [Theory]
     [InlineData(360, false)] [InlineData(800, true)]
     public void AutomaticRangesFitPhysicalCustomGeometryAcrossCompactWideAndBothThemes(int width, bool dark) {
-        var original = Bubbles(Lens(1), false, automatic: true).WithSize(width, 300).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        var scaled = Bubbles(Lens(1e-200), false, automatic: true).WithSize(width, 300).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var original = Bubbles(Lens(1), false, automatic: true).Size(width, 300).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        var scaled = Bubbles(Lens(1e-200), false, automatic: true).Size(width, 300).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var expected = Prepare(original); var actual = Prepare(scaled);
         ScatterBubbleColorRenderingTests.Capture(actual, "custom-marker-automatic-bounds-" + width + "-" + (dark ? "dark" : "light"));
         var first = expected.Regions.Single(region => region.Role == "point"); var second = actual.Regions.Single(region => region.Role == "point");
@@ -44,8 +44,8 @@ public sealed class CustomMarkerBoundsTests {
     public void AsymmetricCubicExtremaAndEndpointOverridesResolveThroughOneGeometryOwner() {
         var chart = Chart.Create().AddDumbbell("Endpoints", new[] { new ChartDumbbell(1, 20, 40) });
         var right = ChartMarkerPath.Start(.2, -.25).LineTo(.6, -.25).LineTo(.6, .5).LineTo(.2, .5);
-        chart.Series[0].ConfigureMarkers(options => { options.CustomPath = right; options.Radius = 20; options.StrokeWidth = 2; });
-        chart.Series[0].ConfigureDumbbell(options => { options.StartMarker.Radius = 10; options.EndMarker.StrokeWidth = 4; });
+        chart.Series[0].Markers(options => { options.CustomPath = right; options.Radius = 20; options.StrokeWidth = 2; });
+        chart.Series[0].Dumbbell(options => { options.StartMarker.Radius = 10; options.EndMarker.StrokeWidth = 4; });
         var series = chart.Series[0]; var start = series.ResolveDumbbellMarker(true); var end = series.ResolveDumbbellMarker(false);
         SameBounds(new ChartRect(101, 96.5, 6, 9.5), VisualMarkerScene.Bounds(series, 100, 100, 10, start));
         SameBounds(new ChartRect(102, 93, 12, 19), VisualMarkerScene.Bounds(series, 100, 100, 20, end));
@@ -55,11 +55,11 @@ public sealed class CustomMarkerBoundsTests {
     }
 
     private static Chart Bubbles(ChartMarkerPath shape, bool labels, bool automatic) {
-        var chart = Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false).WithDataLabels(labels).WithAxes(false).WithGrid(false)
-            .WithDataLabelPlacement(ChartDataLabelPlacement.Above).AddBubble("Area", new[] { new ChartBubble(5, 5, 100) })
-            .ConfigureBubble(options => { options.WithSizeDomain(0, 100); options.MinimumRadius = 0; options.MaximumRadius = 20; options.SizeEncoding = ChartBubbleSizeEncoding.Area; });
-        if (!automatic) chart.WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
-        chart.Series[0].WithPointLabel(0, "Area").ConfigureMarkers(options => { options.CustomPath = shape; options.Fill = ChartColor.Black; options.StrokeWidth = 0; });
+        var chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).DataLabels(labels).Axes(false).ShowGrid(false)
+            .DataLabels(d => d.Placement(ChartDataLabelPlacement.Above)).AddBubble("Area", new[] { new ChartBubble(5, 5, 100) })
+            .Bubble(options => { options.SizeDomain(0, 100); options.MinimumRadius = 0; options.MaximumRadius = 20; options.SizeEncoding = ChartBubbleSizeEncoding.Area; });
+        if (!automatic) chart.XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
+        chart.Series[0].PointLabel(0, "Area").Markers(options => { options.CustomPath = shape; options.Fill = ChartColor.Black; options.StrokeWidth = 0; });
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true; return chart;
     }
     private static ChartMarkerPath Lens(double scale) => ChartMarkerPath.Start(0, -scale).CubicTo(scale, -scale, scale, scale, 0, scale)

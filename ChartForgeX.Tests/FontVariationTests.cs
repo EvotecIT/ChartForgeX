@@ -99,7 +99,7 @@ public sealed class FontVariationTests {
         var input = new Dictionary<string, double> { ["wght"] = 650 };
         var settings = new FontVariationSettings(input); input["wght"] = 100;
         Assert.Equal(650, settings["wght"]);
-        var spec = FontSpec.FromFamily("CFX").WithVariation("wght", 650); var clone = spec.Clone().WithVariation("wdth", 80);
+        var spec = FontSpec.FromFamily("CFX").Variation("wght", 650); var clone = spec.Clone().Variation("wdth", 80);
         Assert.Single(spec.Variations); Assert.Equal(2, clone.Variations.Count);
         Assert.Equal(Face(900).Measure("H", 40), Face(9000).Measure("H", 40));
         Assert.Equal(Face(400).Measure("H", 40), TrueTypeFont.TryLoad(Bytes())!.WithVariations(settings.WithAxis("wght", 400).WithAxis("WGHT", 900)).Measure("H", 40));
@@ -224,7 +224,7 @@ public sealed class FontVariationTests {
     [Fact]
     public void CompositionAndInheritedSvgAxesUseTheSameGlyphsAndReset() {
         WithRegisteredFont(path => {
-            var style = new TextStyle { Font = FontSpec.FromFile(path).WithVariation("wght", 650), FontSize = 40, Color = ChartColor.Black, Hinting = TextHinting.None };
+            var style = new TextStyle { Font = FontSpec.FromFile(path).Variation("wght", 650), FontSize = 40, Color = ChartColor.Black, Hinting = TextHinting.None };
             Assert.Equal(54, TextLayoutEngine.Measure("HH", style).Width);
             var direct = ImageComposition.Create(180, 100, ChartColor.Transparent).DrawText(10, 0, 160, "HH", style, TextWrapMode.NoWrap).ToImage();
             var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='100'><g font-family='CFX Variation' font-size='40' style=\"font-variation-settings:'wght' 650\"><text x='10' y='33.5'>HH</text></g></svg>";
@@ -240,11 +240,11 @@ public sealed class FontVariationTests {
     public void ChartGridAndRadialRolesCarryAxisControlsToStaticAndHtmlOutput() {
         WithRegisteredFont(_ => {
             var grid = new ChartGrid { Title = "HHHH" }; grid.Add(Chart.Create());
-            grid.TitleStyle.WithFontFamily("CFX Variation").WithVariation("wght", 650).WithOpenTypeLanguage("TRK");
+            grid.TitleStyle.FontFamily("CFX Variation").Variation("wght", 650).OpenTypeLanguageTag("TRK");
             var svg = grid.ToSvg(); Assert.Contains("font-variation-settings:", svg); Assert.Contains("font-language-override:", svg);
             Assert.Contains("font-variation-settings:", new HtmlChartGridRenderer().RenderFragment(grid));
             Assert.NotEmpty(grid.ToPng());
-            var chart = Chart.Create().WithSize(360, 260).WithDataLabels().ConfigureDataLabelStyle(s => s.WithFontFamily("CFX Variation").WithVariation("wdth", 125)).AddProgressRing("HHHH", new[] { new ChartPoint(0, 40) });
+            var chart = Chart.Create().Size(360, 260).DataLabels().DataLabelStyle(s => s.FontFamily("CFX Variation").Variation("wdth", 125)).AddProgressRing("HHHH", new[] { new ChartPoint(0, 40) });
             Assert.Contains("font-variation-settings:", chart.ToSvg()); Assert.NotEmpty(chart.ToPng());
         });
     }

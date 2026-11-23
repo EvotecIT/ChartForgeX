@@ -81,25 +81,25 @@ internal static partial class DocVisuals {
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 
     private static ChartGrid Overview(ThemeMode mode) {
-        var trend = Chart.Create().WithThemeMode(mode).WithTitle("Deployment health").WithSubtitle("Checks per run")
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+        var trend = Chart.Create().ThemeMode(mode).Title("Deployment health").Subtitle("Checks per run")
+            .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120))
             .AddSmoothLine("Failed", Points(220, 300, 280, 210, 180));
-        var share = Chart.Create().WithThemeMode(mode).WithTitle("Results").WithSubtitle("This week")
-            .WithXLabels("Passed", "Warnings", "Failed").AddDonut("Checks", Points(1260, 68, 10));
-        var coverage = Chart.Create().WithThemeMode(mode).WithTitle("MFA coverage").WithSubtitle("Against a 95% target")
+        var share = Chart.Create().ThemeMode(mode).Title("Results").Subtitle("This week")
+            .XLabels("Passed", "Warnings", "Failed").AddDonut("Checks", Points(1260, 68, 10));
+        var coverage = Chart.Create().ThemeMode(mode).Title("MFA coverage").Subtitle("Against a 95% target")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("coverage"), "Coverage",
                 new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(95) })));
-        var teams = Chart.Create().WithThemeMode(mode).WithTitle("Open findings").WithSubtitle("By team")
-            .WithXLabels("Identity", "Network", "Endpoints", "Mail", "Data")
+        var teams = Chart.Create().ThemeMode(mode).Title("Open findings").Subtitle("By team")
+            .XLabels("Identity", "Network", "Endpoints", "Mail", "Data")
             .AddBar("Open", Points(14, 9, 21, 6, 11));
-        return ChartGrid.Create().WithThemeMode(mode).WithColumns(3).WithGap(12).WithPanelSize(320, 240).WithPanelFit(VisualPanelFit.Stretch)
+        return ChartGrid.Create().ThemeMode(mode).Columns(3).Gap(12).PanelSize(320, 240).PanelFit(VisualPanelFit.Stretch)
             .Add(trend, 2).Add(share).Add(coverage).Add(teams, 2);
     }
 
     private static ChartTable Packages(ThemeMode mode) {
         var table = ChartTable.Create()
-            .WithTitle("Packages")
+            .Title("Packages")
             .AddColumn("Package")
             .AddColumn("Adds")
             .AddColumn("Status")
@@ -108,32 +108,32 @@ internal static partial class DocVisuals {
             .AddRow("ChartForgeX.Interactivity.Html", "Self-contained interactive pages", "Optional")
             .AddRow("ChartForgeX.Markup", "Charts and diagrams from Markdown fences", "Optional")
             .AddRow("ChartForgeX.Mermaid", "Native Mermaid diagrams", "Optional")
-            .WithSize(760, 300);
+            .Size(760, 300);
         table.Options.ThemeMode = mode;
         return table;
     }
 
-    private static Chart SurfaceChart(ThemeMode mode) => Chart.Create().WithThemeMode(mode)
-        .WithTitle("Orders by region").WithSize(480, 300)
-        .WithXLabels("North", "South", "East", "West")
+    private static Chart SurfaceChart(ThemeMode mode) => Chart.Create().ThemeMode(mode)
+        .Title("Orders by region").Size(480, 300)
+        .XLabels("North", "South", "East", "West")
         .AddBar("This year", Points(48, 61, 57, 72))
         .AddBar("Last year", Points(41, 55, 60, 63));
 
     private static VisualGrid Blocks(ThemeMode mode) {
         var cards = new[] {
-            MetricCard.Create().WithMetric("CPU load", "38%").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
-            MetricCard.Create().WithMetric("Memory used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
+            MetricCard.Create().Metric("CPU load", "38%").MiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
+            MetricCard.Create().Metric("Memory used", "71%").MiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
         };
         foreach (var card in cards) card.Options.ThemeMode = mode;
-        return VisualGrid.CreateMetricStrip("Endpoint snapshot", cards, columns: 2, panelWidth: 260, panelHeight: 150).WithThemeMode(mode);
+        return VisualGrid.CreateMetricStrip("Endpoint snapshot", cards, columns: 2, panelWidth: 260, panelHeight: 150).ThemeMode(mode);
     }
 
     private static VisualCanvas Canvas(ThemeMode mode) {
-        var trend = Chart.Create().WithThemeMode(mode).WithSize(420, 220).WithTransparentBackground().WithHeader(false).WithCard(false)
-            .WithLegend(false).AddSmoothArea("Sign-ins", Points(18, 31, 24, 45, 39, 52, 61));
+        var trend = Chart.Create().ThemeMode(mode).Size(420, 220).TransparentBackground().ShowHeader(false).ShowCard(false)
+            .Legend(false).AddSmoothArea("Sign-ins", Points(18, 31, 24, 45, 39, 52, 61));
         return VisualCanvas.CreateSocialPreview()
-            .WithTitle("Release notes cover")
-            .WithThemeMode(mode)
+            .Title("Release notes cover")
+            .ThemeMode(mode)
             .AddText(72, 96, 620, "Release 2.0", 64, emphasized: true)
             .AddText(72, 196, 620, "Charts, topology and Mermaid diagrams, rendered in .NET.", 28)
             .AddChart(640, 300, 500, 260, trend);
@@ -148,19 +148,19 @@ internal static partial class DocVisuals {
             .Type(program, TimeSpan.FromSeconds(3))
             .Pause(TimeSpan.FromSeconds(1));
         var terminal = TerminalStory.Create()
-            .WithDialect(TerminalDialect.PowerShell)
-            .WithThemeMode(mode)
-            .WithWorkingDirectory(@"C:\Reports")
+            .Dialect(TerminalDialect.PowerShell)
+            .ThemeMode(mode)
+            .WorkingDirectory(@"C:\Reports")
             .Command("dotnet run")
             .Output("Wrote sign-ins.svg", TerminalTextTone.Success);
-        var chart = Chart.Create().WithThemeMode(mode).WithTitle("Sign-ins by method").WithSize(800, 520)
-            .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
+        var chart = Chart.Create().ThemeMode(mode).Title("Sign-ins by method").Size(800, 520)
+            .XLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddStackedArea("Passkey", Points(800, 1700, 3000, 4700, 6400, 8100))
             .AddStackedArea("Password", Points(5600, 4900, 4100, 3300, 2500, 1800));
 
         var story = VisualStory.Create("From source to chart")
-            .WithThemeMode(mode)
-            .WithFormat(VisualStoryFormat.Widescreen);
+            .ThemeMode(mode)
+            .Format(VisualStoryFormat.Widescreen);
         story.Scene("write", "Write the chart", 4)
             .Panel("source", new VisualStorySourceSurface(editor, options: new VisualStorySourceOptions("Report.cs", fontSize: 30)));
         story.Scene("run", "Run it", 3)

@@ -28,8 +28,8 @@ public static partial class MermaidCynefinRendering {
         // A large requested padding cannot invert the authored region or create invalid native node bounds.
         width = Math.Max(width, padding * 2 + 240);
         var regionWidth = width - padding * 2;
-        var chart = TopologyChart.Create().WithId(options.Id ?? "mermaid-cynefin")
-            .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Cynefin")).WithViewport(width, height, padding);
+        var chart = TopologyChart.Create().Id(options.Id ?? "mermaid-cynefin")
+            .Title(MermaidHeading.Title(document, options.Title, document.Title, "Cynefin")).Viewport(new TopologyViewport(width, height, padding));
         MermaidPresentation.Apply(chart, document, options.Presentation);
         chart.DefaultRenderOptions!.AllowMultilineNodeLabels = true;
         if (settings?.UseMaxWidth is bool responsive) chart.DefaultRenderOptions.UseResponsiveSvg = responsive;

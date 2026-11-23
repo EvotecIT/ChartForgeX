@@ -16,7 +16,7 @@ public sealed class StoryDesktopAppearanceTests {
             .AddSpan(0, 5, StorySyntaxKind.Variable).AddSpan(8, 4, StorySyntaxKind.String);
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "powershell")).Type(source, TimeSpan.FromSeconds(2));
         var theme = Theme(TerminalWindowStyle.MacOS, false);
-        var story = VisualStory.Create("Type with color").WithSize(600, 400).WithTheme(theme.Palette, theme.Mode).WithStyle(theme.Style);
+        var story = VisualStory.Create("Type with color").Size(600, 400).Theme(theme.Palette).ThemeMode(theme.Mode).Style(theme.Style);
         story.Scene("write", "Write", 2).Panel("code", new VisualStorySourceSurface(editor));
         story.Outcome("ready", "Source ready", "code");
         var prepared = story.Prepare();
@@ -48,7 +48,7 @@ public sealed class StoryDesktopAppearanceTests {
             Assert.True(ChartColorMath.ContrastRatio(theme.Text, background) >= 4.5);
             Assert.True(ChartColorMath.ContrastRatio(theme.Muted, background) >= 4.5);
         }
-        var story = VisualStory.Create("Desktop demo").WithFormat(VisualStoryFormat.Portrait, 480).WithTheme(theme.Palette, theme.Mode).WithStyle(theme.Style);
+        var story = VisualStory.Create("Desktop demo").Format(VisualStoryFormat.Portrait, 480).Theme(theme.Palette).ThemeMode(theme.Mode).Style(theme.Style);
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready", TerminalTextTone.Success);
         story.Scene("demo", "Source and output", 1, VisualStorySceneLayout.Stacked)
             .Panel("code", new VisualStorySourceSurface(StorySourceText.Create("$x = 42"), options: new VisualStorySourceOptions("demo.ps1", 16)))
@@ -86,7 +86,7 @@ public sealed class StoryDesktopAppearanceTests {
 
     [Fact]
     public void NarrowDesktopPanelsHaveActionableChromeGuidance() {
-        var story = VisualStory.Create("Narrow windows").WithSize(540, 400).WithTheme(VisualStoryThemes.Windows(), ThemeMode.Dark).WithStyle(VisualStoryStyleOptions.Windows());
+        var story = VisualStory.Create("Narrow windows").Size(540, 400).Theme(VisualStoryThemes.Windows()).ThemeMode(ThemeMode.Dark).Style(VisualStoryStyleOptions.Windows());
         story.Scene("code", "Code", 1, VisualStorySceneLayout.Split)
             .Panel("code", new VisualStorySourceSurface(StorySourceText.Create("42")))
             .Panel("other", new VisualStoryTextSurface("Ready"));
@@ -111,7 +111,7 @@ public sealed class StoryDesktopAppearanceTests {
         var background = ChartColor.FromHex("#193A27");
         palette = palette.Configure(builder => builder.Dark.ElevatedSurface = background);
         var surface = new VisualStoryReplaySurface(StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready"), theme: palette);
-        var story = VisualStory.Create("Replay").WithSize(600, 400);
+        var story = VisualStory.Create("Replay").Size(600, 400);
         story.Scene("replay", "Output", 1).Panel("terminal", surface);
         story.Outcome("ready", "Ready", "terminal");
         var prepared = story.Prepare();
@@ -139,8 +139,8 @@ public sealed class StoryDesktopAppearanceTests {
 
     [Fact]
     public void StandaloneLinuxTerminalExportsBothNativeBackends() {
-        var terminal = TerminalStory.Create().WithWidth(480).WithWindowStyle(TerminalWindowStyle.Linux)
-            .WithPngOutputScale(1).WithFinalPrompt(false).Output("Linux output");
+        var terminal = TerminalStory.Create().Width(480).WindowStyle(TerminalWindowStyle.Linux)
+            .PngOutputScale(1).ShowFinalPrompt(false).Output("Linux output");
         var document = XDocument.Parse(terminal.ToSvg());
         Assert.Equal("Linux", (string?)Roles(document, "terminal-window-chrome").Single().Attribute("data-cfx-window-style"));
         Assert.Single(Roles(document, "terminal-window-close"));
@@ -172,14 +172,14 @@ public sealed class StoryDesktopAppearanceTests {
     [InlineData(TerminalWindowStyle.Linux)]
     public void DesktopControlsStaySolidWhileAuthoredTabTitlesCrossFade(TerminalWindowStyle style) {
         var palette = VisualTheme.Graphite();
-        var terminal = TerminalStory.Create().WithInitialTab("first", "First", TerminalDialect.PowerShell, "~", palette)
-            .WithTiming(0, 200, 0).WithTabHold(0).WithFinalPrompt(false).Output("First output")
+        var terminal = TerminalStory.Create().InitialTab("first", "First", TerminalDialect.PowerShell, "~", palette)
+            .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0).TabHoldSeconds(0).ShowFinalPrompt(false).Output("First output")
             .OpenTab("second", "Second", TerminalDialect.Bash, "~", palette, transitionSeconds: 1)
             .Output("Second output").Pause(1);
         var layout = TerminalStoryLayout.Build(terminal);
         var transition = layout.Transitions.Single();
         var theme = Theme(TerminalWindowStyle.MacOS, false); theme.WindowStyle = style;
-        var story = VisualStory.Create("Switch tabs").WithSize(600, 400).WithTheme(theme.Palette, theme.Mode).WithStyle(theme.Style);
+        var story = VisualStory.Create("Switch tabs").Size(600, 400).Theme(theme.Palette).ThemeMode(theme.Mode).Style(theme.Style);
         story.Scene("tabs", "Authored tabs", layout.DurationSeconds)
             .Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions(18)));
         story.Outcome("ready", "Ready", "terminal");
@@ -205,7 +205,7 @@ public sealed class StoryDesktopAppearanceTests {
 
     private static VisualStory ReplayStory(StoryAppearance theme, VisualTheme? palette = null) {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready");
-        var story = VisualStory.Create("Replay").WithSize(600, 400).WithTheme(theme.Palette, theme.Mode).WithStyle(theme.Style);
+        var story = VisualStory.Create("Replay").Size(600, 400).Theme(theme.Palette).ThemeMode(theme.Mode).Style(theme.Style);
         story.Scene("replay", "Output", 1).Panel("terminal", new VisualStoryReplaySurface(replay, theme: palette));
         story.Outcome("ready", "Ready", "terminal"); return story;
     }

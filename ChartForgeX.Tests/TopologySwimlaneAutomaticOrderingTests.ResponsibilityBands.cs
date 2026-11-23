@@ -12,7 +12,7 @@ public sealed partial class TopologySwimlaneAutomaticOrderingTests {
     [InlineData(TopologyLayoutDirection.LeftToRight,true)] [InlineData(TopologyLayoutDirection.RightToLeft,true)]
     [InlineData(TopologyLayoutDirection.TopToBottom,true)] [InlineData(TopologyLayoutDirection.BottomToTop,true)]
     public void WeightedLocalResponsibilitiesKeepTheirBandsWithRootMinimaUngroupedSiblingsAndBothOutputPolicies(TopologyLayoutDirection direction,bool fit) {
-        var chart=Chart(direction,true).WithViewport(2400,2400,24);chart.Nodes.Single(node=>node.Id=="d").Metadata["layer"]="3";
+        var chart=Chart(direction,true).Viewport(new TopologyViewport(2400, 2400, 24));chart.Nodes.Single(node=>node.Id=="d").Metadata["layer"]="3";
         chart.AddAutoNode("free","External",width:120,height:56).AddEdge("free-b","free","b");chart.Nodes.Last().Metadata["layer"]="1";
         var groups=chart.Groups.Select(group=>group.Id).ToArray();var nodes=chart.Nodes.Select(node=>node.Id).ToArray();
         var options=new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=fit,SwimlaneAutomaticLaneOrdering=true,

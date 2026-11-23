@@ -9,8 +9,8 @@ public sealed class ResponsiveRadialContractBrowserTests {
     [BrowserFact]
     public async Task CustomFrameTypographyKeepsLegendColumnsSeparateThroughResize() {
         var chart = ResponsiveRadialFixture.Model(false)
-            .ConfigureTitleStyle(style => style.WithFontSize(28))
-            .ConfigureLegendStyle(style => style.WithFontSize(18));
+            .TitleStyle(style => style.FontSize(28))
+            .LegendStyle(style => style.FontSize(18));
         await using var session = await InteractiveChartBrowser.OpenAsync(ResponsiveRadialFixture.Document(ResponsiveRadialFixture.Fragment(chart), false), 1440, 1200);
         var page = session.Page;
         foreach (var width in new[] { 390, 1440, 390 }) {
@@ -33,12 +33,12 @@ public sealed class ResponsiveRadialContractBrowserTests {
     [InlineData(ChartDataLabelPlacement.Above, true)]
     [InlineData(ChartDataLabelPlacement.Below, true)]
     public async Task SharedBandCalloutsAndHalosFollowTheirSlices(ChartDataLabelPlacement placement, bool bothRings) {
-        var chart = Chart.Create().WithSize(1100, 420).WithHeader(false).WithLegend(false).WithDataLabels().WithXLabels("A", "B");
+        var chart = Chart.Create().Size(1100, 420).ShowHeader(false).Legend(false).DataLabels().XLabels("A", "B");
         var inner = new ChartSeries(new ChartSeriesId("prior"), "Prior", ChartSeriesKind.Donut,
-            new[] { new ChartPoint(1, 70), new ChartPoint(2, 30) }).WithRadialBand(new ChartRadialBand(.2, .5));
+            new[] { new ChartPoint(1, 70), new ChartPoint(2, 30) }).RadialBand(new ChartRadialBand(.2, .5));
         inner.DataLabelPlacement = placement;
         var outer = new ChartSeries(new ChartSeriesId("current"), "Current", ChartSeriesKind.Donut,
-            new[] { new ChartPoint(1, 55), new ChartPoint(2, 45) }).WithRadialBand(new ChartRadialBand(.65, 1));
+            new[] { new ChartPoint(1, 55), new ChartPoint(2, 45) }).RadialBand(new ChartRadialBand(.65, 1));
         outer.ShowDataLabels = bothRings; outer.DataLabelPlacement = placement;
         chart.AddSeries(inner).AddSeries(outer);
         await using var session = await InteractiveChartBrowser.OpenAsync(ResponsiveRadialFixture.Document(ResponsiveRadialFixture.Fragment(chart), false), 1440, 1000);
@@ -64,10 +64,10 @@ public sealed class ResponsiveRadialContractBrowserTests {
     [BrowserTheory]
     [InlineData(false)] [InlineData(true)]
     public async Task OverflowTotalKeepsACompleteExponentWhileAuthoredCenterTextCanShorten(bool authored) {
-        var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithDataLabels()
+        var chart = Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).DataLabels()
             .AddDonut("Total", new[] { new ChartPoint(1, 1e308), new ChartPoint(2, 1e308) });
-        chart.Options.DonutInnerRadiusRatio = .35;
-        if (authored) chart.Options.DonutCenterValue = "A deliberately long authored caption";
+        chart.Options.Pie.InnerRadiusRatio = .35;
+        if (authored) chart.Options.Pie.CenterValue = "A deliberately long authored caption";
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
         await using var session = await InteractiveChartBrowser.OpenAsync(ResponsiveRadialFixture.Document(fragment, false), 1440, 1000);
         var page = session.Page;

@@ -6,8 +6,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void HeatmapHonorsAxesVisibility() {
         var compact = HeatmapSample()
-            .WithAxes(false)
-            .WithLegend(false)
+            .Axes(false)
+            .Legend(false)
             .ToSvg();
 
         Assert(compact.Contains("data-cfx-role=\"heatmap-cell\"", System.StringComparison.Ordinal), "Compact heatmaps should still render cells.");
@@ -16,38 +16,36 @@ internal static partial class SmokeTests {
         Assert(!compact.Contains("data-cfx-role=\"heatmap-x-axis-title\"", System.StringComparison.Ordinal), "Heatmaps should hide x-axis titles when axes are disabled.");
         Assert(!compact.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "The shared legend permission should hide continuous heatmap scales.");
 
-        var axesOnly = HeatmapSample().WithLegend(false).ToSvg();
+        var axesOnly = HeatmapSample().Legend(false).ToSvg();
         Assert(axesOnly.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Heatmaps should keep axes when only legends are disabled.");
         Assert(!axesOnly.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "The shared legend permission should hide continuous heatmap scales while retaining axes.");
-        var withoutScale = HeatmapSample().ConfigureHeatmapColorDimension(options => options.ShowLegend = false).ToSvg();
+        var withoutScale = HeatmapSample().Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false)).ToSvg();
         Assert(!withoutScale.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "Heatmap scale legends should be optional.");
-        Assert(HeatmapSample().ConfigureHeatmapColorDimension(options => options.ShowLegend = false).ToPng().Length > 64, "Heatmaps without scale legends should render valid PNG output.");
-        var withoutColumns = HeatmapSample().WithHeatmapColumnLabels(false).ToSvg();
+        Assert(HeatmapSample().Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false)).ToPng().Length > 64, "Heatmaps without scale legends should render valid PNG output.");
+        var withoutColumns = HeatmapSample().Heatmap(h => h.ShowColumnLabels(false)).ToSvg();
         Assert(withoutColumns.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Heatmap row labels should remain visible when column labels are hidden.");
         Assert(!withoutColumns.Contains("data-cfx-role=\"heatmap-column-label\"", System.StringComparison.Ordinal), "Heatmap column labels should be optional.");
-        Assert(HeatmapSample().WithHeatmapColumnLabels(false).ToPng().Length > 64, "Heatmaps without column labels should render valid PNG output.");
-        Assert(HeatmapSample().WithAxes(false).WithLegend(false).ToPng().Length > 64, "Compact heatmap options should render valid PNG output.");
+        Assert(HeatmapSample().Heatmap(h => h.ShowColumnLabels(false)).ToPng().Length > 64, "Heatmaps without column labels should render valid PNG output.");
+        Assert(HeatmapSample().Axes(false).Legend(false).ToPng().Length > 64, "Compact heatmap options should render valid PNG output.");
 
         var polished = HeatmapSample()
-            .WithDataLabels(false)
-            .WithHeatmapCellGap(5)
-            .WithHeatmapCellRadius(7)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
+            .DataLabels(false)
+            .Heatmap(h => h.CellGap(5).CellRadius(7).ValueTextMode(ChartHeatmapValueTextMode.Always))
             .ToSvg();
         Assert(polished.Contains("data-cfx-cell-gap=\"5\"", System.StringComparison.Ordinal), "Heatmaps should expose configured cell gaps in SVG metadata.");
         Assert(polished.Contains("data-cfx-cell-radius=\"", System.StringComparison.Ordinal), "Heatmaps should expose effective cell radius in SVG metadata.");
         Assert(polished.Contains("data-cfx-value-text-mode=\"Always\"", System.StringComparison.Ordinal), "Heatmaps should expose value text mode metadata.");
         Assert(polished.Contains(">80<", System.StringComparison.Ordinal), "Heatmap value text mode should allow values without enabling general data labels.");
-        Assert(HeatmapSample().WithHeatmapCellGap(5).WithHeatmapCellRadius(7).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).ToPng().Length > 64, "Polished heatmap options should render valid PNG output.");
-        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().WithHeatmapCellGap(-1), "Heatmap cell gaps should reject negative values.");
-        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().WithHeatmapCellRadius(25), "Heatmap cell radius should stay bounded.");
-        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().WithHeatmapValueTextMode((ChartHeatmapValueTextMode)999), "Heatmap value text mode should reject unknown enum values.");
+        Assert(HeatmapSample().Heatmap(h => h.CellGap(5).CellRadius(7).ValueTextMode(ChartHeatmapValueTextMode.Always)).ToPng().Length > 64, "Polished heatmap options should render valid PNG output.");
+        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().Heatmap(h => h.CellGap(-1)), "Heatmap cell gaps should reject negative values.");
+        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().Heatmap(h => h.CellRadius(25)), "Heatmap cell radius should stay bounded.");
+        AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().Heatmap(h => h.ValueTextMode((ChartHeatmapValueTextMode)999)), "Heatmap value text mode should reject unknown enum values.");
     }
 
     private static void HeatmapRowsCanMaskCells() {
         var chart = Chart.Create()
-            .WithSize(420, 280)
-            .WithXLabels("Mon", "Tue", "Wed", "Thu")
+            .Size(420, 280)
+            .XLabels("Mon", "Tue", "Wed", "Thu")
             .AddHeatmapRows(new[] {
                 ChartHeatmapRow.CreateMasked("Morning", null, 52, 61, null),
                 ChartHeatmapRow.CreateMasked("Afternoon", null, 88, null, 57)
@@ -64,8 +62,8 @@ internal static partial class SmokeTests {
 
     private static void HeatmapRowsAcceptMatrixValues() {
         var chart = Chart.Create()
-            .WithSize(420, 280)
-            .WithXLabels("SPF", "DMARC", "DNSSEC")
+            .Size(420, 280)
+            .XLabels("SPF", "DMARC", "DNSSEC")
             .AddHeatmapRows(new[] {
                 ChartHeatmapRow.Create("Primary", 80, 70, 64),
                 ChartHeatmapRow.Create("Acquired", 45, 60, 74)
@@ -85,10 +83,10 @@ internal static partial class SmokeTests {
     }
 
     private static Chart HeatmapSample() => Chart.Create()
-        .WithSize(520, 320)
-        .WithXAxis("Control")
-        .WithYAxis("Group")
-        .WithXLabels("SPF", "DMARC")
+        .Size(520, 320)
+        .XAxis(x => x.Title("Control"))
+        .YAxis(y => y.Title("Group"))
+        .XLabels("SPF", "DMARC")
         .AddHeatmapRow("Primary", Points(80, 70))
         .AddHeatmapRow("Acquired", Points(45, 60));
 }

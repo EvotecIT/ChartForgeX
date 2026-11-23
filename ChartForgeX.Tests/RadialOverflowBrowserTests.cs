@@ -20,11 +20,11 @@ public sealed class RadialOverflowBrowserTests {
         if (!Enabled) return;
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie,
             new[] { new ChartPoint(1, 1e308), new ChartPoint(2, 1e308), new ChartPoint(3, 1e308) });
-        for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("part-" + index));
-        var chart = Chart.Create().WithSize(640, 400).WithXLabels("First", "Second", "Third").AddSeries(series)
-            .WithTheme(VisualTheme.Graphite(), donut ? ThemeMode.Dark : ThemeMode.Light)
-            .WithDataLabels().WithLegend();
-        chart.Options.MaximumPieSlices = 2;
+        for (var index = 0; index < 3; index++) series.ObservationId(index, new ChartObservationId("part-" + index));
+        var chart = Chart.Create().Size(640, 400).XLabels("First", "Second", "Third").AddSeries(series)
+            .Theme(VisualTheme.Graphite()).ThemeMode(donut ? ThemeMode.Dark : ThemeMode.Light)
+            .DataLabels().Legend();
+        chart.Options.Pie.MaxSlices = 2;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Configure),
             donut ? 390 : 760, 720);
         var page = session.Page;
@@ -67,7 +67,7 @@ public sealed class RadialOverflowBrowserTests {
         if (donut) Assert.Equal(Bound, await page.Locator("[data-cfx-center-value]").GetAttributeAsync("data-cfx-center-value"));
         await CaptureAsync(page, donut ? "donut" : "pie", selected);
         if (donut) {
-            chart.WithDonutCenterText("Authored capacity", "Explicit total");
+            chart.Pie(p => p.CenterValue("Authored capacity").CenterLabel("Explicit total"));
             await page.EvaluateAsync("html=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).update(html)",
                 chart.ToInteractiveHtmlFragmentWithoutAssets(Configure));
             Assert.Equal("Authored capacity", await page.Locator("[data-cfx-center-value]").GetAttributeAsync("data-cfx-center-value"));

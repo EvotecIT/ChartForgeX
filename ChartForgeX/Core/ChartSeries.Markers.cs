@@ -17,22 +17,6 @@ public sealed partial class ChartSeries {
     }
     private ChartRadarOptions _radar = new();
 
-    /// <summary>Configures marker geometry, visibility and paint without changing the source observations.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureMarkers(Action<ChartMarkerOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Markers = ChartOptionConfiguration.Configure(Markers, configure, options => options.Clone()); return this;
-    }
-
-    /// <summary>Configures a radar series' form, area opacity, curve and immutable outline stroke.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureRadar(Action<ChartRadarOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Radar = ChartOptionConfiguration.Configure(Radar, configure, options => options.Clone()); return this;
-    }
-
     internal void ValidateMarkerAndRadarOptions() {
         if (Kind == ChartSeriesKind.Bubble && Markers.Radius.HasValue)
             throw new InvalidOperationException("Bubble series use ChartOptions.Bubble radius bounds; use Markers.Enabled to hide glyphs.");

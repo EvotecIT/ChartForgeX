@@ -19,7 +19,7 @@ internal static partial class VisualMatrixCompiler {
         var axes = chart.Options.ShowAxes;
         var left = axes && chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .22, Enumerable.Range(0, 7).Select(row => builder.MeasureText(model.DayName(row), style).Width).Max() + gap) : 0;
         var top = axes && chart.Options.XAxis.Visible ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
-        var scale = chart.Options.HeatmapColorScale;
+        var scale = chart.Options.Heatmap.ColorScale;
         var scaleHeight = ScaleVisible(context, presentation) ? scale != null
             ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height * .35 - gap), presentation,
                 model.EmptyDays > 0, min: model.Min, max: model.Max) + gap
@@ -77,7 +77,7 @@ internal static partial class VisualMatrixCompiler {
                 using (builder.PushClip(area)) {
                     var cellRadius = Math.Min(grid.Radius, Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * MaximumThemeCellRounding));
                     // A missing day is hatched (design rule 9) unless the author chose a no-data colour.
-                    if (!present && chart.Options.HeatmapColorScale?.NoDataColor == null) ChartMissingData.Paint(builder, bounds, cellRadius, colors, "calendar-cell-shape");
+                    if (!present && chart.Options.Heatmap.ColorScale?.NoDataColor == null) ChartMissingData.Paint(builder, bounds, cellRadius, colors, "calendar-cell-shape");
                     else builder.Rect(bounds, blend.Color, radius: cellRadius, role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));
                 }
             }
@@ -96,7 +96,7 @@ internal static partial class VisualMatrixCompiler {
             if (ScaleVisible(context, presentation)) {
                 var scaleBounds = new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap));
                 if (scale != null) ColorScale(chart, context, builder, scaleBounds, model.Min, model.Max, "calendar-scale", presentation, model.EmptyDays > 0,
-                    ChartMissingData.Look(chart.Options.HeatmapColorScale, colors));
+                    ChartMissingData.Look(chart.Options.Heatmap.ColorScale, colors));
                 else CalendarScale(chart, context, builder, model, scaleBounds, presentation);
             }
         }

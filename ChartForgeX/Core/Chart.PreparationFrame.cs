@@ -22,7 +22,7 @@ public sealed partial class Chart {
             ResolveFrameTextStyle(context, configured, model, size, color, weight);
         var frame = new VisualFrame(sourceFrame.Title ?? Title, sourceFrame.Subtitle ?? Subtitle,
             sourceFrame.HasExplicitLegend ? sourceFrame.ShowLegend : ChartLegendVisibility.ForPreparedContent(this, entries.Count, colorScales),
-            sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.LegendPosition,
+            sourceFrame.HasExplicitLegendPosition ? sourceFrame.LegendPosition : Options.Legend.Position,
             sourceFrame.ShowSurface, sourceFrame.TransparentBackground,
             RoleStyle(sourceFrame.TitleStyle, Options.TitleStyle, context.Theme.Typography.TitleSize, frameColors.Foreground, context.Theme.Typography.TitleWeight),
             RoleStyle(sourceFrame.SubtitleStyle, Options.SubtitleStyle, context.Theme.Typography.SubtitleSize, frameColors.MutedForeground, 400),
@@ -30,7 +30,7 @@ public sealed partial class Chart {
             sourceFrame.LegendMaximumRows, sourceFrame.LegendMaximumHeightFraction, sourceFrame.ShowCard, sourceFrame.LegendTitle) {
             HasExplicitLegendWeight = sourceFrame.HasExplicitLegendWeight || Options.LegendStyle.FontWeight != null
         };
-        if (!sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition && family != VisualChartFamily.Map)
+        if (!sourceFrame.HasExplicitLegendPosition && !Options.Legend.HasExplicitPosition && family != VisualChartFamily.Map)
             frame = frame.WithAutomaticLegendPlacement();
         return (family, bubbleScale, colorScales, axisLabels, entries, frame);
     }

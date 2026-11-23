@@ -90,8 +90,8 @@ public static partial class TopologyIconPackJson {
         var id = root.RequiredString("id");
         var label = root.RequiredString("label");
         var pack = new TopologyIconPack(id, label, root.OptionalString("vendor"), root.OptionalString("packVersion") ?? root.OptionalString("version"), root.OptionalBool("builtIn") ?? root.OptionalBool("isBuiltIn") ?? false);
-        foreach (var tag in root.OptionalStringArray("tags")) pack.WithTags(tag);
-        foreach (var pair in root.OptionalStringMap("metadata")) pack.WithMetadata(pair.Key, pair.Value);
+        foreach (var tag in root.OptionalStringArray("tags")) pack.AddTags(tag);
+        foreach (var pair in root.OptionalStringMap("metadata")) pack.Metadata(pair.Key, pair.Value);
 
         foreach (var iconNode in root.RequiredArray("icons")) {
             var iconObject = iconNode.AsObject("icons[]");
@@ -108,8 +108,8 @@ public static partial class TopologyIconPackJson {
                 Artwork = ParseArtwork(iconObject.OptionalObject("artwork"))
             };
 
-            foreach (var tag in iconObject.OptionalStringArray("tags")) icon.WithTags(tag);
-            foreach (var pair in iconObject.OptionalStringMap("metadata")) icon.WithMetadata(pair.Key, pair.Value);
+            foreach (var tag in iconObject.OptionalStringArray("tags")) icon.AddTags(tag);
+            foreach (var pair in iconObject.OptionalStringMap("metadata")) icon.Metadata(pair.Key, pair.Value);
             pack.AddIcon(icon);
         }
 
@@ -128,9 +128,9 @@ public static partial class TopologyIconPackJson {
         var directory = Path.GetDirectoryName(fullPath);
         var json = File.ReadAllText(path);
         var pack = FromJson(json, directory);
-        pack.WithMetadata("manifest.path", fullPath);
-        pack.WithMetadata("manifest.fileName", Path.GetFileName(path));
-        if (!string.IsNullOrWhiteSpace(directory)) pack.WithMetadata("manifest.directory", directory!);
+        pack.Metadata("manifest.path", fullPath);
+        pack.Metadata("manifest.fileName", Path.GetFileName(path));
+        if (!string.IsNullOrWhiteSpace(directory)) pack.Metadata("manifest.directory", directory!);
         return pack;
     }
 

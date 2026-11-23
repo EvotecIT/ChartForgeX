@@ -20,7 +20,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         });
         var chart = Create(family, scale);
         Dimension(chart, family).LegendStyle = gradient ? ChartColorLegendStyle.Gradient : ChartColorLegendStyle.Swatches;
-        if (right) chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (right) chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var document = XDocument.Parse(svg); var prefix = Prefix(family);
         var source = CaptionSources(document, family).Single(node => (string?)node.Attribute("data-cfx-caption-value") == "10");
@@ -107,9 +107,9 @@ public sealed partial class ColorScalePositionedNativeTests {
             new ChartColorScaleCaption(-2, "Outside low"), new ChartColorScaleCaption(7, "Observed"), new ChartColorScaleCaption(12, "Outside high")
         });
         if (fixedDomain) scale = scale.WithValueRange(0, 10);
-        var chart = Chart.Create().WithSize(800, 480).WithHeatmapColorScale(scale)
+        var chart = Chart.Create().Size(800, 480).Heatmap(h => h.ColorScale(scale))
             .AddHeatmapRows(new[] { ChartHeatmapRow.CreateMasked("Observations", allMissing ? new double?[] { null, null } : new double?[] { 7, 7 }) });
-        chart.ConfigureHeatmapColorDimension(options => options.LegendStyle = ChartColorLegendStyle.Gradient);
+        chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.LegendStyle = ChartColorLegendStyle.Gradient));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg()); var source = CaptionSources(document, "heatmap");
         var key = Assert.Single(Role(document, "heatmap-scale"));
         var outside = source.Where(node => (string?)node.Attribute("data-cfx-caption-label") is "Outside low" or "Outside high").ToArray();

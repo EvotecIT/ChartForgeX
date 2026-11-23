@@ -49,7 +49,7 @@ internal static class MermaidQuadrantStyles {
 
     internal static void Apply(ChartSeries series, int index, Dictionary<string, string> styles, ChartColor strokeDefault) {
         if (!System.Linq.Enumerable.Any(styles.Keys, Known)) return;
-        series.ConfigurePointMarkers(index, marker => {
+        series.PointMarkers(index, marker => {
             // Pinned Quadrant defaults to no outline; its default stroke ink is the theme point fill.
             marker.Stroke = strokeDefault; marker.StrokeWidth = 0;
             foreach (var declaration in styles) {

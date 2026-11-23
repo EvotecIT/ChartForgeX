@@ -21,7 +21,7 @@ public sealed class GanttTodayStyleTests {
         var parsed = new MermaidParser().ParseGantt(source);
         Assert.Empty(parsed.Diagnostics);
         Assert.Equal(expected.RootElement.GetProperty("todayMarker").GetString(), parsed.Document!.TodayMarker);
-        Assert.Null(parsed.Document.ToChart().Options.GanttToday);
+        Assert.Null(parsed.Document.ToChart().Options.Gantt.Today);
         var chart = parsed.Document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) });
         var line = Today(chart);
         Assert.Equal(5, line.StrokeWidth);
@@ -97,16 +97,16 @@ public sealed class GanttTodayStyleTests {
         var authoredDash = new[] { 5d, 2d };
         var style = new ChartStrokeStyle(ChartColor.FromHex("#336699"), 3, .5, authoredDash);
         authoredDash[0] = 99;
-        var chart = Chart.Create().WithLegend(false).AddLine("Work", new[] { new ChartPoint(0, 1), new ChartPoint(10, 2) }).AddVerticalLine(4, "Reference");
+        var chart = Chart.Create().Legend(false).AddLine("Work", new[] { new ChartPoint(0, 1), new ChartPoint(10, 2) }).AddVerticalLine(4, "Reference");
         chart.Annotations[0].StrokeStyle = style;
         var reference = Assert.Single(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line");
         Assert.Equal(3, reference.StrokeWidth);
         Assert.Equal(ChartColor.FromRgba(51, 102, 153, 128), reference.Stroke);
         Assert.Equal(new[] { 5d, 2d }, reference.Dash);
-        var lane = Chart.Create().WithGanttLaneNow(DateTime.SpecifyKind(Start.AddDays(2), DateTimeKind.Utc))
-            .WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.Black))
+        var lane = Chart.Create().GanttLaneNow(DateTime.SpecifyKind(Start.AddDays(2), DateTimeKind.Utc))
+            .StateCategories(new ChartStateCategory("work", "Work", ChartColor.Black))
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(DateTime.SpecifyKind(Start, DateTimeKind.Utc), null, "work") });
-        lane.Options.GanttTodayStyle = style;
+        lane.Options.Gantt.TodayStyle = style;
         Assert.Equal(reference.Stroke, Today(lane).Stroke);
         Assert.Equal(reference.StrokeWidth, Today(lane).StrokeWidth);
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(width: double.NaN));
@@ -123,7 +123,7 @@ public sealed class GanttTodayStyleTests {
         var parsed = new MermaidParser().ParseGantt("gantt\ntodayMarker stroke:#00ff00,stroke-width:5px,opacity:0.5,stroke-dasharray:6 8\nTask :2026-01-01,6d");
         Assert.Empty(parsed.Diagnostics);
         var chart = parsed.Document!.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2), Width = width, Height = 360 })
-            .WithLegend(false).WithDataLabels(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Legend(false).DataLabels(false).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gantt-now-line");
         var actual = prepared.ToRgba();

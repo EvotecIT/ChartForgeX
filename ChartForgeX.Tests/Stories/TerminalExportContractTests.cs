@@ -19,8 +19,8 @@ public sealed class TerminalExportContractTests {
             var family = BrowserProofFonts.Family;
             var theme = TerminalThemes.Default().Configure(builder =>
                 builder.Typography = new VisualTypography(monospaceFamily: family));
-            TerminalStory CreateStory(string caption) => TerminalStory.Create().WithWidth(480).WithWindowStyle(style).WithTheme(theme)
-                .WithPngOutputScale(1).WithFinalPrompt(false).WithTitle(caption).Output("ready");
+            TerminalStory CreateStory(string caption) => TerminalStory.Create().Width(480).WindowStyle(style).Theme(theme)
+                .PngOutputScale(1).ShowFinalPrompt(false).Title(caption).Output("ready");
             var story = CreateStory(new string('W', 60));
             var svg = System.Xml.Linq.XDocument.Parse(story.ToSvg());
             var title = Assert.Single(svg.Descendants(), element =>
@@ -57,8 +57,8 @@ public sealed class TerminalExportContractTests {
     [InlineData(TerminalWindowStyle.Linux, ThemeMode.Dark)]
     [InlineData(TerminalWindowStyle.Linux, ThemeMode.Light)]
     public void SvgChromeTitlesUseTheReviewedRegularPngTypography(TerminalWindowStyle style, ThemeMode mode) {
-        var story = TerminalStory.Create().WithWindowStyle(style).WithThemeMode(mode)
-            .WithTitle("Terminal export").WithFinalPrompt(false).Output("ready");
+        var story = TerminalStory.Create().WindowStyle(style).ThemeMode(mode)
+            .Title("Terminal export").ShowFinalPrompt(false).Output("ready");
         var document = System.Xml.Linq.XDocument.Parse(story.ToSvg());
         var title = Assert.Single(document.Descendants(), element =>
             (string?)element.Attribute("data-cfx-role") is "terminal-title" or "terminal-tab-title");
@@ -74,7 +74,7 @@ public sealed class TerminalExportContractTests {
     [InlineData(TerminalStoryPlaybackSpeed.Fast, 72, .15, .04, .55)]
     public void PlaybackCalculationUsesVisibleElementsAndPresetClock(TerminalStoryPlaybackSpeed speed,
         double charactersPerSecond, double initial, double lineDelay, double hold) {
-        var story = TerminalStory.Create().WithPlaybackSpeed(speed);
+        var story = TerminalStory.Create().PlaybackSpeed(speed);
         Assert.Equal(initial, story.InitialDelaySeconds);
         Assert.Equal(lineDelay, story.LineDelaySeconds);
         Assert.Equal(hold, story.TabHoldSeconds);
@@ -89,7 +89,7 @@ public sealed class TerminalExportContractTests {
     [InlineData(TerminalWindowStyle.WindowsTerminal, 32, 8)]
     [InlineData(TerminalWindowStyle.Linux, 36, 12)]
     public void TerminalWindowUsesExportCellAndChromeGeometry(TerminalWindowStyle style, double height, double radius) {
-        var story = TerminalStory.Create().WithWindowStyle(style).WithFinalPrompt(false).Output("ready");
+        var story = TerminalStory.Create().WindowStyle(style).ShowFinalPrompt(false).Output("ready");
         var layout = TerminalStoryLayout.Build(story);
         Assert.Equal(height, layout.HeaderHeightValue);
         Assert.Equal(radius, TerminalWindowChrome.FrameRadius(style));
@@ -99,6 +99,6 @@ public sealed class TerminalExportContractTests {
         Assert.Equal(ChartColor.FromHex("#0C0C0C"), story.ResolvedStyle.Background);
         Assert.Equal(ChartColor.FromHex("#1F2A3C"), story.ResolvedStyle.HeaderBackground);
         Assert.Equal(ChartColor.FromHex("#CCCCCC"), story.ResolvedStyle.Text);
-        Assert.Equal(ChartColor.FromHex("#FFFFFF"), TerminalStory.Create().WithThemeMode(ThemeMode.Light).ResolvedStyle.Background);
+        Assert.Equal(ChartColor.FromHex("#FFFFFF"), TerminalStory.Create().ThemeMode(ThemeMode.Light).ResolvedStyle.Background);
     }
 }

@@ -15,7 +15,7 @@ public sealed class InteractiveKeyboardFocusRecoveryBrowserTests {
     public async Task MutingTheFocusedSeriesRecoversNavigationWithinTheLocalOrPeerChart(bool synchronized, bool dark) {
         if (!Enabled) return;
         var chart = StatusLines(dark);
-        if (!synchronized) chart.WithSize(900, 420);
+        if (!synchronized) chart.Size(900, 420);
         var html = synchronized ? new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1;
             options.Interaction.Enable(ChartInteractionFeatures.SynchronizedCharts);

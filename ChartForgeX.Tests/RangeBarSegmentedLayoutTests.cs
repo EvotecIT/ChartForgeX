@@ -35,7 +35,7 @@ public sealed class RangeBarSegmentedLayoutTests {
         Assert.Equal("1", (string?)groups[5].Attribute("data-cfx-source-point"));
         if (style == ChartBarStyle.SegmentedCapsule) {
             for (var item = 0; item < bodies.Length; item++) {
-                var measured = ChartSegmentedBarGeometry.RangePaintBounds(chart.Options.ResolvePreparedBarVisualStyle(), bodies[item].Bounds, true);
+                var measured = ChartSegmentedBarGeometry.RangePaintBounds(chart.Options.Bars.ResolvePreparedVisualStyle(), bodies[item].Bounds, true);
                 Assert.InRange(Math.Abs(measured.Top - footprints[item].Top), 0, .002); Assert.InRange(Math.Abs(measured.Bottom - footprints[item].Bottom), 0, .002);
                 Assert.InRange(Math.Abs(measured.Left - footprints[item].Left), 0, .002); Assert.InRange(Math.Abs(measured.Right - footprints[item].Right), 0, .002);
             }
@@ -83,7 +83,7 @@ public sealed class RangeBarSegmentedLayoutTests {
         var context = Context(360, 360, ThemeMode.Dark);
         double Thickness() => chart.Prepare(context).Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "range-bar").Bounds.Height;
         var lit = Thickness();
-        chart.Options.BarVisualStyle.CapShadowOpacity = 0; chart.Options.BarVisualStyle.CapHighlightOpacity = 0;
+        chart.Options.Bars.VisualStyle.CapShadowOpacity = 0; chart.Options.Bars.VisualStyle.CapHighlightOpacity = 0;
         Assert.True(Thickness() > lit);
         Assert.DoesNotContain(chart.Prepare(context).Scene.Nodes, node => node.Role is "range-bar-cap-shadow-soft" or "range-bar-cap-shadow" or "range-bar-cap-highlight");
     }
@@ -115,7 +115,7 @@ public sealed class RangeBarSegmentedLayoutTests {
         var context = Context(360, 360, ThemeMode.Dark);
         Assert.Equal("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.",
             Assert.Throws<InvalidOperationException>(() => chart.Prepare(context)).Message);
-        chart.WithBarStyle(ChartBarStyle.Flat);
+        chart.Bars(b => b.Style(ChartBarStyle.Flat));
         foreach (var series in chart.Series) series.StrokeWidth = 1;
         var prepared = chart.Prepare(context);
         Assert.Equal(32, prepared.Regions.Count(region => region.Role == "point"));
@@ -125,7 +125,7 @@ public sealed class RangeBarSegmentedLayoutTests {
     }
 
     private static Chart Gallery(int width, ChartBarStyle style) => V2GalleryModels.Create(ChartSeriesKind.RangeBar, width == 360 ? "compact-horizontal" : "horizontal")
-        .WithBarStyle(style);
+        .Bars(b => b.Style(style));
 
     private static VisualRenderContext Context(int width, int height, ThemeMode mode) {
         const string family = "CFX Range Gallery Carlito";

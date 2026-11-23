@@ -152,10 +152,11 @@ public sealed class ChartLabels {
     /// the chart description (the SVG <c>desc</c> element) and the accessible names of calendar, dotted map, region map,
     /// and tile map groups; <see cref="ChartDescriptionFacts.Kind"/> says which. Null (the default), or a function
     /// returning null or white space for a sentence, writes <see cref="ChartDescriptionFacts.EnglishText"/>. A description
-    /// set through <see cref="Chart.ConfigureAccessibility"/> still wins and the function is not called for it. Exceptions
+    /// set through <c>Accessibility</c> still wins and the function is not called for it. Exceptions
     /// thrown by the function are not caught; they surface from the render call.
     /// </summary>
-    public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("AccessibleTextBy")]
+public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }
 
     /// <summary>
     /// Gets or sets a function that writes a day in the accessible name and hover title of a calendar heatmap cell, for
@@ -163,7 +164,8 @@ public sealed class ChartLabels {
     /// space, writes the ISO date (<c>yyyy-MM-dd</c>). The machine-readable <c>data-cfx-date</c> attribute always stays ISO.
     /// Exceptions thrown by the function are not caught; they surface from the render call.
     /// </summary>
-    public Func<DateTime, string?>? DateFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("DateTextBy")]
+public Func<DateTime, string?>? DateFormatter { get; set; }
 
     internal string FormatDate(DateTime day) {
         var text = DateFormatter?.Invoke(day);

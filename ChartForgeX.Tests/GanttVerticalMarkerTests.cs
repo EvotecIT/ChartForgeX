@@ -27,8 +27,8 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Equal(expected.RootElement.GetProperty("taskTimestamps").EnumerateArray().Select(task => (task[1].GetString()!, task[2].GetString()!)),
             document.Tasks.Select(task => (Stamp(task.Start), Stamp(task.End))));
         Assert.Equal(new[] { false, true, false }, document.Tasks.Select(task => task.IsVerticalMarker));
-        var chart = document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) }).WithLegend(false);
-        Assert.Null(chart.Options.GanttToday);
+        var chart = document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) }).Legend(false);
+        Assert.Null(chart.Options.Gantt.Today);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(3, chart.Series.Count);
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "gantt-task"));
@@ -37,7 +37,7 @@ public sealed class GanttVerticalMarkerTests {
         Assert.True(marker.Bounds.Height > 0);
         Assert.Single(prepared.Regions, region => region.Role == "gantt-dependency");
         var tasks = prepared.Regions.Where(region => region.Role == "gantt-task").ToArray();
-        var control = new MermaidParser().ParseGantt(source.Replace("Deadline :vert,2026-01-02,4d", "", StringComparison.Ordinal)).Document!.ToChart().WithLegend(false);
+        var control = new MermaidParser().ParseGantt(source.Replace("Deadline :vert,2026-01-02,4d", "", StringComparison.Ordinal)).Document!.ToChart().Legend(false);
         var controlTasks = control.Prepare(VisualExportRequest.ForChart(control).Context).Regions.Where(region => region.Role == "gantt-task").ToArray();
         Assert.Equal(controlTasks.Select(task => task.Bounds), tasks.Select(task => task.Bounds));
         var arrow = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
@@ -91,9 +91,9 @@ public sealed class GanttVerticalMarkerTests {
     public void MarkerPointColorOverridesSeriesInkInSvgAndNativePixels(bool pointOverride) {
         var seriesColor = ChartColor.FromHex("#d83b19");
         var pointColor = ChartColor.FromHex("#19d871");
-        var chart = Chart.Create().WithSize(640, 320).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 320).Legend(false).DataLabels(false)
             .AddGanttTask("Work", 1, 9).AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("deadline-source"), "Deadline", 4, color: seriesColor));
-        if (pointOverride) chart.Series[1].WithPointColor(0, pointColor);
+        if (pointOverride) chart.Series[1].PointColor(0, pointColor);
         var expected = pointOverride ? pointColor : seriesColor;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");
@@ -123,8 +123,8 @@ public sealed class GanttVerticalMarkerTests {
     [InlineData(false)]
     [InlineData(true)]
     public void MarkerOnlySchedulesHaveNoTaskRowsAndKeepTheirAuthoredWindow(bool explicitBounds) {
-        var chart = Chart.Create().WithLegend(false).AddGanttMarker("Begin", Start, Start.AddDays(9)).AddGanttMarker("End", Start.AddDays(9));
-        if (explicitBounds) chart.ConfigureXAxis(axis => axis.WithBounds(Start.AddDays(2).ToOADate(), Start.AddDays(7).ToOADate()));
+        var chart = Chart.Create().Legend(false).AddGanttMarker("Begin", Start, Start.AddDays(9)).AddGanttMarker("End", Start.AddDays(9));
+        if (explicitBounds) chart.XAxis(axis => axis.Bounds(Start.AddDays(2).ToOADate(), Start.AddDays(7).ToOADate()));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Regions, region => region.Role == "gantt-task");
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "schedule-row-label");
@@ -139,7 +139,7 @@ public sealed class GanttVerticalMarkerTests {
 
     [Fact]
     public void NativeAnnotationsShareGuideRenderingAndMarkerInputsAreValidated() {
-        var chart = Chart.Create().WithLegend(false).AddGanttTask("Work", 1, 9).AddVerticalLine(4, "Checkpoint");
+        var chart = Chart.Create().Legend(false).AddGanttTask("Work", 1, 9).AddVerticalLine(4, "Checkpoint");
         Assert.Contains("annotation-line", chart.ToSvg());
         Assert.Contains("Checkpoint", chart.ToSvg());
         Assert.NotEmpty(chart.ToPng());
@@ -151,7 +151,7 @@ public sealed class GanttVerticalMarkerTests {
     public void TodayMarkersRequireCallerTimeAndSourceOffWinsWhileStylesRemainDiagnosed() {
         var parser = new MermaidParser();
         var plain = parser.ParseGantt("gantt\nTask :2026-01-01,4d").Document!;
-        Assert.Null(plain.ToChart().Options.GanttToday);
+        Assert.Null(plain.ToChart().Options.Gantt.Today);
         Assert.Equal(plain.ToSvg(), plain.ToSvg());
         Assert.Contains("gantt-now-line", plain.ToSvg(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }));
         var off = parser.ParseGantt("gantt\ntodayMarker off\nTask :2026-01-01,4d").Document!;
@@ -171,7 +171,7 @@ public sealed class GanttVerticalMarkerTests {
         var parsed = new MermaidParser().ParseGantt("gantt\ntodayMarker " + control + "\nTask :2026-01-01,4d");
         Assert.Empty(parsed.Diagnostics);
         Assert.Equal(control, parsed.Document!.TodayMarker);
-        Assert.Null(parsed.Document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }).Options.GanttToday);
+        Assert.Null(parsed.Document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }).Options.Gantt.Today);
     }
 
     [Trait("Category", "Browser")]
@@ -179,8 +179,8 @@ public sealed class GanttVerticalMarkerTests {
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task MarkerLineAndCaptionSelectTheAuthoredSeriesWhileOrdinaryAnnotationsRemainIndependent(bool dark, int width) {
-        var chart = Chart.Create().WithSize(width, 360).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().Size(width, 360).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGanttTask("Work", Start, Start.AddDays(8)).AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("deadline-source"), "Deadline", Start.AddDays(3), Start.AddDays(5)))
             .AddVerticalLine(Start.AddDays(6).ToOADate(), "Reference");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -230,7 +230,7 @@ public sealed class GanttVerticalMarkerTests {
     public async Task MarkerInkStaysVisibleAcrossTaskFillsInNativeAndBrowserOutput(bool dark, int width) {
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(false).WithDataLabels(false);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(false).DataLabels(false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var scene = prepared.Scene;
         var line = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");

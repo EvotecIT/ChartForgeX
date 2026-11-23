@@ -18,11 +18,11 @@ public static class MermaidRequirementRendering {
         options ??= new MermaidTopologyRenderOptions();
         var direction = ToLayoutDirection(document.Direction);
         var chart = TopologyChart.Create()
-            .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-requirement" : options.Id!.Trim())
-            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid requirement diagram"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.Layered, direction);
+            .Id(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-requirement" : options.Id!.Trim())
+            .Title(MermaidHeading.Title(document, options.Title, null, "Mermaid requirement diagram"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Viewport(new TopologyViewport(options.Width, options.Height, options.Padding))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction);
 
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         // Host themes select unconfigured paints; explicitly authored role values remain specific.

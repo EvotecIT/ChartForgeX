@@ -14,7 +14,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserFact]
     public async Task QuickClickSelectsWhenTheHostBlocksTheMainThreadBeforePointerUp() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithXLabels("Monday", "Tuesday", "Wednesday").WithDataLabels(false)
+        var chart = Chart.Create().Size(800, 440).XLabels("Monday", "Tuesday", "Wednesday").DataLabels(false)
             .AddBar("Capacity", ChartPoints.FromValues(90, 60, 75));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 980, 800);
         var page = session.Page;
@@ -61,15 +61,15 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task NativeFillCoveredPointerActivatesTheObservationWithoutSelectingItsSeriesWrapper(
         ChartSeriesKind kind, bool dark, int width, bool tooltips) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(720, 360)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Covered area observations").WithXAxisBounds(1, 5).WithYAxisBounds(0, 60)
+        var chart = Chart.Create().Size(720, 360)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Covered area observations").XAxis(xAxis => xAxis.Bounds(1, 5)).YAxis(yAxis => yAxis.Bounds(0, 60))
             .AddSeries(new ChartSeries(new ChartSeriesId("api"), "API", kind,
                 new[] { new ChartPoint(1, 20), new ChartPoint(2, 20), new ChartPoint(3, 20), new ChartPoint(4, 20), new ChartPoint(5, 20) })
-                .WithObservationId(2, new ChartObservationId("api-covered")))
+                .ObservationId(2, new ChartObservationId("api-covered")))
             .AddSeries(new ChartSeries(new ChartSeriesId("worker"), "Worker", kind,
                 new[] { new ChartPoint(1, 50), new ChartPoint(2, 50), new ChartPoint(3, 50), new ChartPoint(4, 50), new ChartPoint(5, 50) })
-                .WithObservationId(2, new ChartObservationId("worker-covered")));
+                .ObservationId(2, new ChartObservationId("worker-covered")));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             Fit(options);
             options.Tooltip.Range = HtmlChartTooltipRange.Exact;

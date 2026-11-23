@@ -53,14 +53,14 @@ public sealed class GenericSaveRasterOptionsTests {
     }
 
     private static Action<string, RasterImageOptions> CreateSave(string surface) {
-        var chart = Chart.Create().WithSize(320, 220).WithTitle("Ready")
+        var chart = Chart.Create().Size(320, 220).Title("Ready")
             .AddLine("Results", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) });
-        IVisualBlock block = MetricCard.Create().WithSize(180, 100).WithMetric("Ready", 42);
+        IVisualBlock block = MetricCard.Create().Size(180, 100).Metric("Ready", 42);
         return surface switch {
             "chart" => chart.Save,
             "chart-grid" => ChartGrid.Create().Add(chart).Save,
             "block" => block.Save,
-            "visual-grid" => VisualGrid.Create().WithPanelSize(180, 100).Add(block).Save,
+            "visual-grid" => VisualGrid.Create().PanelSize(180, 100).Add(block).Save,
             "canvas" => VisualCanvas.Create(180, 100).Save,
             _ => throw new ArgumentOutOfRangeException(nameof(surface))
         };

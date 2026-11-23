@@ -69,19 +69,19 @@ public sealed partial class TopologyHtmlRenderer {
         var scenariosClass = cssPrefix + "-scenarios";
         var scenarioPanelClass = cssPrefix + "-scenario-panel";
         var forceControlsClass = cssPrefix + "-force-controls";
-        var enableViewportControls = options.EnableHtmlInteractions && options.EnableHtmlViewportControls;
-        var enableExportControls = options.EnableHtmlInteractions && options.EnableHtmlExportControls;
-        var enableFullscreenControl = options.EnableHtmlInteractions && options.EnableHtmlFullscreenControl;
-        var enableScenarioInteractions = options.EnableHtmlInteractions && chart.Scenarios.Count > 0;
+        var enableViewportControls = options.Html.Interactions && options.Html.ViewportControls;
+        var enableExportControls = options.Html.Interactions && options.Html.ExportControls;
+        var enableFullscreenControl = options.Html.Interactions && options.Html.FullscreenControl;
+        var enableScenarioInteractions = options.Html.Interactions && chart.Scenarios.Count > 0;
         var isGraphExplorationLayout = chart.LayoutMode == TopologyLayoutMode.ForceDirected || chart.LayoutMode == TopologyLayoutMode.RelationshipRadial;
-        var enableForceGraphControls = options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls && isGraphExplorationLayout;
-        var enableFindControls = options.EnableHtmlInteractions && options.EnableHtmlFindControls && !enableForceGraphControls;
-        var renderScenarioControls = enableScenarioInteractions && options.EnableHtmlScenarioControls;
-        var enableScenarioPanel = enableScenarioInteractions && options.EnableHtmlScenarioPanel;
-        var enableSelectionPanel = options.EnableHtmlInteractions && options.EnableHtmlSelectionPanel;
-        var enableScenarioUrlState = enableScenarioInteractions && options.EnableHtmlScenarioUrlState;
-        var enableSync = options.EnableHtmlInteractions && options.EnableHtmlSynchronizedState && !string.IsNullOrWhiteSpace(options.HtmlSyncGroupName);
-        var syncGroup = enableSync ? options.HtmlSyncGroupName!.Trim() : string.Empty;
+        var enableForceGraphControls = options.Html.Interactions && options.Html.ForceGraphControls && isGraphExplorationLayout;
+        var enableFindControls = options.Html.Interactions && options.Html.FindControls && !enableForceGraphControls;
+        var renderScenarioControls = enableScenarioInteractions && options.Html.ScenarioControls;
+        var enableScenarioPanel = enableScenarioInteractions && options.Html.ScenarioPanel;
+        var enableSelectionPanel = options.Html.Interactions && options.Html.SelectionPanel;
+        var enableScenarioUrlState = enableScenarioInteractions && options.Html.ScenarioUrlState;
+        var enableSync = options.Html.Interactions && options.Html.SynchronizedState && !string.IsNullOrWhiteSpace(options.Html.SyncGroupName);
+        var syncGroup = enableSync ? options.Html.SyncGroupName!.Trim() : string.Empty;
         var activeScenarioId = enableScenarioInteractions ? ResolveActiveScenarioId(chart, options.ActiveScenarioId) : options.ActiveScenarioId;
         var forceControlsChart = enableForceGraphControls ? TopologyLayoutEngine.Prepare(chart, options.View, options) : chart;
         if (renderSvg != null) {
@@ -96,7 +96,7 @@ public sealed partial class TopologyHtmlRenderer {
         // The SVG can be wider than the authored viewport when its content needs the room, so the wrapper follows the SVG.
         var svgMarkup = preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls);
         var topologyWidth = preparedWidth ?? SvgWidth(svgMarkup) ?? chart.Viewport.Width;
-        var sequences = enableScenarioInteractions && options.EnableHtmlScenarioSequence ? ScenarioSequenceFigures(chart, id) : new List<ScenarioSequenceFigure>();
+        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, id) : new List<ScenarioSequenceFigure>();
         // The playback page shows the topology above sequence diagrams, so they share one type scale: each fits the column
         // only while that costs at most an eighth of its size, and otherwise scrolls in its own frame. Anything placed over
         // the diagram (zoom, export and fullscreen controls, the selection panel) keeps the regular fitted view.
@@ -118,19 +118,19 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-chart-id", id)
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
-            .Attribute("data-cfx-interactive", options.EnableHtmlInteractions)
+            .Attribute("data-cfx-interactive", options.Html.Interactions)
             .Attribute("data-cfx-viewport-controls", enableViewportControls)
-            .Attribute("data-cfx-narrow-minimum-height", enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) : null)
+            .Attribute("data-cfx-narrow-minimum-height", enableViewportControls && options.Html.NarrowMinimumHeight > 0 ? options.Html.NarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) : null)
             .Attribute("data-cfx-export-controls", enableExportControls)
             .Attribute("data-cfx-fullscreen-control", enableFullscreenControl)
             .Attribute("data-cfx-scenario-controls", enableScenarioInteractions)
-            .Attribute("data-cfx-scenario-control-mode", options.HtmlScenarioControlMode == TopologyHtmlScenarioControlMode.Checkboxes ? "checkboxes" : "buttons")
+            .Attribute("data-cfx-scenario-control-mode", options.Html.ScenarioControlMode == TopologyHtmlScenarioControlMode.Checkboxes ? "checkboxes" : "buttons")
             .Attribute("data-cfx-force-graph-controls", enableForceGraphControls)
             .Attribute("data-cfx-scenario-panel", enableScenarioPanel)
             .Attribute("data-cfx-selection-panel", enableSelectionPanel)
-            .Attribute("data-cfx-controls-placement", ControlPlacementValue(options.HtmlControlPlacement))
-            .Attribute("data-cfx-opening-view", options.HtmlOpeningView == TopologyHtmlOpeningView.Fit ? "fit" : null)
-            .Attribute("data-cfx-wheel-zoom", options.HtmlWheelZoom == TopologyHtmlWheelZoom.WithModifier ? "modifier" : null)
+            .Attribute("data-cfx-controls-placement", ControlPlacementValue(options.Html.ControlPlacement))
+            .Attribute("data-cfx-opening-view", options.Html.OpeningView == TopologyHtmlOpeningView.Fit ? "fit" : null)
+            .Attribute("data-cfx-wheel-zoom", options.Html.WheelZoom == TopologyHtmlWheelZoom.WithModifier ? "modifier" : null)
             .Attribute("data-cfx-scenario-url-state", enableScenarioUrlState)
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
@@ -139,10 +139,10 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-theme-adaptive", options.SvgColorVariables != null && auto == null ? "true" : null)
             .Attribute("data-cfx-text-size", keepTextSize ? "kept" : null)
             .Attribute("style", ThemeVariables(theme) + (keepTextSize ? "--cfx-topology-min-width:" + (topologyWidth * MinimumTextScale).ToString("0.###", CultureInfo.InvariantCulture) + "px;" : string.Empty)
-                + "width:100%;max-width:" + displayWidth.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
+                + "width:100%;max-width:" + displayWidth.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.Html.NarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.Html.NarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
             .EndStartElement();
         if (auto != null && writeAutoStyle) writer.RawTrusted(auto.StyleElement);
-        if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
+        if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.Html.ScenarioControlMode, messages);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
         if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options, messages);
         if (enableFindControls) WriteFindControls(writer, cssPrefix + "-find", chart, messages);
@@ -179,7 +179,7 @@ public sealed partial class TopologyHtmlRenderer {
 
         writer.RawTrusted(svgMarkup);
         writer.EndElement();
-        if (enableScenarioInteractions && options.EnableHtmlScenarioSequence) WriteScenarioSequences(writer, cssPrefix + "-scenario-sequences", sequences, activeScenarioId, keepTextSize);
+        if (enableScenarioInteractions && options.Html.ScenarioSequence) WriteScenarioSequences(writer, cssPrefix + "-scenario-sequences", sequences, activeScenarioId, keepTextSize);
         writer.EndElement();
         return writer.Build();
     }
@@ -200,7 +200,7 @@ public sealed partial class TopologyHtmlRenderer {
     private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
         var nativeOptions = EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls);
         var prepared = chart.Prepare(nativeOptions);
-        if (options.EnableHtmlInteractions && options.EnableHtmlExportControls) prepared = prepared.ForInteractivePngExport();
+        if (options.Html.Interactions && options.Html.ExportControls) prepared = prepared.ForInteractivePngExport();
         return prepared.Visual.ToSvgWithoutProductFonts();
     }
 
@@ -247,7 +247,7 @@ public sealed partial class TopologyHtmlRenderer {
         return HtmlStrictStyles.Apply(writer.Build(), Nonce(options));
     }
 
-    internal static string? Nonce(TopologyRenderOptions? options) => string.IsNullOrWhiteSpace(options?.HtmlNonce) ? null : options!.HtmlNonce!.Trim();
+    internal static string? Nonce(TopologyRenderOptions? options) => string.IsNullOrWhiteSpace(options?.Html.Nonce) ? null : options!.Html.Nonce!.Trim();
 
     /// <summary>
     /// Builds the scoped stylesheet that lets a <see cref="ThemeMode.Auto"/> topology follow the viewer's colour scheme, or
@@ -498,7 +498,7 @@ public sealed partial class TopologyHtmlRenderer {
     internal static string GetCssClassPrefix(TopologyRenderOptions options) => CssClassPrefix(options);
 
     internal static void EnsureStatic(TopologyRenderOptions? options) {
-        if (options?.EnableHtmlInteractions == true) {
+        if (options?.Html.Interactions == true) {
             throw new InvalidOperationException("Interactive topology HTML is owned by ChartForgeX.Interactivity.Html. Use ToInteractiveHtmlPage or HtmlInteractiveTopologyRenderer from that package.");
         }
     }

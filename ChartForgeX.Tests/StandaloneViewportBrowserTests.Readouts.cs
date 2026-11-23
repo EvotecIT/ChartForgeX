@@ -13,7 +13,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(true)]
     public async Task DefaultPresentationAndUpdatesRespectReducedMotion(bool reduced) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).AddLine("Requests", ChartPoints.FromValues(2, 7, 4));
+        var chart = Chart.Create().Size(640, 360).AddLine("Requests", ChartPoints.FromValues(2, 7, 4));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 980, 800,
             configurePageAsync: page => page.EmulateMediaAsync(new PageEmulateMediaOptions {
                 ReducedMotion = reduced ? ReducedMotion.Reduce : ReducedMotion.NoPreference
@@ -33,7 +33,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [BrowserFact]
     public async Task DefaultMotionKeepsAuthoredNativeOpacityHiddenDuringLoadAndUpdate() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).AddLine("Hidden observations", ChartPoints.FromValues(2, 7, 4));
+        var chart = Chart.Create().Size(640, 360).AddLine("Hidden observations", ChartPoints.FromValues(2, 7, 4));
         var html = chart.ToInteractiveHtmlPage()
             .Replace("</head>", "<style>.cfx-stage [data-cfx-role=series]{opacity:0}</style></head>")
             .Replace("</body>", "<script>window.loadNativeOpacity=getComputedStyle(document.querySelector('.cfx-stage [data-cfx-role=series]')).opacity;</script></body>");
@@ -64,7 +64,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [BrowserFact]
     public async Task SavedTemplateAndBrowserRendererShareFormattedValuesAndTreatStringsAsText() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithXLabels("Monday", "Tuesday", "Wednesday")
+        var chart = Chart.Create().Size(640, 360).XLabels("Monday", "Tuesday", "Wednesday")
             .AddLine("Response time", ChartPoints.FromValues(18, 41.2, 43));
         chart.Options.ValueUnit = "ms";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {

@@ -42,7 +42,7 @@ public sealed class V2FrameTypographyTests {
 
     [Fact]
     public void ExplicitModelHeadingOverrideWinsOverContextAndSnapshotRetainsIt() {
-        var chart = Chart.Create().WithTitle("Override").AddBar("Values", new[] { new ChartPoint(0, 1) });
+        var chart = Chart.Create().Title("Override").AddBar("Values", new[] { new ChartPoint(0, 1) });
         chart.Options.TitleStyle.FontSize = 31;
         chart.Options.TitleStyle.Color = ChartColor.FromHex("#945112");
         var contextStyle = new TextStyle { FontSize = 18, Color = ChartColor.Black };

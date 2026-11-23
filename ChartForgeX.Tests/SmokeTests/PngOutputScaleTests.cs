@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void PngOutputScaleEmitsHighDensityAssets() {
-        var normal = BareLineChart().WithPngOutputScale(1);
-        var highDensity = BareLineChart().WithPngOutputScale(3);
-        var presetDensity = BareLineChart().WithPngOutputScale(ChartPngOutputScale.Print);
+        var normal = BareLineChart().Png(p => p.OutputScale(1));
+        var highDensity = BareLineChart().Png(p => p.OutputScale(3));
+        var presetDensity = BareLineChart().Png(p => p.OutputScale((int)ChartPngOutputScale.Print));
 
         var normalPng = normal.ToPng();
         var highDensityPng = highDensity.ToPng();
@@ -19,21 +19,21 @@ internal static partial class SmokeTests {
         Assert(ReadBigEndianInt32(highDensityPng, 16) == 540 && ReadBigEndianInt32(highDensityPng, 20) == 360, "PNG output scale should multiply emitted dimensions.");
         Assert(ReadBigEndianInt32(presetPng, 16) == 720 && ReadBigEndianInt32(presetPng, 20) == 480, "Named PNG output-scale presets should multiply emitted dimensions.");
         Assert(highDensityPng.Length > normalPng.Length, "High-density PNG output should contain more raster data than a 1x export.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithPngOutputScale(0), "PNG output scale should reject values below one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.PngOutputScale = 5, "PNG output scale should reject values above four.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Png(p => p.OutputScale(0)), "PNG output scale should reject values below one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.Png.OutputScale = 5, "PNG output scale should reject values above four.");
 
-        var normalGrid = ChartGrid.Create().WithPadding(10).WithPanelSize(180, 120).Add(BareLineChart());
-        var highDensityGrid = ChartGrid.Create().WithPadding(10).WithPanelSize(180, 120).WithPngOutputScale(ChartPngOutputScale.Retina).Add(BareLineChart());
+        var normalGrid = ChartGrid.Create().Padding(10).PanelSize(180, 120).Add(BareLineChart());
+        var highDensityGrid = ChartGrid.Create().Padding(10).PanelSize(180, 120).PngOutputScale((int)ChartPngOutputScale.Retina).Add(BareLineChart());
         var normalGridPng = normalGrid.ToPng();
         var highDensityGridPng = highDensityGrid.ToPng();
         Assert(ReadBigEndianInt32(normalGridPng, 16) == 200 && ReadBigEndianInt32(normalGridPng, 20) == 140, "Default PNG grid output scale should preserve composed dimensions.");
         Assert(ReadBigEndianInt32(highDensityGridPng, 16) == 400 && ReadBigEndianInt32(highDensityGridPng, 20) == 280, "PNG grid output scale should multiply composed dimensions.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithPngOutputScale(0), "PNG grid output scale should reject values below one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().PngOutputScale(0), "PNG grid output scale should reject values below one.");
     }
 
     private static void PngPrintScaleSurvivesDenseChartStress() {
         foreach (var sample in HighDensityStressCharts()) {
-            var png = sample.Chart.WithPngSupersampling(1).WithPngOutputScale(ChartPngOutputScale.Print).ToPng();
+            var png = sample.Chart.Png(p => p.SupersamplingScale(1).OutputScale((int)ChartPngOutputScale.Print)).ToPng();
             var encodedWidth = ReadBigEndianInt32(png, 16);
             var encodedHeight = ReadBigEndianInt32(png, 20);
             Assert(encodedWidth == sample.Width * 4 && encodedHeight == sample.Height * 4, sample.Name + " should emit exact 4x print-scale PNG dimensions.");
@@ -47,13 +47,13 @@ internal static partial class SmokeTests {
 
     private static void OverlayPresetEmitsTransparentChromeFreePng() {
         var chart = Chart.Create()
-            .WithSize(220, 90)
-            .WithOverlay()
+            .Size(220, 90)
+            .Overlay()
             .AddSmoothArea("CPU", Points(28, 34, 31, 45, 72, 66), ChartColor.FromRgb(20, 184, 166));
 
         Assert(chart.Options.TransparentBackground, "Overlay charts should keep the PNG canvas transparent.");
         Assert(!chart.Options.ShowCard && !chart.Options.ShowPlotBackground, "Overlay charts should not render report card or plot panel surfaces.");
-        Assert(!chart.Options.ShowAxes && !chart.Options.ShowGrid && !chart.Options.ShowLegend, "Overlay charts should suppress report axes, grid, and legend by default.");
+        Assert(!chart.Options.ShowAxes && !chart.Options.ShowGrid && !chart.Options.Legend.Visible, "Overlay charts should suppress report axes, grid, and legend by default.");
 
         var rgba = ReadPngRgba(chart.ToPng(), out var width, out var height);
         Assert(width == 220 && height == 90, "Overlay PNG output should preserve requested dimensions.");
@@ -67,14 +67,14 @@ internal static partial class SmokeTests {
 
     private static Chart BareLineChart() {
         var chart = Chart.Create()
-            .WithSize(180, 120)
-            .WithPngSupersampling(1)
+            .Size(180, 120)
+            .Png(p => p.SupersamplingScale(1))
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
         return chart;
     }
@@ -82,40 +82,40 @@ internal static partial class SmokeTests {
     private static (string Name, Chart Chart, int Width, int Height, int MinimumColorBuckets)[] HighDensityStressCharts() {
         return new[] {
             ("dense labeled line", Chart.Create()
-                .WithTitle("Dense Label Stress")
-                .WithSubtitle("Long labels, markers, grid, legend")
-                .WithTheme(VisualTheme.Graphite())
-                .WithSize(340, 230)
-                .WithXLabels("Primary domains", "Parked domains", "Regional domains", "Acquired domains", "Delegated domains", "Legacy domains")
-                .WithDataLabels()
+                .Title("Dense Label Stress")
+                .Subtitle("Long labels, markers, grid, legend")
+                .Theme(VisualTheme.Graphite())
+                .Size(340, 230)
+                .XLabels("Primary domains", "Parked domains", "Regional domains", "Acquired domains", "Delegated domains", "Legacy domains")
+                .DataLabels()
                 .AddLine("Coverage", Points(78, 82, 75, 68, 73, 88), ChartColor.FromRgb(37, 99, 235))
                 .AddLine("Target", Points(90, 90, 90, 90, 90, 90), ChartColor.FromRgb(16, 185, 129)), 340, 230, 18),
             ("dense heatmap", Chart.Create()
-                .WithTitle("Coverage Matrix Stress")
-                .WithSubtitle("Compact cell text at print density")
-                .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-                .WithSize(360, 240)
-                .WithXLabels("SPF", "DKIM", "DMARC", "TLS", "DNSSEC")
-                .WithValueFormatter(v => v.ToString("0") + "%")
+                .Title("Coverage Matrix Stress")
+                .Subtitle("Compact cell text at print density")
+                .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+                .Size(360, 240)
+                .XLabels("SPF", "DKIM", "DMARC", "TLS", "DNSSEC")
+                .FormatValuesBy(v => v.ToString("0") + "%")
                 .AddHeatmapRow("Primary", Points(94, 88, 76, 71, 64))
                 .AddHeatmapRow("Regional", Points(82, 75, 68, 61, 54))
                 .AddHeatmapRow("Acquired", Points(68, 52, 44, 37, 31)), 360, 240, 18),
             ("dense hexbin heatmap", Chart.Create()
-                .WithTitle("Attendance Stress")
-                .WithSubtitle("Honeycomb labels and staggered cells")
-                .WithTheme(VisualTheme.Graphite())
-                .WithSize(380, 250)
-                .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
-                .WithValueFormatter(v => v.ToString("0") + "%")
+                .Title("Attendance Stress")
+                .Subtitle("Honeycomb labels and staggered cells")
+                .Theme(VisualTheme.Graphite())
+                .Size(380, 250)
+                .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+                .FormatValuesBy(v => v.ToString("0") + "%")
                 .AddHexbinHeatmapRow("09:00", new[] { 68d, 82, 91, 94, 89 })
                 .AddHexbinHeatmapRow("11:00", new[] { 74d, 88, 96, 98, 93 })
                 .AddHexbinHeatmapRow("13:00", new[] { 70d, 84, 92, 95, 91 }), 380, 250, 18),
             ("dense treemap", Chart.Create()
-                .WithTitle("Finding Mix Stress")
-                .WithSubtitle("Tile labels and fractional borders")
-                .WithTheme(VisualTheme.Graphite())
-                .WithSize(360, 240)
-                .WithValueFormatter(v => v.ToString("0") + "%")
+                .Title("Finding Mix Stress")
+                .Subtitle("Tile labels and fractional borders")
+                .Theme(VisualTheme.Graphite())
+                .Size(360, 240)
+                .FormatValuesBy(v => v.ToString("0") + "%")
                 .AddTreemap("Share", new[] {
                     new ChartHierarchyItem("Authentication", "Authentication", value: 34),
                     new ChartHierarchyItem("Certificate lifecycle", "Certificate lifecycle", value: 24),
@@ -124,11 +124,11 @@ internal static partial class SmokeTests {
                     new ChartHierarchyItem("Monitoring", "Monitoring", value: 10)
                 }), 360, 240, 18),
             ("dense sankey", Chart.Create()
-                .WithTitle("Flow Stress")
-                .WithSubtitle("Curves, nodes, and readable labels")
-                .WithTheme(VisualTheme.Graphite())
-                .WithSize(380, 250)
-                .WithDataLabels()
+                .Title("Flow Stress")
+                .Subtitle("Curves, nodes, and readable labels")
+                .Theme(VisualTheme.Graphite())
+                .Size(380, 250)
+                .DataLabels()
                 .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Owner remediation", "Owner remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
                     new ChartFlowLink("flow-1", "Discovered", "Validated", 64),
                     new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 16),

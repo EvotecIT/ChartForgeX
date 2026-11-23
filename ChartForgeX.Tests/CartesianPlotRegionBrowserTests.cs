@@ -17,8 +17,8 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     [InlineData(true, 800)]
     public async Task BackgroundAndCaptionRemainPassiveWhilePointsKeepPointerAndKeyboardActions(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Planning zone").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(width, 320).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Planning zone").Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Observed", new[] { new ChartPoint(2, 3), new ChartPoint(8, 7) })
             .AddPlotRegion(new(ChartColor.FromHex("#5c9e75"), label: "Background guidance", opacity: .2));
         var html = chart.ToInteractiveHtmlPage(options => {

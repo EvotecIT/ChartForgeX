@@ -70,7 +70,7 @@ public sealed class TopologyCompoundViewTests {
 
     [Fact]
     public void StatusSelectedShellToShellEdgeRestoresOnlyItsEndpointGroups() {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoGroup("root", "Parent", TopologyHealthStatus.Healthy)
             .AddAutoGroup("g", "Child", TopologyHealthStatus.Healthy)
             .AddAutoGroup("h", "Other", TopologyHealthStatus.Healthy)
@@ -130,7 +130,7 @@ public sealed class TopologyCompoundViewTests {
 
     private static TopologyRenderOptions Options(TopologyView view) => new() { View = view, IncludeLegend = false };
 
-    private static TopologyChart Fixture(bool reverse = false) => TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
+    private static TopologyChart Fixture(bool reverse = false) => TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered)
         .AddAutoGroup("g", "Group", TopologyHealthStatus.Healthy)
         .AddAutoNode("a", "Member", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g")
         .AddAutoNode("b", "Outside", TopologyNodeKind.Network, TopologyHealthStatus.Warning)
@@ -138,7 +138,7 @@ public sealed class TopologyCompoundViewTests {
         .AddEdge("e", reverse ? "b" : "g", reverse ? "g" : "b", "relation", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning)
         .AddEdge("other", "g", "c", kind: TopologyEdgeKind.Connectivity, status: TopologyHealthStatus.Healthy);
 
-    private static TopologyChart SameIdFixture() => TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered)
+    private static TopologyChart SameIdFixture() => TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered)
         .AddAutoGroup("g", "Shell", TopologyHealthStatus.Healthy)
         .AddAutoNode("g", "Authored node", status: TopologyHealthStatus.Warning)
         .AddAutoNode("b", "Outside", status: TopologyHealthStatus.Warning)

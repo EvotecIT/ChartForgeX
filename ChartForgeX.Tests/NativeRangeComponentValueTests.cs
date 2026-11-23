@@ -28,7 +28,7 @@ public sealed class NativeRangeComponentValueTests {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeRangeComponentBeforeControls.Model(10, 35, area, true); var ordinary = renderer.PrepareSection(chart); var from = NativeRangeComponentBeforeControls.Section(renderer, chart);
         var to = NativeRangeComponentBeforeControls.Section(renderer, NativeRangeComponentBeforeControls.Model(20, 60, area, true)); var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3));
         Capture(from, to, ordinary, frames, payload, null, "range-detached-" + area); Assert.Equal(ordinary.PreparedVisual.ToSvg(), from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(), from.PreparedVisual.ToPng());
-        chart.Series[0].UpdateRange(0, new ChartRangeBand(.5, 1, 99)); chart.Series[0].ReplaceRanges(Array.Empty<ChartRangeBand>()); chart.WithFontFamily("mutated caller");
+        chart.Series[0].UpdateRange(0, new ChartRangeBand(.5, 1, 99)); chart.Series[0].ReplaceRanges(Array.Empty<ChartRangeBand>()); chart.FontFamily("mutated caller");
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)));
             for (var index = 0; index < frames.Count; index++) { Assert.Equal(frames[index].ToSvg(), repeated[index].ToSvg()); Assert.Equal(frames[index].ToPng(), repeated[index].ToPng()); }
         } finally { _ = BrowserProofFonts.Family; }
@@ -38,9 +38,9 @@ public sealed class NativeRangeComponentValueTests {
         var renderer = new HtmlInteractiveChartRenderer(); var from = NativeRangeComponentBeforeControls.Section(renderer, NativeRangeComponentBeforeControls.Model(10, 35, true, true)); var chart = NativeRangeComponentBeforeControls.Model(20, 60, true, true);
         if (condition == "x") chart.Series[0].UpdateRange(0, new ChartRangeBand(.75, 20, 60));
         if (condition == "break") chart.Series[0].UpdateRange(0, new ChartRangeBand(.5, 20, 60, true));
-        if (condition == "id") chart.Series[0].WithObservationId(0, new ChartObservationId("foreign"));
-        if (condition == "auto-axis") chart.ConfigureYAxis(axis => { axis.Minimum = null; axis.Maximum = null; });
-        if (condition == "callback") chart.WithValueFormat(ChartValueFormat.Custom(_ => "callback"));
+        if (condition == "id") chart.Series[0].ObservationId(0, new ChartObservationId("foreign"));
+        if (condition == "auto-axis") chart.YAxis(axis => { axis.Min = null; axis.Max = null; });
+        if (condition == "callback") chart.ValueFormat(ChartValueFormat.Custom(_ => "callback"));
         HtmlChartSection? to = null; var error = Record.Exception(() => { to = NativeRangeComponentBeforeControls.Section(renderer, chart); _ = renderer.PrepareNativeTransitionJson(from, to,
             new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 3)); });
         NativeRadialMotionBeforeControls.Capture(from, "range-reject-" + condition + "-from"); if (to != null) NativeRadialMotionBeforeControls.Capture(to, "range-reject-" + condition + "-to"); NativeRadialMotionBeforeControls.Save("range-reject-" + condition + ".facts.json", JsonSerializer.Serialize(new { error = error?.ToString() }));

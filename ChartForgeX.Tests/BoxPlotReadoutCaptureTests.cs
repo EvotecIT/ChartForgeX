@@ -14,12 +14,12 @@ public sealed class BoxPlotReadoutCaptureTests {
     public void DistributionAndOutlierReadoutsShareTheCapturedValueAxisWithoutChangingRawFacts(string axisKind) {
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("latency"), "Latency", 1,
             new[] { .1, 1d, 2, 3, 4, 5, 6, 7, 8, 100.123 })
-            .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
-        var chart = Chart.Create().WithSize(540, 360).WithAxes(false).WithHeader(false).WithLegend(false)
-            .WithDataLabels(false).WithXLabels("API").AddSeries(series);
+            .BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        var chart = Chart.Create().Size(540, 360).Axes(false).ShowHeader(false).Legend(false)
+            .DataLabels(false).XLabels("API").AddSeries(series);
         var axis = chart.Options.YAxis;
         if (axisKind == "horizontal") {
-            chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
+            chart.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
             axis = chart.Options.XAxis;
         } else if (axisKind == "secondary") {
             series.ValueAxis = ChartAxisSide.Secondary;

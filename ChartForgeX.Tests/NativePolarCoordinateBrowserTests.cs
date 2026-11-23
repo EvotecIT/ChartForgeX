@@ -122,7 +122,7 @@ public sealed class NativePolarCoordinateBrowserTests {
         """);
 
     private static Chart Fixture(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false).WithXLabels("North", "South", "East", "West");
+        var chart = Chart.Create().Size(600, 360).Legend(false).DataLabels(false).XLabels("North", "South", "East", "West");
         var points = new[] { new ChartPoint(1, 60), new ChartPoint(2, 80), new ChartPoint(3, 50), new ChartPoint(4, 70) };
         switch (kind) {
             case ChartSeriesKind.Pie: chart.AddPie("Observed", points); break;

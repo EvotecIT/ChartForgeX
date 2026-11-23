@@ -11,8 +11,8 @@ namespace ChartForgeX.Tests;
 public sealed class CartesianAnnotationPlacementTests {
     [Fact]
     public void BlockedThresholdUsesTheMeasuredRightMarginWithoutClippingItsCompleteCaption() {
-        var chart = Chart.Create().WithSize(640, 300).WithHeader(false).WithLegend(false)
-            .WithYAxisBounds(0, 10).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 300).ShowHeader(false).Legend(false)
+            .YAxis(y => y.Bounds(0, 10)).DataLabels(false)
             .AddBar("Observed", Enumerable.Range(0, 20).Select(index => new ChartPoint(index, 10)))
             .AddHorizontalLine(5, "Target 5");
         chart.Options.XAxis.LabelFormatter = _ => "Inspection reference period";
@@ -35,8 +35,8 @@ public sealed class CartesianAnnotationPlacementTests {
     public void DefaultReferenceLinesFollowThePreparedThemeAndRemainDistinctFromTheGrid(ThemeMode mode) {
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(1, 8) };
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithTheme(theme)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddLine("Observed", points)
+        var chart = Chart.Create().ShowHeader(false).Legend(false).Theme(theme)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddLine("Observed", points)
             .AddHorizontalLine(5, "Target 5").AddVerticalLine(4, "Review")
             .AddMeanLine("Mean", points).AddMedianLine("Median", points)
             .AddHorizontalLine(7, "Authored", ChartColor.FromHex("#FF00FF"));
@@ -63,7 +63,7 @@ public sealed class CartesianAnnotationPlacementTests {
     [InlineData(360, 16, ThemeMode.Dark)]
     public void NarrowZoomedThresholdKeepsItsCompleteShortCaptionClearOfBothLines(int width, int axisSize, ThemeMode mode) {
         var chart = NarrowThreshold(width, mode);
-        if (axisSize != 12) chart.WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: axisSize)));
+        if (axisSize != 12) chart.Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: axisSize)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"threshold-narrow-zoom-{width}-{axisSize}-{mode}");
         var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "annotation-label");
@@ -94,9 +94,9 @@ public sealed class CartesianAnnotationPlacementTests {
         const string family = "CFX Threshold Wide Face";
         var glyphs = Enumerable.Range(32, 95).ToDictionary(value => value, _ => OpenTypeTestFonts.H);
         FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: glyphs));
-        var chart = NarrowThreshold(360, mode).WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography()), mode).WithFontFamily(family);
-        if (occupiedTitle) chart.WithYAxis("Coverage and availability scores");
-        if (header) chart.WithSize(360, 320).WithHeader(true).WithTitle("Coverage").WithSubtitle("Service checks");
+        var chart = NarrowThreshold(360, mode).Theme(VisualTheme.Graphite().WithTypography(new VisualTypography())).ThemeMode(mode).FontFamily(family);
+        if (occupiedTitle) chart.YAxis(y => y.Title("Coverage and availability scores"));
+        if (header) chart.Size(360, 320).ShowHeader(true).Title("Coverage").Subtitle("Service checks");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"threshold-wide-face-{occupiedTitle}-{header}-{mode}");
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
@@ -126,8 +126,8 @@ public sealed class CartesianAnnotationPlacementTests {
     [InlineData(true)]
     public void MultilineReferenceCaptionCanShortenIntoItsOriginalGuideCandidates(bool band) {
         const string source = "Long label\nWith words\nAcross lines";
-        var chart = Chart.Create().WithSize(320, 80).WithPadding(0, 0, 0, 0)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(320, 80).Padding(0, 0, 0, 0)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).YAxis(y => y.Bounds(0, 10));
         if (band) chart.AddHorizontalBand(5, 5.5, source);
         else chart.AddHorizontalLine(5, source);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -153,9 +153,9 @@ public sealed class CartesianAnnotationPlacementTests {
     [InlineData(800, ThemeMode.Dark)]
     public void LongReferenceCaptionCanShortenInTheMeasuredTitleStripWhenMarksBlockThePlot(int width, ThemeMode mode) {
         const string source = "A detailed service level objective for every selected region and its monitored production services, including all regional availability targets, response-time budgets and error-rate requirements";
-        var chart = Chart.Create().WithSize(width, 300).WithPadding(64, 14, 20, 50)
-            .WithHeader(false).WithLegend(true).WithDataLabels(false).WithThemeMode(mode)
-            .WithYAxis("Y").WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(width, 300).Padding(64, 14, 20, 50)
+            .ShowHeader(false).Legend(true).DataLabels(false).ThemeMode(mode)
+            .YAxis(y => y.Title("Y").Bounds(0, 10))
             .AddBar("Observed", Enumerable.Range(0, 20).Select(index => new ChartPoint(index, 10)))
             .AddHorizontalLine(5, source);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -183,9 +183,9 @@ public sealed class CartesianAnnotationPlacementTests {
     public void PeakWindowCaptionAvoidsBarsAndTheirValueLabelsWithoutLosingSourceFacts(bool dataLabels) {
         const string caption = "Review concentration";
         var values = new[] { 3d, 1, 3, 1, 0, 0, 0, 9, 10, 9, 7, 0, 0 };
-        var chart = Chart.Create().WithSize(656, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithTheme(VisualTheme.Graphite()).WithDashboardBarPanelStyle()
-            .WithYAxisBounds(0, 10).WithDataLabels(dataLabels)
+        var chart = Chart.Create().Size(656, 360).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .Theme(VisualTheme.Graphite()).DashboardBarPanelStyle()
+            .YAxis(y => y.Bounds(0, 10)).DataLabels(dataLabels)
             .AddVerticalBand(7.5, 11.5, caption, opacity: .08)
             .AddBar("Reviews", Points(values));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -220,10 +220,10 @@ public sealed class CartesianAnnotationPlacementTests {
     [InlineData(true)]
     public void AnnotationCaptionAvoidsAnUnmarkedLineEvenWhenDataLabelsAreDisabled(bool band) {
         const string caption = "Milestone";
-        var chart = Chart.Create().WithSize(520, 300).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels(false)
+        var chart = Chart.Create().Size(520, 300).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).DataLabels(false)
             .AddLine("Observed", new[] { new ChartPoint(0, 9), new ChartPoint(10, 9) });
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         if (band) chart.AddVerticalBand(5, 7, caption, opacity: .08);
         else chart.AddVerticalLine(5, caption);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -241,8 +241,8 @@ public sealed class CartesianAnnotationPlacementTests {
 
     [Fact]
     public void AdjacentTargetCaptionsKeepFullTextAndDoNotOverlapEachOther() {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithYAxisBounds(0, 10).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .YAxis(y => y.Bounds(0, 10)).DataLabels(false)
             .AddBar("Observed", Points(2, 2, 2, 9, 2, 2, 2))
             .AddHorizontalLine(7.5, "Service target")
             .AddHorizontalLine(7.5, "Warning threshold");
@@ -259,9 +259,9 @@ public sealed class CartesianAnnotationPlacementTests {
 
     private static Chart NarrowThreshold(int width, ThemeMode mode) {
         var start = new DateTime(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
-        return Chart.Create().WithSize(width, 260).WithTransparentBackground().WithHeader(false)
-            .WithLegend(true).WithPadding(64, 14, 20, 74).WithThemeMode(mode)
-            .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithYAxis("Score").WithYAxisBounds(60, 90)
+        return Chart.Create().Size(width, 260).TransparentBackground().ShowHeader(false)
+            .Legend(true).Padding(64, 14, 20, 74).ThemeMode(mode)
+            .XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).YAxis(y => y.Title("Score").Bounds(60, 90))
             .AddLine("Security", Enumerable.Range(0, 30).Select(day => new ChartPoint(start.AddDays(day),
                 72 + 8 * Math.Sin(day / 5.0 + 1) - (day > 12 && day < 24 ? 10 * Math.Sin((day - 12) / 12.0 * Math.PI) : 0))))
             .AddLine("Health", Enumerable.Range(0, 30).Select(day => new ChartPoint(start.AddDays(day), 80 + 5 * Math.Cos(day / 5.0))))

@@ -27,9 +27,4 @@ public sealed partial class ChartOptions {
 }
 
 public sealed partial class Chart {
-    /// <summary>Configures bullet layout atomically, without changing readings, targets or qualitative boundaries.</summary>
-    public Chart ConfigureBullet(Action<ChartBulletOptions> configure) {
-        Options.Bullet = ChartOptionConfiguration.Configure(Options.Bullet, configure, options => options.Clone());
-        return this;
-    }
 }

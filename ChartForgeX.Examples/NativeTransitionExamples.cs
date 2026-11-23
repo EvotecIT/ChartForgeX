@@ -18,10 +18,10 @@ internal static class NativeTransitionExamples {
                 options.Interaction.Disable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);
                 options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 350; options.Adaptive.NarrowHeight = 420;
             }
-            Chart Progress(double fraction, double count) => Chart.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(ExampleTypography.FontFamily)
-                .WithTitle("Native values in each row's units").WithLegend(false).AddSeries(ChartSeries.CreateProgressBars(new ChartSeriesId("delivery"), "Delivery", new[] {
+            Chart Progress(double fraction, double count) => Chart.Create().Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(mode).FontFamily(ExampleTypography.FontFamily)
+                .Title("Native values in each row's units").Legend(false).AddSeries(ChartSeries.CreateProgressBars(new ChartSeriesId("delivery"), "Delivery", new[] {
                     new ChartProgressItem("Reviewed fraction", fraction, 0, 1), new ChartProgressItem("Verified jobs", count, 0, 2500)
-                }).WithObservationId(0, new ChartObservationId("reviewed")).WithObservationId(1, new ChartObservationId("verified")));
+                }).ObservationId(0, new ChartObservationId("reviewed")).ObservationId(1, new ChartObservationId("verified")));
             var before = renderer.PrepareSection(Progress(.2, 1000), configure: Configure); var after = renderer.PrepareSection(Progress(.8, 2000), configure: Configure);
             foreach (var effect in new[] { HtmlNativeTransitionEffect.Values, HtmlNativeTransitionEffect.InitialValues, HtmlNativeTransitionEffect.ValueFlash }) {
                 var payload = renderer.PrepareNativeTransitionJson(before, after, new HtmlNativeTransitionOptions(effect, 3,
@@ -37,8 +37,8 @@ internal static class NativeTransitionExamples {
                     "The host supplies two real native value states with explicit domains. Initial presentation retains the authoritative final scene; the other actions accept one final scene.", new { width, mode = mode.ToString(), effect = effect.ToString(), frameCount = 3 });
             }
             foreach (var labels in new[] { false, true }) {
-                var chart = Chart.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(ExampleTypography.FontFamily)
-                    .WithTitle("Retained native legend visibility").WithXLabels("Opened", "Reviewed", "Released").WithDataLabels(labels).WithLegend(true)
+                var chart = Chart.Create().Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(mode).FontFamily(ExampleTypography.FontFamily)
+                    .Title("Retained native legend visibility").XLabels("Opened", "Reviewed", "Released").DataLabels(labels).Legend(true)
                     .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("reviewed"), "Reviewed", ChartPoints.FromValues(18, 70, 44)));
                 var policy = labels ? ChartVisibilityLabelLayering.GroupWithSeries : ChartVisibilityLabelLayering.PreserveOverlay;
                 HtmlChartSection Section(bool hidden) => renderer.PrepareVisibilitySection(chart,

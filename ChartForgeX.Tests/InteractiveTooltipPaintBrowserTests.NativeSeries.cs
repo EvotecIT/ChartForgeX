@@ -77,8 +77,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [InlineData(true)]
     public async Task AuthoredPlotClipsKeepCroppedFactsOutOfPointerLookupWhileInPlotObservationsRemainUsable(bool hasVisibleSibling) {
         if (!Enabled) return;
-        var chart = Frame(hasVisibleSibling).WithTitle("Cropped observations").WithLineMarkers(ChartLineMarkerMode.None)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddLine("Outside", new[] { new ChartPoint(5, 11), new ChartPoint(6, hasVisibleSibling ? 9 : 12) });
+        var chart = Frame(hasVisibleSibling).Title("Cropped observations").Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddLine("Outside", new[] { new ChartPoint(5, 11), new ChartPoint(6, hasVisibleSibling ? 9 : 12) });
         chart.Options.ClipMarksToPlot = true;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Range = hasVisibleSibling ? HtmlChartTooltipRange.WithinDistance(30) : HtmlChartTooltipRange.Nearest;
@@ -106,7 +106,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     public async Task NativeSvgRoundingKeepsAPaintedBoundaryObservationAvailableAtItsScreenScale() {
         if (!Enabled) return;
         // Keep the fixture compact without a font-dependent Y-axis label reserve.
-        var chart = StatusLines(false).WithPadding(24.0006, 24, 24, 24).WithYAxisVisible(false);
+        var chart = StatusLines(false).Padding(24.0006, 24, 24, 24).YAxis(y => y.Visible(false));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ExactFeatures(options);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
@@ -143,8 +143,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     }
 
     private static Chart ConnectedSeries(string family) {
-        var chart = Frame(false).WithTitle("Native marker-free " + family).WithLineMarkers(ChartLineMarkerMode.None)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Frame(false).Title("Native marker-free " + family).Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var points = new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) };
         var ranges = new[] { new ChartRangeBand(3, 4, 6), new ChartRangeBand(5, 4, 6), new ChartRangeBand(7, 4, 6) };
         return family switch {

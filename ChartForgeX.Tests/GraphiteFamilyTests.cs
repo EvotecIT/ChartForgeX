@@ -14,8 +14,8 @@ public sealed class GraphiteFamilyTests {
     [InlineData(true)]
     public void FunnelLabelsFitTheirStagesAndRetainValuesAndRatios(bool dark) {
         var values = new[] { 1284d, 1012, 744, 521, 466 };
-        var chart = Chart.Create().WithSize(556, 324).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithDataLabels().WithXLabels("Detected", "Triaged", "Assigned", "Fixed", "Verified")
+        var chart = Chart.Create().Size(556, 324).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .DataLabels().XLabels("Detected", "Triaged", "Assigned", "Fixed", "Verified")
             .AddFunnel("Findings", values.Select((value, index) => new ChartPoint(index + 1, value)));
         var prepared = Prepare(chart);
         var stages = prepared.Regions.Where(region => region.Role == "funnel-stage").ToArray();
@@ -33,7 +33,7 @@ public sealed class GraphiteFamilyTests {
     [Fact]
     public void LinearGaugePlacesValueAndTargetOnItsDeclaredScale() {
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
-            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(options => options.Form = ChartGaugeForm.Linear);
         var svg = Literal(chart);
         var track = Assert.Single(Roles(svg, "gauge-track")); var value = Assert.Single(Roles(svg, "gauge-value"));
         Assert.Equal(Number(track, "height") / 3, Number(value, "height"), 3);
@@ -49,10 +49,10 @@ public sealed class GraphiteFamilyTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DonutAggregatesAnExplicitBudgetWithoutLosingSourceIdentity(bool dark) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("A", "B", "C", "D", "E", "F", "G", "H")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("A", "B", "C", "D", "E", "F", "G", "H")
             .AddDonut("Total", Enumerable.Range(1, 8).Select(index => new ChartPoint(index, index * 100)));
-        chart.Options.MaximumPieSlices = 6;
+        chart.Options.Pie.MaxSlices = 6;
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         var points = Roles(svg, "radial-point");
         Assert.Equal(6, points.Length);
@@ -73,7 +73,7 @@ public sealed class GraphiteFamilyTests {
     [InlineData(87, ChartSeriesState.Quiet)]
     public void GaugeUsesDeclaredBandStateAcrossItsForms(double value, ChartSeriesState state) {
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
-            new ChartGaugeValue(value, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => {
+            new ChartGaugeValue(value, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(options => {
             options.Bands.Add(new(0, 60, ChartSeriesState.Danger));
             options.Bands.Add(new(60, 80, ChartSeriesState.Warning)); options.Bands.Add(new(80, 100, ChartSeriesState.Quiet));
         });
@@ -117,10 +117,10 @@ public sealed class GraphiteFamilyTests {
 
     [Fact]
     public void FlatFunnelAndSankeyRetainTheirWeightedSourceData() {
-        var funnel = Chart.Create().WithXLabels("Detected", "Fixed").AddFunnel("Stages", new[] { new ChartPoint(1, 1234), new ChartPoint(2, 600) });
+        var funnel = Chart.Create().XLabels("Detected", "Fixed").AddFunnel("Stages", new[] { new ChartPoint(1, 1234), new ChartPoint(2, 600) });
         Assert.Equal(new[] { "1234", "600" }, Roles(Literal(funnel), "funnel-stage").Select(stage => (string?)stage.Attribute("data-cfx-value")));
         var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("Done", "Done"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-1", "A", "Done", 30), new("flow-2", "B", "Done", 20) });
-        sankey.Series[0].WithNodeState("Done", ChartSeriesState.Neutral);
+        sankey.Series[0].NodeState("Done", ChartSeriesState.Neutral);
         var links = Roles(Literal(sankey), "sankey-link");
         Assert.Equal(new[] { "30", "20" }, links.Select(link => (string?)link.Attribute("data-cfx-value")));
         Assert.Equal(1.5, Number(links[0], "data-cfx-width") / Number(links[1], "data-cfx-width"), 6);

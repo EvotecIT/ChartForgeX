@@ -20,7 +20,7 @@ public sealed class MixedNumericRadialTests {
         var radar = new[] { new ChartPoint(3, 60), new ChartPoint(1, 60), new ChartPoint(2, 60), new ChartPoint(4, 100) };
         if (radarFirst) chart.AddRadarLine("Target", radar).AddRadialColumn("Observed", column);
         else chart.AddRadialColumn("Observed", column).AddRadarLine("Target", radar);
-        chart.Options.YAxis.Maximum = null;
+        chart.Options.YAxis.Max = null;
         var prepared = Prepare(chart); var columnIndex = radarFirst ? 1 : 0; var radarIndex = 1 - columnIndex;
         var mark = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-column");
         var point = Point(prepared, radarIndex, 1);
@@ -40,9 +40,9 @@ public sealed class MixedNumericRadialTests {
     public void RadarOverlaysConsumeNeitherColumnSlotsNorNormalizedStackTotals() {
         var chart = Bare().AddRadialColumn("First", Values(20)).AddRadialColumn("Second", Values(30))
             .AddRadialColumn("Independent", Values(70));
-        chart.Series[0].WithStackGroup("work").WithNormalization(100);
-        chart.Series[1].WithStackGroup("work").WithNormalization(100);
-        chart.Options.ShowStackTotals = true;
+        chart.Series[0].StackGroup("work").NormalizedTo(100);
+        chart.Series[1].StackGroup("work").NormalizedTo(100);
+        chart.Options.Bars.ShowTotals = true;
         var before = Prepare(chart);
         chart.AddRadarArea("Reference", Values(40)).AddRadarLine("Target", Values(90));
         var after = Prepare(chart);
@@ -67,10 +67,10 @@ public sealed class MixedNumericRadialTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic, -100, 100, 0, -10, 10, 0, true)]
     public void EachOverlayUsesItsSelectedScaleAndReversal(ChartScaleKind kind, double minimum, double maximum, double primary,
         double secondaryMinimum, double secondaryMaximum, double secondary, bool reversed) {
-        var chart = Bare().WithYAxisBounds(minimum, maximum).WithSecondaryYAxisBounds(secondaryMinimum, secondaryMaximum)
+        var chart = Bare().YAxis(y => y.Bounds(minimum, maximum)).SecondaryYAxis(s => s.Bounds(secondaryMinimum, secondaryMaximum))
             .AddRadialColumn("Counts", Values(primary)).AddRadarLine("Count reference", Values(primary)).AddRadarLine("Rate", Values(secondary));
-        chart.Options.YAxis.Scale = kind; chart.Options.SecondaryYAxis.WithScale(kind).WithReversal(reversed);
-        chart.Series[2].UseSecondaryValueAxis();
+        chart.Options.YAxis.Scale = kind; chart.Options.SecondaryYAxis.Scale(kind).Reversed(reversed);
+        chart.Series[2].SecondaryAxis();
         var prepared = Prepare(chart);
         var first = prepared.Regions.Single(region => region.Id == "series-1-point-0").Bounds;
         var second = prepared.Regions.Single(region => region.Id == "series-2-point-0").Bounds;
@@ -86,7 +86,7 @@ public sealed class MixedNumericRadialTests {
             new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) });
         var chart = Bare().AddSeries(reference)
             .AddRadialColumn("Observed", new[] { new ChartPoint(1, 0), new ChartPoint(4, 20) });
-        reference.WithPointColor(0, color).WithPointLabel(0, "Source caption");
+        reference.PointColor(0, color).PointLabel(0, "Source caption");
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal("3", Point(prepared, 0, 0)["data-cfx-category"]);
         Assert.Equal("0", Point(prepared, 0, 0)["data-cfx-source-point"]);
@@ -101,7 +101,7 @@ public sealed class MixedNumericRadialTests {
         var source = prepared.Regions.Single(region => region.Id == "series-0-point-0").Bounds;
         var pixel = Pixel(RasterImageDecoder.Decode(png), source.X + source.Width / 2, source.Y + source.Height / 2);
         Assert.Equal(new byte[] { color.R, color.G, color.B, color.A }, pixel);
-        chart.Series[0].Points.Clear(); chart.Options.YAxis.WithReversal();
+        chart.Series[0].Points.Clear(); chart.Options.YAxis.Reversed();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -109,7 +109,7 @@ public sealed class MixedNumericRadialTests {
     [InlineData(ChartFillPattern.None)]
     [InlineData(ChartFillPattern.DiagonalForward)]
     public void RadarAreaPatternsAndMarkerStrokesLeaveTheAnnularHoleTransparent(ChartFillPattern pattern) {
-        var chart = Bare().WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .3))
+        var chart = Bare().RadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .3))
             .AddRadialColumn("Observed", Values(20)).AddRadarArea("Reference", Values(80), ChartColor.FromHex("#2468AC"));
         chart.Series[1].Radar.FillOpacity = .4; chart.Series[1].FillPattern = pattern;
         var prepared = Prepare(chart); var mark = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-column");
@@ -127,7 +127,7 @@ public sealed class MixedNumericRadialTests {
     [Fact]
     public void MixedProjectionRejectsAmbiguousOrUnsupportedCategoryGeometry() {
         Chart Mixed() => Bare().AddRadialColumn("Observed", Values(40)).AddRadarLine("Target", Values(70));
-        var chart = Mixed().WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180));
+        var chart = Mixed().RadialGeometry(new ChartRadialGeometryOptions(-90, 180));
         var partial = Prepare(chart);
         Assert.Equal(4, partial.Scene.Nodes.Count(node => node.Role == "radial-column"));
         Assert.Equal(4, partial.Regions.Count(region => region.Role == "radar-point"));
@@ -155,14 +155,14 @@ public sealed class MixedNumericRadialTests {
         var after = Prepare(chart).Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-column");
         Assert.Equal(before.Inner, after.Inner); Assert.Equal(before.Outer, after.Outer);
         Assert.Equal(before.Start, after.Start); Assert.Equal(before.Sweep, after.Sweep);
-        chart.Series[0].UseSecondaryValueAxis(); chart.Series[1].UseSecondaryValueAxis();
+        chart.Series[0].SecondaryAxis(); chart.Series[1].SecondaryAxis();
         chart.Options.ShowGrid = true;
         Assert.Contains(Prepare(chart).Scene.Nodes, node => node.Role == "radial-value-grid");
     }
 
     [Fact]
     public void ColumnAndRadarCaptionsShareCollisionPlacementAndRetainOmittedDescriptions() {
-        var chart = Bare().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
+        var chart = Bare().DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
             .AddRadialColumn("Observed", Values(40)).AddRadarLine("Target", Values(80));
         chart.Series[1].DataLabelPlacement = ChartDataLabelPlacement.Above;
         var prepared = Prepare(chart);
@@ -184,7 +184,7 @@ public sealed class MixedNumericRadialTests {
     [InlineData(800, 440, ThemeMode.Light)]
     [InlineData(800, 440, ThemeMode.Dark)]
     public void GalleryModelExportsAllThreeFormsWithBoundedNativeGeometry(int width, int height, ThemeMode mode) {
-        var chart = V2GalleryModels.CreateMixedRadial().WithSize(width, height).WithHeader(false).WithLegend();
+        var chart = V2GalleryModels.CreateMixedRadial().Size(width, height).ShowHeader(false).Legend();
         var request = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(new VisualRenderContext(request.Layout, request.Theme, mode, request.Frame, request.Font));
         Assert.Single(prepared.Scene.Nodes, node => node.Role == "radar-area");
@@ -199,14 +199,14 @@ public sealed class MixedNumericRadialTests {
     }
 
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(400, 360).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(400, 360).ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.Bounds(0, 100));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false; return chart;
     }
     private static ChartPoint[] Values(double value) => Enumerable.Range(1, 4).Select(index => new ChartPoint(index, value)).ToArray();
     private static PreparedVisual Prepare(Chart chart) {
         var request = VisualExportRequest.ForChart(chart).Context;
         return chart.Prepare(new VisualRenderContext(request.Layout, request.Theme, request.ThemeMode,
-            new VisualFrame(showLegend: chart.Options.ShowLegend, transparentBackground: true), request.Font));
+            new VisualFrame(showLegend: chart.Options.Legend.Visible, transparentBackground: true), request.Font));
     }
     private static IReadOnlyDictionary<string, string> Group(PreparedVisual prepared, string id) => prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == id).Metadata;
     private static IReadOnlyDictionary<string, string> Point(PreparedVisual prepared, int series, int point) => Group(prepared, $"series-{series}-point-{point}");

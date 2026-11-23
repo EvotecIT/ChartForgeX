@@ -12,8 +12,8 @@ internal static partial class SmokeTests {
         .Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 
     private static void CalendarHeatmapRendersContributionGrid() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(760, 360).WithTitle("Consistency Journey")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(760, 360).Title("Consistency Journey")
             .AddCalendarHeatmap("Commits", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1),
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 6), 4),
@@ -55,7 +55,7 @@ internal static partial class SmokeTests {
     }
 
     private static void CalendarHeatmapDoesNotLabelPaddingMonths() {
-        var chart = Chart.Create().WithSize(760, 360).AddCalendarHeatmap("Commits", new[] {
+        var chart = Chart.Create().Size(760, 360).AddCalendarHeatmap("Commits", new[] {
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 1), new ChartCalendarHeatmapItem(new DateTime(2026, 12, 31), 3)
         });
         var document = XDocument.Parse(chart.ToSvg());
@@ -69,7 +69,7 @@ internal static partial class SmokeTests {
     private static void CalendarHeatmapCompleteWeeksDoNotShowNoDataScale() {
         var start = new DateTime(2026, 1, 4);
         var items = Enumerable.Range(0, 7).Select(index => new ChartCalendarHeatmapItem(start.AddDays(index), index)).ToArray();
-        var document = XDocument.Parse(Chart.Create().WithSize(360, 220).AddCalendarHeatmap("Commits", items).ToSvg());
+        var document = XDocument.Parse(Chart.Create().Size(360, 220).AddCalendarHeatmap("Commits", items).ToSvg());
         Assert(CalendarRole(document, "calendar-cell").All(cell => (string?)cell.Attribute("data-cfx-empty") == "false"),
             "Complete weeks should not contain missing-day marks.");
         Assert((string?)CalendarRole(document, "calendar-heatmap").Single().Attribute("data-cfx-empty-count") == "0",
@@ -83,7 +83,7 @@ internal static partial class SmokeTests {
     }
 
     private static void CalendarHeatmapUsesLocalContributionRange() {
-        var chart = Chart.Create().WithSize(360, 220).AddCalendarHeatmap("Commits", new[] {
+        var chart = Chart.Create().Size(360, 220).AddCalendarHeatmap("Commits", new[] {
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 1), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 2), 16)
         }, ChartColor.FromHex("#22C55E"));
         var document = XDocument.Parse(chart.ToSvg());

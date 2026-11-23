@@ -10,8 +10,8 @@ public sealed class CartesianGuideRoleTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ExplicitAxisAndGridColorsKeepTheirIndependentRoles(bool horizontal) {
-        var chart = Chart.Create().WithSize(480, 320).WithHeader(false).WithLegend(false);
-        chart.ConfigureTheme(builder => {
+        var chart = Chart.Create().Size(480, 320).ShowHeader(false).Legend(false);
+        chart.Theme(builder => {
             builder.Light.Axis = ChartColor.FromHex("#A02030");
             builder.Light.Grid = ChartColor.FromHex("#2040A0");
             builder.Light.Border = ChartColor.FromHex("#20A040");
@@ -27,6 +27,6 @@ public sealed class CartesianGuideRoleTests {
         Assert.NotEmpty(grid);
         Assert.All(axes, element => Assert.Equal("#A02030", (string?)element.Attribute("stroke")));
         Assert.All(grid, element => Assert.Equal("#2040A0", (string?)element.Attribute("stroke")));
-        Assert.NotEqual(chart.ToPng(), chart.ConfigureTheme(builder => { builder.Light.Axis = ChartColors.Transparent; builder.Light.Grid = ChartColors.Transparent; }).ToPng());
+        Assert.NotEqual(chart.ToPng(), chart.Theme(builder => { builder.Light.Axis = ChartColors.Transparent; builder.Light.Grid = ChartColors.Transparent; }).ToPng());
     }
 }

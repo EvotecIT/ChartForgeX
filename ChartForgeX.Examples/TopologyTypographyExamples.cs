@@ -9,8 +9,8 @@ internal static class TopologyTypographyExamples {
         foreach (var (name, family) in new[] { ("sans", "Arial, sans-serif"), ("mono", "monospace") }) {
             var theme = VisualTheme.Graphite();
             theme = theme.WithFontFamily(family);
-            var chart = TopologyChart.Create().WithTheme(theme).WithViewport(1000, 420)
-                .WithTitle("Measured labels across cards, compact cards, and tiles")
+            var chart = TopologyChart.Create().Theme(theme).Viewport(new TopologyViewport(1000, 420))
+                .Title("Measured labels across cards, compact cards, and tiles")
                 .AddNode("card", "Wide WWW characters\nSecond title line", 55, 150, width: 260, height: 150, subtitle: "Service ownership")
                 .AddNode("compact", "Compact WWW label", 430, 170, width: 108, height: 52, subtitle: "WWWWWWWWWWWW")
                 .AddNode("tile", "Tile WWW label", 750, 170, width: 64, height: 46, subtitle: "WWWWWWWWWWWW")

@@ -18,11 +18,11 @@ public sealed class LegendDensityTests {
     [InlineData("radial", ChartLegendPosition.Bottom)]
     [InlineData("radial", ChartLegendPosition.Right)]
     public void DenseLegendsDiscloseOverflowAndRetainAllData(string kind, ChartLegendPosition position) {
-        var chart = Dense(kind, 100).WithLegendPosition(position).WithLegendBudget(maximumRows: 3);
+        var chart = Dense(kind, 100).Legend(l => l.Position(position).MaxRows(3));
         var prepared = PrepareDefaults(chart); var svg = XDocument.Parse(chart.ToSvg());
         var shown = ByRole(svg, "legend-entry").Count(element => !IsOverflow(element));
         var omitted = ByRole(svg, "legend-entry-omitted").Length;
-        var entryCount = kind == "pie" ? chart.Options.MaximumPieSlices : 100;
+        var entryCount = kind == "pie" ? chart.Options.Pie.MaxSlices : 100;
         Assert.Equal(entryCount, shown + omitted); Assert.True(shown > 0);
         if (omitted > 0) Assert.Contains(ByRole(svg, "legend-label"), element => element.Value.Contains(omitted.ToString(CultureInfo.InvariantCulture) + " more"));
         if (kind != "pie") Assert.True(omitted > 0);
@@ -43,7 +43,7 @@ public sealed class LegendDensityTests {
     [InlineData(560, 1)]
     [InlineData(1000, 1)]
     public void SideLegendHeightBudgetKeepsPaintedRowsInsideTheViewport(int height, double fraction) {
-        var chart = Dense("line", 100).WithSize(900, height).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(fraction);
+        var chart = Dense("line", 100).Size(900, height).Legend(l => l.Position(ChartLegendPosition.Right).MaxHeightFraction(fraction));
         var prepared = PrepareDefaults(chart);
         var visible = prepared.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
         Assert.NotEmpty(visible); Assert.Contains(visible, region => region.Id == "legend-overflow");
@@ -56,7 +56,7 @@ public sealed class LegendDensityTests {
     [InlineData(ChartLegendPosition.Top, .5)]
     [InlineData(ChartLegendPosition.TopRight, .75)]
     public void HorizontalOverflowSummaryHonorsCommonFrameAlignment(ChartLegendPosition position, double expectedFraction) {
-        var chart = Dense("line", 100).WithLegendPosition(position).WithLegendBudget(maximumRows: 2);
+        var chart = Dense("line", 100).Legend(l => l.Position(position).MaxRows(2));
         var prepared = PrepareDefaults(chart); var overflow = prepared.Regions.Single(region => region.Id == "legend-overflow");
         var center = overflow.Bounds.Left + overflow.Bounds.Width / 2;
         if (expectedFraction < .5) Assert.True(center < prepared.Size.Width * .4);
@@ -67,7 +67,7 @@ public sealed class LegendDensityTests {
     [Fact]
     public void OmittedWideSideLabelsDoNotShrinkThePlot() {
         static Chart Create(string lastLabel) {
-            var chart = Chart.Create().WithSize(700, 400).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(maximumRows: 3);
+            var chart = Chart.Create().Size(700, 400).Legend(l => l.Position(ChartLegendPosition.Right).MaxRows(3));
             for (var index = 0; index < 8; index++) chart.AddLine(index == 7 ? lastLabel : "Service " + index,
                 new[] { new ChartPoint(0, index), new ChartPoint(1, index + 1) });
             return chart;
@@ -80,8 +80,8 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void OverflowSummaryUsesResolvedLegendTypographyAndFullLabelsRemainAvailable() {
-        var chart = Dense("line", 40).WithLegendBudget(maximumRows: 2)
-            .ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase).WithFontSize(18));
+        var chart = Dense("line", 40).Legend(l => l.MaxRows(2))
+            .LegendStyle(style => style.TextCase(TextCaseTransform.Uppercase).FontSize(18));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(ByRole(svg, "legend-label"), element => element.Value.Contains("MORE ENTRIES"));
         Assert.Contains(ByRole(svg, "legend-entry-omitted"), element => ((string?)element.Attribute("data-cfx-description"))?.StartsWith("Service", StringComparison.Ordinal) == true);
@@ -96,8 +96,8 @@ public sealed class LegendDensityTests {
     [InlineData("gauge")]
     [InlineData("waterfall")]
     public void ImpossibleLegendBudgetLeavesPreparedGeometryAndRasterUnchanged(string kind) {
-        var shown = Dense(kind, 40).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(.001);
-        var hidden = Dense(kind, 40).WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(.001).WithLegend(false);
+        var shown = Dense(kind, 40).Legend(l => l.Position(ChartLegendPosition.Right).MaxHeightFraction(.001));
+        var hidden = Dense(kind, 40).Legend(l => l.Position(ChartLegendPosition.Right).MaxHeightFraction(.001)).Legend(false);
         var withLegend = PrepareDefaults(shown); var withoutLegend = PrepareDefaults(hidden);
         Assert.Empty(ByRole(XDocument.Parse(shown.ToSvg()), "legend-entry"));
         Assert.Equal(withoutLegend.Regions.Where(region => region.Role != "legend").Select(region => region.Bounds).ToArray(),
@@ -113,7 +113,7 @@ public sealed class LegendDensityTests {
         Assert.True(layout.StrokeWidth > 0);
         Assert.True(layout.StrokeWidth <= (layout.OuterRadius - layout.CenterRadius - 2) / count);
         for (var index = 0; index < count; index++) Assert.True(layout.RadiusAt(index) - layout.StrokeWidth / 2 >= layout.CenterRadius + 2 - .000001);
-        var chart = Dense("radial", count).WithLegend(false); var prepared = PrepareDefaults(chart);
+        var chart = Dense("radial", count).Legend(false); var prepared = PrepareDefaults(chart);
         Assert.Equal(count, prepared.Regions.Count(region => region.Role == "progress-ring-ring"));
         Assert.Equal(count, ByRole(XDocument.Parse(chart.ToSvg()), "progress-ring-track").Length);
         Assert.NotEmpty(chart.ToPng());
@@ -121,19 +121,19 @@ public sealed class LegendDensityTests {
 
     [Fact]
     public void SmallLegendsStayCompleteAndInvalidBudgetChangesAreAtomic() {
-        var chart = Dense("line", 1).WithLegend(true);
+        var chart = Dense("line", 1).Legend(true);
         Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "legend-entry-omitted"));
         Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "legend-entry"));
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithLegendBudget(.5, 0));
-        Assert.Equal(.35, chart.Options.LegendMaximumHeightFraction); Assert.Null(chart.Options.LegendMaximumRows);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithLegendBudget(double.NaN));
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithLegendBudget(1.1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Legend(l => l.MaxHeightFraction(.5).MaxRows(0)));
+        Assert.Equal(.35, chart.Options.Legend.MaxHeightFraction); Assert.Null(chart.Options.Legend.MaxRows);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Legend(l => l.MaxHeightFraction(double.NaN)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Legend(l => l.MaxHeightFraction(1.1)));
     }
 
     private static Chart Dense(string kind, int count) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(900, 560).WithTitle("Dense legend");
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(900, 560).Title("Dense legend");
         var points = Enumerable.Range(0, count).Select(index => new ChartPoint(index, index % 100 + 1)).ToArray();
-        chart.WithXLabels(points.Select(point => "Service " + point.X).ToArray());
+        chart.XLabels(points.Select(point => "Service " + point.X).ToArray());
         if (kind == "pie") chart.AddPie("Values", points);
         else if (kind == "radial") chart.AddProgressRing("Values", points);
         else if (kind == "gauge") chart.AddGauge("Value", 73);

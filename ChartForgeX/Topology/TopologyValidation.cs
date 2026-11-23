@@ -90,7 +90,7 @@ public sealed partial class TopologyChartValidator {
     internal TopologyValidationResult Validate(TopologyChart chart, bool validateScenarioReferences, TopologyRenderOptions options) {
         var result = Validate(chart, validateScenarioReferences);
         ValidateIconReferences(chart, result, options);
-        if (chart.CrossingPaint != null && options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls)
+        if (chart.CrossingPaint != null && options.Html.Interactions && options.Html.ForceGraphControls)
             Add(result, "topology-crossing-live-force", "Crossing paint cannot be rewritten by live force controls.", chart.Id);
         return result;
     }

@@ -25,7 +25,7 @@ public sealed class HistogramNormalizationTests {
     [InlineData(ChartHistogramEncoding.ProbabilityDensity)]
     public void NormalizationRetainsRawCountsAndUsesTheActualUnequalBinWidths(ChartHistogramEncoding encoding) {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 4d, 8d });
-        var chart = Chart.Create().WithAxes(false).WithGrid(false)
+        var chart = Chart.Create().Axes(false).ShowGrid(false)
             .AddHistogram("Samples", new[] { .25, .75, 2d, 4d, 8d }, layout, encoding);
         var bins = chart.Series[0].HistogramBins;
         Assert.Equal(new[] { 2d, 1d, 2d }, bins.Select(bin => bin.Value!.Value));
@@ -48,9 +48,9 @@ public sealed class HistogramNormalizationTests {
     public void ProbabilityDensityPaintsFullIntervalsWhoseNativeAreasRepresentProbability() {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 4d });
         var red = ChartColor.FromHex("#C52E3C");
-        var chart = Chart.Create().WithAxes(false).WithGrid(false).WithBarStyle(ChartBarStyle.SegmentedCapsule)
+        var chart = Chart.Create().Axes(false).ShowGrid(false).Bars(b => b.Style(ChartBarStyle.SegmentedCapsule))
             .AddHistogram("Equal mass", new[] { .25, .75, 2d, 3d }, layout, ChartHistogramEncoding.ProbabilityDensity, red);
-        chart.Options.XAxis.WithBounds(0, 4); chart.Options.YAxis.WithBounds(0, .5);
+        chart.Options.XAxis.Bounds(0, 4); chart.Options.YAxis.Bounds(0, .5);
         var prepared = Prepare(chart);
         var narrow = Bounds(prepared, 0); var wide = Bounds(prepared, 1);
         Assert.Equal(narrow.Right, wide.Left, 8);
@@ -151,9 +151,9 @@ public sealed class HistogramNormalizationTests {
     [InlineData(ChartHistogramEncoding.Probability)]
     [InlineData(ChartHistogramEncoding.ProbabilityDensity)]
     public void ProbabilityRejectsASecondStackNormalization(ChartHistogramEncoding encoding) {
-        var chart = Chart.Create().WithStackedBars().AddHistogram("Probability", new[] { .25, .75 },
+        var chart = Chart.Create().Bars(b => b.Stacked()).AddHistogram("Probability", new[] { .25, .75 },
             ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d }), encoding);
-        chart.Series[0].WithNormalization(100);
+        chart.Series[0].NormalizedTo(100);
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
     }
 
@@ -166,7 +166,7 @@ public sealed class HistogramNormalizationTests {
     [InlineData(ChartHistogramEncoding.Density, ChartHistogramEncoding.ProbabilityDensity)]
     public void StacksRejectIncompatibleHistogramUnitsInEitherSeriesOrder(ChartHistogramEncoding first, ChartHistogramEncoding second) {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d });
-        var chart = Chart.Create().WithStackedBars().AddHistogram("First", new[] { .25, 2d }, layout, first)
+        var chart = Chart.Create().Bars(b => b.Stacked()).AddHistogram("First", new[] { .25, 2d }, layout, first)
             .AddHistogram("Second", new[] { .25, 2d }, layout, second);
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
     }
@@ -174,7 +174,7 @@ public sealed class HistogramNormalizationTests {
     [Fact]
     public void CompatibleProbabilityStacksKeepEachSeriesOwnNormalizationAndRawCounts() {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 3d });
-        var chart = Chart.Create().WithStackedBars()
+        var chart = Chart.Create().Bars(b => b.Stacked())
             .AddHistogram("First", new[] { .25, 2d }, layout, ChartHistogramEncoding.Probability)
             .AddHistogram("Second", new[] { .25, .75, 2d }, layout, ChartHistogramEncoding.Probability);
         Assert.All(chart.Series, series => Assert.Equal(1, series.HistogramBins.Sum(bin => bin.RenderedValue), 12));

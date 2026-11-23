@@ -4,13 +4,13 @@ public static class HexbinHeatmapColorScaleRecipe {
     public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").WithDataLabels()
+        return Chart.Create().XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").DataLabels()
             .AddHexbinHeatmapRow("Primary", new double?[] { 0, 30, 40, null, 80, 100 }, id: new ChartSeriesId("primary-measurements"))
             .AddHexbinHeatmapRow("Secondary", new double?[] { 15, 40, 60, 80, null, 120 }, id: new ChartSeriesId("secondary-measurements"))
-            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+            .Heatmap(h => h.ColorScale(ChartColorScale.Discrete(new[] {
                 new ChartColorBand(40, colors.SequentialRamp[0], "Low"),
                 new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], "Medium"),
                 new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], "High")
-            }));
+            })));
     }
 }

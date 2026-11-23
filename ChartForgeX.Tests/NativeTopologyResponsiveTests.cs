@@ -9,7 +9,7 @@ public sealed class NativeTopologyResponsiveTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ResponsivePolicySurvivesConveniencePreparationFittingAndMotion(bool responsive) {
-        var chart = TopologyChart.Create().WithViewport(1200, 360, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 360, 20)).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 40, 100, width: 100, height: 60)
             .AddNode("target", "Target", 900, 100, width: 100, height: 60)
             .AddEdge("route", "source", "target");

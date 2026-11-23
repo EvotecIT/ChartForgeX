@@ -55,30 +55,30 @@ public sealed class FishboneNaturalLayoutTests {
 
     [Fact]
     public void MeasureIsReadOnlyAndExplicitNaturalSelectionDoesNotMutateAuthoredCauseObjects() {
-        var block = FishboneDiagramBlock.Create("Effect").WithSize(840, 460); var cause = block.AddCause("Process"); var child = cause.AddChild("Review");
+        var block = FishboneDiagramBlock.Create("Effect").Size(840, 460); var cause = block.AddCause("Process"); var child = cause.AddChild("Review");
         var svg = block.ToSvg(); var png = block.ToPng(); _ = block.MeasureNaturalSize();
         Assert.Equal(svg, block.ToSvg()); Assert.Equal(png, block.ToPng()); Assert.False(block.UsesNaturalLayout);
-        block.WithNaturalSize(840, 460); Assert.Same(cause, block.Causes[0]); Assert.Same(child, block.Causes[0].Children[0]);
+        block.NaturalSize(840, 460); Assert.Same(cause, block.Causes[0]); Assert.Same(child, block.Causes[0].Children[0]);
         Assert.Equal("Review", child.Label); Assert.Equal(840, block.Options.Size.Width);
     }
 
     [Fact]
     public void LaterSourceOrTypographyGrowthRequiresRemeasureInsteadOfCaptionLoss() {
-        var block = FishboneDiagramBlock.Create("Effect"); var cause = block.AddCause("Original"); block.WithNaturalSize();
+        var block = FishboneDiagramBlock.Create("Effect"); var cause = block.AddCause("Original"); block.NaturalSize();
         cause.AddChild(new string('W', 120)); Assert.Throws<InvalidOperationException>(() => block.ToSvg());
-        block.WithNaturalSize(); Assert.Contains(new string('W', 120), block.ToSvg(), StringComparison.Ordinal);
+        block.NaturalSize(); Assert.Contains(new string('W', 120), block.ToSvg(), StringComparison.Ordinal);
         block.Options.Theme = block.Options.Theme.Configure(builder => builder.Typography = new VisualTypography("Arial", dataLabelSize: 25));
-        Assert.Throws<InvalidOperationException>(() => block.ToPng()); block.WithNaturalSize(); Assert.NotEmpty(block.ToPng());
+        Assert.Throws<InvalidOperationException>(() => block.ToPng()); block.NaturalSize(); Assert.NotEmpty(block.ToPng());
     }
 
     [Fact]
     public void RepeatedCaptionsKeepDistinctOrderedOccurrencesAndBoundedDepth() {
-        var block = FishboneDiagramBlock.Create("Same"); var first = block.AddCause("Same"); first.AddChild("Same"); block.AddCause("Same"); block.WithNaturalSize();
+        var block = FishboneDiagramBlock.Create("Same"); var first = block.AddCause("Same"); first.AddChild("Same"); block.AddCause("Same"); block.NaturalSize();
         var groups = XDocument.Parse(block.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "fishbone-cause");
         Assert.Equal(new[] { "cause-0", "cause-0.0", "cause-1" }, groups.Select(e => (string?)e.Attribute("data-cause-id")));
         var invalid = FishboneDiagramBlock.Create("Effect"); var cause = invalid.AddCause("0"); for (var i = 1; i <= 12; i++) cause = cause.AddChild(i.ToString(CultureInfo.InvariantCulture));
         Assert.Throws<InvalidOperationException>(() => invalid.MeasureNaturalSize());
-        Assert.Throws<ArgumentOutOfRangeException>(() => block.WithNaturalSize(-1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => block.NaturalSize(-1));
     }
 
     internal static List<(string Id, string? Parent, string Text)> Facts(FishboneDiagramBlock block) {

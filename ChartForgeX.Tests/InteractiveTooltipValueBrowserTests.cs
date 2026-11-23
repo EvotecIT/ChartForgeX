@@ -22,14 +22,14 @@ public sealed class InteractiveTooltipValueBrowserTests {
     [InlineData("cartesian", true)]
     public async Task TooltipValueRowsRetainRawCartesianYAndValueOnlyFacts(string family, bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 340).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(600, 340).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var nodes = new[] { new ChartNode("teams", "All teams"), new ChartNode("support", "Support") };
         var selector = ""; var expected = family is "zero" or "cell" ? "0" : family == "cartesian" ? "7" : "8";
         switch (family) {
             case "node": chart.AddTree("Teams", nodes, new[] { new ChartTreeLink("teams", "support", 8) }); selector = "[data-cfx-node=support]"; break;
             case "flow": chart.AddSankey("Requests", nodes, new[] { new ChartFlowLink("work", "teams", "support", 8) }); selector = "[data-cfx-target-kind=link][data-cfx-target-id=work]"; break;
             case "zero": chart.AddGauge("Capacity", 0); selector = "[data-cfx-role=gauge]"; break;
-            case "cell": chart.WithXLabels("Monday").AddHeatmapRow("Totals", new[] { new ChartPoint(0, 0) }); selector = "[data-cfx-role=heatmap-cell]"; break;
+            case "cell": chart.XLabels("Monday").AddHeatmapRow("Totals", new[] { new ChartPoint(0, 0) }); selector = "[data-cfx-role=heatmap-cell]"; break;
             case "cartesian": chart.AddDumbbell("Latency", new[] { new ChartDumbbell(3, 7, 12) }); selector = Point(0, 0); break;
         }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 640, 450);

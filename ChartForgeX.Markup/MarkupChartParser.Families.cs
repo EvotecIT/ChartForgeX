@@ -8,10 +8,10 @@ namespace ChartForgeX.Markup;
 public sealed partial class MarkupChartParser {
     private static Chart BuildChart(ChartState state) {
         var chart = Chart.Create()
-            .WithTitle(state.Title)
-            .WithSubtitle(state.Subtitle)
-            .WithSize(state.Width, state.Height);
-        if (state.Labels.Count > 0) chart.WithXLabels(state.Labels.ToArray());
+            .Title(state.Title)
+            .Subtitle(state.Subtitle)
+            .Size(state.Width, state.Height);
+        if (state.Labels.Count > 0) chart.XLabels(state.Labels.ToArray());
 
         if (!BuildTypedChart(chart, state)) {
             if (state.Series.Count == 0) {
@@ -63,21 +63,21 @@ public sealed partial class MarkupChartParser {
                 break;
             case "percentstackedarea":
                 chart.AddStackedArea(name, points, ParseColor(color));
-                chart.Series[chart.Series.Count - 1].WithNormalization();
+                chart.Series[chart.Series.Count - 1].NormalizedTo(100);
                 break;
             case "smoothpercentstackedarea":
                 chart.AddSmoothStackedArea(name, points, ParseColor(color));
-                chart.Series[chart.Series.Count - 1].WithNormalization();
+                chart.Series[chart.Series.Count - 1].NormalizedTo(100);
                 break;
             case "stackedbar":
             case "percentstackedbar":
-                chart.WithStackedBars().AddBar(name, points, ParseColor(color));
-                if (NormalizeKey(type) == "percentstackedbar") chart.Series[chart.Series.Count - 1].WithNormalization();
+                chart.Bars(b => b.Stacked()).AddBar(name, points, ParseColor(color));
+                if (NormalizeKey(type) == "percentstackedbar") chart.Series[chart.Series.Count - 1].NormalizedTo(100);
                 break;
             case "stackedhorizontalbar":
             case "percentstackedhorizontalbar":
-                chart.WithStackedHorizontalBars().AddHorizontalBar(name, points, ParseColor(color));
-                if (NormalizeKey(type) == "percentstackedhorizontalbar") chart.Series[chart.Series.Count - 1].WithNormalization();
+                chart.Bars(b => b.Stacked()).AddHorizontalBar(name, points, ParseColor(color));
+                if (NormalizeKey(type) == "percentstackedhorizontalbar") chart.Series[chart.Series.Count - 1].NormalizedTo(100);
                 break;
             case "heatmap":
                 chart.AddHeatmapRow(name, points, ParseColor(color));
@@ -120,10 +120,10 @@ public sealed partial class MarkupChartParser {
                 chart.AddPolar(name, points, ParseColor(color));
                 break;
             case "donut":
-                chart.WithPointLegend().WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).AddDonut(name, points);
+                chart.Legend(l => l.ShowPoints()).DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)).AddDonut(name, points);
                 break;
             case "pie":
-                chart.WithPointLegend().WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).AddPie(name, points);
+                chart.Legend(l => l.ShowPoints()).DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)).AddPie(name, points);
                 break;
             case "horizontalbar":
             case "hbar":
