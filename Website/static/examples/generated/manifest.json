@@ -9754,8 +9754,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -9765,14 +9793,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "box-plot": {
       "type": "ChartBoxPlotOptions",
-      "configure": null,
+      "configure": "BoxPlot",
       "api": "/api/chartforgex-core-chartboxplotoptions/",
       "options": [
         {
@@ -9811,7 +9867,7 @@
     },
     "bubble": {
       "type": "ChartBubbleOptions",
-      "configure": null,
+      "configure": "Bubble",
       "api": "/api/chartforgex-core-chartbubbleoptions/",
       "options": [
         {
@@ -9846,7 +9902,7 @@
     },
     "bullet": {
       "type": "ChartBulletOptions",
-      "configure": null,
+      "configure": "Bullet",
       "api": "/api/chartforgex-core-chartbulletoptions/",
       "options": [
         {
@@ -9861,7 +9917,7 @@
     },
     "calendar-heatmap": {
       "type": "ChartCalendarOptions",
-      "configure": null,
+      "configure": "Calendar",
       "api": "/api/chartforgex-core-chartcalendaroptions/",
       "options": [
         {
@@ -9911,8 +9967,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -9922,6 +10006,26 @@
       "api": "/api/chartforgex-core-chartgrid/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the report title."
+        },
+        {
+          "name": "Columns",
+          "summary": "Sets Columns: Gets or sets the preferred number of columns on wide viewports."
+        },
+        {
+          "name": "Gap",
+          "summary": "Sets Gap: Gets or sets the gap between charts in pixels."
+        },
+        {
+          "name": "PanelSize",
+          "summary": "Sets a fixed panel size for composed SVG and PNG grid exports."
+        },
+        {
+          "name": "Theme",
+          "summary": "Replaces the chart theme with an independently configured immutable snapshot."
+        },
+        {
           "name": "Add",
           "summary": "Adds a chart to the grid."
         }
@@ -9929,7 +10033,7 @@
     },
     "chord": {
       "type": "ChartChordOptions",
-      "configure": null,
+      "configure": "Chord",
       "api": "/api/chartforgex-core-chartchordoptions/",
       "options": [
         {
@@ -9972,14 +10076,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "cone-funnel": {
       "type": "ChartFunnelOptions",
-      "configure": null,
+      "configure": "Funnel",
       "api": "/api/chartforgex-core-chartfunneloptions/",
       "options": [
         {
@@ -10021,6 +10153,26 @@
       "configure": null,
       "api": "/api/chartforgex-core-chartgrid/",
       "options": [
+        {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the report title."
+        },
+        {
+          "name": "Columns",
+          "summary": "Sets Columns: Gets or sets the preferred number of columns on wide viewports."
+        },
+        {
+          "name": "Gap",
+          "summary": "Sets Gap: Gets or sets the gap between charts in pixels."
+        },
+        {
+          "name": "PanelSize",
+          "summary": "Sets a fixed panel size for composed SVG and PNG grid exports."
+        },
+        {
+          "name": "Theme",
+          "summary": "Replaces the chart theme with an independently configured immutable snapshot."
+        },
         {
           "name": "Add",
           "summary": "Adds a chart to the grid."
@@ -10064,8 +10216,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10075,8 +10255,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10109,8 +10317,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10119,6 +10355,18 @@
       "configure": null,
       "api": "/api/chartforgex-visualartifacts-flowartifact/",
       "options": [
+        {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the flow title."
+        },
+        {
+          "name": "Width",
+          "summary": "Sets Width: Gets or sets the static preview width."
+        },
+        {
+          "name": "Height",
+          "summary": "Sets Height: Gets or sets the static preview height."
+        },
         {
           "name": "AddLane",
           "summary": "Adds a flow lane."
@@ -10135,7 +10383,7 @@
     },
     "funnel": {
       "type": "ChartFunnelOptions",
-      "configure": null,
+      "configure": "Funnel",
       "api": "/api/chartforgex-core-chartfunneloptions/",
       "options": [
         {
@@ -10178,8 +10426,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10189,14 +10465,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "gauge": {
       "type": "ChartGaugeOptions",
-      "configure": null,
+      "configure": "Gauge",
       "api": "/api/chartforgex-core-chartgaugeoptions/",
       "options": [
         {
@@ -10239,8 +10543,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10250,8 +10582,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10261,8 +10621,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10272,8 +10660,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10283,8 +10699,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10294,14 +10738,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "linear-gauge": {
       "type": "ChartGaugeOptions",
-      "configure": null,
+      "configure": "Gauge",
       "api": "/api/chartforgex-core-chartgaugeoptions/",
       "options": [
         {
@@ -10344,8 +10816,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10370,6 +10870,18 @@
       "api": "/api/chartforgex-topology-topologychart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "Theme",
+          "summary": "Configures the current topology theme."
+        },
+        {
+          "name": "LayoutMode",
+          "summary": "Sets LayoutMode: Gets or sets the deterministic layout mode."
+        },
+        {
           "name": "AddNode",
           "summary": "Adds a node to the topology chart."
         },
@@ -10385,8 +10897,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10396,8 +10936,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10461,8 +11029,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10472,14 +11068,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "pyramid": {
       "type": "ChartPyramidOptions",
-      "configure": null,
+      "configure": "Pyramid",
       "api": "/api/chartforgex-core-chartpyramidoptions/",
       "options": [
         {
@@ -10522,8 +11146,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10560,8 +11212,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10571,8 +11251,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10582,8 +11290,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10593,14 +11329,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "range-bar": {
       "type": "ChartRangeBarOptions",
-      "configure": null,
+      "configure": "RangeBar",
       "api": "/api/chartforgex-core-chartrangebaroptions/",
       "options": [
         {
@@ -10631,14 +11395,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "sankey": {
       "type": "ChartSankeyOptions",
-      "configure": null,
+      "configure": "Sankey",
       "api": "/api/chartforgex-core-chartsankeyoptions/",
       "options": [
         {
@@ -10681,8 +11473,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10691,6 +11511,18 @@
       "configure": null,
       "api": "/api/chartforgex-visualartifacts-sequenceartifact/",
       "options": [
+        {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the sequence title."
+        },
+        {
+          "name": "Width",
+          "summary": "Sets Width: Gets or sets the natural preview width."
+        },
+        {
+          "name": "Height",
+          "summary": "Sets Height: Gets or sets the natural preview height."
+        },
         {
           "name": "AddParticipant",
           "summary": "Adds or updates a participant."
@@ -10711,8 +11543,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10722,8 +11582,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10733,8 +11621,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10744,8 +11660,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10755,14 +11699,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "sunburst": {
       "type": "ChartSunburstOptions",
-      "configure": null,
+      "configure": "Sunburst",
       "api": "/api/chartforgex-core-chartsunburstoptions/",
       "options": [
         {
@@ -10805,8 +11777,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10816,8 +11816,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
@@ -10826,6 +11854,18 @@
       "configure": null,
       "api": "/api/chartforgex-topology-topologychart/",
       "options": [
+        {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "Theme",
+          "summary": "Configures the current topology theme."
+        },
+        {
+          "name": "LayoutMode",
+          "summary": "Sets LayoutMode: Gets or sets the deterministic layout mode."
+        },
         {
           "name": "AddNode",
           "summary": "Adds a node to the topology chart."
@@ -10842,14 +11882,42 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     },
     "treemap": {
       "type": "ChartTreemapOptions",
-      "configure": null,
+      "configure": "Treemap",
       "api": "/api/chartforgex-core-charttreemapoptions/",
       "options": [
         {
@@ -10915,7 +11983,7 @@
     },
     "waterfall": {
       "type": "ChartWaterfallOptions",
-      "configure": null,
+      "configure": "Waterfall",
       "api": "/api/chartforgex-core-chartwaterfalloptions/",
       "options": [
         {
@@ -10930,8 +11998,36 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
+          "name": "Title",
+          "summary": "Sets Title: Gets or sets the chart title."
+        },
+        {
+          "name": "XLabels",
+          "summary": "Sets x-axis labels for one-based x values."
+        },
+        {
           "name": "AddSeries",
-          "summary": "Attaches a configured series, preserving its stable identity and data ownership."
+          "summary": "Adds a cartesian series by mapping typed source rows to x/y values."
+        },
+        {
+          "name": "Legend",
+          "summary": "Shows or hides the legend. A default legend with one entry stays hidden; an explicit true also shows a single entry."
+        },
+        {
+          "name": "DataLabels",
+          "summary": "Shows or hides data labels for every series that doesn\u0027t set its own."
+        },
+        {
+          "name": "ValueFormat",
+          "summary": "Sets ValueFormat: Gets or sets the shared numeric display policy. Existing chart defaults retain grouped values below ten thousand."
+        },
+        {
+          "name": "XAxis",
+          "summary": "Sets XAxis: Gets the primary horizontal axis."
+        },
+        {
+          "name": "YAxis",
+          "summary": "Sets YAxis: Gets the primary vertical axis."
         }
       ]
     }

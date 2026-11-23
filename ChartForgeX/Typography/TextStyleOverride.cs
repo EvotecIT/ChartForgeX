@@ -68,26 +68,26 @@ public sealed class TextStyleOverride {
     /// <summary>Gets or sets a value indicating whether text is underlined. Turning it on selects a single underline unless a style is already set; turning it off selects none.</summary>
     public bool Underline { get => _underline; set { _underline = value; _hasUnderline = true; if (!value) _underlineStyle = TextDecorationStyle.None; else if (_underlineStyle is null or TextDecorationStyle.None) _underlineStyle = TextDecorationStyle.Single; } }
 
-    /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline.</summary>
+    /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline; null clears the underline override so the fallback applies.</summary>
     public TextDecorationStyle? UnderlineStyle {
         get => _underlineStyle;
         set {
             ValidateOptionalEnum(value, nameof(value));
             _underlineStyle = value;
-            if (value.HasValue) { _underline = value.Value != TextDecorationStyle.None; _hasUnderline = true; }
+            if (value.HasValue) { _underline = value.Value != TextDecorationStyle.None; _hasUnderline = true; } else { _underline = false; _hasUnderline = false; }
         }
     }
 
     /// <summary>Gets or sets whether text is struck through. Turning it on selects a single strikethrough unless a style is already set; turning it off selects none.</summary>
     public bool Strikethrough { get => _strikethrough; set { _strikethrough = value; _hasStrikethrough = true; if (!value) _strikethroughStyle = TextDecorationStyle.None; else if (_strikethroughStyle is null or TextDecorationStyle.None) _strikethroughStyle = TextDecorationStyle.Single; } }
 
-    /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike.</summary>
+    /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike; null clears the strikethrough override so the fallback applies.</summary>
     public TextDecorationStyle? StrikethroughStyle {
         get => _strikethroughStyle;
         set {
             ValidateOptionalEnum(value, nameof(value));
             _strikethroughStyle = value;
-            if (value.HasValue) { _strikethrough = value.Value != TextDecorationStyle.None; _hasStrikethrough = true; }
+            if (value.HasValue) { _strikethrough = value.Value != TextDecorationStyle.None; _hasStrikethrough = true; } else { _strikethrough = false; _hasStrikethrough = false; }
         }
     }
 

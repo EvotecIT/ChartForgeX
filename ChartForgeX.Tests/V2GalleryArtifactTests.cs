@@ -62,6 +62,25 @@ public sealed class V2GalleryArtifactTests {
     }
 
     [Fact]
+    public void PublishedFamilyReferencesNameTheFluentMethodsThatConfigureThem() {
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepository(), "Website", "static", "examples", "generated", "manifest.json")));
+        var fluent = typeof(Chart).Assembly.GetExportedTypes().Where(type => type.IsAbstract && type.IsSealed)
+            .SelectMany(type => type.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+            .Where(method => method.GetParameters() is { Length: 2 } parameters && parameters[0].ParameterType == typeof(Chart)).ToArray();
+        foreach (var family in manifest.RootElement.GetProperty("families").EnumerateObject()) {
+            var reference = family.Value;
+            Assert.NotEmpty(reference.GetProperty("options").EnumerateArray());
+            var type = reference.GetProperty("type").GetString()!;
+            // Chart inlines ChartOptions, so each settings object it owns is configured by a chart method; series-level options are not.
+            if (!typeof(ChartOptions).GetProperties().Any(property => property.PropertyType.Name == type)) continue;
+            var configure = reference.GetProperty("configure").GetString();
+            Assert.False(string.IsNullOrEmpty(configure), family.Name + " should name the method that configures " + type);
+            Assert.Contains(fluent, method => method.Name == configure && method.GetParameters()[1].ParameterType.IsGenericType
+                && method.GetParameters()[1].ParameterType.GetGenericArguments()[0].Name == type);
+        }
+    }
+
+    [Fact]
     public void PublishedCatalogKeepsOnePrimaryPerFamilyAndNamedNativePreviews() {
         var repository = FindRepository();
         var output = Path.Combine(repository, "Website", "static", "examples", "generated");

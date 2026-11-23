@@ -77,6 +77,18 @@ public sealed class OptionIntentTests {
     }
 
     [Fact]
+    public void ClearingADecorationStyleRestoresTheInheritedDecoration() {
+        var inherited = new TextStyle { UnderlineStyle = TextDecorationStyle.Double, StrikethroughStyle = TextDecorationStyle.Dotted };
+        var cleared = new TextStyleOverride { Underline = true, Strikethrough = false };
+        cleared.UnderlineStyle = null;
+        cleared.StrikethroughStyle = null;
+        var resolved = cleared.Resolve(inherited);
+        Assert.Equal(TextDecorationStyle.Double, resolved.UnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dotted, resolved.StrikethroughStyle);
+        Assert.False(cleared.HasOverrides);
+    }
+
+    [Fact]
     public void DefaultValuedFamilyAssignmentsRemainAuthoredForCompatibilityValidation() {
         var mapOptionsOnLine = Chart.Create().AddLine("Trend", Values);
         mapOptionsOnLine.Map(map => map.ColorDimension(options => options.ShowLegend = true));
