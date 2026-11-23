@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <ChartForgeXProductVersion>4.0.3</ChartForgeXProductVersion>
+    <ChartForgeXProductVersion>5.0.0</ChartForgeXProductVersion>
     <!-- Build-time generator for the shared ThemeMode, Tone and Icon vocabulary; never shipped. -->
     <PowerForgeGeneratorsVersion>3.0.195</PowerForgeGeneratorsVersion>
   </PropertyGroup>
