@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -268,7 +269,7 @@ internal static partial class SmokeTests {
         var fittedArtifactOptions = new VisualArtifactRenderOptions { Topology = fittedTopologyOptions };
         var widePlain = RasterImageDecoder.Decode(wideTopology.ToPng(fittedTopologyOptions));
         var wideArtifact = wideTopology.ToVisualArtifact();
-        wideArtifact.NaturalSize = new VisualArtifactSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
+        wideArtifact.NaturalSize = new VisualSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
         wideArtifact.PreserveNaturalSize = true;
         wideArtifact.AddWatermarks(fittedArtifactOptions, fittedWatermark);
         var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));

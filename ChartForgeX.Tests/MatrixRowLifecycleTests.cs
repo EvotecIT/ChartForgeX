@@ -126,7 +126,7 @@ public sealed class MatrixRowLifecycleTests {
         var cell = Assert.Single(Cells(prepared));
         var shape = cell.Descendants().First(node => node.Name.LocalName is "rect" or "path");
         var expected = ChartColor.FromHex(shape.Attribute("fill")!.Value);
-        var image = prepared.ToRgba(Raster());
+        var image = prepared.ToRgbaImage(Raster());
         var x = (int)(region.Bounds.Left + region.Bounds.Width / 2); var y = (int)(region.Bounds.Top + region.Bounds.Height / 2);
         var offset = (y * image.Width + x) * 4;
         Assert.Equal(expected.R, image.Pixels[offset]); Assert.Equal(expected.G, image.Pixels[offset + 1]); Assert.Equal(expected.B, image.Pixels[offset + 2]);

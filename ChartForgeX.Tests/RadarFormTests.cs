@@ -12,7 +12,7 @@ public sealed class RadarFormTests {
     [Fact]
     public void RadarHelpersUseOneSeriesKindAndValidateFormAndAreaOnlyPaint() {
         var points = new[] { new ChartPoint(1, 50), new ChartPoint(2, 50), new ChartPoint(3, 50) };
-        var chart = Chart.Create().AddRadar("Default", points).AddRadarLine("Line", points).AddRadarArea("Area", points);
+        var chart = Chart.Create().AddRadar("Default", points).AddRadarLine("Line", points).AddRadar("Area", points);
         Assert.All(chart.Series, series => Assert.Equal(ChartSeriesKind.Radar, series.Kind));
         Assert.Equal(new[] { ChartLineAreaForm.Area, ChartLineAreaForm.Line, ChartLineAreaForm.Area }, chart.Series.Select(series => series.Radar.Form));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.Form = (ChartLineAreaForm)99);
@@ -61,7 +61,7 @@ public sealed class RadarFormTests {
     [Fact]
     public void MixedFormsShareCategoryAndValueGeometryAndKeepMissingZeroDistinctFromAuthoredZero() {
         var color = ChartColor.FromHex("#2468AC");
-        var chart = Bare().AddRadarArea("Area", new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) }, color)
+        var chart = Bare().AddRadar("Area", new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) }, color)
             .AddRadarLine("Line", new[] { new ChartPoint(1 + 4e-16, 0), new ChartPoint(3, 80), new ChartPoint(4, 20) }, color);
         chart.Series[0].Markers(marker => { marker.Shape = ChartMarkerShape.Star; marker.Radius = 6; });
         chart.Series[0].PointColor(0, ChartColor.FromHex("#AB1234")).PointLabel(0, "Complete source label");
@@ -104,7 +104,7 @@ public sealed class RadarFormTests {
 
     [Fact]
     public void ZeroOpacityRemovesAreaInkIncludingPatternWhileKeepingOutlineAndSourceFacts() {
-        var chart = Bare().Legend().AddRadarArea("Signal", SixValues(50));
+        var chart = Bare().Legend().AddRadar("Signal", SixValues(50));
         chart.Series[0].Radar(radar => radar.FillOpacity = 0);
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
         chart.Series[0].Markers.Enabled = false;

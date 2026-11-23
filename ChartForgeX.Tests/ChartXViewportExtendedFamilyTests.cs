@@ -58,7 +58,7 @@ public sealed class ChartAxisWindowExtendedFamilyTests {
             .Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(3, observations.Length);
         Assert.All(observations, node => { Assert.Equal("false", (string?)node.Attribute("data-cfx-visible")); Assert.Empty(node.Elements()); });
-        Assert.NotEmpty(prepared.ToRgba().Pixels);
+        Assert.NotEmpty(prepared.ToRgbaImage().Pixels);
     }
 
     private static Chart Create(ChartSeriesKind kind, double origin) {

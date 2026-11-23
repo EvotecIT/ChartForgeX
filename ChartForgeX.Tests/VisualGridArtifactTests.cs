@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
@@ -40,7 +41,7 @@ public sealed class VisualGridArtifactTests {
         Assert.Equal("report-grid", artifact.Id);
         Assert.Equal(VisualArtifactKind.ChartGrid, artifact.Kind);
         Assert.Equal(VisualArtifactSourceLanguage.Markdown, artifact.SourceLanguage);
-        Assert.Equal(new VisualArtifactSize(140, 90), artifact.NaturalSize);
+        Assert.Equal(new VisualSize(140, 90), artifact.NaturalSize);
         Assert.Equal("1", artifact.Metadata["visual-grid.items"]);
         Assert.Equal("1", artifact.Metadata["visual-grid.columns"]);
         Assert.Equal("VisualGrid", artifact.Metadata["render.model"]);
@@ -75,7 +76,7 @@ public sealed class VisualGridArtifactTests {
         Assert.Equal(grid.Title, artifact.Accessibility.Name);
         Assert.Equal("3", artifact.Metadata["visual-grid.items"]);
         Assert.Equal("2", artifact.Metadata["visual-grid.columns"]);
-        Assert.Equal(new VisualArtifactSize(width, height), artifact.NaturalSize);
+        Assert.Equal(new VisualSize(width, height), artifact.NaturalSize);
         Assert.Equal((int)width * 2, image.Width);
         Assert.Equal((int)height * 2, image.Height);
         Assert.Equal(width, envelope.Width);

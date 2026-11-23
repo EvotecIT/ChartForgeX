@@ -49,7 +49,7 @@ public sealed class CartesianPlotRegionPaintTests {
             Paint(allMapped, "plot-region-label").StartsWith("var(" + variable.Name + ",", StringComparison.Ordinal));
         Assert.Equal(ChartColor.White, ink.Color);
 
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var region = Assert.Single(prepared.Regions, item => item.Role == "plot-region").Bounds;
         var alpha = authored.WithOpacity(opacity).A;
         byte Composite(byte source, byte surface) => (byte)Math.Round((source * alpha + surface * (255 - alpha)) / 255d);

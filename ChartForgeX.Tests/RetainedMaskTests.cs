@@ -24,10 +24,10 @@ public sealed class RetainedMaskTests {
         var source = RetainedMaskFixture.Plate();
         var input = RetainedMaskFixture.Mask(64, 48, density, mode);
         var options = new VisualRenderOptions(density, 1);
-        var before = source.ToRgba(options);
-        var expected = source.CaptureLayer(input, options).ToImage();
+        var before = source.ToRgbaImage(options);
+        var expected = source.CaptureLayer(input, options).ToRgbaImage();
         var masked = source.WithMask(input);
-        var actual = masked.ToRgba(options);
+        var actual = masked.ToRgbaImage(options);
         RetainedMaskFixture.Capture("retained-mask-pixels-" + mode + "-" + density, source, masked, options);
         Assert.Equal(expected.Width, actual.Width);
         Assert.Equal(expected.Height, actual.Height);
@@ -50,8 +50,8 @@ public sealed class RetainedMaskTests {
         var source = model.Prepare(RetainedMaskFixture.Context(model));
         var input = RetainedMaskFixture.Mask(800, 900, 1, VisualMaskMode.Luminance);
         var masked = source.WithMask(input);
-        var svg = masked.ToSvg(new VisualSvgOptions(idPrefix: "mask-native", effectProfile: VisualSvgEffectProfile.NativeFilters));
-        var baked = masked.ToSvg(new VisualSvgOptions(idPrefix: "mask-baked", effectRasterOptions: RetainedMaskFixture.Pixels));
+        var svg = masked.ToSvg(new VisualSvgOptions(idScope: "mask-native", effectProfile: VisualSvgEffectProfile.NativeFilters));
+        var baked = masked.ToSvg(new VisualSvgOptions(idScope: "mask-baked", effectRasterOptions: RetainedMaskFixture.Pixels));
         RetainedMaskFixture.Capture("retained-mask-sequence-" + dark, source, masked, RetainedMaskFixture.Pixels);
         var nativeXml = XDocument.Parse(svg);
         var sourceXml = XDocument.Parse(source.ToSvg());
@@ -64,12 +64,12 @@ public sealed class RetainedMaskTests {
         var coverageElement = Assert.Single(definition.Descendants(), element => element.Name.LocalName == "image");
         var coverage = RetainedMaskFixture.DecodeImage(coverageElement);
         var white = RetainedMaskFixture.White(800, 900);
-        var expected = white.CaptureLayer(input, RetainedMaskFixture.Pixels).ToImage();
+        var expected = white.CaptureLayer(input, RetainedMaskFixture.Pixels).ToRgbaImage();
         Assert.Equal(expected.Pixels, coverage.Pixels);
         var bakedXml = XDocument.Parse(baked);
         Assert.DoesNotContain(bakedXml.Descendants(), element => element.Name.LocalName == "text");
         var bitmap = Assert.Single(bakedXml.Descendants(), element => element.Name.LocalName == "image");
-        Assert.Equal(masked.ToRgba(RetainedMaskFixture.Pixels).Pixels, RetainedMaskFixture.DecodeImage(bitmap).Pixels);
+        Assert.Equal(masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels, RetainedMaskFixture.DecodeImage(bitmap).Pixels);
         Assert.Equal(source.Regions.Select(region => region.Id), masked.Regions.Select(region => region.Id));
         Assert.Equal(source.SemanticInterchange!.Nodes.Select(node => node.Label), masked.SemanticInterchange!.Nodes.Select(node => node.Label));
     }
@@ -84,11 +84,11 @@ public sealed class RetainedMaskTests {
         var png = masked.ToPng(RetainedMaskFixture.Pixels);
         RetainedMaskFixture.Capture("retained-mask-detachment", source, masked, RetainedMaskFixture.Pixels);
         Array.Clear(pixels, 0, pixels.Length);
-        var copy = input.ToImage();
+        var copy = input.ToRgbaImage();
         Array.Clear(copy.Pixels, 0, copy.Pixels.Length);
         Assert.Equal(svg, masked.ToSvg("mask-detached"));
         Assert.Equal(png, masked.ToPng(RetainedMaskFixture.Pixels));
-        Assert.Equal(source.ToRgba(RetainedMaskFixture.Pixels).Pixels, masked.ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(source.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels, masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
     }
 
     [Fact]
@@ -106,9 +106,9 @@ public sealed class RetainedMaskTests {
         Assert.True(artifact.SupportsExport(VisualArtifactExportFormat.Png));
         Assert.Equal(source.Regions.Select(region => region.Label), artifact.Regions.Select(region => region.Label));
         var portable = Assert.Single(envelope.Presentation!.CapturedEffects).Mask!;
-        Assert.Equal(mask.ToImage().Pixels, portable.Pixels);
-        Assert.Equal(masked.ToRgba(RetainedMaskFixture.Pixels).Pixels,
-            envelope.ApplyCapturedEffects(source).ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(mask.ToRgbaImage().Pixels, portable.Pixels);
+        Assert.Equal(masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels,
+            envelope.ApplyCapturedEffects(source).ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
         Assert.Equal(originalJson, source.ToArtifact().ToInterchangeJson());
         Assert.Throws<NotSupportedException>(() => envelope.ToSequenceArtifact());
     }
@@ -143,14 +143,14 @@ public sealed class RetainedMaskTests {
         var original = source.ToSvg();
         var first = source.WithMask(mask);
         var second = first.WithMask(mask);
-        var expected = source.CaptureLayer(mask, RetainedMaskFixture.Pixels).WithMask(mask).ToImage();
+        var expected = source.CaptureLayer(mask, RetainedMaskFixture.Pixels).WithMask(mask).ToRgbaImage();
         RetainedMaskFixture.Capture("retained-mask-ordered", source, second, RetainedMaskFixture.Pixels);
-        Assert.Equal(expected.Pixels, second.ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(expected.Pixels, second.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
         var nested = source;
         for (var index = 0; index < 65; index++) nested = nested.WithMask(mask);
         var output = Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) File.WriteAllText(Path.Combine(output, "retained-mask-depth-source.svg"), source.ToSvg());
-        Assert.Throws<NotSupportedException>(() => nested.ToRgba(RetainedMaskFixture.Pixels));
+        Assert.Throws<NotSupportedException>(() => nested.ToRgbaImage(RetainedMaskFixture.Pixels));
         Assert.Equal(original, source.ToSvg());
     }
 
@@ -174,8 +174,8 @@ public sealed class RetainedMaskTests {
         var envelope = artifact.ToInterchangeEnvelope();
         Assert.Equal(VisualArtifactInterchangeFamily.None, envelope.Family);
         Assert.Single(envelope.Presentation!.CapturedEffects);
-        Assert.Equal(masked.ToRgba(RetainedMaskFixture.Pixels).Pixels,
-            envelope.ApplyCapturedEffects(source).ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels,
+            envelope.ApplyCapturedEffects(source).ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
     }
 
     [Fact]
@@ -190,8 +190,8 @@ public sealed class RetainedMaskTests {
             .Concat(new[] { new VisualSceneEndGroup() }).ToArray();
         var parent = new PreparedVisual(new VisualScene(new VisualSize(80, 64), nodes,
             masked.Diagnostics, Array.Empty<VisualSemanticRegion>()));
-        var image = parent.ToRgba(RetainedMaskFixture.Pixels);
-        var local = masked.ToRgba(RetainedMaskFixture.Pixels);
+        var image = parent.ToRgbaImage(RetainedMaskFixture.Pixels);
+        var local = masked.ToRgbaImage(RetainedMaskFixture.Pixels);
         var expectedAlpha = (byte)Math.Round(local.Pixels[(17 * local.Width + 25) * 4 + 3] * .5);
         var output = Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {
@@ -211,11 +211,11 @@ public sealed class RetainedMaskTests {
         var mask = RetainedMaskFixture.Mask(1100, 900, 1, VisualMaskMode.Alpha);
         var masked = source.WithMask(mask);
         RetainedMaskFixture.Capture("retained-mask-surface-shadow", source, masked, RetainedMaskFixture.Pixels);
-        Assert.Equal(source.CaptureLayer(mask, RetainedMaskFixture.Pixels).ToImage().Pixels,
-            masked.ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(source.CaptureLayer(mask, RetainedMaskFixture.Pixels).ToRgbaImage().Pixels,
+            masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
         var retainedCapture = masked.CaptureLayer(mask, RetainedMaskFixture.Pixels);
-        Assert.Equal(source.CaptureLayer(mask, RetainedMaskFixture.Pixels).WithMask(mask).ToImage().Pixels,
-            retainedCapture.ToImage().Pixels);
+        Assert.Equal(source.CaptureLayer(mask, RetainedMaskFixture.Pixels).WithMask(mask).ToRgbaImage().Pixels,
+            retainedCapture.ToRgbaImage().Pixels);
         Assert.Same(masked, retainedCapture.Source);
     }
 }

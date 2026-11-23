@@ -8,7 +8,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderMetricValueSurface(SvgMarkupWriter writer, MetricCard card, ChartRect content, MetricTextLayout textLayout, ChartColor statusColor) {
         var theme = card.Options.ResolvedTheme;
         var y = textLayout.SurfaceY;

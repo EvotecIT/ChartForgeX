@@ -7,7 +7,7 @@ internal static partial class SmokeTests {
     private static void RadialAngularReversalExportsSupportedFamilies() {
         var points = new[] { new ChartPoint(1, 60), new ChartPoint(2, 80), new ChartPoint(3, 40) };
         var charts = new[] {
-            (Chart.Create().AddRadarArea("Observed", points).AddRadarLine("Target", points), "radar-outline"),
+            (Chart.Create().AddRadar("Observed", points).AddRadarLine("Target", points), "radar-outline"),
             (Chart.Create().AddPolar("Observed", new[] { new ChartPoint(0, 60), new ChartPoint(.7, 80), new ChartPoint(2.8, 40) }), "polar-line"),
             (Chart.Create().AddPolarArea("Observed", points), "polar-area-segment"),
             (Chart.Create().AddRadialColumn("Observed", points).AddRadarLine("Target", points), "radial-column")

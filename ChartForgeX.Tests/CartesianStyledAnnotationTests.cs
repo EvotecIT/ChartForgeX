@@ -65,7 +65,7 @@ public sealed class CartesianStyledAnnotationTests {
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 1, dash: new[] { .25, .25 });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.NotEmpty(prepared.ToPng());
-        var image = ChartForgeX.SvgRaster.SvgRasterizer.ToImage(prepared.ToSvg());
+        var image = ChartForgeX.SvgRaster.SvgRasterizer.ToRgbaImage(prepared.ToSvg());
         Assert.Equal(30000, image.Width);
         Assert.Equal(100, image.Height);
         Assert.Contains(image.Pixels, value => value > 0);
@@ -113,7 +113,7 @@ public sealed class CartesianStyledAnnotationTests {
         var coordinate = horizontal ? line.Commands[0].Y : line.Commands[0].X;
         Assert.InRange(coordinate, (horizontal ? plot.Top : plot.Left) + 20 - .001,
             (horizontal ? plot.Bottom : plot.Right) - 20 + .001);
-        var pixels = prepared.ToRgba();
+        var pixels = prepared.ToRgbaImage();
         var sample = (int)Math.Round(horizontal ? plot.Left + plot.Width / 2 : plot.Top + plot.Height / 2);
         var count = 0;
         for (var position = 0; position < (horizontal ? pixels.Height : pixels.Width); position++) {

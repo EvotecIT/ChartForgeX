@@ -34,7 +34,7 @@ internal static partial class VisualSceneRasterRenderer {
         } finally {
             while (groups.Count > 0) groups.Pop()?.Dispose();
         }
-        return canvas.ToImage();
+        return canvas.ToRgbaImage();
     }
 
     /// <summary>Observes operation cancellation without retaining its token in the scene.</summary>

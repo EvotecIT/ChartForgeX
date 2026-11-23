@@ -49,7 +49,7 @@ public sealed class NativeInlineContentTests : IDisposable {
     public void ExplicitStructuredBaseIsRegularAndAuthoredWeightStillPrecedesStrong() {
         var native = Model(); var node = native.Nodes[0]; node.LabelContent = TextContent.FromRuns(new[] { new TextContentRun("H"), new TextContentRun("H", TextInlineEmphasis.Bold) });
         var prepared = nodeScene(native); Assert.Equal(new[] { 400, 700 }, prepared.Select(text => text.Text.Style.Font.Weight));
-        node.TextStyle = new TextStyleOverride { FontWeight = "850", Underline = true };
+        node.TextStyle = new TextStyleOverride { FontWeight = 850, Underline = true };
         Assert.All(nodeScene(native), text => { Assert.Equal(850, text.Text.Style.Font.Weight); Assert.NotEqual(TextDecorationStyle.None, text.Text.Style.UnderlineStyle); });
         node.Label = "HH"; node.TextStyle = null; Assert.All(nodeScene(native), text => Assert.True(text.Text.Style.Font.Weight >= 600));
     }
@@ -94,7 +94,7 @@ public sealed class NativeInlineContentTests : IDisposable {
         var model = Model(); model.Nodes[0].LabelContent = TextContent.FromRuns(new[] { new TextContentRun("HH"), new TextContentRun("HH", TextInlineEmphasis.Bold) });
         var prepared = model.Prepare(); var ordinary = prepared.ToSvg(); var pixels = prepared.ToPng(); var captured = prepared.Visual.ForInteractivePngExport().ToSvg();
         AssertResources(ordinary); AssertResources(captured);
-        model.Nodes[0].Label = "New"; model.Nodes[0].TextStyle = new TextStyleOverride { FontWeight = "900" }; FontRegistry.Clear();
+        model.Nodes[0].Label = "New"; model.Nodes[0].TextStyle = new TextStyleOverride { FontWeight = 900 }; FontRegistry.Clear();
         Assert.Equal(ordinary, prepared.ToSvg()); Assert.Equal(pixels, prepared.ToPng()); Assert.Equal(captured, prepared.Visual.ForInteractivePngExport().ToSvg());
         var resources = XDocument.Parse(ordinary).Descendants().Where(node => node.Name.LocalName == "path" && node.Attribute("id") != null).ToArray();
         Assert.True(resources.Length < XDocument.Parse(ordinary).Descendants().Count(node => node.Name.LocalName == "use"));
@@ -117,7 +117,7 @@ public sealed class NativeInlineContentTests : IDisposable {
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed(extraGlyphs: glyphs, weight: 700), 700);
         var all = Prepare(TextContent.FromRuns(new[] { new TextContentRun("بب") }), Style());
         var split = Prepare(TextContent.FromRuns(new[] { new TextContentRun("ب"), new TextContentRun("ب", TextInlineEmphasis.Bold) }), Style());
-        Assert.Equal(all.ToRgba().Pixels, split.ToRgba().Pixels);
+        Assert.Equal(all.ToRgbaImage().Pixels, split.ToRgbaImage().Pixels);
     }
     [Fact]
     public void BuiltinFontlessInkIsCapturedWithoutBrowserFontOrInstalledFontRequirements() {
@@ -128,7 +128,7 @@ public sealed class NativeInlineContentTests : IDisposable {
         var visual = new PreparedVisual(scene); AssertResources(visual.ToSvg()); Assert.NotEmpty(visual.ToPng());
         var control = new RgbaCanvas(90, 50, 2, null, outputScale: 1, useDefaultOutlineFont: false);
         control.DrawBitmapText(10, 16, "HH", ChartColor.Black, 16, true, RgbaCanvas.EmphasisOffset(16));
-        Assert.Equal(control.ToOutputPixels(), visual.ToRgba().Pixels);
+        Assert.Equal(control.ToOutputPixels(), visual.ToRgbaImage().Pixels);
         Assert.NotEqual(visual.ToPng(), new PreparedVisual(new VisualScene(new VisualSize(90, 50), Array.Empty<VisualSceneNode>(), Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>())).ToPng());
     }
     [Fact]
@@ -136,7 +136,7 @@ public sealed class NativeInlineContentTests : IDisposable {
         var visual = Prepare(TextContent.FromRuns(new[] { new TextContentRun("HH", TextInlineEmphasis.Bold) }), Style());
         var nested = "<svg xmlns='http://www.w3.org/2000/svg' width='480' height='90'>" + visual.ToSvg("left") + visual.ToSvg("right") + "</svg>";
         AssertResources(nested); var ids = XDocument.Parse(nested).Descendants().Attributes("id").Select(id => id.Value).ToArray(); Assert.Equal(ids.Length, ids.Distinct().Count());
-        Assert.NotEmpty(ChartForgeX.SvgRaster.SvgRasterizer.ToImage(nested).Pixels);
+        Assert.NotEmpty(ChartForgeX.SvgRaster.SvgRasterizer.ToRgbaImage(nested).Pixels);
     }
     [Theory]
     [InlineData("color-colr0.ttf")]

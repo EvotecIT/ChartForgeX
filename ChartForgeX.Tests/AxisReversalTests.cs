@@ -57,7 +57,7 @@ public sealed class AxisReversalTests {
 
     [Fact]
     public void ScheduleAxisReversalKeepsItsAuthoredTicksAndSpanOnTheSameCapturedMap() {
-        var chart = Chart.Create().Size(800, 460).XAxis(x => x.Bounds(0, 4)).AddTimelineRange("Window", 1, 3)
+        var chart = Chart.Create().Size(800, 460).XAxis(x => x.Bounds(0, 4)).AddTimelineItem("Window", 1, 3)
             .XAxis(axis => { axis.Reversed(); axis.Labels.Add(new ChartAxisLabel(1, "Start")); axis.Labels.Add(new ChartAxisLabel(3, "End")); });
         var prepared = Prepare(chart); var plot = prepared.Scene.DataProjection!.Plot;
         var span = prepared.Scene.Regions.Single(region => region.Role == "timeline-item").Bounds;

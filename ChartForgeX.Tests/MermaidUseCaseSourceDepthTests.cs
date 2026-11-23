@@ -143,13 +143,13 @@ public sealed class MermaidUseCaseSourceDepthTests {
     public void ExplicitHostTypographyAndPaddingOverrideOnlyTheirCorrespondingSourceDefaults() {
         var source = UseCaseSourceDepthFixture.Read(); var document = new MermaidParser().ParseFlowchart(source).Document!;
         var authored = document.ToTopologyChart(); Assert.Equal(28, authored.Viewport.Padding);
-        Assert.Equal(14, authored.Nodes[0].TextStyle!.FontSize); Assert.Equal("500", authored.Nodes[0].TextStyle!.FontWeight);
+        Assert.Equal(14, authored.Nodes[0].TextStyle!.FontSize); Assert.Equal(500, authored.Nodes[0].TextStyle!.FontWeight);
         var explicitHost = document.ToTopologyChart(new MermaidFlowchartRenderOptions { Padding = 17,
             Presentation = new MermaidPresentationOptions { FontSize = 20, FontFamily = BrowserProofFonts.Family } });
         Assert.Equal(17, explicitHost.Viewport.Padding);
         Assert.All(explicitHost.Nodes, node => { Assert.Equal(20, node.TextStyle!.FontSize); Assert.Equal(BrowserProofFonts.Family, node.TextStyle.FontFamily); });
-        Assert.Equal("500", explicitHost.Nodes[0].TextStyle!.FontWeight);
-        Assert.Equal("400", explicitHost.Nodes[1].TextStyle!.FontWeight);
+        Assert.Equal(500, explicitHost.Nodes[0].TextStyle!.FontWeight);
+        Assert.Equal(400, explicitHost.Nodes[1].TextStyle!.FontWeight);
     }
 
     [Fact]

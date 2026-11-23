@@ -22,7 +22,7 @@ public sealed class ScheduleRangeLifecycleTests {
         var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(false).DataLabels(false)
             .Bars(b => b.Style(ChartBarStyle.Flat));
         for (var index = 0; index < 3; index++) {
-            chart.AddTimelineRange("Task " + index, index + 1, index + 4, Paint);
+            chart.AddTimelineItem("Task " + index, index + 1, index + 4, Paint);
             chart.Series[index].ObservationId(0, new ChartObservationId("task-" + index));
         }
         var series = chart.Series.ToArray();
@@ -66,7 +66,7 @@ public sealed class ScheduleRangeLifecycleTests {
         VisualTheme.Graphite(), mode, frame: new VisualFrame(showLegend: false));
     private static VisualRenderOptions Raster() => new(supersampling: 1);
     private static void AssertNativePaint(PreparedVisual prepared, ChartRect bounds) {
-        var image = prepared.ToRgba(Raster());
+        var image = prepared.ToRgbaImage(Raster());
         var offset = ((int)(bounds.Top + bounds.Height / 2) * image.Width + (int)(bounds.Left + bounds.Width / 2)) * 4;
         Assert.Equal(Paint.R, image.Pixels[offset]); Assert.Equal(Paint.G, image.Pixels[offset + 1]); Assert.Equal(Paint.B, image.Pixels[offset + 2]);
     }

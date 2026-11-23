@@ -26,9 +26,9 @@ public static class LabelPlacementExamples {
                 new ChartMapPoint("Madrid", -3.7038, 40.4168), new ChartMapPoint("Paris", 2.3522, 48.8566),
                 new ChartMapPoint("London", -0.1278, 51.5074), new ChartMapPoint("Warsaw", 21.0122, 52.2297),
                 new ChartMapPoint("Berlin", 13.4050, 52.5200), new ChartMapPoint("Rome", 12.4964, 41.9028)
-            }).AddMapRouteBetweenPoints("Madrid to Paris", "Madrid", "Paris")
-            .AddMapRouteBetweenPoints("London to Warsaw", "London", "Warsaw")
-            .AddMapRouteBetweenPoints("Berlin to Rome", "Berlin", "Rome");
+            }).AddMapConnectorBetweenPoints("Madrid to Paris", "Madrid", "Paris")
+            .AddMapConnectorBetweenPoints("London to Warsaw", "London", "Warsaw")
+            .AddMapConnectorBetweenPoints("Berlin to Rome", "Berlin", "Rome");
         var sankey = Chart.Create().Title("Finding flow").Size(800, 484).Theme(theme).ThemeMode(mode).DataLabels()
             .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediation", "Remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
                 new ChartFlowLink("flow-1", "Discovered", "Validated", 72), new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 18),

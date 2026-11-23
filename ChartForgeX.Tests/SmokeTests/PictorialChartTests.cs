@@ -109,7 +109,7 @@ internal static partial class SmokeTests {
         const string SparkPath = "M12 2 L15 9 L22 9 L17 14 L19 22 L12 17 L5 22 L7 14 L2 9 L9 9 Z";
         var customSymbol = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(520, 260)
-            .Pictorial(p => p.Columns(5).SvgPath(SparkPath, ChartPictorialShape.Star))
+            .Pictorial(p => p.Columns(5).SvgPath(SparkPath))
             .AddPictorial("Custom", new[] { new ChartPictorialItem("Spark", 4) }, ChartPictorialShape.Circle);
         var customSymbolSvg = customSymbol.ToSvg();
         Assert(customSymbolSvg.Contains("data-cfx-custom-symbol=\"true\"", StringComparison.Ordinal), "Pictorial SVG output should expose custom symbol metadata.");
@@ -121,7 +121,7 @@ internal static partial class SmokeTests {
         Assert(customPng.Length > 64 && !customPng.SequenceEqual(customSymbol.ToPng()), "The native painter should render the custom contour rather than substituting a built-in shape.");
         var resetSymbol = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(520, 260)
-            .Pictorial(p => p.SvgPath(SparkPath, ChartPictorialShape.Star))
+            .Pictorial(p => p.SvgPath(SparkPath))
             .AddPictorial("Built-in", new[] { new ChartPictorialItem("Diamond", 4) }, ChartPictorialShape.Circle)
             .Pictorial(p => p.Shape(ChartPictorialShape.Diamond).SvgPathData(null));
         var resetSymbolSvg = resetSymbol.ToSvg();

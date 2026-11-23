@@ -25,19 +25,19 @@ public static partial class VisualArtifactRendering {
         var source = artifact.RenderSource ?? artifact.Model as IStaticVisualSource;
         if (source != null) return source.RenderRgba();
         return artifact.Model switch {
-            PreparedVisual prepared => PreparedModel(artifact, prepared).ToRgba(),
+            PreparedVisual prepared => PreparedModel(artifact, prepared).ToRgbaImage(),
             Chart chart => RasterRenderer.RenderImage(chart),
             ChartGrid grid => RasterRenderer.RenderImage(grid),
-            TopologyChart topology => PrepareTopologyArtifact(artifact, TopologyModel(artifact, topology), TopologyOptions(artifact, options)).ToRgba(),
+            TopologyChart topology => PrepareTopologyArtifact(artifact, TopologyModel(artifact, topology), TopologyOptions(artifact, options)).ToRgbaImage(),
             FlowArtifact flow => RenderFlowImage(flow),
-            SequenceArtifact sequence => SequencePreparedCompiler.PrepareDefault(sequence).ToRgba(),
+            SequenceArtifact sequence => SequencePreparedCompiler.PrepareDefault(sequence).ToRgbaImage(),
             _ => throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported static render model.")
         };
     }
 
     private static RgbaImage RenderFlowImage(FlowArtifact flow) {
         var request = VisualExportRequest.ForFlow(flow);
-        return flow.Prepare(request.Context).ToRgba(request.RasterOptions);
+        return flow.Prepare(request.Context).ToRgbaImage(request.RasterOptions);
     }
 
     // Optional decorators capture this handoff before replacing RenderSource. The source envelope is

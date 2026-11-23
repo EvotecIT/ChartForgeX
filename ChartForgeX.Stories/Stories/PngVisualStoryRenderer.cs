@@ -6,7 +6,7 @@ using ChartForgeX.Terminal;
 namespace ChartForgeX.Stories;
 
 /// <summary>Renders completed visual stories through the common native playback engine.</summary>
-public sealed class PngVisualStoryRenderer {
+internal sealed class PngVisualStoryRenderer {
     /// <summary>Renders the completed story state to PNG bytes.</summary>
     public byte[] Render(VisualStory story) => (story ?? throw new ArgumentNullException(nameof(story))).Prepare().ToPng();
 

@@ -59,7 +59,7 @@ public sealed class TopologyOwnedFontPortableTests : IDisposable {
     }
     [Fact]
     public void NodeRoleFamilyUsesTheSameCapturedRequestOwnerAndExplicitNewContextRemainsAuthoritative() {
-        Register();var chart=Source();chart.Nodes[0].TextStyle=new TextStyleOverride{FontFamily=Primary,FontWeight="700",OpenTypeLanguageTag="ENG"};
+        Register();var chart=Source();chart.Nodes[0].TextStyle=new TextStyleOverride{FontFamily=Primary,FontWeight=700,OpenTypeLanguageTag="ENG"};
         var before=chart.Prepare();Capture("role-direct",before.Visual);var json=before.ToInterchangeEnvelope().ToJson();FontRegistry.Clear();
         var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();var after=restored.Prepare();Capture("role-restored",after.Visual);SamePaint(before.Visual,after.Visual);
         Assert.Contains(after.Visual.Scene.Nodes.OfType<VisualSceneText>(),text=>text.Role=="topology-node-label"&&text.Text.Face.Font!.SelectedFamily==Primary);

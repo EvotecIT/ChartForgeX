@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.VisualArtifacts;
@@ -25,7 +26,7 @@ public static class MermaidRailroadRendering {
         var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-railroad" : options.Id!.Trim(), VisualArtifactKind.Mermaid, block);
         artifact.Title = block.Title; artifact.Subtitle = block.Subtitle; artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
-        artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height); artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;
+        artifact.NaturalSize = new VisualSize(block.Options.Size.Width, block.Options.Size.Height); artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString(); artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.railroadDialect"] = document.Dialect.ToString(); artifact.Metadata["mermaid.rules"] = document.Rules.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["render.model"] = nameof(RailroadDiagramBlock);

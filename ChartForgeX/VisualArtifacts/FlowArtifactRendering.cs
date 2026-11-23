@@ -61,7 +61,7 @@ public static class FlowArtifactRendering {
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = flow.Title;
         artifact.Subtitle = flow.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(flow.Width, flow.Height);
+        artifact.NaturalSize = new VisualSize(flow.Width, flow.Height);
         artifact.ExportFormats = flow.ExportFormats;
         if (flow.PreparedPresentation is {} captured) {
             // Match the existing topology wrapper policy: carried model facts are the baseline,

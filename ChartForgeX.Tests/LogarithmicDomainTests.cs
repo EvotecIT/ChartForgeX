@@ -37,10 +37,10 @@ public sealed class LogarithmicDomainTests {
         Assert.Equal(new[] { "first", "middle", "last" }, groups.Select(group => (string?)group.Attribute("data-cfx-observation-id")));
         Assert.Equal(values, groups.Select(group => double.Parse(group.Attribute("data-cfx-y")!.Value, System.Globalization.CultureInfo.InvariantCulture)));
         Assert.NotEmpty(prepared.ToPng());
-        Assert.Equal((int)prepared.Scene.Size.Width, prepared.ToRgba().Width);
-        var svg = prepared.ToSvg(); var pixels = prepared.ToRgba().Pixels;
+        Assert.Equal((int)prepared.Scene.Size.Width, prepared.ToRgbaImage().Width);
+        var svg = prepared.ToSvg(); var pixels = prepared.ToRgbaImage().Pixels;
         chart.Options.YAxis.LogarithmBase = 3; chart.Options.YAxis.Reversed = !reversed;
-        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(pixels, prepared.ToRgba().Pixels);
+        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(pixels, prepared.ToRgbaImage().Pixels);
         Assert.Equal(values[1], y.Unproject(y.Project(values[1])), 8);
     }
 

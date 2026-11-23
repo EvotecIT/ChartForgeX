@@ -25,7 +25,7 @@ public sealed class GraphiteGalleryTests {
                 File.WriteAllText(Path.Combine(output, name + ".html"), chart.ToHtmlPage());
                 var canvas = RenderCanvas(chart);
                 if (name == "edge-mark") canvas.FillRect(0, 20 * scale, 3 * scale, 20 * scale, ChartColor.Black);
-                File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(canvas.ToImage()));
+                File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(canvas.ToRgbaImage()));
             }
             GalleryWriter.Write(output);
             using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));
@@ -64,7 +64,7 @@ public sealed class GraphiteGalleryTests {
                 if(name=="edge-mark") canvas.FillRect(0,50*scale,3*scale,20*scale,ChartColor.Black);
                 if(name=="edge-border-color") canvas.FillRect(0,50*scale,3*scale,20*scale,chart.Options.Theme.Resolve(chart.Options.ThemeMode).Border.WithAlpha(255));
                 if(name=="edge-translucent-mark") canvas.FillRect(0,50*scale,3*scale,20*scale,ChartColor.Black.WithAlpha(96));
-                File.WriteAllBytes(Path.Combine(output,name+".png"),PngWriter.WriteRgba(canvas.ToImage()));
+                File.WriteAllBytes(Path.Combine(output,name+".png"),PngWriter.WriteRgba(canvas.ToRgbaImage()));
             }
             GalleryWriter.Write(output);
             using var manifest=JsonDocument.Parse(File.ReadAllText(Path.Combine(output,"svg-png-comparison.json")));

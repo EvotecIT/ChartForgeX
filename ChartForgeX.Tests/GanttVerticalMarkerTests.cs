@@ -100,7 +100,7 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Equal(expected, line.Stroke);
         var svgLine = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "annotation-line");
         Assert.Equal(expected.ToCss(), (string?)svgLine.Attribute("stroke"));
-        var pixels = prepared.ToRgba();
+        var pixels = prepared.ToRgbaImage();
         var control = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size, prepared.Scene.Nodes.Where(node => node.Role != "annotation-line").ToArray(), prepared.Scene.Diagnostics, prepared.Scene.Regions));
         var task = Assert.Single(prepared.Regions, region => region.Role == "gantt-task");
         var matches = 0;
@@ -234,7 +234,7 @@ public sealed class GanttVerticalMarkerTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var scene = prepared.Scene;
         var line = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");
-        var actual = prepared.ToRgba();
+        var actual = prepared.ToRgbaImage();
         var control = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "annotation-line").ToArray(), scene.Diagnostics, scene.Regions));
         var first = prepared.Regions.First(region => region.Role == "gantt-task");
         var changed = 0;

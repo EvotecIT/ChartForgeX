@@ -28,7 +28,7 @@ public sealed class NativeStandardBlendExampleTests {
         }
         foreach (var blend in new[] { VisualBlendMode.Overlay, VisualBlendMode.SoftLight, VisualBlendMode.Hue, VisualBlendMode.Luminosity }) {
             var image = NativeMaskBlendCompositionExample.Create(variant, mode, blend);
-            MaskBlendFixture.CaptureImage("standard-blend-report-" + variant + "-" + mode + "-" + blend, image.ToImage());
+            MaskBlendFixture.CaptureImage("standard-blend-report-" + variant + "-" + mode + "-" + blend, image.ToRgbaImage());
             Assert.Equal((variant == "compact" ? 320 : 740) + 64, image.Width);
             Assert.Equal(304, image.Height);
         }

@@ -141,7 +141,7 @@ internal static partial class VisualSceneRasterRenderer {
         int scale, int supersampling, TextHinting? textHinting, CancellationToken cancellation = default) {
         var canvas = NewCanvas();
         PaintRange(canvas, 0, scene.Nodes.Count, VisualSceneTransform.Identity);
-        return canvas.ToImage();
+        return canvas.ToRgbaImage();
 
         RgbaCanvas NewCanvas() => new(scene.Size.Width, scene.Size.Height, supersampling, null, scale, useDefaultOutlineFont: false);
         void Composite(RgbaCanvas parent, RgbaCanvas layer, double opacity) {

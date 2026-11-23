@@ -15,7 +15,7 @@ public static class BlockLayoutDepthRecipe {
             .AddEdge("client", "api", "Submit").AddEdge("worker", "data", "Store");
         block.Items[1].Fill = ChartForgeX.Primitives.ChartColor.FromHex("#dbeafe");
         block.Items[1].Stroke = new ChartForgeX.Core.ChartStrokeStyle(ChartForgeX.Primitives.ChartColor.FromHex("#1e3a8a"), 2);
-        block.Items[1].TextStyle.Color(ChartColor.FromHex("#172554")).FontWeight("bold");
+        block.Items[1].TextStyle.Color(ChartColor.FromHex("#172554")).FontWeight(700);
         return block;
     }
 }

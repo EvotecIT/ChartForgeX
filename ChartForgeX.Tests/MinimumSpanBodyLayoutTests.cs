@@ -105,7 +105,7 @@ public sealed class MinimumSpanBodyLayoutTests {
     }
 
     private static int[] NativeInk(PreparedVisual prepared, VisualSceneRectangle[] bodies, ChartRect clip, bool horizontal) {
-        var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var raster = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var backgroundX = (int)(horizontal ? clip.Left + clip.Width / 2 : clip.Left + 2);
         var backgroundY = (int)(horizontal ? clip.Top + 2 : clip.Top + clip.Height / 2);
         var background = (backgroundY * raster.Width + backgroundX) * 4;

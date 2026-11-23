@@ -171,7 +171,7 @@ public sealed class BuiltInRegionMapTests {
                 new ChartMapPoint("Denver", -104.99, 39.74, 20),
                 new ChartMapPoint("New York", -74.0, 40.71, 80, ChartColor.FromHex("#DC2626"))
             })
-            .AddMapRoute("Denver to New York", -104.99, 39.74, -74.0, 40.71);
+            .AddMapConnector("Denver to New York", -104.99, 39.74, -74.0, 40.71);
 
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var nodes = prepared.Scene.Nodes;

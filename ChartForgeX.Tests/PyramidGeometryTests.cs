@@ -193,7 +193,7 @@ public sealed class PyramidGeometryTests {
         var chart = Pyramid(50, 30, 20, 0).DataLabels().Size(360, 360).Legend(l => l.ShowPoints())
             .Pyramid(options => { options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
         chart.Series[0].PointFillPattern(1, ChartFillPattern.Crosshatch).PointLabel(0, "Complete")
-            .PointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = "700"; });
+            .PointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = 700; });
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360))));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "fill-pattern");
@@ -206,7 +206,7 @@ public sealed class PyramidGeometryTests {
         Assert.Contains("data-cfx-value=\"50\"", artifact.ToHtmlPage());
         Assert.DoesNotContain("<script", artifact.ToHtmlPage());
         var json = artifact.ToInterchangeJson();
-        chart.Series[0].PointColor(0, "#000000"); chart.Series[0].Points.Clear();
+        chart.Series[0].PointColor(0, ChartColor.FromHex("#000000")); chart.Series[0].Points.Clear();
         chart.Options.Pyramid.ValueEncoding = ChartPyramidValueEncoding.Height; chart.Options.Pyramid.Reversed = false;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(png, artifact.ToPng());
         Assert.Equal(json, artifact.ToInterchangeJson());
@@ -259,7 +259,7 @@ public sealed class PyramidGeometryTests {
         // Geometry is measured without the default stage captions, which take plot space.
         var chart = Chart.Create().DataLabels(false).XLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));
         var colors = new[] { "#2468AC", "#BA7542", "#34957A", "#8762A3", "#7297AA" };
-        for (var index = 0; index < values.Length; index++) chart.Series[0].PointColor(index, colors[index % colors.Length]);
+        for (var index = 0; index < values.Length; index++) chart.Series[0].PointColor(index, ChartColor.FromHex(colors[index % colors.Length]));
         return chart;
     }
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

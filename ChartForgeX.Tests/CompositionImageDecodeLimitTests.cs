@@ -14,7 +14,7 @@ public sealed class CompositionImageDecodeLimitTests {
             var options = new RasterDecodeOptions { MaximumEncodedBytes = 1024 };
             var placement = new VisualCanvasPlacement(VisualCanvasAnchor.Center);
             var composition = ImageComposition.Create(32, 32, ChartColor.FromHex("#ff0000"));
-            var before = composition.ToImage().Pixels;
+            var before = composition.ToRgbaImage().Pixels;
             var canvas = VisualCanvas.Create(32, 32);
             Assert.Throws<InvalidDataException>(() => ImageComposition.FromFile(path, options));
             Assert.False(ImageComposition.TryFromFile(path, out _, options));
@@ -24,7 +24,7 @@ public sealed class CompositionImageDecodeLimitTests {
             Assert.Throws<InvalidDataException>(() => canvas.AddImageFile(placement, 20, 20, path, options: options));
             Assert.Throws<InvalidDataException>(() => canvas.AddHeroBadgeImageFile(0, 0, 20, 20, path, options: options));
             Assert.Throws<InvalidDataException>(() => canvas.AddHeroBadgeImageFile(placement, 20, 20, path, options: options));
-            Assert.Equal(before, composition.ToImage().Pixels);
+            Assert.Equal(before, composition.ToRgbaImage().Pixels);
             Assert.Empty(canvas.Layers);
         } finally {
             File.Delete(path);
@@ -38,10 +38,10 @@ public sealed class CompositionImageDecodeLimitTests {
         var path = Path.Combine(Path.GetTempPath(), "cfx-bounded-image-" + Guid.NewGuid().ToString("N") + ".png");
         try {
             File.WriteAllBytes(path, encoded);
-            Assert.Equal(ImageComposition.FromBytes(encoded, options).ToImage().Pixels, ImageComposition.FromFile(path, options).ToImage().Pixels);
+            Assert.Equal(ImageComposition.FromBytes(encoded, options).ToRgbaImage().Pixels, ImageComposition.FromFile(path, options).ToRgbaImage().Pixels);
             Assert.True(ImageComposition.TryFromBytes(encoded, out _, options));
             var composition = ImageComposition.CreateTransparent(4, 4).DrawImageBytes(encoded, 0, 0, 4, 4, options: options);
-            Assert.Equal(255, composition.ToImage().Pixels[0]);
+            Assert.Equal(255, composition.ToRgbaImage().Pixels[0]);
             options.MaximumPixels = 3;
             Assert.Throws<InvalidDataException>(() => ImageComposition.FromBytes(encoded, options));
             Assert.Throws<InvalidDataException>(() => ImageComposition.FromFile(path, options));

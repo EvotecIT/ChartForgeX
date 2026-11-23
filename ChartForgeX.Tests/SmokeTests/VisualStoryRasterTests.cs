@@ -79,7 +79,7 @@ internal static partial class SmokeTests {
         var highDensity = GifReader.Decode(split.ToGif(highDensityOptions));
         var stretched = ImageComposition.Create(highDensity.Width, highDensity.Height, ChartColor.Transparent)
             .DrawImage(normal, 0, 0, highDensity.Width, highDensity.Height, VisualCanvasImageFit.Stretch)
-            .ToImage();
+            .ToRgbaImage();
         Assert(highDensity.Width == normal.Width * 2 && highDensity.Height == normal.Height * 2,
             "Animated visual-story output scale should multiply the rendered frame dimensions.");
         Assert(!highDensity.Pixels.SequenceEqual(stretched.Pixels),
@@ -106,7 +106,7 @@ internal static partial class SmokeTests {
                 terminalHighDensity.Width,
                 terminalHighDensity.Height,
                 VisualCanvasImageFit.Stretch)
-            .ToImage();
+            .ToRgbaImage();
         Assert(!terminalHighDensity.Pixels.SequenceEqual(stretchedTerminal.Pixels),
             "Terminal panels should support native story output density instead of stretched terminal text.");
 

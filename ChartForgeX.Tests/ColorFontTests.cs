@@ -141,7 +141,7 @@ public sealed class ColorFontTests {
             var face=TypographyFontResolver.ResolveFace("CFX Colour Only",400,false).Font!;
             Assert.False(face.HasGlyph('C'));Assert.Single(TextShaper.Shape(face,"😀"));
             Assert.Same(face,TextShaper.Shape(face,"😀")[0].Face);
-            var image=SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><text x='40' y='65.6' font-family='CFX Colour Only' font-size='32'>😀</text></svg>");
+            var image=SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><text x='40' y='65.6' font-family='CFX Colour Only' font-size='32'>😀</text></svg>");
             Assert.Contains(image.Pixels.Chunk(4),p=>p.SequenceEqual(new byte[]{0,255,0,255}));
         }finally{FontRegistry.Clear();File.Delete(path);}
     }
@@ -172,7 +172,7 @@ public sealed class ColorFontTests {
             foreach (var directoryRegistration in new[] { false, true }) {
                 FontRegistry.Clear();
                 Assert.Equal(1, directoryRegistration ? FontRegistry.RegisterDirectory(folder) : FontRegistry.RegisterFile(path));
-                var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><text x='40' y='65.6' font-family='" + family + "' font-size='32'>😀</text></svg>");
+                var image = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><text x='40' y='65.6' font-family='" + family + "' font-size='32'>😀</text></svg>");
                 Assert.Contains(image.Pixels.Chunk(4), p => p.SequenceEqual(new byte[] { red, green, blue, 255 }));
             }
         } finally { FontRegistry.Clear(); Directory.Delete(folder, recursive: true); }
@@ -212,7 +212,7 @@ public sealed class ColorFontTests {
             File.WriteAllBytes(path,Bytes("color-colr1"));FontRegistry.Register("CFXTestColour",path);
             var direct=new RgbaCanvas(200,150,1,face,1,useDefaultOutlineFont:false);face.Draw(direct,40,20,"😀😁",ChartColor.Black,64);
             var svg="<svg xmlns='http://www.w3.org/2000/svg' width='200' height='150'><text x='40' y='71.2' font-family='CFXTestColour' font-size='64'>😀😁</text></svg>";
-            var raster=SvgRasterizer.ToImage(svg);
+            var raster=SvgRasterizer.ToRgbaImage(svg);
             Assert.All(direct.ToOutputPixels().Zip(raster.Pixels),p=>Assert.InRange(Math.Abs(p.First-p.Second),0,1));
         }finally{FontRegistry.Clear();File.Delete(path);}
     }
@@ -223,7 +223,7 @@ public sealed class ColorFontTests {
         try {
             File.WriteAllBytes(path,Bytes("color-colr0"));FontRegistry.Register("CFX Palette",path);
             var svg="<svg xmlns='http://www.w3.org/2000/svg' width='240' height='180'><defs><"+paint+" id='fg'><stop stop-color='lime'/><stop offset='1' stop-color='yellow'/></"+paint+"></defs><text x='40' y='120' color='blue' fill='url(#fg)' fill-opacity='.5' font-family='CFX Palette' font-size='100'>A C</text></svg>";
-            var rgba=SvgRasterizer.ToImage(svg).Pixels;
+            var rgba=SvgRasterizer.ToRgbaImage(svg).Pixels;
             byte[] At(int x,int y)=>rgba.Skip((y*240+x)*4).Take(4).ToArray();
             Assert.Equal(new byte[]{255,0,0,128},At(30,100));
             Assert.Equal(new byte[]{0,0,255,128},At(45,75));

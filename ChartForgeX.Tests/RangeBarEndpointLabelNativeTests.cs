@@ -27,11 +27,11 @@ public sealed class RangeBarEndpointLabelNativeTests {
         Assert.Equal(12, labels.Length);
         Assert.Contains(labels, label => label.Id!.EndsWith("-start-label", StringComparison.Ordinal));
         Assert.Contains(labels, label => label.Id!.EndsWith("-end-label", StringComparison.Ordinal));
-        var rgba = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var rgba = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(compact ? 360 : 800, rgba.Width); Assert.Equal(compact ? 360 : 440, rgba.Height);
         var bounds = labels.Select(RangeBarEndpointLabelTests.Bounds).ToArray();
         Assert.All(bounds, box => Assert.True(LabelPlacementService.Contains(new ChartRect(0, 0, rgba.Width, rgba.Height), box)));
-        var hidden = RangeBarEndpointLabelTests.Prepare(chart.DataLabels(false)).ToRgba(new VisualRenderOptions(supersampling: 1));
+        var hidden = RangeBarEndpointLabelTests.Prepare(chart.DataLabels(false)).ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Contains(bounds, box => HasChangedInk(box, rgba, hidden));
         Assert.NotEmpty(prepared.ToPng());
     }

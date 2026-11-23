@@ -31,7 +31,7 @@ public sealed class NativeCompositeOperatorTests {
         var layer = CompositeOperatorFixture.Layer(ChartColor.FromRgba(255, 0, 0, 128));
         var composition = ImageComposition.Create(4, 3, ChartColor.FromRgba(0, 0, 255, 128));
         composition.DrawLayer(layer, 1, 1, operation, orderedDither: false);
-        var image = composition.ToImage();
+        var image = composition.ToRgbaImage();
         CompositeOperatorFixture.Capture("composite-operator-" + operation, composition, layer);
         Assert.Equal(new byte[] { (byte)red, (byte)green, (byte)blue, (byte)alpha }, CompositeOperatorFixture.Pixel(image, 1, 1));
         var outside = retainsOutside ? new byte[] { 0, 0, 255, 128 } : new byte[4];
@@ -39,7 +39,7 @@ public sealed class NativeCompositeOperatorTests {
         Assert.Equal(outside, CompositeOperatorFixture.Pixel(image, 2, 1)); // Transparent pixel inside that bitmap.
         Assert.Equal(4, image.Width);
         Assert.Equal(3, image.Height);
-        Assert.Equal(new byte[] { 255, 0, 0, 128 }, CompositeOperatorFixture.Pixel(layer.ToImage(), 0, 0));
+        Assert.Equal(new byte[] { 255, 0, 0, 128 }, CompositeOperatorFixture.Pixel(layer.ToRgbaImage(), 0, 0));
     }
 
     [Fact]
@@ -50,17 +50,17 @@ public sealed class NativeCompositeOperatorTests {
         var actual = ImageComposition.Create(4, 3, ChartColor.FromRgba(41, 73, 113, 23))
             .DrawLayer(layer, 1, 1, VisualCompositeOperator.SourceOver, orderedDither: false);
         CompositeOperatorFixture.Capture("composite-source-over-normal-control", actual, layer);
-        Assert.Equal(expected.ToImage().Pixels, actual.ToImage().Pixels);
+        Assert.Equal(expected.ToRgbaImage().Pixels, actual.ToRgbaImage().Pixels);
     }
 
     [Fact]
     public void CopyPreservesCapturedRawRgbaAndClearsEveryPixelOutsideItsPlacedExtent() {
         var layer = CompositeOperatorFixture.Layer(ChartColor.FromRgba(89, 37, 204, 1));
-        var input = layer.ToImage();
+        var input = layer.ToRgbaImage();
         var actual = ImageComposition.Create(4, 3, ChartColor.White)
             .DrawLayer(layer, 1, 1, VisualCompositeOperator.Copy, orderedDither: true);
         CompositeOperatorFixture.Capture("composite-copy-raw", actual, layer);
-        var image = actual.ToImage();
+        var image = actual.ToRgbaImage();
         for (var y = 0; y < input.Height; y++) for (var x = 0; x < input.Width; x++)
             Assert.Equal(CompositeOperatorFixture.Pixel(input, x, y), CompositeOperatorFixture.Pixel(image, x + 1, y + 1));
         Assert.Equal(new byte[4], CompositeOperatorFixture.Pixel(image, 0, 0));
@@ -70,7 +70,7 @@ public sealed class NativeCompositeOperatorTests {
     [Fact]
     public void RejectedGridDensityOperatorAndCancelledOperationsLeaveBothInputsUnchanged() {
         var layer = CompositeOperatorFixture.Layer(ChartColor.FromRgba(89, 37, 204, 128));
-        var source = layer.ToImage().Pixels.ToArray();
+        var source = layer.ToRgbaImage().Pixels.ToArray();
         var actual = ImageComposition.Create(4, 3, ChartColor.White);
         var before = actual.ToPng();
         CompositeOperatorFixture.Capture("composite-atomic-rejection", actual, layer);
@@ -81,7 +81,7 @@ public sealed class NativeCompositeOperatorTests {
         Assert.Throws<OperationCanceledException>(() => actual.DrawLayer(layer, 0, 0, VisualCompositeOperator.DestinationOut,
             cancellationToken: new CancellationToken(true)));
         Assert.Equal(before, actual.ToPng());
-        Assert.Equal(source, layer.ToImage().Pixels);
+        Assert.Equal(source, layer.ToRgbaImage().Pixels);
     }
 }
 

@@ -15,7 +15,7 @@ public sealed class NativeInnerShadowTests {
     public void ComplementaryCoverageUsesAtopOnceAndPreservesEveryOriginalAlpha(int density) {
         var source = InnerShadowFixture.Source(128);
         var options = new VisualRenderOptions(scale: density, supersampling: 1);
-        var original = source.ToRgba(options);
+        var original = source.ToRgbaImage(options);
         var effect = new VisualInnerShadow(ChartColor.FromRgb(0, 0, 255), 0, 0, 0, orderedDither: false);
         var layer = source.CaptureLayer(effect, options);
         AppearanceFixture.Capture("inner-zero-geometry-" + density, layer);
@@ -23,9 +23,9 @@ public sealed class NativeInnerShadowTests {
         Assert.Equal(new byte[4], AppearanceFixture.WorldPixel(layer, 3, 8));
         Assert.Equal(new ChartRect(0, 0, 16, 16), layer.Bounds);
         Assert.Same(source, layer.Source);
-        var pixels = layer.ToImage().Pixels;
+        var pixels = layer.ToRgbaImage().Pixels;
         for (var at = 3; at < pixels.Length; at += 4) Assert.Equal(original.Pixels[at], pixels[at]);
-        var detached = layer.ToImage();
+        var detached = layer.ToRgbaImage();
         Array.Clear(detached.Pixels, 0, detached.Pixels.Length);
         Assert.Equal(new byte[] { 128, 0, 127, 128 }, AppearanceFixture.WorldPixel(layer, 8, 8));
         Assert.Equal("inner-source", Assert.Single(layer.Visual.Regions).Id);
@@ -55,11 +55,11 @@ public sealed class NativeInnerShadowTests {
         var noTint = new VisualInnerShadow(ChartColor.Transparent, 2, 3, 2, spread: 1);
         var noOpacity = new VisualInnerShadow(ChartColor.Black, 2, 3, 2, spread: 1, opacity: 0);
         AppearanceFixture.Capture("inner-zero-coverage", identity);
-        Assert.Equal(ordinary.ToImage().Pixels, identity.ToImage().Pixels);
+        Assert.Equal(ordinary.ToRgbaImage().Pixels, identity.ToRgbaImage().Pixels);
         Assert.Equal(ordinary.Visual.ToSvg(), identity.Visual.ToSvg());
         Assert.Same(source, source.WithInnerShadow(noTint));
         Assert.Same(source, source.WithInnerShadow(noOpacity));
-        Assert.Equal(ordinary.ToImage().Pixels, source.CaptureLayer(noOpacity, InnerShadowFixture.Unit).ToImage().Pixels);
+        Assert.Equal(ordinary.ToRgbaImage().Pixels, source.CaptureLayer(noOpacity, InnerShadowFixture.Unit).ToRgbaImage().Pixels);
     }
 
     [Fact]
@@ -69,9 +69,9 @@ public sealed class NativeInnerShadowTests {
             orderedDither: false, opacity: .06), InnerShadowFixture.Unit);
         AppearanceFixture.Capture("inner-raw-opacity", layer);
         Assert.Equal(new byte[] { 242, 2, 13, 25 }, AppearanceFixture.WorldPixel(layer, 8, 8));
-        Assert.Equal(new byte[] { 255, 0, 0, 25 }, AppearanceFixture.Pixel(source.ToRgba(InnerShadowFixture.Unit), 8, 8));
-        var dithered = source.CaptureLayer(new VisualInnerShadow(ChartColor.Black, 1, 2, 1), InnerShadowFixture.Unit).ToImage();
-        var original = source.ToRgba(InnerShadowFixture.Unit);
+        Assert.Equal(new byte[] { 255, 0, 0, 25 }, AppearanceFixture.Pixel(source.ToRgbaImage(InnerShadowFixture.Unit), 8, 8));
+        var dithered = source.CaptureLayer(new VisualInnerShadow(ChartColor.Black, 1, 2, 1), InnerShadowFixture.Unit).ToRgbaImage();
+        var original = source.ToRgbaImage(InnerShadowFixture.Unit);
         for (var at = 3; at < dithered.Pixels.Length; at += 4) Assert.Equal(original.Pixels[at], dithered.Pixels[at]);
     }
 
@@ -91,7 +91,7 @@ public sealed class NativeInnerShadowTests {
             cancellationToken: new CancellationToken(true)));
         var admitted = source.CaptureLayer(effect, new VisualRenderOptions(supersampling: 1, pixelBudget: 256));
         AppearanceFixture.Capture("inner-admitted-native-cap", admitted);
-        Assert.Equal(16, admitted.ToImage().Width);
+        Assert.Equal(16, admitted.ToRgbaImage().Width);
         Assert.Equal(svg, source.ToSvg());
     }
 }

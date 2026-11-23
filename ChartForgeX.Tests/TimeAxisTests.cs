@@ -177,7 +177,7 @@ public sealed class TimeAxisTests {
     [InlineData(true)]
     public void DateScheduleDefaults_PreserveExplicitScaleConfigurationAndNumericOverloads(bool gantt) {
         var numeric = Chart.Create();
-        if (gantt) numeric.AddGanttTask("Numeric", 1d, 3d); else numeric.AddTimelineRange("Numeric", 1d, 3d);
+        if (gantt) numeric.AddGanttTask("Numeric", 1d, 3d); else numeric.AddTimelineItem("Numeric", 1d, 3d);
         Assert.Equal(ChartScaleKind.Linear, numeric.Options.XAxis.Scale);
 
         var authored = Chart.Create();

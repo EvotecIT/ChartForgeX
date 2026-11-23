@@ -60,7 +60,7 @@ internal static partial class SmokeTests {
             .Color(ChartColor.FromHex("#7C3AED"))
             .FontFamily("Aptos, sans-serif")
             .FontSize(22)
-            .FontWeight("bold")
+            .FontWeight(700)
             .Italic()
             .UnderlineStyle(TextDecorationStyle.Wavy)
             .StrikethroughStyle(TextDecorationStyle.Double)
@@ -106,14 +106,14 @@ internal static partial class SmokeTests {
     }
 
     private static void RasterWeightThresholdPreservesNumericSemantics() {
-        Assert(new TextStyleOverride().FontWeight("550").ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
-        Assert(new TextStyleOverride().FontWeight("600").ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
-        Assert(new TextStyleOverride().FontWeight("bolder").ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
-        Assert(new TextStyleOverride().FontWeight("lighter").ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
+        Assert(new TextStyleOverride().FontWeight(550).ResolveFontWeight(400) == 550, "Raster emphasis should preserve numeric weights instead of rounding 550 up to bold.");
+        Assert(new TextStyleOverride().FontWeight(600).ResolveFontWeight(400) == 600, "Raster emphasis should preserve the bold threshold.");
+        Assert(new TextStyleOverride().FontWeight(700).ResolveFontWeight(400) == 700, "Raster emphasis should resolve CSS bolder to emphasized text for regular roles.");
+        Assert(new TextStyleOverride().FontWeight(400).ResolveFontWeight(700) == 400, "Raster emphasis should resolve CSS lighter to regular text for emphasized roles.");
         foreach (var weight in new[] { 1, 650, 850, 1000 }) {
             var font = new FontSpec { Weight = weight };
             Assert(font.Clone().Weight == weight, "Font specifications must preserve exact CSS weights when cloned.");
-            Assert(new TextStyleOverride().FontWeight(weight.ToString(CultureInfo.InvariantCulture)).Resolve(new TextStyle()).Font.Weight == weight,
+            Assert(new TextStyleOverride().FontWeight(weight).Resolve(new TextStyle()).Font.Weight == weight,
                 "Complete style resolution must retain the requested weight independently of available faces.");
         }
         AssertThrows<ArgumentOutOfRangeException>(() => new FontSpec { Weight = 0 }, "CSS font weights below one must be rejected.");
@@ -139,7 +139,7 @@ internal static partial class SmokeTests {
 
         var multiline = ImageComposition.CreateTransparent(100, 60)
             .DrawText(2, 2, 96, "First\nSecond", 14, ChartColors.White)
-            .ToImage();
+            .ToRgbaImage();
         var lowerLinePixels = 0;
         for (var y = 18; y < multiline.Height; y++) {
             for (var x = 0; x < multiline.Width; x++) {
@@ -152,7 +152,7 @@ internal static partial class SmokeTests {
             .Select(decoration => {
                 var variant = TextStyle.Create(22, ChartColor.Black);
                 variant.UnderlineStyle = decoration;
-                return ImageComposition.CreateTransparent(180, 60).DrawText(6, 6, 168, "Variant", variant).ToImage().Pixels;
+                return ImageComposition.CreateTransparent(180, 60).DrawText(6, 6, 168, "Variant", variant).ToRgbaImage().Pixels;
             }).ToArray();
         Assert(variants.Select(pixels => Convert.ToBase64String(pixels)).Distinct(StringComparer.Ordinal).Count() == variants.Length, "Shared raster composition should render distinct pixels for every underline pattern.");
     }
@@ -169,10 +169,10 @@ internal static partial class SmokeTests {
 
         var regularImage = ImageComposition.CreateTransparent(260, 64)
             .DrawText(8, 8, 244, "Italic contract", regular)
-            .ToImage();
+            .ToRgbaImage();
         var italicImage = ImageComposition.CreateTransparent(260, 64)
             .DrawText(8, 8, 244, "Italic contract", italic)
-            .ToImage();
+            .ToRgbaImage();
         Assert(!regularImage.Pixels.SequenceEqual(italicImage.Pixels), "Image composition should render italic pixels differently from regular text.");
 
         var regularFallback = new RgbaCanvas(180, 48, 2, null, 1, useDefaultOutlineFont: false);

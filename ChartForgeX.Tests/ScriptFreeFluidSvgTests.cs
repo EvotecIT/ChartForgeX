@@ -123,14 +123,14 @@ public sealed class ScriptFreeFluidSvgTests {
 
     [Fact]
     public void ExportPolicyClones_RetainFluidWidthAlongsideOtherHostSettings() {
-        var original = new VisualSvgOptions(idPrefix: "page", responsive: true, linkTarget: VisualSvgLinkTarget.NewContext);
+        var original = new VisualSvgOptions(idScope: "page", responsive: true, linkTarget: VisualSvgLinkTarget.NewContext);
         var fluid = original.WithFluidWidth();
         var cloned = fluid.WithPatternTiles().WithTextPresentation(VisualSvgTextPresentation.Browser).WithInheritedFonts();
         Assert.False(original.FluidWidth);
         Assert.True(cloned.FluidWidth);
         Assert.True(cloned.PatternTiles);
         Assert.True(cloned.Responsive);
-        Assert.Equal("page", cloned.IdPrefix);
+        Assert.Equal("page", cloned.IdScope);
         Assert.Equal(VisualSvgLinkTarget.NewContext, cloned.LinkTarget);
         Assert.False(cloned.WithFluidWidth(false).FluidWidth);
         Assert.True(cloned.FluidWidth);

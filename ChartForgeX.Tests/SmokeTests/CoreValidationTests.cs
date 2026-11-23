@@ -87,7 +87,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => Chart.Create().Pictorial(p => p.SvgPath("")), "Pictorial charts should reject empty SVG path data.");
         AssertThrows<ArgumentException>(() => Chart.Create().Pictorial(p => p.SvgPath("M0 0 <script>")), "Pictorial charts should reject unsafe SVG path data.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Pictorial(p => p.SvgPath("M0 0 L1 1 Z", new ChartRect(0, 0, 0, 24))), "Pictorial charts should reject empty SVG path viewBoxes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Pictorial(p => p.SvgPath("M0 0 L1 1 Z", (ChartPictorialShape)999)), "Pictorial charts should reject unknown PNG fallback shapes.");
         AssertThrows<ArgumentException>(() => new ChartWordCloudItem("", 1), "Word cloud terms should reject empty text.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartWordCloudItem("Bad", -1), "Word cloud terms should reject negative weights.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartWordCloudItem("Bad", double.NaN), "Word cloud terms should reject non-finite weights.");
@@ -106,7 +105,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGauge("Score", 80, 100, 0), "Gauges should reject inverted scales.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddProgressRing("Bad", Points(101)), "Progress rings should reject values above 100.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddProgressRing("Bad", Points(-1)), "Progress rings should reject negative values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineRange("Task", 10, 2), "Timelines should reject inverted ranges.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineItem("Task", 10, 2), "Timelines should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 10, 2), "Gantt tasks should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, 1.1), "Gantt tasks should reject progress above one.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Gantt(g => g.Today(double.NaN)), "Gantt today markers should reject non-finite values.");

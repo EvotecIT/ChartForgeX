@@ -11,7 +11,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     public async Task FullyOffscreenOversizedScheduleTargetScrollsIntoViewAndOrdinaryNavigationStillReturns() {
         if (!Enabled) return;
         var chart = Frame(false).Title("Offscreen intervals").XAxis(x => x.Bounds(0, 10))
-            .AddTimelineRange("Beginning", 0, 1).AddTimelineRange("Outside", 5, 10);
+            .AddTimelineItem("Beginning", 0, 1).AddTimelineItem("Outside", 5, 10);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ExactFeatures(options);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Readable;

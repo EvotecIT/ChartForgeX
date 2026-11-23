@@ -31,9 +31,9 @@ public static class SequenceArtifactRendering {
     }
 
     // Source interchange retains authored bounds. Prepared interchange captures its resolved display bounds separately.
-    internal static VisualArtifactSize CalculateNaturalSize(SequenceArtifact sequence) {
+    internal static VisualSize CalculateNaturalSize(SequenceArtifact sequence) {
         if (sequence == null) throw new ArgumentNullException(nameof(sequence));
-        return new VisualArtifactSize(sequence.Width, sequence.Height);
+        return new VisualSize(sequence.Width, sequence.Height);
     }
 
     /// <summary>Renders a sequence to shared SVG with measured content expansion beyond its authored minimum size.</summary>

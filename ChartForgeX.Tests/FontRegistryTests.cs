@@ -23,10 +23,10 @@ public sealed class FontRegistryTests : IDisposable {
         FontRegistry.Register(Family, regular, weight: 600);
         FontRegistry.Register(Family, bold, weight: 700);
         var chart = BarChart(Family);
-        chart.Options.TitleStyle.FontWeight = "600";
+        chart.Options.TitleStyle.FontWeight = 600;
         byte[] semibold = chart.ToPng();
-        Assert.Equal("600", chart.Options.TitleStyle.FontWeight);
-        chart.Options.TitleStyle.FontWeight = "700";
+        Assert.Equal(600, chart.Options.TitleStyle.FontWeight);
+        chart.Options.TitleStyle.FontWeight = 700;
         Assert.NotEqual(semibold, chart.ToPng());
         chart.Options.TitleStyle.FontWeight = null;
         _ = chart.ToPng();
@@ -38,9 +38,9 @@ public sealed class FontRegistryTests : IDisposable {
         if (!TryGetGeorgia(out var regular,out var bold)) return;
         FontRegistry.Register(Family,regular,weight:600); FontRegistry.Register(Family,bold,weight:700);
         var grid=ChartGrid.Create().Theme(VisualTheme.Graphite().WithFontFamily(Family)).Title("Numeric grid title").Add(BarChart(Family));
-        grid.TitleStyle.FontWeight="600";
+        grid.TitleStyle.FontWeight=600;
         byte[] semibold=grid.ToPng();
-        grid.TitleStyle.FontWeight="700";
+        grid.TitleStyle.FontWeight=700;
         Assert.NotEqual(semibold,grid.ToPng());
         Assert.Null(grid.TitleStyle.FontFamily);
     }
@@ -209,7 +209,7 @@ public sealed class FontRegistryTests : IDisposable {
         Render("<text x=\"8\" y=\"40\" font-size=\"28\" font-family=\"" + family + "\" font-weight=\"" + weight.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\">Hamburgefonstiv</text>");
 
     private static byte[] Render(string body) =>
-        SvgRasterizer.ToImage("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"56\">" + body + "</svg>").Pixels;
+        SvgRasterizer.ToRgbaImage("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"56\">" + body + "</svg>").Pixels;
 }
 
 [CollectionDefinition(nameof(FontRegistryCollection), DisableParallelization = true)]

@@ -6,7 +6,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     // Both diagram families use the same measured, multiline text plan for SVG and native pixels.
     private static void WriteDiagramLabel(SvgMarkupWriter writer, string text, ChartRect bounds, ResolvedVisualTheme theme, ChartColor color, double size, int weight, string role, bool preserveWords = false) {
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = VisualBlockRendering.BodyFontSize(theme, size), LineHeight = 1.15 };

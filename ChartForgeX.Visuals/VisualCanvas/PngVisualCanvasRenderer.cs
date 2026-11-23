@@ -9,19 +9,19 @@ namespace ChartForgeX.Composition;
 /// <summary>
 /// Renders visual canvases to dependency-free PNG images.
 /// </summary>
-public sealed class PngVisualCanvasRenderer {
+internal sealed class PngVisualCanvasRenderer {
     /// <summary>Renders a visual canvas to PNG bytes.</summary>
     public byte[] Render(VisualCanvas canvas) => PngWriter.WriteRgba(RenderImage(canvas));
 
     internal RgbaImage RenderImage(VisualCanvas canvas) {
-        var source = RenderCanvas(canvas).ToImage();
+        var source = RenderCanvas(canvas).ToRgbaImage();
         if (!canvas.IsResponsive) return source;
 
         var scale = canvas.PngOutputScale;
         var background = canvas.BackdropStyle == VisualCanvasBackdropStyle.Transparent ? ChartColor.Transparent : canvas.BackgroundBottom;
         return ImageComposition.Create(canvas.Width * scale, canvas.Height * scale, background)
             .DrawImage(source, 0, 0, canvas.Width * scale, canvas.Height * scale, canvas.ResponsiveFit)
-            .ToImage();
+            .ToRgbaImage();
     }
 
     internal RgbaCanvas RenderCanvas(VisualCanvas canvas) {

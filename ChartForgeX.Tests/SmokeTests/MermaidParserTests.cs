@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Linq;
 using ChartForgeX.Core;
@@ -271,7 +272,7 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(artifactPng[16] == 0 && artifactPng[17] == 0 && artifactPng[18] == 2 && artifactPng[19] == 128
             && artifactPng[20] == 0 && artifactPng[21] == 0 && artifactPng[22] == 1 && artifactPng[23] == 104,
             "Mermaid artifacts should carry the explicit natural-size export policy into generic PNG rendering.");
-        artifact.NaturalSize = new VisualArtifactSize(480, 270);
+        artifact.NaturalSize = new VisualSize(480, 270);
         var resizedArtifactSvg = artifact.ToSvg();
         Assert(resizedArtifactSvg.Contains("width=\"480\"", StringComparison.Ordinal) && resizedArtifactSvg.Contains("height=\"270\"", StringComparison.Ordinal),
             "Generic topology artifact rendering should honor the artifact natural size when it differs from the model viewport.");

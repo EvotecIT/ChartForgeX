@@ -55,7 +55,7 @@ public sealed class ChartLookV2LayoutTests {
         var chart = Chart.Create().Title("Quarterly delivery").Legend(false).Size(width, 560).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         if (family == "progress") chart.AddProgressBars("Delivery", new[] { new ChartProgressItem("North", 72), new ChartProgressItem("South", 58) });
         else if (family == "bullet") chart.AddBullet("North", 72, 80).AddBullet("South", 58, 65);
-        else chart.AddTimelineRange("North", 0, 10).AddTimelineRange("South", 2, 8);
+        else chart.AddTimelineItem("North", 0, 10).AddTimelineItem("South", 2, 8);
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var export = VisualExportRequest.ForChart(chart).Context;
         var context = new VisualRenderContext(new VisualLayoutOptions(export.Layout.Size, export.Layout.PaddingEdges, fitHeightToContent: true),

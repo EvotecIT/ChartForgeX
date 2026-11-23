@@ -17,7 +17,7 @@ public sealed class SvgAccessibilitySemanticsTests {
             new VisualSceneGroup("point", "passkey", null, metadata), new VisualSceneEndGroup(),
             new VisualSceneGroup("series", "scalar", null, new Dictionary<string, string> { ["data-cfx-value"] = "87" }), new VisualSceneEndGroup()
         }, Array.Empty<VisualDiagnostic>(), new[] { new VisualSemanticRegion("scalar", "series", new ChartRect(0, 0, 100, 60), "Covered: 87%") });
-        var root = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, "Sign-ins", "Weekly methods", "en", idPrefix: "hero")).Root!;
+        var root = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, "Sign-ins", "Weekly methods", "en", idScope: "hero")).Root!;
         Assert.Equal("img", (string?)root.Attribute("role"));
         Assert.Equal("hero-title", (string?)root.Attribute("aria-labelledby"));
         Assert.Equal("hero-description", (string?)root.Attribute("aria-describedby"));

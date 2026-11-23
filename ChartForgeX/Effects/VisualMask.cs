@@ -35,7 +35,7 @@ public sealed class VisualMask {
     /// <summary>Gets whether only final alpha quantization uses ordered dither.</summary>
     public bool OrderedDither { get; }
     /// <summary>Returns a caller-owned mutable pixel copy. Repeated exports are outside the original operation's pixel budget.</summary>
-    public RgbaImage ToImage() => new(_pixels.Image.Width, _pixels.Image.Height, (byte[])_pixels.Image.Pixels.Clone());
+    public RgbaImage ToRgbaImage() => new(_pixels.Image.Width, _pixels.Image.Height, (byte[])_pixels.Image.Pixels.Clone());
     internal RgbaImage Image => _pixels.Image;
 
     /// <summary>Shares the finite input/grid contract with typed portable mask validation without copying pixels.</summary>

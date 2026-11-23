@@ -43,18 +43,6 @@ public static partial class ChartExtensions {
     }
 
     /// <summary>
-    /// Sets the default series palette on the current chart theme from hexadecimal color strings.
-    /// </summary>
-    /// <param name="chart">The chart to configure.</param>
-    /// <param name="colors">The color strings in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
-    /// <returns>The current chart.</returns>
-    public static Chart Palette(this Chart chart, params string[] colors) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Options.Theme = chart.Options.Theme.WithPalette(chart.Options.ThemeMode, ChartPalettes.FromHex(colors));
-        return chart;
-    }
-
-    /// <summary>
     /// Replaces the grid theme with an independently configured immutable snapshot.
     /// </summary>
     /// <param name="grid">The chart grid to configure.</param>
@@ -228,19 +216,6 @@ public static partial class ChartExtensions {
     public static TBlock Palette<TBlock>(this TBlock block, params ChartColor[] colors) where TBlock : IVisualBlock {
         if (block == null) throw new ArgumentNullException(nameof(block));
         block.Options.Theme = block.Options.Theme.WithPalette(block.Options.ThemeMode, colors);
-        return block;
-    }
-
-    /// <summary>
-    /// Sets the default palette on the current visual block theme from hexadecimal color strings.
-    /// </summary>
-    /// <typeparam name="TBlock">The visual block type.</typeparam>
-    /// <param name="block">The visual block to configure.</param>
-    /// <param name="colors">The color strings in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
-    /// <returns>The current visual block.</returns>
-    public static TBlock Palette<TBlock>(this TBlock block, params string[] colors) where TBlock : IVisualBlock {
-        if (block == null) throw new ArgumentNullException(nameof(block));
-        block.Options.Theme = block.Options.Theme.WithPalette(block.Options.ThemeMode, ChartPalettes.FromHex(colors));
         return block;
     }
 

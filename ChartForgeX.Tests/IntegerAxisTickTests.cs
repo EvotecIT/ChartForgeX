@@ -144,7 +144,7 @@ public sealed class IntegerAxisTickTests {
             var track = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role.Replace("-label", ""));
             var facts = prepared.Regions.Where(region => region.Role == role).ToArray();
             Assert.Equal(captions.Length, facts.Length);
-            var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+            var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
             var without = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size,
                 prepared.Scene.Nodes.Where(node => node is not VisualSceneText text || text.Role != role).ToArray(),
                 prepared.Scene.Diagnostics, prepared.Scene.Regions), supersampling: 1);

@@ -113,7 +113,7 @@ public sealed class MarkupTimelineParser {
                     ganttItems.Add(chart.Series[chart.Series.Count - 1]);
                 }
                 else if (dates) chart.AddTimelineItem(item.Label, item.Start.Date, item.Start.Date, color);
-                else chart.AddTimelineRange(item.Label, start, start, color);
+                else chart.AddTimelineItem(item.Label, start, start, color);
                 continue;
             }
 
@@ -123,7 +123,7 @@ public sealed class MarkupTimelineParser {
                 ganttItems.Add(chart.Series[chart.Series.Count - 1]);
             }
             else if (dates) chart.AddTimelineItem(item.Label, item.Start.Date, item.End.Date, color);
-            else chart.AddTimelineRange(item.Label, start, end, color);
+            else chart.AddTimelineItem(item.Label, start, end, color);
         }
 
         return chart;

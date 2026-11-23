@@ -16,8 +16,8 @@ internal static partial class Program {
         var layer = prepared.CaptureLayer(new VisualLayerBlur(0), new VisualRenderOptions(supersampling: 1));
         var copy = ImageComposition.Create(340, 380, ChartColor.White)
             .DrawLayer(layer, 10, 10, VisualCompositeOperator.Copy, orderedDither: true);
-        var image = copy.ToImage();
-        var source = layer.ToImage();
+        var image = copy.ToRgbaImage();
+        var source = layer.ToRgbaImage();
         for (var y = 0; y < source.Height; y++) {
             var actual = image.Pixels.Skip(((y + 10) * image.Width + 10) * 4).Take(source.Width * 4);
             PackageAssertions.Require(actual.SequenceEqual(source.Pixels.Skip(y * source.Width * 4).Take(source.Width * 4)),

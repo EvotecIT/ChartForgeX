@@ -49,7 +49,7 @@ public sealed class ExtremeAxisTickLayoutTests {
         var svg = XDocument.Parse(prepared.ToSvg());
         var svgCaptions = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == role).ToArray();
         Assert.Equal(captions.Select(node => node.Text.Lines.Single().Text), svgCaptions.Select(node => node.Value));
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         for (var index = 0; index < expected.Length; index++) {
             var fact = facts[index]; var caption = captions[index];
             var split = fact.Label!.LastIndexOf(" (", StringComparison.Ordinal);

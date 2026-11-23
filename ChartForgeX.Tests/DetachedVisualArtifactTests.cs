@@ -21,7 +21,7 @@ public sealed class DetachedVisualArtifactTests {
         source.Title = "Original";
         source.Subtitle = "Host subtitle";
         source.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
-        source.NaturalSize = new VisualArtifactSize(80, 40);
+        source.NaturalSize = new VisualSize(80, 40);
         source.PreserveNaturalSize = true;
         source.Accessibility.TextAlternative("Original accessible name", "Description", "pl-PL");
         source.Metadata.Add("owner", "source");
@@ -53,7 +53,7 @@ public sealed class DetachedVisualArtifactTests {
         copy.Regions[0].Label = "Copy region";
         copy.Regions[0].Metadata["state"] = "copy";
         copy.Legend[0].Label = "Copy legend";
-        copy.NaturalSize = new VisualArtifactSize(160, 80);
+        copy.NaturalSize = new VisualSize(160, 80);
         Assert.Equal("Original", source.Title);
         Assert.Equal("Original accessible name", source.Accessibility.Name);
         Assert.Equal("Description", source.Accessibility.Description);
@@ -90,7 +90,7 @@ public sealed class DetachedVisualArtifactTests {
         copy.Metadata["host"] = "copy";
         Assert.Equal("copy", copy.ToInterchangeEnvelope().Extensions["host"]);
         Assert.False(source.Metadata.ContainsKey("host"));
-        copy.NaturalSize = new VisualArtifactSize(640, 480);
+        copy.NaturalSize = new VisualSize(640, 480);
         Assert.Throws<InvalidOperationException>(() => copy.ToSvg());
         Assert.Throws<InvalidOperationException>(() => copy.ToInterchangeEnvelope());
         Assert.Equal(json, source.ToInterchangeJson());
@@ -163,7 +163,7 @@ public sealed class DetachedVisualArtifactTests {
         string svg = motion.ToSvg("detached-motion");
         var artifact = new VisualArtifact {
             Id = "motion", Title = "Motion <preview>", Kind = VisualArtifactKind.Topology,
-            NaturalSize = new VisualArtifactSize(motion.Width, motion.Height)
+            NaturalSize = new VisualSize(motion.Width, motion.Height)
         };
         artifact.Accessibility.Language = "pl-PL";
         var watermark = VisualWatermark.FromText("MOTION");
@@ -209,7 +209,7 @@ public sealed class DetachedVisualArtifactTests {
         const string svg = "<svg width=\"80\" height=\"40\"></svg>";
         Assert.Throws<ArgumentNullException>(() => source.ToWatermarkedSvg(null!, mark));
         Assert.Throws<ArgumentException>(() => source.ToWatermarkedHtmlPage(svg, mark, null!));
-        source.NaturalSize = default(VisualArtifactSize);
+        source.NaturalSize = default(VisualSize);
         Assert.Throws<ArgumentOutOfRangeException>(() => source.ToWatermarkedSvg(svg, mark));
     }
 

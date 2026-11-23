@@ -16,13 +16,13 @@ public sealed class RangeBarEndpointLabelTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.RangeBar.LabelContent = (ChartRangeBarLabelContent)99);
         foreach (var series in chart.Series) series.PointLabel(0, "Authored caption");
         chart.FormatValuesBy(_ => throw new InvalidOperationException("Custom captions bypass numeric formatting"));
-        var original = Prepare(chart); var svg = original.ToSvg(); var pixels = original.ToRgba().Pixels;
+        var original = Prepare(chart); var svg = original.ToSvg(); var pixels = original.ToRgbaImage().Pixels;
         chart.RangeBar(options => {
             options.LabelContent = ChartRangeBarLabelContent.Combined;
             options.EndpointLabelFormatter = _ => throw new FormatException("Combined captions do not invoke endpoint formatting");
         });
         var configured = Prepare(chart);
-        Assert.Equal(svg, configured.ToSvg()); Assert.Equal(pixels, configured.ToRgba().Pixels);
+        Assert.Equal(svg, configured.ToSvg()); Assert.Equal(pixels, configured.ToRgbaImage().Pixels);
         Assert.All(Points(configured), point => Assert.Equal("Authored caption", point.Metadata["data-cfx-label"]));
         Assert.All(Labels(configured), label => Assert.Equal("Authored caption", label.Text.Lines[0].Text));
     }

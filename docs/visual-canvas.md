@@ -273,10 +273,10 @@ for SVG or HTML delivery.
 
 Angles are in degrees, clockwise on screen from three o'clock, so `-90` starts at twelve o'clock. `DrawArc` takes `ImageLineCap.Butt`, `Round` (the default), or `Square`. `DrawProgressRing` paints a full track and a round-capped arc for `fraction` of it; a fraction of one or more fills the ring. Linear gradient angles follow the same convention: `0` runs left to right and `90` top to bottom. A radial gradient's center is in composition coordinates and may sit outside the rectangle, which is how a corner glow is drawn; fade to the same color with zero alpha to avoid a gray fringe.
 
-When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:
+When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToRgbaImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:
 
 ```csharp
-var composition = ImageComposition.FromImage(SvgRasterizer.ToImage(backdropSvg));
+var composition = ImageComposition.FromImage(SvgRasterizer.ToRgbaImage(backdropSvg));
 composition.DrawText(84, 196, 650, title, titleStyle, TextWrapMode.Word, maximumLines: 3);
 ```
 

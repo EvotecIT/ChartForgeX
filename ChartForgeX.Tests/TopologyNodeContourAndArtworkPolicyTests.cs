@@ -45,7 +45,7 @@ public sealed class TopologyNodeContourAndArtworkPolicyTests {
         Assert.Throws<TopologyValidationException>(()=>chart.Prepare());chart.Nodes[0].CaptionPlacement=null;Assert.Equal(ordinary.ToPng(),chart.ToPng());
     }
 
-    private static byte[] CenterPixel(PreparedTopology prepared){var node=prepared.ToInterchangeEnvelope().Nodes[0];var image=prepared.ToRgba();var x=(int)Math.Floor(node.X!.Value+node.Width!.Value/2);var y=(int)Math.Floor(node.Y!.Value+node.Height!.Value/2);var index=(y*image.Width+x)*4;return image.Pixels.Skip(index).Take(4).ToArray();}
+    private static byte[] CenterPixel(PreparedTopology prepared){var node=prepared.ToInterchangeEnvelope().Nodes[0];var image=prepared.ToRgbaImage();var x=(int)Math.Floor(node.X!.Value+node.Width!.Value/2);var y=(int)Math.Floor(node.Y!.Value+node.Height!.Value/2);var index=(y*image.Width+x)*4;return image.Pixels.Skip(index).Take(4).ToArray();}
     private static XElement[] Marks(string svg,string role)=>XDocument.Parse(svg).Descendants().Where(mark=>(string?)mark.Attribute("data-cfx-role")==role).ToArray();
     private static string[] PaintFacts(string svg,string role)=>Marks(svg,role).Select(mark=>mark.Name.LocalName+"|"+string.Join("|",new[]{"d","x","y","width","height","cx","cy","rx","ry","fill","stroke","stroke-width","opacity"}.Select(key=>key+"="+(string?)mark.Attribute(key)))).ToArray();
     private static bool NoStroke(XElement mark)=>(string?)mark.Attribute("stroke") is null or "none" or "transparent" or "#00000000" or "rgba(0,0,0,0)"||(string?)mark.Attribute("stroke-opacity")=="0";

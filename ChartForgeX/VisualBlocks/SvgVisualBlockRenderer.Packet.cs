@@ -6,7 +6,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     // The frame height at which field rows stop growing, so a short header carries no empty lower canvas.
     internal static int? PacketContentHeight(PacketLayoutBlock packet) {
         var slices = VisualBlockRendering.PacketSlices(packet);

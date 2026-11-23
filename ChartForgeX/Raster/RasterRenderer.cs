@@ -7,12 +7,12 @@ namespace ChartForgeX.Raster;
 internal static class RasterRenderer {
     internal static RgbaImage RenderImage(Chart chart) {
         var request = VisualExportRequest.ForChart(chart);
-        return chart.Prepare(request.Context).ToRgba(request.RasterOptions);
+        return chart.Prepare(request.Context).ToRgbaImage(request.RasterOptions);
     }
 
     internal static RgbaImage RenderImage(ChartGrid grid) {
         var request = VisualExportRequest.ForGrid(grid);
-        return grid.Prepare(request.Context).ToRgba(request.RasterOptions);
+        return grid.Prepare(request.Context).ToRgbaImage(request.RasterOptions);
     }
 
     internal static RgbaImage RenderImage(IVisualBlock block) => block.RenderRgba();

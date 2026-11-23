@@ -291,23 +291,23 @@ public sealed partial class ImageComposition {
     }
 
     /// <summary>Returns a copy of the current pixels.</summary>
-    public RgbaImage ToImage() => _canvas.ToImage();
+    public RgbaImage ToRgbaImage() => _canvas.ToRgbaImage();
 
     /// <summary>Encodes the composition to PNG bytes.</summary>
-    public byte[] ToPng() => PngWriter.WriteRgba(ToImage());
+    public byte[] ToPng() => PngWriter.WriteRgba(ToRgbaImage());
 
     /// <summary>Encodes the composition to PNG bytes using dependency-free raster options.</summary>
-    public byte[] ToPng(RasterImageOptions? options) => RasterImageEncoder.Encode(ToImage(), RasterImageFormat.Png, options);
+    public byte[] ToPng(RasterImageOptions? options) => RasterImageEncoder.Encode(ToRgbaImage(), RasterImageFormat.Png, options);
 
     /// <summary>Encodes the composition to JPEG bytes.</summary>
-    public byte[] ToJpeg(RasterImageOptions? options = null) => RasterImageEncoder.Encode(ToImage(), RasterImageFormat.Jpeg, options);
+    public byte[] ToJpeg(RasterImageOptions? options = null) => RasterImageEncoder.Encode(ToRgbaImage(), RasterImageFormat.Jpeg, options);
 
     /// <summary>Encodes the composition to a static dependency-free raster format.</summary>
-    /// <remarks>GIF output is provided by ChartForgeX.Stories over <see cref="ToImage"/>.</remarks>
-    public byte[] ToRasterImage(RasterImageFormat format, RasterImageOptions? options = null) => RasterImageEncoder.Encode(ToImage(), format, options);
+    /// <remarks>GIF output is provided by ChartForgeX.Stories over <see cref="ToRgbaImage"/>.</remarks>
+    public byte[] ToRasterImage(RasterImageFormat format, RasterImageOptions? options = null) => RasterImageEncoder.Encode(ToRgbaImage(), format, options);
 
     /// <summary>Writes the composition to a raster stream.</summary>
-    public void Write(Stream stream, RasterImageFormat format, RasterImageOptions? options = null) => RasterImageEncoder.WriteTo(stream, ToImage(), format, options);
+    public void Write(Stream stream, RasterImageFormat format, RasterImageOptions? options = null) => RasterImageEncoder.WriteTo(stream, ToRgbaImage(), format, options);
 
     /// <summary>Saves the composition to a raster file using an explicit format.</summary>
     public void Save(string path, RasterImageFormat format, RasterImageOptions? options = null) {

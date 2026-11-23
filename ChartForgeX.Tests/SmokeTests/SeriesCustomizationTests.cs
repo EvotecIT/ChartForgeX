@@ -98,7 +98,7 @@ internal static partial class SmokeTests {
             .DataLabels()
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#64748b")))
             .AddBar("Styled labels", Points(10, 40, 22, 58));
-        chart.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#dc2626")).FontWeight("900").Underline().FontSize(13));
+        chart.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#dc2626")).FontWeight(900).Underline().FontSize(13));
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Series data-label styling should still render labels.");
         Assert(svg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Series data-label styles should override chart-level label color.");
@@ -116,7 +116,7 @@ internal static partial class SmokeTests {
             .DataLabels()
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#64748b")))
             .AddPie("Slices", Points(70, 30));
-        pie.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#0f766e")).FontWeight("900").Underline().FontSize(14));
+        pie.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#0f766e")).FontWeight(900).Underline().FontSize(14));
         var pieSvg = PreparedFamily(pie).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         Assert(pieSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Pie data labels should render with series styles enabled.");
         var pieLabels = FamilyLabels(PreparedFamily(pie), "data-label");
@@ -128,7 +128,7 @@ internal static partial class SmokeTests {
             .DataLabels()
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#64748b")))
             .AddHeatmapRow("Styled", Points(95, 86, 72));
-        heatmap.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#dc2626")).FontWeight("900"));
+        heatmap.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#dc2626")).FontWeight(900));
         var heatmapSvg = heatmap.ToSvg();
         Assert(heatmapSvg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal) && heatmapSvg.Contains("font-weight=\"900\"", StringComparison.Ordinal), "Heatmap cell labels should honor per-series data-label style overrides.");
         Assert(heatmap.ToPng().Length > 64, "Heatmap series data-label styles should render PNG output.");
@@ -139,7 +139,7 @@ internal static partial class SmokeTests {
             .DataLabels()
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#64748b")))
             .AddRadar("Current", Points(92, 74, 88));
-        radar.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).FontWeight("900"));
+        radar.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).FontWeight(900));
         Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#7C3AED"))), "Radar data labels should honor per-series data-label color overrides.");
         Assert(radar.ToPng().Length > 64, "Radar series data-label styles should render PNG output.");
 
@@ -154,7 +154,7 @@ internal static partial class SmokeTests {
             .Legend(false)
             .DataLabels()
             .AddPolarArea("Polar", Points(92, 74, 88));
-        polarArea.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#0f766e")).FontFamily("monospace").FontWeight("normal").Italic().Underline().FontSize(16));
+        polarArea.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#0f766e")).FontFamily("monospace").FontWeight(400).Italic().Underline().FontSize(16));
         var polarAreaSvg = PreparedFamily(polarArea).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         var polarAreaPng = polarArea.ToPng();
         Assert(polarAreaSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && polarAreaSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Polar-area labels should honor per-series data-label style overrides.");
@@ -165,7 +165,7 @@ internal static partial class SmokeTests {
             .DataLabels()
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#64748b")))
             .AddWaterfall("Delta", Points(18, -7, 12));
-        waterfall.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#b45309")).FontWeight("900"));
+        waterfall.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#b45309")).FontWeight(900));
         Assert(waterfall.ToSvg().Contains("fill=\"#B45309\"", StringComparison.Ordinal), "Waterfall data labels should honor per-series data-label color overrides.");
         Assert(waterfall.ToPng().Length > 64, "Waterfall series data-label styles should render PNG output.");
     }
@@ -176,8 +176,8 @@ internal static partial class SmokeTests {
             .DataLabels()
             .AddBar("Styled labels", Points(12, 44, 26));
         chart.Series[0]
-            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#654321")).FontWeight("700"))
-            .PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#123456")).FontWeight("900").Underline().FontSize(14));
+            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#654321")).FontWeight(700))
+            .PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#123456")).FontWeight(900).Underline().FontSize(14));
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("fill=\"#123456\"", StringComparison.Ordinal), "Point data-label styles should override series label color.");
@@ -194,7 +194,7 @@ internal static partial class SmokeTests {
             .Size(420, 280)
             .DataLabels()
             .AddPie("Slices", Points(70, 30));
-        pie.Series[0].PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#0f3d5e")).FontWeight("900"));
+        pie.Series[0].PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#0f3d5e")).FontWeight(900));
         Assert(FamilyLabels(PreparedFamily(pie), "data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F3D5E"))), "Pie slice labels should honor point-level data-label style overrides.");
         Assert(pie.ToPng().Length > 64, "Pie point data-label styles should render PNG output.");
 
@@ -208,7 +208,7 @@ internal static partial class SmokeTests {
         var chart = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
-        chart.Series[0].PointColor(1, "#F97316");
+        chart.Series[0].PointColor(1, ChartColor.FromHex("#F97316"));
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Bar points should still render when point colors are configured.");
         Assert(CartesianPoint(svg, 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "bar" && element.Attribute("fill") != null),
@@ -235,7 +235,7 @@ internal static partial class SmokeTests {
             .Size(540, 320)
             .XLabels("Visit", "Qualify", "Close")
             .AddFunnel("Pipeline", Points(120, 74, 32));
-        funnel.Series[0].PointColor(1, "#E11D48");
+        funnel.Series[0].PointColor(1, ChartColor.FromHex("#E11D48"));
         var funnelSvg = funnel.ToSvg();
         var funnelPoint = System.Xml.Linq.XDocument.Parse(funnelSvg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "funnel-stage"
             && (string?)element.Attribute("data-cfx-point") == "1");
@@ -252,7 +252,7 @@ internal static partial class SmokeTests {
                 new ChartHierarchyItem("Edge", "Edge", value: 28),
                 new ChartHierarchyItem("Long tail", "Long tail", value: 12)
             });
-        treemap.Series[0].PointColor(1, "#8B5CF6");
+        treemap.Series[0].PointColor(1, ChartColor.FromHex("#8B5CF6"));
         var treemapTile = System.Xml.Linq.XDocument.Parse(treemap.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile"
             && (string?)element.Attribute("data-cfx-target-id") == "Edge");
         Assert(treemapTile.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile-mark" && (string?)element.Attribute("fill") == "#8B5CF6"),
@@ -264,14 +264,14 @@ internal static partial class SmokeTests {
         var scatter = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddScatter("Observed", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
-        scatter.Series[0].PointColor(1, "#0EA5E9");
+        scatter.Series[0].PointColor(1, ChartColor.FromHex("#0EA5E9"));
         Assert(scatter.ToSvg().Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Scatter markers should honor point-specific colors in SVG.");
         Assert(scatter.ToPng().Length > 64, "Scatter point colors should render PNG output.");
 
         var line = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddLine("Trend", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
-        line.Series[0].PointColor(2, "#DB2777");
+        line.Series[0].PointColor(2, ChartColor.FromHex("#DB2777"));
         Assert(CartesianPoint(line.ToSvg(), 0, 2).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "marker"
             && (string?)element.Attribute("fill") == "#DB2777"), "The authored line observation should retain its point-specific marker color in SVG.");
         Assert(PreparedFamily(line).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Single(node => node.Role == "marker").Fill!.Value.Equals(ChartColor.FromHex("#DB2777")),
@@ -281,7 +281,7 @@ internal static partial class SmokeTests {
         var lollipop = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddLollipop("Coverage", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
-        lollipop.Series[0].PointColor(1, "#F59E0B");
+        lollipop.Series[0].PointColor(1, ChartColor.FromHex("#F59E0B"));
         var lollipopSvg = lollipop.ToSvg();
         Assert(lollipopSvg.Contains("data-cfx-role=\"lollipop-marker\"", StringComparison.Ordinal) && lollipopSvg.Contains("fill=\"#F59E0B\"", StringComparison.Ordinal), "Lollipop markers should honor point-specific colors in SVG.");
         Assert(lollipop.ToPng().Length > 64, "Lollipop point colors should render PNG output.");
@@ -293,7 +293,7 @@ internal static partial class SmokeTests {
                 new ChartBubble(2, 34, 22),
                 new ChartBubble(3, 26, 14)
             }, ChartColor.FromHex("#14B8A6"));
-        bubble.Series[0].PointColor(1, "#7C3AED");
+        bubble.Series[0].PointColor(1, ChartColor.FromHex("#7C3AED"));
         var bubbleColor = ChartColor.FromHex("#7C3AED");
         Assert(CartesianPoint(bubble.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "bubble"
             && (string?)element.Attribute("stroke") == ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleStrokeOpacity).ToCss()),
@@ -310,7 +310,7 @@ internal static partial class SmokeTests {
                 new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
                 new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66))
             }, ChartColor.FromHex("#14B8A6"));
-        errorBar.Series[0].PointColor(1, "#DC2626");
+        errorBar.Series[0].PointColor(1, ChartColor.FromHex("#DC2626"));
         Assert(errorBar.ToSvg().Contains("stroke=\"#DC2626\"", StringComparison.Ordinal) && errorBar.ToSvg().Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Error-bar marks should honor point-specific colors in SVG.");
         Assert(errorBar.ToPng().Length > 64, "Error-bar point colors should render PNG output.");
 
@@ -320,7 +320,7 @@ internal static partial class SmokeTests {
                 new ChartInterval(1, 20, 42),
                 new ChartInterval(2, 30, 55)
             }, ChartColor.FromHex("#14B8A6"));
-        rangeBar.Series[0].PointColor(1, "#F97316");
+        rangeBar.Series[0].PointColor(1, ChartColor.FromHex("#F97316"));
         Assert(rangeBar.ToSvg().Contains("data-cfx-role=\"range-bar\"", StringComparison.Ordinal) && rangeBar.ToSvg().Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Range-bar intervals should honor point-specific colors in SVG.");
         Assert(rangeBar.ToPng().Length > 64, "Range-bar point colors should render PNG output.");
 
@@ -330,7 +330,7 @@ internal static partial class SmokeTests {
                 new ChartDumbbell(1, 32, 44),
                 new ChartDumbbell(2, 38, 58)
             }, ChartColor.FromHex("#14B8A6"));
-        dumbbell.Series[0].PointColor(1, "#0EA5E9");
+        dumbbell.Series[0].PointColor(1, ChartColor.FromHex("#0EA5E9"));
         Assert(dumbbell.ToSvg().Contains("data-cfx-role=\"dumbbell-end\"", StringComparison.Ordinal) && dumbbell.ToSvg().Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Dumbbell comparison marks should honor point-specific colors in SVG.");
         Assert(dumbbell.ToPng().Length > 64, "Dumbbell point colors should render PNG output.");
 
@@ -340,7 +340,7 @@ internal static partial class SmokeTests {
                 new ChartBoxPlot(1, 18, 24, 31, 38, 48),
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104)
             }, ChartColor.FromHex("#14B8A6"));
-        boxPlot.Series[0].PointColor(1, "#8B5CF6");
+        boxPlot.Series[0].PointColor(1, ChartColor.FromHex("#8B5CF6"));
         Assert(CartesianPoint(boxPlot.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "boxplot-body"
             && (string?)element.Attribute("stroke") == "#8B5CF6"), "Box-plot summaries should honor point-specific colors in SVG.");
         Assert(PreparedFamily(boxPlot).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(node => node.Role == "boxplot-body").ElementAt(1).Stroke!.Value.Equals(ChartColor.FromHex("#8B5CF6")),
@@ -354,21 +354,21 @@ internal static partial class SmokeTests {
         var candlestick = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddCandlestick("Windows", candles);
-        candlestick.Series[0].PointColor(1, "#DB2777");
+        candlestick.Series[0].PointColor(1, ChartColor.FromHex("#DB2777"));
         Assert(candlestick.ToSvg().Contains("data-cfx-role=\"candlestick-body\"", StringComparison.Ordinal) && candlestick.ToSvg().Contains("stroke=\"#DB2777\"", StringComparison.Ordinal), "Candlestick windows should allow point colors to override semantic rising/falling colors in SVG.");
         Assert(candlestick.ToPng().Length > 64, "Candlestick point colors should render PNG output.");
 
         var ohlc = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddOhlc("Windows", candles);
-        ohlc.Series[0].PointColor(1, "#9333EA");
+        ohlc.Series[0].PointColor(1, ChartColor.FromHex("#9333EA"));
         Assert(ohlc.ToSvg().Contains("data-cfx-role=\"ohlc-stem\"", StringComparison.Ordinal) && ohlc.ToSvg().Contains("stroke=\"#9333EA\"", StringComparison.Ordinal), "OHLC windows should allow point colors to override semantic rising/falling colors in SVG.");
         Assert(ohlc.ToPng().Length > 64, "OHLC point colors should render PNG output.");
 
         var slope = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(540, 320)
             .AddSlope("Before/after", 24, 52, ChartColor.FromHex("#14B8A6"));
-        slope.Series[0].PointColor(1, "#E11D48");
+        slope.Series[0].PointColor(1, ChartColor.FromHex("#E11D48"));
         Assert(CartesianPoint(slope.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "slope-marker"
             && (string?)element.Attribute("fill") == "#E11D48"), "Slope endpoint markers should honor point-specific colors in SVG.");
         Assert(slope.ToPng().Length > 64, "Slope endpoint point colors should render PNG output.");
@@ -378,7 +378,7 @@ internal static partial class SmokeTests {
             .Legend(l => l.ShowPoints().Position(ChartLegendPosition.Right))
             .XLabels("Critical", "High", "Medium")
             .AddBar("Severity", Points(8, 32, 84), ChartColor.FromHex("#2563EB"));
-        pointLegend.Series[0].PointColor(1, "#F97316");
+        pointLegend.Series[0].PointColor(1, ChartColor.FromHex("#F97316"));
         var pointLegendSvg = pointLegend.ToSvg();
         Assert(System.Xml.Linq.XDocument.Parse(pointLegendSvg).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "legend-entry"
             && (string?)element.Attribute("data-cfx-series-key") == pointLegend.Series[0].Id.Value && (string?)element.Attribute("data-cfx-source-id") == "legend-series-0-point-1"),
@@ -400,9 +400,9 @@ internal static partial class SmokeTests {
 
         chart.Series[0].PointColor(1, (ChartColor?)null);
         Assert(!chart.ToSvg().Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Clearing a point color should restore the series fill.");
-        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].PointColor(99, "#F97316"), "Point colors should reject missing point indexes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].PointColor(99, ChartColor.FromHex("#F97316")), "Point colors should reject missing point indexes.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].PointColor(99, (ChartColor?)null), "Clearing point colors should reject missing point indexes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => bubble.Series[0].PointColor(3, "#F97316"), "Tuple-backed point colors should reject indexes outside the logical item count.");
+        AssertThrows<ArgumentOutOfRangeException>(() => bubble.Series[0].PointColor(3, ChartColor.FromHex("#F97316")), "Tuple-backed point colors should reject indexes outside the logical item count.");
         AssertThrows<ArgumentOutOfRangeException>(() => errorBar.Series[0].PointDataLabelStyle(2, _ => { }), "Tuple-backed point label styles should reject indexes outside the logical item count.");
         AssertThrows<ArgumentOutOfRangeException>(() => candlestick.Series[0].PointSliceOffset(2, 0.1), "Tuple-backed slice offsets should reject indexes outside the logical item count.");
     }
@@ -414,7 +414,7 @@ internal static partial class SmokeTests {
                 new ChartMapPoint("Spain", -3.7038, 40.4168),
                 new ChartMapPoint("Indonesia", 113.9213, -0.7893)
             }, ChartColor.FromHex("#14B8A6"));
-        dotted.Series[0].PointColor(1, "#E11D48");
+        dotted.Series[0].PointColor(1, ChartColor.FromHex("#E11D48"));
         var dottedSvg = dotted.ToSvg();
         Assert(MapMarkers(PreparedFamily(dotted))[1].Fill.Equals(ChartColor.FromHex("#E11D48")) && dottedSvg.Contains("#E11D48", StringComparison.Ordinal), "Dotted map points should honor point-specific colors in both prepared paint and SVG.");
         Assert(dotted.ToPng().Length > 64, "Dotted map point colors should render PNG output.");
@@ -425,7 +425,7 @@ internal static partial class SmokeTests {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), 0),
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 2), 100)
             }, ChartColor.FromHex("#14B8A6"));
-        calendar.Series[0].PointColor(1, "#7C3AED");
+        calendar.Series[0].PointColor(1, ChartColor.FromHex("#7C3AED"));
         var calendarSvg = calendar.ToSvg();
         Assert(calendarSvg.Contains("data-cfx-date=\"2026-01-02\"", StringComparison.Ordinal) && calendarSvg.Contains("fill=\"#7C3AED\"", StringComparison.Ordinal), "Calendar heatmap cells should honor point-specific colors in SVG.");
         Assert(calendar.ToPng().Length > 64, "Calendar heatmap point colors should render PNG output.");
@@ -436,7 +436,7 @@ internal static partial class SmokeTests {
                 new ChartRegionMapItem("CA", 10),
                 new ChartRegionMapItem("NY", 100)
             }, ChartColor.FromHex("#14B8A6"));
-        tile.Series[0].PointColor(1, "#F97316");
+        tile.Series[0].PointColor(1, ChartColor.FromHex("#F97316"));
         var tileSvg = tile.ToSvg();
         Assert(tileSvg.Contains("data-cfx-region=\"NY\"", StringComparison.Ordinal) && tileSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Tile map regions should honor point-specific colors in SVG.");
         Assert(tile.ToPng().Length > 64, "Tile map point colors should render PNG output.");
@@ -448,7 +448,7 @@ internal static partial class SmokeTests {
                 new ChartRegionMapItem("CA", 10),
                 new ChartRegionMapItem("NY", 100)
             }, ChartColor.FromHex("#14B8A6"));
-        geo.Series[0].PointColor(1, "#0EA5E9");
+        geo.Series[0].PointColor(1, ChartColor.FromHex("#0EA5E9"));
         var geoSvg = geo.ToSvg();
         Assert(geoSvg.Contains("data-cfx-region=\"NY\"", StringComparison.Ordinal) && geoSvg.Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Region map regions should honor point-specific colors in SVG.");
         Assert(geo.ToPng().Length > 64, "Region map point colors should render PNG output.");

@@ -57,7 +57,7 @@ public sealed class PreparedTopologySvgPolicyTests {
         var semantics = prepared.ToArtifact("policy", VisualArtifactKind.Topology).ToInterchangeEnvelope();
         Assert.Equal("Source title", semantics.Title); Assert.Equal("Source title", semantics.AccessibleName); Assert.Equal("Source description", semantics.AccessibleDescription);
         var noVariables = options.CloneForRendering(); noVariables.SvgColorVariables = null;
-        Assert.Equal(chart.Prepare(context, noVariables).ToPng(), prepared.ToPng()); Assert.Equal(0, prepared.ToRgba().Pixels[3]);
+        Assert.Equal(chart.Prepare(context, noVariables).ToPng(), prepared.ToPng()); Assert.Equal(0, prepared.ToRgbaImage().Pixels[3]);
         variables.Add("--late", colors.Foreground); options.IdScope = "changed"; chart.Title = "Changed";
         Assert.Equal(original, prepared.ToSvg());
         var artifact = prepared.ToArtifact("policy", VisualArtifactKind.Topology); artifact.Accessibility.Name = "Host title";

@@ -33,7 +33,7 @@ public sealed class PairedSingletonVisibilityTests {
         Assert.Equal("0", (string?)point.Attribute(kind == ChartSeriesKind.DifferenceArea ? "data-cfx-first" : "data-cfx-lower"));
         Assert.Equal("7", (string?)point.Attribute(kind == ChartSeriesKind.DifferenceArea ? "data-cfx-second" : "data-cfx-upper"));
         Assert.Equal("single", (string?)point.Attribute("data-cfx-observation-id"));
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var marker in markers) {
             var pixel = ((int)Math.Round(marker.Cy) * image.Width + (int)Math.Round(marker.Cx)) * 4;
             Assert.NotEqual(ChartColor.FromRgba(image.Pixels[0], image.Pixels[1], image.Pixels[2], image.Pixels[3]),

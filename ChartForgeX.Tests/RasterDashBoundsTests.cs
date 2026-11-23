@@ -36,7 +36,7 @@ public sealed class RasterDashBoundsTests {
             Assert.Equal(painted, canvas.Pixels[(40 * 80 + 40) * 4 + 3] > 0);
         }
         string Number(double value) => value.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
-        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'>"
+        var image = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'>"
             + "<path d='M40 40 L40 40' fill='none' stroke='black' stroke-width='8' stroke-linecap='" + cap
             + "' stroke-dasharray='" + Number(dash) + " " + Number(gap) + "' stroke-dashoffset='" + Number(phase) + "'/></svg>");
         Assert.Equal(painted, image.Pixels[(40 * 80 + 40) * 4 + 3] > 0);
@@ -61,7 +61,7 @@ public sealed class RasterDashBoundsTests {
     public void SubpixelButtDashesRetainTheirPaintedFraction(double dash, double gap, double duty) {
         var pattern = dash.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + " "
             + gap.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
-        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'>"
+        var image = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'>"
             + "<path d='M10 20 H110' fill='none' stroke='black' stroke-width='4' stroke-linecap='butt' stroke-dasharray='" + pattern + "'/></svg>");
         foreach (int x in Enumerable.Range(20, 80))
             Assert.InRange(image.Pixels[(20 * 120 + x) * 4 + 3], (int)(255 * duty) - 4, (int)(255 * duty) + 4);
@@ -77,7 +77,7 @@ public sealed class RasterDashBoundsTests {
         var runs = RasterStroker.Dash(points, pattern, -20 * scale, -20 * scale, 1220 * scale, 120 * scale, double.MaxValue % (.013 * scale));
         Assert.NotEmpty(runs);
         Assert.InRange(runs.Count, 1, 50000);
-        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='" + 1200 * scale
+        var image = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='" + 1200 * scale
             + "' height='" + 100 * scale + "' viewBox='0 0 1200 100'><path d='M10 50 H1190' fill='none' stroke='black'"
             + " stroke-width='2' stroke-dasharray='" + string.Join(" ", Enumerable.Repeat(".0001", 65)) + "'/></svg>");
         Assert.Equal(1200 * scale, image.Width);
@@ -122,8 +122,8 @@ public sealed class RasterDashBoundsTests {
             + "<path d='M10 20.5 H110' fill='none' stroke='black' stroke-width='"
             + width.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "' stroke-linecap='" + cap + "'" + dash + "/></svg>";
         // Infinitesimal repeated caps overlap to the solid segment envelope, irrespective of duty.
-        var actual = SvgRasterizer.ToImage(Svg(" stroke-dasharray='1e-23 9.99e-21'"));
-        var expected = SvgRasterizer.ToImage(Svg(""));
+        var actual = SvgRasterizer.ToRgbaImage(Svg(" stroke-dasharray='1e-23 9.99e-21'"));
+        var expected = SvgRasterizer.ToRgbaImage(Svg(""));
         for (int i = 3; i < actual.Pixels.Length; i += 4)
             Assert.InRange(Math.Abs(actual.Pixels[i] - expected.Pixels[i]), 0, 1);
     }
@@ -134,7 +134,7 @@ public sealed class RasterDashBoundsTests {
     [InlineData("butt", .00015, 0)]
     [InlineData("round", .00015, 0)]
     public void DenseOddPatternKeepsOriginalJoinAndClosedSeamPhase(string cap, double phase, int alpha) {
-        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='120' height='100'>"
+        var image = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='120' height='100'>"
             + "<path d='M20 20 H100 V80 H20 Z' fill='none' stroke='black' stroke-width='10' stroke-linecap='" + cap
             + "' stroke-linejoin='miter' stroke-dasharray='.0001 .0002 .0001' stroke-dashoffset='"
             + phase.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "'/></svg>");

@@ -22,12 +22,12 @@ public sealed class TurbulenceNativeSourcePostTests {
             frame: new VisualFrame(transparentBackground: true));
         var prepared = effect.Prepare(context);
         var expected = effect.Generate(new VisualSize(32, 24), density);
-        var actual = prepared.ToRgba(new VisualRenderOptions(density, 1));
+        var actual = prepared.ToRgbaImage(new VisualRenderOptions(density, 1));
         NativeEffectBeforeCapture.Write("turbulence-native-source-" + density, prepared.ToSvg(), actual.ToPng(), actual);
         // The retained source uses the incumbent image sink, including its established source-over byte conversion.
         var imageBasis = new VisualSceneBuilder(new VisualSize(32, 24), FontSpec.SystemSans());
         imageBasis.Image(expected, new ChartRect(0, 0, 32, 24));
-        var expectedPaint = new PreparedVisual(imageBasis.Build()).ToRgba(new VisualRenderOptions(density, 1));
+        var expectedPaint = new PreparedVisual(imageBasis.Build()).ToRgbaImage(new VisualRenderOptions(density, 1));
         Assert.Equal(expectedPaint.Pixels, actual.Pixels);
         Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneProceduralSource>());
         Assert.Empty(prepared.Scene.Nodes.OfType<VisualSceneImage>());
@@ -43,7 +43,7 @@ public sealed class TurbulenceNativeSourcePostTests {
             themeMode: mode, frame: new VisualFrame("Noise as a source", "Four independent channels", showLegend: false));
         var prepared = effect.Prepare(context);
         var native = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
-        NativeEffectBeforeCapture.Write("turbulence-native-frame-" + mode, native.ToString(), prepared.ToPng(), prepared.ToRgba());
+        NativeEffectBeforeCapture.Write("turbulence-native-frame-" + mode, native.ToString(), prepared.ToPng(), prepared.ToRgbaImage());
         var surface = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneProceduralSource>());
         Assert.Equal(17d, surface.Bounds.Left); Assert.Equal(359d, surface.Bounds.Right);
         Assert.True(surface.Bounds.Top > 23); Assert.Equal(251d, surface.Bounds.Bottom);
@@ -61,7 +61,7 @@ public sealed class TurbulenceNativeSourcePostTests {
                 frame: new VisualFrame(transparentBackground: true)));
         var source = prepared.WithScene(prepared.Scene, new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters));
         var frames = VisualValueCapture.InitialFadeFrames(source, 3);
-        var actual = frames[1].ToRgba(new VisualRenderOptions(supersampling: 1));
+        var actual = frames[1].ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         NativeEffectBeforeCapture.Write("turbulence-initial-opacity-middle", frames[1].ToSvg(), actual.ToPng(), actual);
         Assert.Same(source, frames[2]);
         Assert.True(frames[1].Scene.HasProceduralSources);
@@ -80,7 +80,7 @@ public sealed class TurbulenceNativeSourcePostTests {
             frame: new VisualFrame(transparentBackground: true)));
         var native = prepared.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters));
         var baked = prepared.ToSvg(new VisualSvgOptions(effectRasterOptions: new VisualRenderOptions(supersampling: 1)));
-        NativeEffectBeforeCapture.Write("turbulence-profile-native", native, prepared.ToPng(), prepared.ToRgba());
+        NativeEffectBeforeCapture.Write("turbulence-profile-native", native, prepared.ToPng(), prepared.ToRgbaImage());
         var nativeTree = XDocument.Parse(native); var bakedTree = XDocument.Parse(baked);
         Assert.Equal("9", Assert.Single(nativeTree.Descendants(), node => node.Name.LocalName == "feTurbulence").Attribute("numOctaves")?.Value);
         Assert.DoesNotContain(nativeTree.Descendants(), node => node.Name.LocalName == "image");

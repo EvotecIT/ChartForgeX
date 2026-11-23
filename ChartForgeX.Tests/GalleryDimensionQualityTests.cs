@@ -70,7 +70,7 @@ public sealed class GalleryDimensionQualityTests {
             var canvas = new RgbaCanvas(image.Width + extraPixels, image.Height, 1);
             canvas.Clear(ChartColor.White);
             canvas.DrawImage(0, 0, image.Width, image.Height, image.Pixels);
-            image = canvas.ToImage();
+            image = canvas.ToRgbaImage();
         }
         Check(VisualSceneSvgRenderer.Render(scene), PngWriter.WriteRgba(image), pair => {
             Assert.Equal(extraPixels == 0, pair.GetProperty("dimensionsMatch").GetBoolean());

@@ -40,7 +40,7 @@ public sealed class PictorialImagePaintMetadataTests {
     public void PrivatePaintMetadataDoesNotChangeCapturedSourcePixelsOrNativeSvgPartialClipGeometry(ChartPictorialFillDirection direction) {
         var chart = PictorialArtworkTests.Model(.25).Pictorial(p => p.Artwork(ChartPictorialArtwork.FromImage(PictorialArtworkTests.Image())).FillDirection(direction));
         var prepared = PictorialArtworkTests.Prepare(chart); var svg = prepared.ToSvg(); var xml = XDocument.Parse(svg);
-        var native = prepared.ToRgba(); var fromSvg = SvgRasterizer.Rasterize(svg, 480, 220, strict: true).Image;
+        var native = prepared.ToRgbaImage(); var fromSvg = SvgRasterizer.Rasterize(svg, 480, 220, strict: true).Image;
         var shape = prepared.Scene.Nodes.OfType<VisualSceneImage>().Single(image => image.Role == "pictorial-fill");
         var vertical = direction is ChartPictorialFillDirection.BottomToTop or ChartPictorialFillDirection.TopToBottom;
         var near = direction is ChartPictorialFillDirection.LeftToRight or ChartPictorialFillDirection.TopToBottom ? .125 : .875;

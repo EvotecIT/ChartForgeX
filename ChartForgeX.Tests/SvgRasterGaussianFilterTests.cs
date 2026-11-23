@@ -35,7 +35,7 @@ public sealed class SvgRasterGaussianFilterTests {
     [Fact]
     public void WholeSourceGraphicCombinesMarksAndTextBeforeOneSharedKernelOperation() {
         var body = "<rect x='8' y='10' width='9' height='8' fill='#2166ac'/><text x='17' y='19' font-size='7' fill='#b2182b'>FX</text>";
-        var unfiltered = SvgRasterizer.ToImage(Svg("<g>" + body + "</g>"));
+        var unfiltered = SvgRasterizer.ToRgbaImage(Svg("<g>" + body + "</g>"));
         var actual = Import(Svg(Filter("2") + "<g filter='url(#blur)'>" + body + "</g>"));
         Assert.Empty(actual.Diagnostics);
         Capture("gaussian-whole-source-actual", Svg(Filter("2") + "<g filter='url(#blur)'>" + body + "</g>"), actual);
@@ -69,7 +69,7 @@ public sealed class SvgRasterGaussianFilterTests {
     [InlineData("0")] [InlineData("0.001")]
     public void RoundedZeroKeepsExactSourcePixelsWithoutEffectConversion(string sigma) {
         const string body = "<rect x='8' y='10' width='9' height='8' fill='#257bdb' fill-opacity='.678'/>";
-        var expected = SvgRasterizer.ToImage(Svg(body));
+        var expected = SvgRasterizer.ToRgbaImage(Svg(body));
         var actual = Import(Svg(Filter(sigma) + "<g filter='url(#blur)'>" + body + "</g>"));
         Assert.Empty(actual.Diagnostics); Assert.Equal(expected.Pixels, actual.Image.Pixels);
     }
@@ -77,7 +77,7 @@ public sealed class SvgRasterGaussianFilterTests {
     [Fact]
     public void AnisotropicPositiveScaleAndTranslationConvertSigmaExactlyOnce() {
         const string body = "<g transform='translate(4 4) scale(2 3)'><rect x='4' y='3' width='1' height='1' fill='red'/></g>";
-        var expected = BlurViewport(SvgRasterizer.ToImage(Svg(body)), 512, 768);
+        var expected = BlurViewport(SvgRasterizer.ToRgbaImage(Svg(body)), 512, 768);
         var filtered = body.Replace("<g transform=", "<g filter='url(#blur)' transform=");
         var actual = Import(Svg(Filter("1", "-2", "-1", "16", "9") + filtered));
         Capture("gaussian-anisotropic-actual", Svg(Filter("1", "-2", "-1", "16", "9") + filtered), actual);

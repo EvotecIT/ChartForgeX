@@ -36,8 +36,8 @@ public sealed class InnerShadowBeforeControls {
             .DrawLayer(tint, 0, 0, VisualCompositeOperator.SourceOver, orderedDither: false);
         AppearanceFixture.Capture("inner-before-atop-control", atop);
         AppearanceFixture.Capture("inner-before-over-control", over);
-        Assert.Equal(new byte[] { 127, 0, 128, 128 }, AppearanceFixture.Pixel(atop.ToImage(), 0, 0));
-        Assert.Equal(new byte[] { 85, 0, 170, 192 }, AppearanceFixture.Pixel(over.ToImage(), 0, 0));
+        Assert.Equal(new byte[] { 127, 0, 128, 128 }, AppearanceFixture.Pixel(atop.ToRgbaImage(), 0, 0));
+        Assert.Equal(new byte[] { 85, 0, 170, 192 }, AppearanceFixture.Pixel(over.ToRgbaImage(), 0, 0));
     }
 
     [Theory]

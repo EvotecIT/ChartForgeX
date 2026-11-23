@@ -233,7 +233,7 @@ public sealed class WaterfallCheckpointBrowserTests {
                 ChartWaterfallItem.Total(7), ChartWaterfallItem.Delta(8, -20 * sign), ChartWaterfallItem.Subtotal(9)
             }));
         chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
-        chart.Series[0].PointColor(4, "#A5358A").PointFillPattern(4, ChartFillPattern.Crosshatch);
+        chart.Series[0].PointColor(4, ChartColor.FromHex("#A5358A")).PointFillPattern(4, ChartFillPattern.Crosshatch);
         if (horizontal) {
             chart.Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
                 .DataLabels(d => d.Placement(ChartDataLabelPlacement.Auto));

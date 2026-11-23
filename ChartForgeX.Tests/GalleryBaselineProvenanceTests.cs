@@ -117,7 +117,7 @@ public sealed class GalleryBaselineProvenanceTests {
                 var expanded = new RgbaCanvas(image.Width, image.Height + 1, 1);
                 expanded.Clear(ChartColor.White);
                 expanded.DrawImage(0, 0, image.Width, image.Height, image.Pixels);
-                File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(expanded.ToImage()));
+                File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(expanded.ToRgbaImage()));
             }
             GalleryWriter.Write(output);
             using var result = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));

@@ -20,7 +20,7 @@ public sealed class SeamPolygonPaintTests {
         var map = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "region-map-surface").Bounds;
         var isolated = new VisualSceneBuilder(prepared.Scene.Size, FontSpec.SystemSans());
         using (isolated.PushClip(map)) isolated.Path(new ChartPath(path.Commands), ChartColor.Black, strokeWidth: 0, role: "actual-island", close: true);
-        var native = new PreparedVisual(isolated.Build()); var image = native.ToRgba();
+        var native = new PreparedVisual(isolated.Build()); var image = native.ToRgbaImage();
         var viewport = chart.Options.Map.Viewport; var source = ChartGeographicProjection.Bounds(viewport, projection);
         ChartPoint At(double longitude, double latitude) {
             var point = ChartGeographicProjection.Project(longitude, latitude, projection, viewport);

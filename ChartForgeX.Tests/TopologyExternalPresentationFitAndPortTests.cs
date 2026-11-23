@@ -16,7 +16,7 @@ public sealed class TopologyExternalPresentationFitAndPortTests {
     public void FittedExternalGlyphCaptionRadiusAndStrokeReuseOneCapturedUnitBasis(TopologyNodeDisplayMode mode,bool enlarge) {
         var chart=TopologyExternalCaptionPolicyTests.Source(mode);chart.LayoutMode(TopologyLayoutMode.Layered);chart.Viewport(new TopologyViewport(enlarge?1000:180, enlarge?700:140, 24));
         var node=chart.Nodes[0];node.CaptionPlacement=TopologyCaptionPlacement.Top;node.CaptionGap=8;node.CaptionSurface=TopologyCaptionSurface.Plate;
-        node.CaptionTextStyle=new TextStyleOverride{FontFamily=BrowserProofFonts.Family,FontSize=14,FontWeight="400"};node.GlyphScale=1.5;node.CornerRadius=12;node.StrokeWidth=3;node.BorderColor="#ef4444";
+        node.CaptionTextStyle=new TextStyleOverride{FontFamily=BrowserProofFonts.Family,FontSize=14,FontWeight=400};node.GlyphScale=1.5;node.CornerRadius=12;node.StrokeWidth=3;node.BorderColor="#ef4444";
         var options=chart.ResolveRenderOptions(null);options.FitContentToViewport=true;var direct=chart.Prepare(options);var svg=direct.ToSvg();var png=direct.ToPng();var json=direct.ToInterchangeEnvelope().ToJson();Capture(mode+"-"+enlarge,direct);
         var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();var after=restored.Prepare();Capture(mode+"-"+enlarge+"-restored",after);
         var imported=Assert.Single(restored.Nodes);var basis=TopologyPreparedNodeBasis.Resolve(imported);Assert.NotNull(basis);Assert.True(enlarge?basis!.Factor>1:basis!.Factor<1);

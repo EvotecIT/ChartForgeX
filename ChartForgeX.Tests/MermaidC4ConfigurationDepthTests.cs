@@ -30,7 +30,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
         var source="%%{init: {'c4':{'"+type+"FontFamily':'"+family+"','"+type+"FontSize':'18px','"+type+"FontWeight':500,'"+type+"_bg_color':'#123456','"+type+"_border_color':'#654321'}}}%%\nC4Context\n"+call+"(item, \"Observed caption\")";
         var chart=Parse(source).ToTopologyChart();chart.Theme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var node=Assert.Single(chart.Nodes);
         Assert.Equal("#123456",node.BackgroundColor);Assert.Equal("#654321",node.Color);
-        Assert.Equal(family,node.TextStyle!.FontFamily);Assert.Equal(18,node.TextStyle.FontSize);Assert.Equal("500",node.TextStyle.FontWeight);
+        Assert.Equal(family,node.TextStyle!.FontFamily);Assert.Equal(18,node.TextStyle.FontSize);Assert.Equal(500,node.TextStyle.FontWeight);
         var prepared=chart.Prepare();var labels=prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text=>text.Role=="topology-node-label").ToArray();
         Assert.NotEmpty(labels);Assert.All(labels,text=>{Assert.Equal(family,text.Text.Style.Font.Family);Assert.True(text.Text.Size>=18-.001);});
         var image=RasterImageDecoder.Decode(prepared.ToPng());Assert.True(image.Width>0&&image.Height>0);

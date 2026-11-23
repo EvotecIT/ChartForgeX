@@ -8,7 +8,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderRailroadDiagram(SvgMarkupWriter writer, RailroadDiagramBlock block, string id) {
         var layout = VisualBlockRendering.RailroadLayout(block); var theme = block.Options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(block.Options); var y = content.Top;

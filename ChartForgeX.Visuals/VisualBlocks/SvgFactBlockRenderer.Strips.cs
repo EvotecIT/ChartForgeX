@@ -8,7 +8,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderDateStrip(SvgMarkupWriter writer, DateStripBlock block) {
         var options = block.Options;
         var theme = options.ResolvedTheme;

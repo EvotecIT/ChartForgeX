@@ -93,7 +93,7 @@ internal sealed class SequencePreparedPresentation {
             // base FontSpec requests another weight. Capture the face actually painted.
             if (!Customized) resolved.Font.Weight = 400;
             var copy=original?.Clone()??new TextStyleOverride();
-            copy.FontFamily=resolved.Font.Family;copy.FontSize=resolved.FontSize;copy.FontWeight=resolved.Font.Weight.ToString(CultureInfo.InvariantCulture);
+            copy.FontFamily=resolved.Font.Family;copy.FontSize=resolved.FontSize;copy.FontWeight=resolved.Font.Weight;
             copy.Italic=resolved.Font.Italic;copy.OpenTypeLanguageTag=resolved.OpenTypeLanguageTag;
             copy.Variations=resolved.Font.Variations;copy.ColorPaletteIndex=resolved.Font.ColorPaletteIndex;
             return copy;

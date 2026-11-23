@@ -64,6 +64,6 @@ public sealed class RetainedAppearanceBoundaryTests {
         Assert.Throws<ArgumentException>(() => envelope.ApplyCapturedEffects(root));
         Assert.Throws<ArgumentException>(() => captured.ApplyCapturedLayer(RetainedAppearanceFixture.Source(size: new VisualSize(9, 6))));
         Assert.Equal(before, source.ToSvg());
-        Assert.Equal(root.ToRgba(RetainedAppearanceFixture.Options).Pixels, envelope.ApplyCapturedEffects(source).ToRgba(RetainedAppearanceFixture.Options).Pixels);
+        Assert.Equal(root.ToRgbaImage(RetainedAppearanceFixture.Options).Pixels, envelope.ApplyCapturedEffects(source).ToRgbaImage(RetainedAppearanceFixture.Options).Pixels);
     }
 }

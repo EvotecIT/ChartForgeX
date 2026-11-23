@@ -16,7 +16,7 @@ public static class TravelDottedMapRecipe {
                 new ChartMapPoint("United States", -98.5795, 39.8283, ChartColor.FromRgb(34, 197, 94)),
                 new ChartMapPoint("Norway", 8.4689, 60.4720, ChartColor.FromRgb(59, 130, 246))
             })
-            .AddMapRouteBetweenPoints("United States to Spain", "United States", "Spain", ChartColor.FromRgb(34, 197, 94))
-            .AddMapRouteBetweenPoints("Spain to Indonesia", "Spain", "Indonesia", ChartColor.FromRgb(59, 130, 246));
+            .AddMapConnectorBetweenPoints("United States to Spain", "United States", "Spain", ChartColor.FromRgb(34, 197, 94))
+            .AddMapConnectorBetweenPoints("Spain to Indonesia", "Spain", "Indonesia", ChartColor.FromRgb(59, 130, 246));
     }
 }

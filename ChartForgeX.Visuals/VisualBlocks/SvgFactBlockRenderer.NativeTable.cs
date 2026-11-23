@@ -7,7 +7,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderTable(SvgMarkupWriter writer, ChartTable table, string id) {
         var content = VisualBlockRendering.ContentRect(table.Options); var y = content.Y;
         RenderBlockHeading(writer, table, ref y, content.X, content.Width);

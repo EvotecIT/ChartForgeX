@@ -25,7 +25,7 @@ public sealed class RelationshipDataLifecycleTests {
         Assert.Equal("only", target.Attribute("data-cfx-target-id")?.Value);
         var bounds = Assert.Single(single.Regions, region => region.Role == "tree-node").Bounds;
         Assert.Equal(250, bounds.Left + bounds.Width / 2, 8); Assert.Equal(160, bounds.Top + bounds.Height / 2, 8);
-        var image = single.ToRgba(Raster()); var offset = (160 * image.Width + 250) * 4;
+        var image = single.ToRgbaImage(Raster()); var offset = (160 * image.Width + 250) * 4;
         Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
         var convenience = Chart.Create().AddTree("Tree", nodes, Array.Empty<ChartTreeLink>()).Prepare(context);
         Assert.Single(Targets(convenience.ToSvg()));
@@ -57,7 +57,7 @@ public sealed class RelationshipDataLifecycleTests {
             .Color(ChartColor.FromHex("#123456")).FillPattern(ChartFillPattern.DiagonalForward)
             .ShowInLegend(false).ShowDataLabels(false).SemanticRole("requests")
             .ObservationId(0, new ChartObservationId("ordinal-key"))
-            .PointColor(0, "#B34C89").PointFillPattern(0, ChartFillPattern.Crosshatch).PointLabel(0, "Old caption")
+            .PointColor(0, ChartColor.FromHex("#B34C89")).PointFillPattern(0, ChartFillPattern.Crosshatch).PointLabel(0, "Old caption")
             .PointDataLabelStyle(0, style => style.Color(ChartColor.FromHex("#FFFFFF")))
             .NodeState("input", ChartSeriesState.Danger);
         if (IsFlow(kind)) series.FlowState("received", ChartSeriesState.Danger).FlowStyle("received", new ChartFlowStyle(fill: ChartColor.FromHex("#FF0000")));
@@ -101,7 +101,7 @@ public sealed class RelationshipDataLifecycleTests {
     [InlineData(ChartSeriesKind.Treemap)]
     public void InvalidOrInterruptedInputsLeaveFactsIdentitiesAndStylesIntact(ChartSeriesKind kind) {
         var series = Create(kind).ObservationId(0, new ChartObservationId("retained"))
-            .PointColor(0, "#B34C89").NodeState("input", ChartSeriesState.Warning);
+            .PointColor(0, ChartColor.FromHex("#B34C89")).NodeState("input", ChartSeriesState.Warning);
         if (IsFlow(kind)) series.FlowState("received", ChartSeriesState.Danger).FlowStyle("received", new ChartFlowStyle(fillOpacity: .4));
         var chart = Chart.Create().AddSeries(series); var before = chart.Prepare(Context()).ToSvg();
         var oldNodes = series.Nodes; var oldFlows = series.FlowLinks; var oldBranches = series.TreeLinks; var oldItems = series.HierarchyItems;

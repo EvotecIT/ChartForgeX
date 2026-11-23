@@ -201,7 +201,7 @@ public sealed class HeatmapColumnLabelTests {
     public void ToSvg_LongRotatedLabels_PreserveReadableCellsAndFitBothCanvasDimensions(double angle) {
         var longLabel = new string('W', 100);
         var chart = Chart.Create().Size(520, 380).XAxis(x => x.LabelAngle(angle))
-            .TickLabelStyle(style => style.FontWeight("700"))
+            .TickLabelStyle(style => style.FontWeight(700))
             .XLabels(longLabel, longLabel, longLabel)
             .AddHeatmapRow("Row", new[] { 1d, 2d, 3d });
         var svg = XDocument.Parse(chart.ToSvg());

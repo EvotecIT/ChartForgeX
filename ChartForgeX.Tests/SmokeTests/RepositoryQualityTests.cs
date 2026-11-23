@@ -297,8 +297,8 @@ internal static partial class SmokeTests {
     private static void EuropeRevenueMapRoutesTargetRenderedMarkers() {
         var maps = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "MapExamples.cs"));
         Assert(!maps.Contains("London to Warsaw", StringComparison.Ordinal) && !maps.Contains("Madrid to Berlin", StringComparison.Ordinal), "Europe revenue map routes should not use capital-city coordinates when the rendered markers are country market points.");
-        Assert(maps.Contains(".AddMapRouteBetweenPoints(\"United Kingdom to Poland\", \"United Kingdom\", \"Poland\"", StringComparison.Ordinal), "Europe revenue map should route from the United Kingdom marker to the Poland marker.");
-        Assert(maps.Contains(".AddMapRouteBetweenPoints(\"Spain to Germany\", \"Spain\", \"Germany\"", StringComparison.Ordinal), "Europe revenue map should route from the Spain marker to the Germany marker.");
+        Assert(maps.Contains(".AddMapConnectorBetweenPoints(\"United Kingdom to Poland\", \"United Kingdom\", \"Poland\"", StringComparison.Ordinal), "Europe revenue map should route from the United Kingdom marker to the Poland marker.");
+        Assert(maps.Contains(".AddMapConnectorBetweenPoints(\"Spain to Germany\", \"Spain\", \"Germany\"", StringComparison.Ordinal), "Europe revenue map should route from the Spain marker to the Germany marker.");
         Assert(!maps.Contains(".AddMapRoute(route.Label", StringComparison.Ordinal), "Viewport map examples should use point-bound route helpers instead of duplicating raw route coordinates.");
         Assert(maps.Contains(".AddMapRouteBetweenPoints(route.Label, route.FromPointLabel, route.ToPointLabel", StringComparison.Ordinal), "Viewport map examples should bind route overlays to the rendered dotted-map markers.");
     }

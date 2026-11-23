@@ -84,7 +84,7 @@ public sealed class RetainedAppearanceBrowserTests {
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = stem + ".browser.png", FullPage = true });
         }
         Assert.Equal(original.ToPng(), replayed.ToPng());
-        Assert.Equal(terminal.ToImage().Pixels, terminalReplay.ToImage().Pixels);
+        Assert.Equal(terminal.ToRgbaImage().Pixels, terminalReplay.ToRgbaImage().Pixels);
         Assert.Equal(observed.GetProperty("sourceWords").GetRawText(), observed.GetProperty("words").GetRawText());
         var allWords = string.Join(" ", observed.GetProperty("words").EnumerateArray());
         foreach (var word in new[] { "Review", "Archive", "Save", "Stored", "Facts stay editable" }) Assert.Contains(word, allWords);

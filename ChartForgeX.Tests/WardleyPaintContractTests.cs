@@ -55,7 +55,7 @@ public sealed class WardleyPaintContractTests {
             Assert.Empty(raster.Diagnostics);
             var canvas = new RgbaCanvas(100, 70, 4, null, density);
             canvas.StrokeRoundedRectDashed(9.5, 9.5, 78, 45, radius == 0 ? 0 : radius + 0.5, ChartColor.White, 1, 4, 4);
-            foreach (var image in new[] { raster.Image, canvas.ToImage() }) {
+            foreach (var image in new[] { raster.Image, canvas.ToRgbaImage() }) {
                 var ink = VerticalAlpha(image, 10 + radius + 1.5, 10, density);
                 Assert.True(ink > 240 * density, $"radius {radius}, density {density}, SVG {image.Pixels == raster.Image.Pixels}, ink {ink}");
                 Assert.Equal(0, VerticalAlpha(image, 10 + radius + 6, 10, density));

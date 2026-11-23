@@ -52,7 +52,7 @@ internal static partial class SmokeTests {
         var grid = ChartGrid.Create()
             .Title("styled grid header")
             .Subtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
-            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontSize(32).FontFamily("Georgia, serif").FontWeight("900").Italic().UnderlineStyle(TextDecorationStyle.Dotted).StrikethroughStyle(TextDecorationStyle.Wavy).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase))
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontSize(32).FontFamily("Georgia, serif").FontWeight(900).Italic().UnderlineStyle(TextDecorationStyle.Dotted).StrikethroughStyle(TextDecorationStyle.Wavy).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase))
             .SubtitleStyle(style => style.Color(ChartColor.FromHex("#0e7490")).FontSize(16).Italic().UnderlineStyle(TextDecorationStyle.Dotted).Baseline(TextBaseline.Subscript).TextCase(TextCaseTransform.Lowercase))
             .PanelSize(260, 160)
             .Add(Chart.Create().Title("Panel").Size(260, 160).AddLine("Values", Points(1, 2, 3)));

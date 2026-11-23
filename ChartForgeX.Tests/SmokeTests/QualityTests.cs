@@ -538,8 +538,8 @@ internal static partial class SmokeTests {
             .XAxis(x => x.Title("Schedule"))
             .YAxis(y => y.Title("Workstream"))
             .DataLabels()
-            .AddTimelineRange("Alpha", 10, 90, ChartColor.FromRgb(37, 99, 235))
-            .AddTimelineRange("Beta", 24, 70, ChartColor.FromRgb(16, 185, 129));
+            .AddTimelineItem("Alpha", 10, 90, ChartColor.FromRgb(37, 99, 235))
+            .AddTimelineItem("Beta", 24, 70, ChartColor.FromRgb(16, 185, 129));
         chart.Options.ShowCard = false;
         chart.Options.ShowHeader = false;
         chart.Options.Legend.Visible = false;

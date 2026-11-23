@@ -140,8 +140,8 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPictorialFillDirection(ChartPictorialFillDirection)` | `.Pictorial(p => p.FillDirection(direction))` |
 | `WithPictorialMaximum(Double?)` | `.Pictorial(p => p.Max(maximum))` |
 | `WithPictorialShape(ChartPictorialShape)` | `.Pictorial(p => p.Shape(shape)).Pictorial(p => p.SvgPathData(null))` |
-| `WithPictorialSvgPath(string,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData, pngFallbackShape))` |
-| `WithPictorialSvgPath(string,ChartRect,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData, viewBox, pngFallbackShape))` |
+| `WithPictorialSvgPath(string,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData))` |
+| `WithPictorialSvgPath(string,ChartRect,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData, viewBox))` |
 | `WithPictorialSymbolScale(Double)` | `.Pictorial(p => p.SymbolScale(scale))` |
 | `WithPictorialValuePerSymbol(Double?)` | `.Pictorial(p => p.ValuePerSymbol(valuePerSymbol))` |
 | `WithPictorialValues` | `.Pictorial(p => p.ShowValues(visible))` |
@@ -442,7 +442,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `PictorialEmptyOpacity (property)` | `Pictorial.EmptyOpacity` |
 | `PictorialFillDirection (property)` | `Pictorial.FillDirection` |
 | `PictorialMaximum (property)` | `Pictorial.Max` |
-| `PictorialPngFallbackShape (property)` | `Pictorial.PngFallbackShape` |
+| `PictorialPngFallbackShape (property)` | removed; SVG and PNG both draw the custom path |
 | `PictorialShape (property)` | `Pictorial.Shape` |
 | `PictorialSvgPathData (property)` | `Pictorial.SvgPathData` |
 | `PictorialSvgPathViewBox (property)` | `Pictorial.SvgPathViewBox` |

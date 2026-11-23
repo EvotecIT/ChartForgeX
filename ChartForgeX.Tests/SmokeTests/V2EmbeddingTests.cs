@@ -17,20 +17,20 @@ public sealed class V2EmbeddingTests {
     public void ImageCompositionEmbedsTheSamePreparedChartAndGridPixelsWithFitAndOpacity() {
         var chart = Sample().Png(p => p.OutputScale(2)).TransparentBackground(false);
         var chartRequest = VisualExportRequest.ForChart(chart);
-        var chartPixels = chart.Prepare(chartRequest.Context).ToRgba(chartRequest.RasterOptions);
+        var chartPixels = chart.Prepare(chartRequest.Context).ToRgbaImage(chartRequest.RasterOptions);
         var actualChart = ImageComposition.Create(340, 230, ChartColor.White)
-            .DrawChart(chart, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToImage();
+            .DrawChart(chart, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToRgbaImage();
         var expectedChart = ImageComposition.Create(340, 230, ChartColor.White)
-            .DrawImage(chartPixels, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToImage();
+            .DrawImage(chartPixels, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToRgbaImage();
         Assert.Equal(expectedChart.Pixels, actualChart.Pixels);
         var grid = ChartGrid.Create().Columns(2).PanelSize(180, 130).Padding(8)
             .PngOutputScale(2).Add(chart).Add(Sample());
         var gridRequest = VisualExportRequest.ForGrid(grid);
-        var gridPixels = grid.Prepare(gridRequest.Context).ToRgba(gridRequest.RasterOptions);
+        var gridPixels = grid.Prepare(gridRequest.Context).ToRgbaImage(gridRequest.RasterOptions);
         var actualGrid = ImageComposition.CreateTransparent(410, 180)
-            .DrawChartGrid(grid, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToImage();
+            .DrawChartGrid(grid, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToRgbaImage();
         var expectedGrid = ImageComposition.CreateTransparent(410, 180)
-            .DrawImage(gridPixels, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToImage();
+            .DrawImage(gridPixels, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToRgbaImage();
         Assert.Equal(expectedGrid.Pixels, actualGrid.Pixels);
         Assert.Equal(2, chart.Options.Png.OutputScale);
         Assert.False(chart.Options.TransparentBackground);
@@ -61,7 +61,7 @@ public sealed class V2EmbeddingTests {
         var ids = a.DescendantsAndSelf().Concat(b.DescendantsAndSelf()).Attributes("id").Select(attribute => attribute.Value).ToArray();
         Assert.NotEmpty(ids); Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
         Assert.Single(a.DescendantsAndSelf(), element => element.Name.LocalName == "svg");
-        Assert.Equal(prepared.ToRgba().Pixels, grid.ToRgbaImage().Pixels);
+        Assert.Equal(prepared.ToRgbaImage().Pixels, grid.ToRgbaImage().Pixels);
     }
 
     [Theory]

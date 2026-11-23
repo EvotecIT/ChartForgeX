@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
         var theme = VisualTheme.Graphite().Configure(builder => builder.Series(ChartSeriesKind.Line, line => {
             line.StrokeWidth = 3.5; line.Dash = new[] { 6d, 3d }; line.Interpolation = ChartInterpolation.Smooth;
             line.Markers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
-            line.DataLabelStyle(style => { style.FontSize = 13; style.FontWeight = "700"; style.Color = ChartColor.FromHex("#112233"); });
+            line.DataLabelStyle(style => { style.FontSize = 13; style.FontWeight = 700; style.Color = ChartColor.FromHex("#112233"); });
         }));
         var options = new ChartOptions();
         options.DataLabelStyle.Color = ChartColor.FromHex("#445566");
@@ -26,7 +26,7 @@ internal static partial class SmokeTests {
         Assert(VisualSeriesStroke.Width(themed, theme.SeriesStrokeWidth) == 3.5 && themed.StrokeStyle!.Dash!.SequenceEqual(new[] { 6d, 3d })
             && themed.Interpolation == ChartInterpolation.Smooth && themed.Markers.Shape == ChartMarkerShape.Diamond && themed.Markers.Radius == 5,
             "A series without its own settings should take the theme's line defaults.");
-        Assert(themed.DataLabelStyle.FontSize == 13 && themed.DataLabelStyle.FontWeight == "700"
+        Assert(themed.DataLabelStyle.FontSize == 13 && themed.DataLabelStyle.FontWeight == 700
             && Equals(themed.DataLabelStyle.Color, ChartColor.FromHex("#445566")), "Chart-level label styling should sit above the kind's label defaults.");
         Assert(!plain.HasExplicitStrokeWidth && plain.StrokeStyle == null && plain.Interpolation == ChartInterpolation.Linear && !plain.Markers.IsConfigured,
             "Resolving theme defaults should leave the authored series unchanged.");
@@ -34,7 +34,7 @@ internal static partial class SmokeTests {
         var kept = authored.WithThemeDefaults(theme, options);
         Assert(VisualSeriesStroke.Width(kept, theme.SeriesStrokeWidth) == 1.25 && kept.StrokeStyle!.Dash!.Count == 0
             && kept.Interpolation == ChartInterpolation.Linear && kept.Markers.Radius == 2 && kept.Markers.Shape == ChartMarkerShape.Diamond
-            && kept.DataLabelStyle.FontSize == 9 && kept.DataLabelStyle.FontWeight == "700",
+            && kept.DataLabelStyle.FontSize == 9 && kept.DataLabelStyle.FontWeight == 700,
             "Explicit series settings should win field by field while unset fields still inherit the kind defaults.");
         var bar = ChartSeries.CreateBar(new ChartSeriesId("bars"), "Bars", Points(1, 2, 3));
         Assert(ReferenceEquals(bar.WithThemeDefaults(theme, options), bar), "A kind without defaults should keep the global theme values.");
@@ -60,7 +60,7 @@ internal static partial class SmokeTests {
         var line = theme.SeriesDefaults[ChartSeriesKind.Line];
         Assert(line.StrokeWidth == 4 && line.Dash!.SequenceEqual(new[] { 5d, 2d }) && line.Interpolation == ChartInterpolation.Smooth
             && line.Markers.Shape == ChartMarkerShape.Square && line.Markers.Radius == 6 && line.Markers.Enabled == true
-            && line.DataLabelStyle.FontSize == 12 && line.DataLabelStyle.FontWeight == "600" && Equals(line.DataLabelStyle.Color, ChartColor.FromHex("#334455")),
+            && line.DataLabelStyle.FontSize == 12 && line.DataLabelStyle.FontWeight == 600 && Equals(line.DataLabelStyle.Color, ChartColor.FromHex("#334455")),
             "Theme JSON should load every line default.");
         Assert(theme.SeriesDefaults[ChartSeriesKind.HorizontalBar].CornerRadius == 7 && !theme.SeriesDefaults.ContainsKey(ChartSeriesKind.Bar),
             "Theme JSON should key defaults by camel-case series kind.");

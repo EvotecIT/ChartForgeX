@@ -110,7 +110,7 @@ internal static class GraphiteExamples {
         results["horizontal"]=Frame("Horizontal counts","Square baselines and value-end corners").XLabels("One","Two","Three").DataLabels().AddHorizontalBar("Counts",Points(50,30,20));
         results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").DataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
         results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").DataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
-        results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7).AddTimelineRange("Review",6,9);
+        results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineItem("Plan", 1, 3).AddTimelineItem("Build", 3, 7).AddTimelineItem("Review", 6, 9);
         results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65).AddGanttTask("Review",6,9,.2);
         var schedule = results["gantt"];
         schedule.AddGanttDependency(schedule.Series[0], schedule.Series[1]).AddGanttDependency(schedule.Series[1], schedule.Series[2]);

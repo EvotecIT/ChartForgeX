@@ -28,7 +28,7 @@ public sealed class V2ChartGridTests {
         var ids = document.Descendants().Attributes("id").Select(attribute => attribute.Value).ToArray();
         Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
         Assert.All(ids, id => Assert.StartsWith("comparison-", id, StringComparison.Ordinal));
-        var image = prepared.ToRgba(new VisualRenderOptions(scale: 2, supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(scale: 2, supersampling: 1));
         Assert.Equal(1280, image.Width); Assert.Equal(960, image.Height);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         first.ClearSeries(); second.Title = "Changed"; grid.Columns(1).Gap(100);
@@ -63,7 +63,7 @@ public sealed class V2ChartGridTests {
         var grid = ChartGrid.Create().Columns(2).Gap(1000).Add(Line("One", 1, 2)).Add(Line("Two", 3, 4));
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(120, 100), padding: 8)));
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "grid.insufficient-space");
-        Assert.DoesNotContain("NaN", prepared.ToSvg()); Assert.Equal(120, prepared.ToRgba().Width);
+        Assert.DoesNotContain("NaN", prepared.ToSvg()); Assert.Equal(120, prepared.ToRgbaImage().Width);
         Assert.Throws<InvalidOperationException>(() => ChartGrid.Create().Prepare(new VisualRenderContext()));
     }
 

@@ -90,7 +90,7 @@ public sealed class GalleryPngSurfaceTests {
                 if (name == "extra-edge-mark") canvas.FillRect(raster.Width / 2, raster.Height - 2 * scale,
                     20 * scale, 2 * scale, surface == "shadow" ? ChartColor.FromRgb(15, 23, 42) : ChartColor.Black);
                 if (name == "extra-corner-mark") canvas.FillRect(0, 0, 2 * scale, 2 * scale, ChartColor.Black);
-                File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(canvas.ToImage()));
+                File.WriteAllBytes(Path.Combine(output, name + ".png"), PngWriter.WriteRgba(canvas.ToRgbaImage()));
             }
             GalleryWriter.Write(output);
             using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "svg-png-comparison.json")));

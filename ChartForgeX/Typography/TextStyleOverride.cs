@@ -10,7 +10,7 @@ namespace ChartForgeX.Typography;
 [Fluent(Copy = nameof(Clone))]
 public sealed class TextStyleOverride {
     private string? _fontFamily;
-    private string? _fontWeight;
+    private int? _fontWeight;
     private double? _fontSize;
     private double? _letterSpacing;
     private TextDecorationStyle? _underlineStyle;
@@ -37,8 +37,14 @@ public sealed class TextStyleOverride {
     /// <summary>Gets or sets the optional CSS font-family override.</summary>
     public string? FontFamily { get => _fontFamily; set => _fontFamily = OptionalText(value); }
 
-    /// <summary>Gets or sets the optional CSS font-weight override.</summary>
-    public string? FontWeight { get => _fontWeight; set => _fontWeight = OptionalText(value); }
+    /// <summary>Gets or sets the optional font weight, from 1 to 1000; 400 is regular and 700 bold.</summary>
+    public int? FontWeight {
+        get => _fontWeight;
+        set {
+            if (value is < 1 or > 1000) throw new ArgumentOutOfRangeException(nameof(value), value, "Font weight must be between 1 and 1000.");
+            _fontWeight = value;
+        }
+    }
 
     /// <summary>Gets or sets the optional OpenType language-system tag, such as SRB or TRK.
     /// A null override retains the fallback style's language; normal selects the font's default.</summary>
@@ -112,7 +118,7 @@ public sealed class TextStyleOverride {
         var resolved = fallback.Clone();
         if (Color.HasValue) resolved.Color = Color.Value;
         if (FontFamily != null) resolved.Font.Family = FontFamily;
-        if (FontWeight != null) resolved.Font.Weight = ResolveWeight(FontWeight, resolved.Font.Weight);
+        if (FontWeight is { } weight) resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(weight);
         if (FontSize.HasValue) resolved.FontSize = FontSize.Value;
         if (LetterSpacing.HasValue) resolved.LetterSpacing = LetterSpacing.Value;
         if (_hasItalic) resolved.Font.Italic = Italic;
@@ -156,12 +162,12 @@ public sealed class TextStyleOverride {
         return copy;
     }
 
-    internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
+    internal int ResolveFontWeight(int fallback) => FontWeight ?? fallback;
 
     internal TextStyleOverride WithDefaultFontWeight(int weight) {
         if (FontWeight != null) return this;
         var copy = (TextStyleOverride)MemberwiseClone();
-        copy.FontWeight = weight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        copy.FontWeight = weight;
         return copy;
     }
 
@@ -177,22 +183,15 @@ public sealed class TextStyleOverride {
 
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
-    private static int ResolveWeight(string value, int fallback) {
-        if (int.TryParse(value, out var numeric)) return TypographyFontResolver.FontSpecWeight(numeric);
-        if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
-        if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
-        if (string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase)) return 700;
-        if (string.Equals(value, "lighter", StringComparison.OrdinalIgnoreCase)) return 400;
-        return fallback;
-    }
-
-    private static int ResolveEmphasisWeight(string value, int fallback) {
-        if (int.TryParse(value, out var numeric)) return Math.Max(1, Math.Min(1000, numeric));
-        if (string.Equals(value, "normal", StringComparison.OrdinalIgnoreCase)) return 400;
-        if (string.Equals(value, "bold", StringComparison.OrdinalIgnoreCase)) return 700;
-        if (string.Equals(value, "bolder", StringComparison.OrdinalIgnoreCase)) return 700;
-        if (string.Equals(value, "lighter", StringComparison.OrdinalIgnoreCase)) return 400;
-        return fallback;
+    /// <summary>Reads a CSS font-weight value (a number or normal, bold, bolder, lighter), or null when it isn't one.</summary>
+    internal static int? ParseFontWeight(string? value) {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var text = value!.Trim();
+        // An override has no inherited weight, so the relative keywords resolve against regular text.
+        if (text.Equals("bolder", StringComparison.OrdinalIgnoreCase)) return 700;
+        if (text.Equals("lighter", StringComparison.OrdinalIgnoreCase)) return 400;
+        var weight = TypographyFontResolver.ParseCssWeight(text, -1);
+        return weight < 1 ? null : weight;
     }
 
     private static void ValidateOptionalEnum<T>(T? value, string parameterName) where T : struct, Enum {

@@ -17,10 +17,10 @@ using ChartForgeX.Raster;
 
 var first = ImageComposition.Create(320, 180, ChartColor.White)
     .FillCircle(80, 90, 30, ChartColor.FromHex("#2563eb"))
-    .ToImage();
+    .ToRgbaImage();
 var second = ImageComposition.Create(320, 180, ChartColor.White)
     .FillCircle(240, 90, 30, ChartColor.FromHex("#f97316"))
-    .ToImage();
+    .ToRgbaImage();
 
 var frames = new[] {
     new RasterAnimationFrame(first, TimeSpan.FromMilliseconds(250)),

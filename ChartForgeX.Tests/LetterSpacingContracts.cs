@@ -46,8 +46,8 @@ public sealed class LetterSpacingContracts : IDisposable {
         using var bytes = new MemoryStream(); input.CopyTo(bytes); FontRegistry.Register(family, bytes.ToArray());
         var ordinary = Style(); ordinary.Font.Family = family; var tracked = ordinary.Clone(); tracked.LetterSpacing = 1.2;
         Assert.Equal(TextLayoutEngine.Measure(text, ordinary).Width, TextLayoutEngine.Measure(text, tracked).Width, 8);
-        var first = ImageComposition.Create(100, 64, ChartColor.White).DrawTextLayout(4, 4, 90, TextLayoutEngine.Layout(text, 90, ordinary), ordinary).ToImage();
-        var second = ImageComposition.Create(100, 64, ChartColor.White).DrawTextLayout(4, 4, 90, TextLayoutEngine.Layout(text, 90, tracked), tracked).ToImage();
+        var first = ImageComposition.Create(100, 64, ChartColor.White).DrawTextLayout(4, 4, 90, TextLayoutEngine.Layout(text, 90, ordinary), ordinary).ToRgbaImage();
+        var second = ImageComposition.Create(100, 64, ChartColor.White).DrawTextLayout(4, 4, 90, TextLayoutEngine.Layout(text, 90, tracked), tracked).ToRgbaImage();
         Assert.Equal(first.Pixels, second.Pixels);
     }
     [Fact]
@@ -71,10 +71,10 @@ public sealed class LetterSpacingContracts : IDisposable {
         var wrapped = TextLayoutEngine.Layout("HOO HOO", plain.Width + 1, Style(2), maximumLines: 2);
         Assert.True(wrapped.Trimmed); Assert.All(wrapped.Lines, line => Assert.True(line.Width <= plain.Width + 1));
         var zero = ImageComposition.Create(120, 64, ChartColor.White).DrawTextLayout(4, 4, 110,
-            TextLayoutEngine.Layout("HOO", 110, Style()), Style()).ToImage();
+            TextLayoutEngine.Layout("HOO", 110, Style()), Style()).ToRgbaImage();
         var spacedStyle = Style(2);
         var spaced = ImageComposition.Create(120, 64, ChartColor.White).DrawTextLayout(4, 4, 110,
-            TextLayoutEngine.Layout("HOO", 110, spacedStyle), spacedStyle).ToImage();
+            TextLayoutEngine.Layout("HOO", 110, spacedStyle), spacedStyle).ToRgbaImage();
         Assert.NotEqual(zero.Pixels, spaced.Pixels);
     }
     [Fact]
@@ -94,8 +94,8 @@ public sealed class LetterSpacingContracts : IDisposable {
     public void SourceLengthInheritanceUsesComputedPixelsRatherThanRescalingInheritedEm() {
         string Svg(string child) => "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='90'><g font-family='" + Family
             + "' font-size='20' letter-spacing='.06em'><text x='4' y='60' font-size='40' " + child + ">HOO</text></g></svg>";
-        Assert.Equal(SvgRasterizer.ToImage(Svg("")).Pixels, SvgRasterizer.ToImage(Svg("letter-spacing='1.2px'")).Pixels);
-        Assert.NotEqual(SvgRasterizer.ToImage(Svg("")).Pixels, SvgRasterizer.ToImage(Svg("letter-spacing='.06em'")).Pixels);
+        Assert.Equal(SvgRasterizer.ToRgbaImage(Svg("")).Pixels, SvgRasterizer.ToRgbaImage(Svg("letter-spacing='1.2px'")).Pixels);
+        Assert.NotEqual(SvgRasterizer.ToRgbaImage(Svg("")).Pixels, SvgRasterizer.ToRgbaImage(Svg("letter-spacing='.06em'")).Pixels);
     }
     [Fact]
     public void CanvasTextAndHeroUseOnlyTheOptionalSharedStyleHookAndLeaveZeroRequestsExact() {

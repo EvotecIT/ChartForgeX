@@ -42,7 +42,7 @@ public sealed class NumericRadialAxisTextTests {
             Assert.False(Intersects(ticks[first].Bounds, ticks[second].Bounds));
         Assert.Equal("1200", Point(scene, 0, 0)["data-cfx-y"]);
         Assert.Equal("85", Point(scene, 1, 0)["data-cfx-y"]);
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         foreach (var title in titles) Assert.True(Ink(image, title.Bounds, title.Text.Color) > 3, title.Text.Id + " has no native title ink");
     }
 
@@ -160,7 +160,7 @@ public sealed class NumericRadialAxisTextTests {
         var chart = Configured(bars, 360).XAxis(x => x.Title("Region names across the entire service area\nQuarterly reporting categories"))
             .YAxis(y => y.Title("Requests received across all channels\nSource count, including follow-up work"))
             .SecondaryYAxis(s => s.Title("Resolved requests as a percentage of received source counts\nIndependent percentage scale"));
-        chart.Options.AxisTitleStyle.FontSize(28).FontWeight("650").TextCase = TextCaseTransform.Uppercase;
+        chart.Options.AxisTitleStyle.FontSize(28).FontWeight(650).TextCase = TextCaseTransform.Uppercase;
         return chart;
     }
 

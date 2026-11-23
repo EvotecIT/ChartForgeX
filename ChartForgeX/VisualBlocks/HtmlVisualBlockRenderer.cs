@@ -8,7 +8,7 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// Renders visual blocks as dependency-free static HTML.
 /// </summary>
-public sealed class HtmlVisualBlockRenderer {
+internal sealed class HtmlVisualBlockRenderer {
     private readonly SvgVisualBlockRenderer _svg = new();
 
     /// <summary>Renders a visual block as an embeddable HTML fragment.</summary>

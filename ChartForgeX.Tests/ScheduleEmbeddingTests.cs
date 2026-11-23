@@ -30,7 +30,7 @@ public sealed class ScheduleEmbeddingTests {
         Assert.Equal("1", (string?)stops[2].Attribute("offset"));
         Assert.Equal("0", (string?)stops[2].Attribute("stop-opacity"));
         Assert.Equal(stops[0].Attribute("stop-color")!.Value, stops[2].Attribute("stop-color")!.Value);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         byte Alpha(int x) => image.Pixels[(20 * image.Width + x) * 4 + 3];
         Assert.True(Alpha(reversed ? 10 : 590) < Alpha(reversed ? 450 : 150));
         Assert.Equal(2, series.GanttItems[0].End);

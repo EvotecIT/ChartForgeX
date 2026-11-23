@@ -39,8 +39,8 @@ public sealed class RetainedMaskInterchangeTests {
         Capture("retained-mask-roundtrip-" + width + "-" + dark, saved, source, masked, replayed, restored, edited);
         Assert.Equal(2, loaded.Version);
         Assert.Equal(saved, loaded.ToJson());
-        Assert.Equal(masked.ToRgba(RetainedMaskFixture.Pixels).Pixels, replayed.ToRgba(RetainedMaskFixture.Pixels).Pixels);
-        Assert.Equal(masked.ToRgba(RetainedMaskFixture.Pixels).Pixels, restored.ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels, replayed.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels, restored.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
         Assert.Equal(source.Regions.Select(region => region.Id), restored.Regions.Select(region => region.Id));
         Assert.Equal("001", editable.Metadata["raw-sequence"]);
         Assert.Equal("review@01", editable.Participants[0].Metadata["raw-participant"]);
@@ -56,7 +56,7 @@ public sealed class RetainedMaskInterchangeTests {
     [InlineData(VisualMaskMode.Luminance, 1)] [InlineData(VisualMaskMode.Luminance, 2)]
     public void OrderedOffOriginMaskReplayPreservesEveryRawByteAndTheExistingNativeCoverage(VisualMaskMode mode, int density) {
         var source = RetainedMaskFixture.Plate();
-        var input = RetainedMaskFixture.Mask(64, 48, density, mode).ToImage();
+        var input = RetainedMaskFixture.Mask(64, 48, density, mode).ToRgbaImage();
         input.Pixels[0] = 17; input.Pixels[1] = 29; input.Pixels[2] = 43; input.Pixels[3] = 0;
         var first = new VisualMask(input, new ChartPoint(-1d / density, 0), density, mode, false);
         var second = RetainedMaskFixture.Mask(64, 48, density, VisualMaskMode.Alpha);
@@ -72,7 +72,7 @@ public sealed class RetainedMaskInterchangeTests {
         Assert.Equal(-1d / density, item.OriginX);
         Assert.Equal(mode, item.Mode);
         Assert.False(item.OrderedDither);
-        Assert.Equal(masked.ToRgba(options).Pixels, replayed.ToRgba(options).Pixels);
+        Assert.Equal(masked.ToRgbaImage(options).Pixels, replayed.ToRgbaImage(options).Pixels);
         Assert.Equal(json, replayed.ToArtifact().ToInterchangeJson());
     }
 

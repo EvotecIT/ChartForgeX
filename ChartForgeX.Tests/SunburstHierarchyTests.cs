@@ -54,7 +54,7 @@ public sealed class SunburstHierarchyTests {
         var end = Number(nodes["derived"], "start-angle") + Number(nodes["derived"], "sweep");
         Assert.Equal(.3 * Math.PI * 2, Number(nodes["root"], "start-angle") + Number(nodes["root"], "sweep") - end, 12);
         Assert.Empty(nodes["zero"].Elements()); Assert.Equal("zero", (string?)nodes["zero"].Attribute("data-cfx-geometry-status"));
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var rootBounds = prepared.Regions.Single(region => region.Id == "series-0-node-root").Bounds;
         var centerX = rootBounds.X + rootBounds.Width / 2; var centerY = rootBounds.Y + rootBounds.Height / 2;
         var gapAngle = (end + Number(nodes["root"], "start-angle") + Number(nodes["root"], "sweep")) / 2;

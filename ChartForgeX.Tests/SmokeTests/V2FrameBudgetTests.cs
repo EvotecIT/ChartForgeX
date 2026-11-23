@@ -80,7 +80,7 @@ public sealed class V2FrameBudgetTests {
         Assert.Equal(card ? 1 : 0, ByRole(document, "frame-card").Length);
         Assert.Equal(surface ? 1 : 0, ByRole(document, "content-surface").Length);
         Assert.Empty(ByRole(document, "background"));
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(card ? 255 : 0, image.Pixels[(120 * image.Width + 8) * 4 + 3]);
         if (card) Assert.Equal(context.Theme.Resolve(context.ThemeMode).ElevatedSurface.ToCss(), ByRole(document, "frame-card").Single().Attribute("fill")?.Value);
         Assert.False(new VisualFrame().ShowCard);

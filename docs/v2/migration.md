@@ -631,7 +631,7 @@ Package separation was introduced in `2.0.0`; the unified authoring contracts us
 | `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.AddWatermarks(...)` decorator; semantic `Model` remains available |
 | `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
 | Timed RGBA animation frames | In 3.1, use core `RasterAnimationEncoder`, `RasterAnimationSource`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; the `ChartForgeX.Raster` namespace is unchanged. Rebuild consumers against 3.1.0; source calls still compile through Stories' dependency on core |
-| `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
+| `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToRgbaImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
 | `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
 | `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |
 | Decorative static menus, selection controls, navigation arrows and action buttons | Remove their configuration; preserve dates, trend text and status as ordinary content |
@@ -671,7 +671,7 @@ byte[] apng = presentation.ToApng();
 string animatedHtml = presentation.ToHtmlPage();
 ```
 
-The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToImage().ToGif()`.
+The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToRgbaImage().ToGif()`.
 
 For animated SVG with marks, use `VisualWatermarkDecoration.ApplyToSvg(presentation.ToSvg(), marks)`. Animated HTML accepts the same optional SVG transformation through `presentation.ToHtmlPage(svg => VisualWatermarkDecoration.ApplyToSvg(svg, marks))`. The decorator retains script-free SVG animation. A presentation's common static-source contract exports its configured progress sample; use its explicit animation exports when motion is required.
 
@@ -687,7 +687,7 @@ The HTML interaction adapter accepts a trusted SVG factory through `topology.ToI
 
 Prepared chart-grid children use the shared `data-cfx-role="panel"` group and a scoped `data-cfx-source-id="panel-N"` identity. Update selectors that used the legacy `grid-panel` role. Semantic panel regions retain the same source index and contain the translated child regions.
 
-Hosts embedding a detached artifact can request the same policy explicitly: `prepared.ToSvg(new VisualSvgOptions(idPrefix: "capacity-left", colorVariables: hostVariables, responsive: true))`. Supply the host namespace and colour mapping when replacing an export policy. Standalone `prepared.ToSvg()` retains exact viewport sizing.
+Hosts embedding a detached artifact can request the same policy explicitly: `prepared.ToSvg(new VisualSvgOptions(idScope: "capacity-left", colorVariables: hostVariables, responsive: true))`. Supply the host namespace and colour mapping when replacing an export policy. Standalone `prepared.ToSvg()` retains exact viewport sizing.
 
 Topology convenience SVG exports retain `TopologyRenderOptions.UseResponsiveSvg`, which defaults to true. Turning it off preserves the fixed logical viewport. Neither mode changes the prepared diagram layout.
 

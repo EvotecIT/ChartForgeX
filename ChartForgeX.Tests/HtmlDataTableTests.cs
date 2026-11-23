@@ -108,7 +108,7 @@ public sealed class HtmlDataTableTests {
             .XAxis(x => x.LabelBy(value => "T" + value.ToString(CultureInfo.InvariantCulture)))
             .AddStateTimelineLane("State", new[] { new ChartStateTimelineSegment(1, 4, "warn", "Check <source>") });
         Assert.Equal(new[] { "T1", "T4", "Warning & review", "Check <source>", "" }, OnlyRow(state));
-        var timeline = Chart.Create().XAxis(x => x.LabelBy(value => "T" + value.ToString(CultureInfo.InvariantCulture))).AddTimelineRange("Release", 2, 9);
+        var timeline = Chart.Create().XAxis(x => x.LabelBy(value => "T" + value.ToString(CultureInfo.InvariantCulture))).AddTimelineItem("Release", 2, 9);
         Assert.Equal(new[] { "T2", "T9", "" }, OnlyRow(timeline));
     }
 

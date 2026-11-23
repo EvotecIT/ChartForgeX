@@ -34,7 +34,7 @@ public sealed class MermaidSequenceLayoutTypographyTests {
             Sequence=new MermaidSequenceRenderOptions{Presentation=new MermaidPresentationOptions{FontSize=24}}};
         var result=MermaidRenderer.Render(source,options);
         Assert.Empty(result.Diagnostics);var model=Assert.IsType<SequenceArtifact>(result.Artifact!.Model);
-        Assert.Equal(24,model.Typography!.Participant!.FontSize);Assert.Equal("Arial, sans-serif",model.Typography!.Participant!.FontFamily);Assert.Equal("700",model.Typography!.Participant!.FontWeight);
+        Assert.Equal(24,model.Typography!.Participant!.FontSize);Assert.Equal("Arial, sans-serif",model.Typography!.Participant!.FontFamily);Assert.Equal(700,model.Typography!.Participant!.FontWeight);
         Assert.Equal(24,model.Typography!.Message!.FontSize);Assert.Equal(24,model.Typography!.Note!.FontSize);
         Assert.Equal("Arial, sans-serif",model.Typography.Number!.FontFamily);Assert.Null(model.Typography.Number.FontSize);
         var prepared=model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200,900)),font:new FontSpec{Family="Courier New, monospace"}));

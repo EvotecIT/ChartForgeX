@@ -20,7 +20,7 @@ public sealed class SignedMapValueTests {
         };
         var chart = Create(tile, values).Map(m => m.ColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White)));
         chart.Map(map => map.ColorDimension(options => options.ValueFormat = Units()));
-        var series = chart.Series[0].ObservationId(1, new ChartObservationId("measured-b")).PointColor(1, "#123456");
+        var series = chart.Series[0].ObservationId(1, new ChartObservationId("measured-b")).PointColor(1, ChartColor.FromHex("#123456"));
         Assert.Equal(new[] { 0d, -8, 12 }, series.RegionValues.Select(value => value.Value));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var sources = Sources(svg, tile);

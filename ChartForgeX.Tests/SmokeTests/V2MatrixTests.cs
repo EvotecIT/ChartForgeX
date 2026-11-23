@@ -42,7 +42,7 @@ public sealed class V2MatrixTests {
         Assert.True(cells[1].Bounds.Left > cells[0].Bounds.Right);
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal("4", ByRole(document, hexagonal ? "hexbin-heatmap" : "heatmap").Single().Attribute("data-cfx-column-count")?.Value);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)(cells[0].Bounds.Top + cells[0].Bounds.Height / 2) * image.Width + (int)(cells[0].Bounds.Left + cells[0].Bounds.Width / 2)) * 4;
         Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.ClearSeries(); chart.Options.XAxis.Labels.Clear();
@@ -84,7 +84,7 @@ public sealed class V2MatrixTests {
         Assert.Contains(cells, cell => cell.Label == "Activity, 28/09/2026: 0"); Assert.Contains(cells, cell => cell.Label == "Activity, 29/09/2026: No data");
         Assert.Equal("1", ByRole(document, "calendar-heatmap").Single().Attribute("data-cfx-zero-count")?.Value);
         Assert.Contains(ByRole(document, "calendar-weekday"), element => element.Value == "Mo");
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var zero = cells[0].Bounds; var missing = cells[1].Bounds;
         var zeroOffset = ((int)(zero.Top + zero.Height / 2) * image.Width + (int)(zero.Left + zero.Width / 2)) * 4;
         var emptyOffset = ((int)(missing.Top + missing.Height / 2) * image.Width + (int)(missing.Left + missing.Width / 2)) * 4;
@@ -124,7 +124,7 @@ public sealed class V2MatrixTests {
             .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("partial"));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 240)), frame: new VisualFrame(showLegend: false, showSurface: true));
         var prepared = chart.Prepare(context); var box = prepared.Regions.Single(region => region.Role == "heatmap-cell").Bounds;
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)(box.Top + box.Height / 2) * image.Width + (int)(box.Left + box.Width / 2)) * 4;
         var expected = ChartStateMark.For(state, context.Theme.Resolve(context.ThemeMode).Surface).Surface;
         Assert.InRange(Math.Abs(image.Pixels[offset] - expected.R), 0, 1);

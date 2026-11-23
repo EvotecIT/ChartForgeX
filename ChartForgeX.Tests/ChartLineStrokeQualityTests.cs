@@ -65,7 +65,7 @@ public sealed class ChartLineStrokeQualityTests {
         var withoutLine = ReferenceLineChart(Hidden(magenta));
         var width = VisualExportRequest.ForChart(withLine).Context.Theme.AxisStrokeWidth;
         var png = DashRuns(Coverage(withLine.ToRgbaImage(), withoutLine.ToRgbaImage(), magenta), width);
-        var svg = DashRuns(Coverage(SvgRasterizer.ToImage(withLine.ToSvg()), SvgRasterizer.ToImage(withoutLine.ToSvg()), magenta), width);
+        var svg = DashRuns(Coverage(SvgRasterizer.ToRgbaImage(withLine.ToSvg()), SvgRasterizer.ToRgbaImage(withoutLine.ToSvg()), magenta), width);
         // stroke-dasharray="6 5" with butt caps: 6 px dashes and 5 px gaps.
         Assert.True(png.Dashes.Count > 20 && svg.Dashes.Count > 20);
         Assert.InRange(png.Dashes.Average(), 5.6, 6.4);
@@ -77,7 +77,7 @@ public sealed class ChartLineStrokeQualityTests {
     [Fact]
     public void AxisLineKeepsItsStrokeWidth() {
         var png = Coverage(AxisChart(true).ToRgbaImage(), AxisChart(false).ToRgbaImage(), Ink);
-        var svg = Coverage(SvgRasterizer.ToImage(AxisChart(true).ToSvg()), SvgRasterizer.ToImage(AxisChart(false).ToSvg()), Ink);
+        var svg = Coverage(SvgRasterizer.ToRgbaImage(AxisChart(true).ToSvg()), SvgRasterizer.ToRgbaImage(AxisChart(false).ToSvg()), Ink);
         var pngWidths = ColumnInk(png).Where(value => value > 0.5).ToList();
         var svgWidths = ColumnInk(svg).Where(value => value > 0.5).ToList();
         Assert.True(pngWidths.Count > 300 && svgWidths.Count > 300);
@@ -92,7 +92,7 @@ public sealed class ChartLineStrokeQualityTests {
         var withoutEdges = Topology(includeEdges: false);
         var options = new TopologyRenderOptions { IncludeLegend = false };
         var png = Coverage(withEdges.ToRgbaImage(options), withoutEdges.ToRgbaImage(options));
-        var svg = Coverage(SvgRasterizer.ToImage(withEdges.ToSvg(options)), SvgRasterizer.ToImage(withoutEdges.ToSvg(options)));
+        var svg = Coverage(SvgRasterizer.ToRgbaImage(withEdges.ToSvg(options)), SvgRasterizer.ToRgbaImage(withoutEdges.ToSvg(options)));
         Assert.Equal(svg.GetLength(0), png.GetLength(0));
         Assert.Equal(svg.GetLength(1), png.GetLength(1));
 
@@ -128,7 +128,7 @@ public sealed class ChartLineStrokeQualityTests {
         var amber = ChartColor.FromRgb(217, 119, 6);
         Chart Sparkline(ChartColor color) => Chart.Create().Size(360, 90).Sparkline().Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain())).AddLine("Signal", Wave(16), color);
         var png = Coverage(Sparkline(amber).ToRgbaImage(), Sparkline(Hidden(amber)).ToRgbaImage(), amber);
-        var svg = Coverage(SvgRasterizer.ToImage(Sparkline(amber).ToSvg()), SvgRasterizer.ToImage(Sparkline(Hidden(amber)).ToSvg()), amber);
+        var svg = Coverage(SvgRasterizer.ToRgbaImage(Sparkline(amber).ToSvg()), SvgRasterizer.ToRgbaImage(Sparkline(Hidden(amber)).ToSvg()), amber);
         var compared = 0;
         for (var x = 20; x < 340; x += 5) {
             var pngProfile = Profile(png, x, 0, 89);

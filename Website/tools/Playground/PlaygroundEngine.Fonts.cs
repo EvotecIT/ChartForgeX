@@ -34,7 +34,7 @@ public static partial class PlaygroundEngine {
                 if (block is RailroadDiagramBlock railroad) {
                     // The producer measured in its default font and the playground sets no frame of its own, so measure again in the preview font.
                     railroad.NaturalSize();
-                    artifact.NaturalSize = new VisualArtifactSize(railroad.Options.Size.Width, railroad.Options.Size.Height);
+                    artifact.NaturalSize = new VisualSize(railroad.Options.Size.Width, railroad.Options.Size.Height);
                 }
                 break;
         }

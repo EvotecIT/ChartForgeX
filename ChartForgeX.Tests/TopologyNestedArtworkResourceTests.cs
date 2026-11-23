@@ -93,7 +93,7 @@ public sealed class TopologyNestedArtworkResourceTests {
             + "<image width='32' height='32' href='https://example.invalid/never-fetched'/>";
         var prepared = Chart(TopologyIconArtwork.Image(Svg(body))).Prepare(Options());
         var image = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneImage>()).Image;
-        var standalone = SvgRasterizer.ToImage(Document(body), image.Width, image.Height);
+        var standalone = SvgRasterizer.ToRgbaImage(Document(body), image.Width, image.Height);
         Assert.Equal(standalone.Pixels, image.Pixels);
     }
 

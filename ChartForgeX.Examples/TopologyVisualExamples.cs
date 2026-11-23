@@ -495,9 +495,9 @@ internal static partial class TopologyVisualExamples {
                 new ChartMapPoint("EMEA", 10.0, 50.0, 56, ChartColor.FromRgb(37, 99, 235)),
                 new ChartMapPoint("APAC", 103.8198, 1.3521, 39, ChartColor.FromRgb(124, 58, 237))
             })
-            .AddMapRouteBetweenPoints("AMER to EMEA 68 ms", "AMER", "EMEA", ChartColor.FromRgb(22, 163, 74))
-            .AddMapRouteBetweenPoints("EMEA to APAC 92 ms", "EMEA", "APAC", ChartColor.FromRgb(239, 68, 68))
-            .AddMapRouteBetweenPoints("AMER to APAC 142 ms", "AMER", "APAC", ChartColor.FromRgb(245, 158, 11));
+            .AddMapConnectorBetweenPoints("AMER to EMEA 68 ms", "AMER", "EMEA", ChartColor.FromRgb(22, 163, 74))
+            .AddMapConnectorBetweenPoints("EMEA to APAC 92 ms", "EMEA", "APAC", ChartColor.FromRgb(239, 68, 68))
+            .AddMapConnectorBetweenPoints("AMER to APAC 142 ms", "AMER", "APAC", ChartColor.FromRgb(245, 158, 11));
     }
 
     private static Chart BuildSiteDistributionMap() {
@@ -518,9 +518,9 @@ internal static partial class TopologyVisualExamples {
                 new ChartMapPoint("Singapore", 103.8198, 1.3521, 15, ChartColor.FromRgb(124, 58, 237)),
                 new ChartMapPoint("Sydney", 151.2093, -33.8688, 8, ChartColor.FromRgb(239, 68, 68))
             })
-            .AddMapRouteBetweenPoints("New York to London", "New York", "London", ChartColor.FromRgb(22, 163, 74))
-            .AddMapRouteBetweenPoints("London to Singapore", "London", "Singapore", ChartColor.FromRgb(245, 158, 11))
-            .AddMapRouteBetweenPoints("Singapore to Sydney", "Singapore", "Sydney", ChartColor.FromRgb(239, 68, 68));
+            .AddMapConnectorBetweenPoints("New York to London", "New York", "London", ChartColor.FromRgb(22, 163, 74))
+            .AddMapConnectorBetweenPoints("London to Singapore", "London", "Singapore", ChartColor.FromRgb(245, 158, 11))
+            .AddMapConnectorBetweenPoints("Singapore to Sydney", "Singapore", "Sydney", ChartColor.FromRgb(239, 68, 68));
     }
 
     private static Chart BuildWanLatencyMap() {
@@ -538,9 +538,9 @@ internal static partial class TopologyVisualExamples {
                 new ChartMapPoint("Singapore", 103.8198, 1.3521, ChartColor.FromRgb(124, 58, 237)),
                 new ChartMapPoint("Sydney", 151.2093, -33.8688, ChartColor.FromRgb(239, 68, 68))
             })
-            .AddMapRouteBetweenPoints("Dallas to Frankfurt 68 ms", "Dallas", "Frankfurt", ChartColor.FromRgb(22, 163, 74))
-            .AddMapRouteBetweenPoints("Frankfurt to Singapore 92 ms", "Frankfurt", "Singapore", ChartColor.FromRgb(239, 68, 68))
-            .AddMapRouteBetweenPoints("Singapore to Sydney 142 ms", "Singapore", "Sydney", ChartColor.FromRgb(245, 158, 11));
+            .AddMapConnectorBetweenPoints("Dallas to Frankfurt 68 ms", "Dallas", "Frankfurt", ChartColor.FromRgb(22, 163, 74))
+            .AddMapConnectorBetweenPoints("Frankfurt to Singapore 92 ms", "Frankfurt", "Singapore", ChartColor.FromRgb(239, 68, 68))
+            .AddMapConnectorBetweenPoints("Singapore to Sydney 142 ms", "Singapore", "Sydney", ChartColor.FromRgb(245, 158, 11));
     }
 
     private static void AddSiteDots(TopologyChart chart, string prefix, double x, double y, int count, TopologyHealthStatus status) {

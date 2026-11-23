@@ -73,7 +73,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests : IDisposable {
     public void LegacyTopologyUsesAutomaticWhileAnExplicitPresentationCallbackKeepsItsOwnSvg() {
         var chart = TopologyOwnedFontPortableTests.Source(); chart.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         // The default node 600 request deliberately stays native; the available regular 400 face qualifies owned browser text.
-        chart.Nodes[0].TextStyle = new TextStyleOverride { FontWeight = "400" };
+        chart.Nodes[0].TextStyle = new TextStyleOverride { FontWeight = 400 };
         var renderer = new HtmlInteractiveTopologyRenderer(); var automatic = renderer.RenderFragmentWithoutAssets(chart);
         var calls = 0; var explicitSvg = renderer.RenderPresentationFragmentWithoutAssets(chart, prepared => { calls++; return prepared.ToSvg(); });
         Save("legacy-auto.html", automatic); Save("legacy-callback.html", explicitSvg);

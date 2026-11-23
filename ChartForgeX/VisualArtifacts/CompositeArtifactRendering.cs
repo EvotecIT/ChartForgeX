@@ -67,7 +67,7 @@ public static class CompositeArtifactRendering {
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = title;
         artifact.Subtitle = subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(width, height);
+        artifact.NaturalSize = new VisualSize(width, height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png |
                                  VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
         artifact.Metadata["render.model"] = model.GetType().Name;

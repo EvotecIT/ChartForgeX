@@ -58,7 +58,7 @@ public sealed class HistogramNormalizationTests {
         Assert.Equal(3, narrow.Height / wide.Height, 8);
         Assert.Equal(narrow.Width * narrow.Height, wide.Width * wide.Height, 7);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar"), rectangle => Assert.Equal(0, rectangle.Radius));
-        var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var raster = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var bounds in new[] { narrow, wide }) {
             var offset = ((int)(bounds.Top + bounds.Height / 2) * raster.Width + (int)(bounds.Left + bounds.Width * .03)) * 4;
             Assert.Equal(red.R, raster.Pixels[offset]); Assert.Equal(red.G, raster.Pixels[offset + 1]); Assert.Equal(red.B, raster.Pixels[offset + 2]);

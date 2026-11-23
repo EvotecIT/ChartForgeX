@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class KeyedPointChangesTests {
     [Fact]
     public void RollingTransactionKeepsSurvivingKeysAndEveryPresentationOverride() {
-        var series = Series().PointColor(1, "#123456").PointLabel(1, "Second")
+        var series = Series().PointColor(1, ChartColor.FromHex("#123456")).PointLabel(1, "Second")
             .PointFillPattern(1, ChartFillPattern.Crosshatch)
             .PointDataLabelStyle(1, style => style.FontSize = 13);
         series.PointSliceOffsets.AddRange(new[] { 0d, .2, 0d });
@@ -42,7 +42,7 @@ public sealed class KeyedPointChangesTests {
 
     [Fact]
     public void InvalidThrowingOversizedAndCanceledBatchesLeaveInstalledFactsAndOverridesUntouched() {
-        var series = Series().PointColor(1, "#123456").PointLabel(1, "Second");
+        var series = Series().PointColor(1, ChartColor.FromHex("#123456")).PointLabel(1, "Second");
         var chart = Chart.Create().AddSeries(series); var before = Prepare(chart).ToSvg();
         var invalid = new[] {
             new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99)), ChartObservationChange<ChartPoint>.Append(Id("a"), new ChartPoint(7, 70)) },

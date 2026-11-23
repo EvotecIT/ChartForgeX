@@ -140,7 +140,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
             AssertExportedCaptions(prepared, "tile-map-label", codes);
         }
         AssertPainted(prepared, new[] { caption });
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)(swatch.Bounds.Top + swatch.Bounds.Height / 2) * image.Width + (int)(swatch.Bounds.Left + swatch.Bounds.Width / 2)) * 4;
         Assert.Equal(swatch.Fill!.Value.R, image.Pixels[offset]);
         Assert.Equal(swatch.Fill.Value.G, image.Pixels[offset + 1]);
@@ -245,7 +245,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
     }
 
     private static void AssertPainted(PreparedVisual prepared, IEnumerable<VisualSceneText> texts) {
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var text in texts) {
             var corners = TextGeometry(prepared, text.Role!).Single(label => label.Text == text).Corners;
             var region = new ChartRect(corners.Min(point => point.X), corners.Min(point => point.Y),

@@ -45,7 +45,7 @@ public sealed class ChartGridPaginationTests {
             .PanelSize(320, 200).PanelFit(VisualPanelFit.Contain)
             .UsePanelThemes()
             .TitleStyle(style => style.FontSize(21).Italic().UnderlineStyle(TextDecorationStyle.Double))
-            .SubtitleStyle(style => style.FontWeight("600").Baseline(TextBaseline.Superscript).Strikethrough());
+            .SubtitleStyle(style => style.FontWeight(600).Baseline(TextBaseline.Superscript).Strikethrough());
         for (var i = 0; i < 7; i++) grid.Add(Chart.Create().Size(320, 200).AddLine("Value", new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) }), i == 6 ? 2 : 1, i == 6 ? 2 : 1);
         var pages = grid.Paginate(6);
         var last = pages[1].Grid;
@@ -65,7 +65,7 @@ public sealed class ChartGridPaginationTests {
         Assert.Equal(21, last.TitleStyle.FontSize);
         Assert.True(last.TitleStyle.Italic);
         Assert.Equal(TextDecorationStyle.Double, last.TitleStyle.UnderlineStyle);
-        Assert.Equal("600", last.SubtitleStyle.FontWeight);
+        Assert.Equal(600, last.SubtitleStyle.FontWeight);
         Assert.Equal(TextBaseline.Superscript, last.SubtitleStyle.Baseline);
         Assert.True(last.SubtitleStyle.Strikethrough);
         last.TitleStyle.FontSize = 30;

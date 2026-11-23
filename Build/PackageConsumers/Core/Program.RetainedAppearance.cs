@@ -32,7 +32,7 @@ internal static partial class Program {
         var restored = terminal.ApplyCapturedLayer(source);
         PackageAssertions.Require(terminal.Width == 320 && terminal.Height == 320 && capture.Bounds.Width > 320,
             "Source viewport was silently rebased to outward captured pixels.");
-        PackageAssertions.Require(restored.Bounds.Equals(capture.Bounds) && restored.ToImage().Pixels.SequenceEqual(capture.ToImage().Pixels),
+        PackageAssertions.Require(restored.Bounds.Equals(capture.Bounds) && restored.ToRgbaImage().Pixels.SequenceEqual(capture.ToRgbaImage().Pixels),
             "Terminal replay lost its actual output frame or pixels.");
         PackageAssertions.Png(restored.Visual.ToPng());
     }

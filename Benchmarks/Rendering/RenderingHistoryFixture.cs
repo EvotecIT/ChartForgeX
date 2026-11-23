@@ -22,12 +22,12 @@ public static class RenderingHistoryFixture {
         RgbaImage image;
         if (mode == "Svg") {
             var labels = string.Concat(Enumerable.Range(0, 12).Select(i => $"<text x='10' y='{15 + i * 13}' font-family='CFX History' font-size='12'>{Label}</text>"));
-            image = SvgRasterizer.ToImage($"<svg xmlns='http://www.w3.org/2000/svg' width='500' height='180'>{labels}</svg>");
+            image = SvgRasterizer.ToRgbaImage($"<svg xmlns='http://www.w3.org/2000/svg' width='500' height='180'>{labels}</svg>");
         } else {
             var style = mode == "Full" ? Full : mode == "Auto" ? Auto : throw new ArgumentOutOfRangeException(nameof(mode));
             var surface = ImageComposition.CreateTransparent(500, 180);
             for (var i = 0; i < 12; i++) surface.DrawText(10, 2 + i * 13, 450, Label, style, TextWrapMode.NoWrap, null, TextTrimming.None);
-            image = surface.ToImage();
+            image = surface.ToRgbaImage();
         }
         if (proofDelayMilliseconds > 0) Thread.Sleep(proofDelayMilliseconds);
         return image;

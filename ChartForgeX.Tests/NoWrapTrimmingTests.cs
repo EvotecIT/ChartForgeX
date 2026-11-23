@@ -33,7 +33,7 @@ public sealed class NoWrapTrimmingTests {
     [Fact]
     public void CompositionDrawsTheEllipsizedLineInsideItsRegion() {
         var style = TextStyle.Create(24, ChartColor.White);
-        var image = ImageComposition.CreateTransparent(400, 40).DrawText(0, 4, 200, Long, style, TextWrapMode.NoWrap, 1, TextTrimming.Ellipsis).ToImage();
+        var image = ImageComposition.CreateTransparent(400, 40).DrawText(0, 4, 200, Long, style, TextWrapMode.NoWrap, 1, TextTrimming.Ellipsis).ToRgbaImage();
         for (var y = 0; y < image.Height; y++) {
             for (var x = 204; x < image.Width; x++) Assert.Equal(0, image.Pixels[(y * image.Width + x) * 4 + 3]);
         }

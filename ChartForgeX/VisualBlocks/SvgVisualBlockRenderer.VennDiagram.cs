@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderVennDiagram(SvgMarkupWriter writer, VennDiagramBlock block) {
         var options = block.Options;
         var theme = options.ResolvedTheme;

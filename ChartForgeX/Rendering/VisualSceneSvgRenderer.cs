@@ -14,25 +14,25 @@ namespace ChartForgeX.Rendering;
 /// <summary>Serializes native scene decisions; it never lays out or parses a rendered visual.</summary>
 internal static partial class VisualSceneSvgRenderer {
     internal static string Render(VisualScene scene, string? title = null, string? description = null,
-        string? language = null, bool decorative = false, string? idPrefix = null, VisualSvgOptions? options = null, bool capturePngText = false, int? maximumCharacters = null) =>
-        Render(scene, title, description, language, decorative, idPrefix, options, capturePngText, System.Threading.CancellationToken.None, maximumCharacters);
+        string? language = null, bool decorative = false, string? idScope = null, VisualSvgOptions? options = null, bool capturePngText = false, int? maximumCharacters = null) =>
+        Render(scene, title, description, language, decorative, idScope, options, capturePngText, System.Threading.CancellationToken.None, maximumCharacters);
 
     internal static string Render(VisualScene scene, string? title, string? description,
-        string? language, bool decorative, string? idPrefix, VisualSvgOptions? options, bool capturePngText,
+        string? language, bool decorative, string? idScope, VisualSvgOptions? options, bool capturePngText,
         System.Threading.CancellationToken cancellation, int? maximumCharacters = null) {
-        return Render(scene, title, description, language, decorative, idPrefix, options, capturePngText, cancellation, out _, out _, maximumCharacters);
+        return Render(scene, title, description, language, decorative, idScope, options, capturePngText, cancellation, out _, out _, maximumCharacters);
     }
     /// <summary>Returns the resolved namespace from this exact emission, including automatic/native identity.</summary>
     internal static string Render(VisualScene scene, string? title, string? description, string? language,
-        bool decorative, string? idPrefix, VisualSvgOptions? options, bool capturePngText, out string resolvedPrefix, int? maximumCharacters = null) =>
-        Render(scene, title, description, language, decorative, idPrefix, options, capturePngText, System.Threading.CancellationToken.None, out resolvedPrefix, out _, maximumCharacters);
+        bool decorative, string? idScope, VisualSvgOptions? options, bool capturePngText, out string resolvedPrefix, int? maximumCharacters = null) =>
+        Render(scene, title, description, language, decorative, idScope, options, capturePngText, System.Threading.CancellationToken.None, out resolvedPrefix, out _, maximumCharacters);
     internal static string RenderForHtml(VisualScene scene, string? title, string? description, string? language,
-        bool decorative, string? idPrefix, VisualSvgOptions options, bool capturePngText,
+        bool decorative, string? idScope, VisualSvgOptions options, bool capturePngText,
         out string resolvedPrefix, out VisualSvgFontResources? fonts) =>
-        Render(scene, title, description, language, decorative, idPrefix, options, capturePngText,
+        Render(scene, title, description, language, decorative, idScope, options, capturePngText,
             System.Threading.CancellationToken.None, out resolvedPrefix, out fonts);
     private static string Render(VisualScene scene, string? title, string? description, string? language,
-        bool decorative, string? idPrefix, VisualSvgOptions? options, bool capturePngText,
+        bool decorative, string? idScope, VisualSvgOptions? options, bool capturePngText,
         System.Threading.CancellationToken cancellation, out string resolvedPrefix, out VisualSvgFontResources? fonts, int? maximumCharacters = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         cancellation.ThrowIfCancellationRequested();
@@ -45,7 +45,7 @@ internal static partial class VisualSceneSvgRenderer {
         var explorable = !decorative && (options?.Explorable == true || options?.EnhanceHooks == true || HasNavigation(scene));
         var regionLabels = explorable ? new Dictionary<string, string?>(StringComparer.Ordinal) : null;
         if (regionLabels != null) foreach (var region in scene.Regions) regionLabels[region.Id] = region.Label;
-        var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
+        var prefix = idScope == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idScope);
         resolvedPrefix = prefix;
         var images = new VisualSvgImageResources(prefix);
         fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
@@ -445,12 +445,12 @@ internal static partial class VisualSceneSvgRenderer {
         return ExportIdentity(scene, result.ToString(), options);
     }
 
-    internal static string ValidatePrefix(string idPrefix) {
-        if (idPrefix == null) throw new ArgumentNullException(nameof(idPrefix));
-        if (idPrefix.Length == 0 || !Letter(idPrefix[0])) throw new ArgumentException("SVG ID prefixes must begin with an ASCII letter.", nameof(idPrefix));
-        foreach (var c in idPrefix) if (!(Letter(c) || c >= '0' && c <= '9' || c == '-' || c == '_' || c == '.'))
-            throw new ArgumentException("SVG ID prefixes may contain only ASCII letters, digits, hyphens, underscores and periods.", nameof(idPrefix));
-        return idPrefix;
+    internal static string ValidatePrefix(string idScope) {
+        if (idScope == null) throw new ArgumentNullException(nameof(idScope));
+        if (idScope.Length == 0 || !Letter(idScope[0])) throw new ArgumentException("SVG ID prefixes must begin with an ASCII letter.", nameof(idScope));
+        foreach (var c in idScope) if (!(Letter(c) || c >= '0' && c <= '9' || c == '-' || c == '_' || c == '.'))
+            throw new ArgumentException("SVG ID prefixes may contain only ASCII letters, digits, hyphens, underscores and periods.", nameof(idScope));
+        return idScope;
     }
 
     private static bool Letter(char value) => value >= 'a' && value <= 'z' || value >= 'A' && value <= 'Z';

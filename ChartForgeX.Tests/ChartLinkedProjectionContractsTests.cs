@@ -53,7 +53,7 @@ public sealed class ChartLinkedProjectionContractsTests {
         var mark = XDocument.Parse(point.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point");
         Assert.Equal("-1.5", mark.Attribute("data-cfx-x")!.Value);
         Assert.Null(mark.Attribute("data-cfx-x-instant"));
-        var range = Chart.Create().XAxis(x => x.TimeScale()).AddTimelineRange("Crossing", -1, 1);
+        var range = Chart.Create().XAxis(x => x.TimeScale()).AddTimelineItem("Crossing", -1, 1);
         var interval = XDocument.Parse(range.ToSvg()).Descendants().Single(node => node.Attribute("data-cfx-range-start") != null);
         Assert.Equal("-1", interval.Attribute("data-cfx-range-start")!.Value);
         Assert.Equal("1", interval.Attribute("data-cfx-range-end")!.Value);

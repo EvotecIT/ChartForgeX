@@ -19,9 +19,9 @@ internal static class CompositionEffectsExamples {
                 .DrawText(32, 28, width - 144, "Service overview", width == 400 ? 20 : 26, foreground, emphasized: true)
                 .DrawText(32, 76, width - 144, "Ready for the next request", width == 400 ? 14 : 18, accent)
                 .DrawShadow(ChartColor.FromRgba(0, 0, 0, 144), 0, 8, 4);
-            var composition = ImageComposition.Create(width, height, background).DrawImage(glow.ToImage(), 0, 0, width, height)
-                .DrawImage(panel.ToImage(), 32, 28, panel.Width, panel.Height);
-            var image = composition.ToImage();
+            var composition = ImageComposition.Create(width, height, background).DrawImage(glow.ToRgbaImage(), 0, 0, width, height)
+                .DrawImage(panel.ToRgbaImage(), 32, 28, panel.Width, panel.Height);
+            var image = composition.ToRgbaImage();
             var canvas = VisualCanvas.Create(width, height).Title("Blurred mark and text with panel shadow")
                 .PngOutputScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, width, height);
             var name = "composition-effects-" + (dark ? "dark-" : "light-") + width;

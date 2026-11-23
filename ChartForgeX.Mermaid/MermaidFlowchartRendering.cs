@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -196,7 +197,7 @@ public static partial class MermaidFlowchartRendering {
         var artifact = MermaidArtifactPolicy.ConvertNative(document, () => topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid));
         artifact.Kind = VisualArtifactKind.Mermaid;
         artifact.PreserveNaturalSize = options.HasExplicitViewportSize && options.Presentation?.TopologySizing == MermaidTopologySizing.FixedViewport;
-        if (artifact.PreserveNaturalSize) artifact.NaturalSize = new VisualArtifactSize(options.Width, options.Height);
+        if (artifact.PreserveNaturalSize) artifact.NaturalSize = new VisualSize(options.Width, options.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;

@@ -69,7 +69,7 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
     }
 
     /// <summary>Exports the configured progress sample as RGBA pixels.</summary>
-    public RgbaImage ToRgbaImage() => Sample(_motion.Progress).ToRgba(_basis.RasterOptions);
+    public RgbaImage ToRgbaImage() => Sample(_motion.Progress).ToRgbaImage(_basis.RasterOptions);
     /// <summary>Exports the configured progress sample as PNG.</summary>
     public byte[] ToPng() => PngWriter.WriteRgba(ToRgbaImage());
     /// <summary>Exports a sampled animated GIF.</summary>
@@ -125,7 +125,7 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
         }
         var frames = new List<RgbaImage>(count);
         for (var index = 0; index < count; index++)
-            frames.Add(Sample(TopologyMotionExtensions.RasterFrameProgress(_motion, index, count)).ToRgba(_basis.RasterOptions));
+            frames.Add(Sample(TopologyMotionExtensions.RasterFrameProgress(_motion, index, count)).ToRgbaImage(_basis.RasterOptions));
         return AnimatedRasterFrames.Create(frames, delay, _motion.Loop, "topology motion");
     }
 }

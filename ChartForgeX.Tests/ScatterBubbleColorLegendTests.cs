@@ -38,7 +38,7 @@ public sealed class ScatterBubbleColorLegendTests {
             .Select(node => node.Clip!.Value).Where(bounds => bounds.Top == plot.Top && bounds.Width == plot.Width).ToArray();
         Assert.All(clips, bounds => Assert.True(bounds.Bottom <= key.Bounds.Top + .000001));
         var prepared = new PreparedVisual(scene);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var edgePixel = ((int)(marks[0].Cy + Math.Max(1, marks[0].Ry / 2)) * image.Width + (int)marks[0].Cx) * 4;
         Assert.Equal(marks[0].Fill!.Value, ChartColor.FromRgba(image.Pixels[edgePixel], image.Pixels[edgePixel + 1], image.Pixels[edgePixel + 2], image.Pixels[edgePixel + 3]));
         if (withLine) {

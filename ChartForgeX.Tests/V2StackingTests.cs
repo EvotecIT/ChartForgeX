@@ -88,7 +88,7 @@ public sealed class V2StackingTests {
         // The source geometry consumed by SVG also places the same solid colour in native raster output.
         var svg = prepared.ToSvg();
         Assert.Contains(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-rendered-y") == "25");
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var pixel = (((int)(small.Top + small.Height / 2)) * image.Width + (int)(small.Left + small.Width / 2)) * 4;
         Assert.Equal(red.R, image.Pixels[pixel]); Assert.Equal(red.G, image.Pixels[pixel + 1]); Assert.Equal(red.B, image.Pixels[pixel + 2]);
         chart.Series[0].NormalizedTo(1); chart.Series[0].Points.Clear();

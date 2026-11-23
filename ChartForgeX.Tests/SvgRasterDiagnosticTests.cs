@@ -83,7 +83,7 @@ public sealed class SvgRasterDiagnosticTests {
     public void SupportedAndUnusedDefinitionContentDoesNotProduceLossWarnings() {
         var result = SvgRasterizer.Rasterize(Svg("<defs><filter id='unused'><feGaussianBlur stdDeviation='3'/></filter></defs><metadata>source</metadata><linearGradient id='unused-gradient'><stop offset='0'/></linearGradient><rect width='20' height='20' filter='none'/><foreignObject display='none'/>"), strict: true);
         Assert.Empty(result.Diagnostics);
-        Assert.Equal(SvgRasterizer.ToImage(Svg("<rect width='20' height='20'/>" )).Pixels, result.Image.Pixels);
+        Assert.Equal(SvgRasterizer.ToRgbaImage(Svg("<rect width='20' height='20'/>" )).Pixels, result.Image.Pixels);
     }
 
     private static string Svg(string body) => "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'>" + body + "</svg>";

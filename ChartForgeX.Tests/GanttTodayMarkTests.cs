@@ -26,7 +26,7 @@ public sealed class GanttTodayMarkTests {
         var scene = prepared.Scene;
         var marker = Assert.Single(scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "gantt-now-line");
         var task = Assert.Single(prepared.Regions, region => region.Role == (lanes ? "gantt-lane-item" : "gantt-task"));
-        var actual = prepared.ToRgba();
+        var actual = prepared.ToRgbaImage();
         var control = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size,
             scene.Nodes.Where(node => node.Role != "gantt-now-line").ToArray(), scene.Diagnostics, scene.Regions));
         var changed = 0;

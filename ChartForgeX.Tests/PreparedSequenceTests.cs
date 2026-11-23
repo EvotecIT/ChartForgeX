@@ -32,7 +32,7 @@ public sealed class PreparedSequenceTests {
         Assert.Equal(region.Bounds.Width, node.Width); Assert.Equal(region.Bounds.Height, node.Height);
         var xml = XDocument.Parse(prepared.ToSvg());
         Assert.Contains(xml.Descendants(), e => (string?)e.Attribute("data-cfx-role") == (kind == SequenceArtifactParticipantKind.Participant ? "sequence-participant-box" : "sequence-notation"));
-        Assert.Equal(480, prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Width);
+        Assert.Equal(480, prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Width);
     }
 
     [Theory]

@@ -16,12 +16,12 @@ namespace ChartForgeX.Tests;
 public sealed class CapturedVisualLayerTests {
     [Fact]
     public void CompleteMarkTextAndDecorationPaintIsFilteredTogetherExactlyOnce() {
-        var source = Source(); var options = new VisualRenderOptions(supersampling: 1); var pixels = source.ToRgba(options);
+        var source = Source(); var options = new VisualRenderOptions(supersampling: 1); var pixels = source.ToRgbaImage(options);
         var expected = RasterEffects.Execute(RasterEffectPreflight.Prepare(new[] {
             RasterEffectPlan.Blur(new RasterEffectRegion(0, 0, pixels.Width, pixels.Height), 512, 256)
         }, new[] { pixels }), 0, true, CancellationToken.None);
         var layer = source.CaptureLayer(new VisualLayerBlur(2, 1), options);
-        Assert.Equal(expected.Image.Pixels, layer.ToImage().Pixels);
+        Assert.Equal(expected.Image.Pixels, layer.ToRgbaImage().Pixels);
         Assert.Equal((double)expected.Region.X, layer.Bounds.X); Assert.Equal((double)expected.Region.Y, layer.Bounds.Y);
         Assert.Same(source, layer.Source); Assert.Equal(source.Regions.Count, layer.Visual.Regions.Count);
         Assert.DoesNotContain("filter=", layer.Visual.ToSvg(), StringComparison.Ordinal);
@@ -33,7 +33,7 @@ public sealed class CapturedVisualLayerTests {
         var expected = RasterEffectPlan.Blur(new RasterEffectRegion(0, 0, 80, 48), (int)(x * 256), (int)(y * 256)).ResultRegion;
         Assert.Equal(new ChartRect(0, 0, 80, 48), layer.SourceBounds);
         Assert.Equal(new ChartRect(expected.X, expected.Y, expected.Width, expected.Height), layer.Bounds);
-        Assert.Equal(expected.Width, layer.ToImage().Width); Assert.Equal(expected.Height, layer.ToImage().Height);
+        Assert.Equal(expected.Width, layer.ToRgbaImage().Width); Assert.Equal(expected.Height, layer.ToRgbaImage().Height);
         Assert.Equal(source.Accessibility.Name, layer.Visual.Accessibility.Name);
     }
     [Theory]
@@ -41,17 +41,17 @@ public sealed class CapturedVisualLayerTests {
     public void RoundedZeroSigmaKeepsExactCapturedPixelsAndOriginalExports(double sigma) {
         var source = Source(); var options = new VisualRenderOptions(supersampling: 1); var svg = source.ToSvg(); var png = source.ToPng(options);
         var layer = source.CaptureLayer(new VisualLayerBlur(sigma), options);
-        Assert.Null(layer.Plan.Effect); Assert.Equal(source.ToRgba(options).Pixels, layer.ToImage().Pixels);
+        Assert.Null(layer.Plan.Effect); Assert.Equal(source.ToRgbaImage(options).Pixels, layer.ToRgbaImage().Pixels);
         Assert.Equal(svg, source.ToSvg()); Assert.Equal(png, source.ToPng(options));
     }
     [Fact]
     public void LogicalSigmaIsConvertedToCaptureDensityExactlyOnce() {
-        var source = Source(); var options = new VisualRenderOptions(scale: 2, supersampling: 1); var pixels = source.ToRgba(options);
+        var source = Source(); var options = new VisualRenderOptions(scale: 2, supersampling: 1); var pixels = source.ToRgbaImage(options);
         var expected = RasterEffects.Execute(RasterEffectPreflight.Prepare(new[] {
             RasterEffectPlan.Blur(new RasterEffectRegion(0, 0, 160, 96), 512, 1024)
         }, new[] { pixels }), 0, false, CancellationToken.None);
         var layer = source.CaptureLayer(new VisualLayerBlur(1, 2, orderedDither: false), options);
-        Assert.Equal(2, layer.PixelsPerUnit); Assert.Equal(expected.Image.Pixels, layer.ToImage().Pixels);
+        Assert.Equal(2, layer.PixelsPerUnit); Assert.Equal(expected.Image.Pixels, layer.ToRgbaImage().Pixels);
         Assert.Equal((double)expected.Region.X / 2, layer.Bounds.X); Assert.Equal((double)expected.Region.Width / 2, layer.Bounds.Width);
     }
     [Fact]
@@ -69,8 +69,8 @@ public sealed class CapturedVisualLayerTests {
     [Fact]
     public void PrivateSnapshotPixelsStayDetachedAndTheSvgEmbedsTheirExactPng() {
         var source = Source(); var layer = source.CaptureLayer(new VisualLayerBlur(2), new VisualRenderOptions(supersampling: 1));
-        var svg = layer.Visual.ToSvg(); var image = layer.ToImage(); var expected = (byte[])image.Pixels.Clone();
-        Array.Clear(image.Pixels, 0, image.Pixels.Length); Assert.Equal(expected, layer.ToImage().Pixels); Assert.Equal(svg, layer.Visual.ToSvg());
+        var svg = layer.Visual.ToSvg(); var image = layer.ToRgbaImage(); var expected = (byte[])image.Pixels.Clone();
+        Array.Clear(image.Pixels, 0, image.Pixels.Length); Assert.Equal(expected, layer.ToRgbaImage().Pixels); Assert.Equal(svg, layer.Visual.ToSvg());
         var element = Assert.Single(XDocument.Parse(svg).Descendants(), node => node.Name.LocalName == "image");
         var uri = element.Attribute("href")!.Value; Assert.StartsWith("data:image/png;base64,", uri);
         Assert.Equal(expected, RasterImageDecoder.Decode(Convert.FromBase64String(uri.Substring(uri.IndexOf(',') + 1))).Pixels);
@@ -91,9 +91,9 @@ public sealed class CapturedVisualLayerTests {
         var builder = new VisualSceneBuilder(new VisualSize(3, 3), FontSpec.SystemSans()); builder.Rect(new ChartRect(0, 0, 3, 3), ChartColor.FromHex("#2166AC"));
         var source = new PreparedVisual(builder.Build()); var layer = source.CaptureLayer(new VisualLayerBlur(sigma), new VisualRenderOptions(scale: density, supersampling: 1));
         var control = new VisualSceneBuilder(new VisualSize(12, 12), FontSpec.SystemSans());
-        control.Image(layer.ToImage(), new ChartRect(4 + layer.Bounds.X, 4 + layer.Bounds.Y, layer.Bounds.Width, layer.Bounds.Height));
-        var expected = new PreparedVisual(control.Build()).ToRgba(new VisualRenderOptions(scale: density, supersampling: 1));
-        var actual = ImageComposition.CreateScaled(12, 12, ChartColor.Transparent, density).DrawLayer(layer, 4, 4).ToImage();
+        control.Image(layer.ToRgbaImage(), new ChartRect(4 + layer.Bounds.X, 4 + layer.Bounds.Y, layer.Bounds.Width, layer.Bounds.Height));
+        var expected = new PreparedVisual(control.Build()).ToRgbaImage(new VisualRenderOptions(scale: density, supersampling: 1));
+        var actual = ImageComposition.CreateScaled(12, 12, ChartColor.Transparent, density).DrawLayer(layer, 4, 4).ToRgbaImage();
         Assert.Equal(expected.Pixels, actual.Pixels);
         var edge = density == 1 ? 3 : 7;
         Assert.True(actual.Pixels[(edge * actual.Width + edge) * 4 + 3] > 0); Assert.Equal(0, actual.Pixels[3]);

@@ -52,7 +52,7 @@ public sealed class SvgRasterFilterSourceOpacityBeforeTests {
         Assert.Empty(optedIn.Diagnostics);
         Assert.Empty(flatResult.Diagnostics);
         Assert.Equal(plain.Image.Pixels, optedIn.Image.Pixels);
-        Assert.Equal(SvgRasterizer.ToImage(FilterSourceOpacityFixture.Source("flat", filtered: false)).Pixels,
+        Assert.Equal(SvgRasterizer.ToRgbaImage(FilterSourceOpacityFixture.Source("flat", filtered: false)).Pixels,
             flatResult.Image.Pixels);
     }
 }

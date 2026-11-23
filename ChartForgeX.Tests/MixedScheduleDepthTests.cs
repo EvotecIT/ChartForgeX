@@ -97,7 +97,7 @@ public sealed class MixedScheduleDepthTests {
     [Fact]
     public void CompressedSessionsRetainTheirExistingClearUnsupportedScheduleBoundary() {
         var day = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc).ToOADate();
-        var chart = Chart.Create().XAxis(x => x.Bounds(day, day + 4)).AddTimelineRange("First session", day, day + 1)
+        var chart = Chart.Create().XAxis(x => x.Bounds(day, day + 4)).AddTimelineItem("First session", day, day + 1)
             .AddStateTimelineLane("Last session", new[] { new ChartStateTimelineSegment(day + 3, day + 4, "up") });
         chart.Options.XAxis.TimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(day, day + 1), new ChartTimeSession(day + 3, day + 4) }));
         Assert.Contains("Time session compression", Assert.Throws<NotSupportedException>(() => ScheduleReversalDepthTests.Prepare(chart)).Message);

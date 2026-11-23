@@ -337,7 +337,7 @@ public sealed class ServerRenderedMarkTests {
             case "scatter": return chart.AddScatter("Events", new[] { point });
             case "line": return chart.AddLine("Trend", new[] { point, new ChartPoint(2, 3) });
             case "timeline":
-                chart.AddTimelineRange("Release", 1, 4);
+                chart.AddTimelineItem("Release", 1, 4);
                 chart.Series[0].Points[0] = chart.Series[0].Points[0].WithMarkOptions(options);
                 return chart;
             case "gantt":

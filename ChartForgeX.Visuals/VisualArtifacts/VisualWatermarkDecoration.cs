@@ -27,7 +27,7 @@ public static class VisualWatermarkDecoration {
         if (string.IsNullOrWhiteSpace(renderedSvg)) throw new ArgumentException("Rendered SVG is required.", nameof(renderedSvg));
         var snapshots = SnapshotWatermarks(watermarks);
         var size = artifact.NaturalSize;
-        if (size.HasValue) size = new VisualArtifactSize(size.Value.Width, size.Value.Height);
+        if (size.HasValue) size = new VisualSize(size.Value.Width, size.Value.Height);
         return VisualWatermarkRendering.ApplyToSvg(renderedSvg, new VisualArtifact { NaturalSize = size }, snapshots);
     }
 
@@ -115,7 +115,7 @@ public static class VisualWatermarkDecoration {
         private readonly VisualWatermark[] _watermarks;
         internal int WatermarkCount { get; }
 
-        internal WatermarkedStaticSource(IStaticVisualSource source, VisualArtifactSize? size, VisualWatermark[] watermarks) {
+        internal WatermarkedStaticSource(IStaticVisualSource source, VisualSize? size, VisualWatermark[] watermarks) {
             _source = source;
             _frame = new VisualArtifact { NaturalSize = size };
             _watermarks = watermarks;

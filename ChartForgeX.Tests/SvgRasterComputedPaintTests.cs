@@ -83,6 +83,6 @@ public sealed class SvgRasterComputedPaintTests {
         Assert.Equal(Render("<rect width='8' height='32' fill='#ff0000'/><rect x='8' width='16' height='32' fill='#00ff00'/><rect x='24' width='8' height='32' fill='#ff0000'/>"), actual);
     }
 
-    private static byte[] Render(string body) => SvgRasterizer.ToImage(
+    private static byte[] Render(string body) => SvgRasterizer.ToRgbaImage(
         "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>" + body + "</svg>").Pixels;
 }

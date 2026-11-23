@@ -173,7 +173,7 @@ public sealed class ScriptShapingTests {
         try {
             File.WriteAllBytes(path, Bytes(name)); FontRegistry.Register("CFX Script Export", path);
             var font = TypographyFontResolver.ResolveFace("CFX Script Export", 400, false).Font!;
-            var actual = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='250' height='180'><text x='10' y='140' font-family='CFX Script Export' font-size='100'>" + text + "</text></svg>").Pixels;
+            var actual = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='250' height='180'><text x='10' y='140' font-family='CFX Script Export' font-size='100'>" + text + "</text></svg>").Pixels;
             var direct = new RgbaCanvas(250, 180, 4, font, 1, useDefaultOutlineFont: false);
             font.Draw(direct, 10, 60, text, ChartColor.Black, 100);
             Assert.All(direct.ToOutputPixels().Zip(actual), pair => Assert.InRange(Math.Abs(pair.First - pair.Second), 0, 1));

@@ -20,8 +20,8 @@ public sealed class FinancialDashOptionsTests {
         chart.Series[0].Financial.Rising.StrokeWidth = 2;
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 100)),
             frame: new VisualFrame(showLegend: false)));
-        var native = prepared.ToRgba(new VisualRenderOptions(scale: 8, supersampling: 1));
-        var svg = SvgRasterizer.ToImage(prepared.ToSvg(), width: 9600, height: 800);
+        var native = prepared.ToRgbaImage(new VisualRenderOptions(scale: 8, supersampling: 1));
+        var svg = SvgRasterizer.ToRgbaImage(prepared.ToSvg(), width: 9600, height: 800);
         Assert.Equal(native.Width, svg.Width); Assert.Equal(native.Height, svg.Height);
         Assert.Contains(native.Pixels, value => value != 0); Assert.Contains(svg.Pixels, value => value != 0);
     }
@@ -46,7 +46,7 @@ public sealed class FinancialDashOptionsTests {
             Assert.Equal(-1e-21, double.Parse(node.Attribute("stroke-dashoffset")!.Value, System.Globalization.CultureInfo.InvariantCulture));
         }
         Assert.NotEmpty(prepared.ToPng());
-        Assert.NotEmpty(SvgRasterizer.ToImage(svg).Pixels);
+        Assert.NotEmpty(SvgRasterizer.ToRgbaImage(svg).Pixels);
     }
 
     [Fact]
@@ -125,10 +125,10 @@ public sealed class FinancialDashOptionsTests {
             var wick = prepared.Scene.Nodes.OfType<VisualSceneLine>().First(node => node.Role == "legend-financial-wick");
             Assert.Equal(pattern, wick.Dash); Assert.Equal(2 * scale, wick.DashOffset);
         }
-        var svg = prepared.ToSvg(); var pixels = prepared.ToRgba().Pixels;
+        var svg = prepared.ToSvg(); var pixels = prepared.ToRgbaImage().Pixels;
         item.DashPattern = new[] { 2d, 18d }; item.DashOffset = 9;
         if (kind == ChartSeriesKind.Candlestick) { item.Wick.DashPattern = Array.Empty<double>(); item.Wick.DashOffset = 0; }
-        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(pixels, prepared.ToRgba().Pixels);
+        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(pixels, prepared.ToRgbaImage().Pixels);
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
     }
 
@@ -168,7 +168,7 @@ public sealed class FinancialDashOptionsTests {
         var isolated = new VisualScene(scene.Size, marks, Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>());
         var native = VisualSceneRasterRenderer.Render(isolated, supersampling: 1);
         var svg = VisualSceneSvgRenderer.Render(isolated);
-        var parsed = SvgRasterizer.ToImage(svg);
+        var parsed = SvgRasterizer.ToRgbaImage(svg);
         AssertAlphaAgreement(native, parsed);
         var first = marks.OfType<VisualSceneLine>().First();
         Assert.True(Alpha(native, (int)first.Start.X, (int)first.Start.Y + 2) > 0);
@@ -195,7 +195,7 @@ public sealed class FinancialDashOptionsTests {
         }
         var scene = Scene(-4); var svg = VisualSceneSvgRenderer.Render(scene);
         var native = VisualSceneRasterRenderer.Render(scene, scale: scale, supersampling: 1);
-        AssertAlphaAgreement(native, SvgRasterizer.ToImage(svg, 120 * scale, 100 * scale));
+        AssertAlphaAgreement(native, SvgRasterizer.ToRgbaImage(svg, 120 * scale, 100 * scale));
         Assert.NotEqual(svg, VisualSceneSvgRenderer.Render(Scene(4)));
         Assert.NotEqual(native.Pixels, VisualSceneRasterRenderer.Render(Scene(4), scale: scale, supersampling: 1).Pixels);
     }
@@ -215,11 +215,11 @@ public sealed class FinancialDashOptionsTests {
         var element = svg.Descendants().First(node => (string?)node.Attribute("data-cfx-role") == "candlestick-body");
         Assert.Equal(expectedPhase.ToString(System.Globalization.CultureInfo.InvariantCulture), element.Attribute("stroke-dashoffset")!.Value);
         item.DashOffset = expectedPhase;
-        Assert.Equal(Prepare(chart).ToRgba(new VisualRenderOptions(scale: 2)).Pixels,
-            captured.ToRgba(new VisualRenderOptions(scale: 2)).Pixels);
+        Assert.Equal(Prepare(chart).ToRgbaImage(new VisualRenderOptions(scale: 2)).Pixels,
+            captured.ToRgbaImage(new VisualRenderOptions(scale: 2)).Pixels);
         var marks = captured.Scene.Nodes.OfType<VisualSceneMark>().Where(node => node.Role?.StartsWith("candlestick-", StringComparison.Ordinal) == true).ToArray();
         var isolated = new VisualScene(captured.Scene.Size, marks, Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>());
-        AssertAlphaAgreement(VisualSceneRasterRenderer.Render(isolated, supersampling: 1), SvgRasterizer.ToImage(VisualSceneSvgRenderer.Render(isolated)));
+        AssertAlphaAgreement(VisualSceneRasterRenderer.Render(isolated, supersampling: 1), SvgRasterizer.ToRgbaImage(VisualSceneSvgRenderer.Render(isolated)));
     }
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

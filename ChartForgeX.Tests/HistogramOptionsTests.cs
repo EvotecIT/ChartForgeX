@@ -113,7 +113,7 @@ public sealed class HistogramOptionsTests {
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role != null && node.Role.StartsWith("bar-cap", StringComparison.Ordinal));
         var svg = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(2, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "bar"));
-        var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var raster = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var bounds in new[] { narrow, wide }) {
             // A point near the interval edge would be unpainted by the ordinary inset histogram style.
             var pixel = ((int)(bounds.Top + bounds.Height / 2) * raster.Width + (int)(bounds.Left + bounds.Width * .03)) * 4;

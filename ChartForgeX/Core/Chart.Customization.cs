@@ -101,41 +101,6 @@ public sealed partial class Chart {
     }
 
     /// <summary>
-    /// Adds a route line between two longitude/latitude points on capable map charts.
-    /// </summary>
-    /// <param name="label">The route label.</param>
-    /// <param name="fromLongitude">The source longitude in degrees.</param>
-    /// <param name="fromLatitude">The source latitude in degrees.</param>
-    /// <param name="toLongitude">The target longitude in degrees.</param>
-    /// <param name="toLatitude">The target latitude in degrees.</param>
-    /// <param name="color">An optional route color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddMapRoute(string label, double fromLongitude, double fromLatitude, double toLongitude, double toLatitude, ChartColor? color = null) {
-        return AddMapConnector(label, fromLongitude, fromLatitude, toLongitude, toLatitude, color);
-    }
-
-    /// <summary>
-    /// Adds a route line through ordered longitude/latitude points on capable map charts.
-    /// </summary>
-    /// <param name="label">The route label.</param>
-    /// <param name="routePoints">The ordered route points, including the source and target points.</param>
-    /// <param name="color">An optional route color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddMapRoute(string label, IEnumerable<ChartMapPoint> routePoints, ChartColor? color = null) {
-        return AddMapConnector(label, routePoints, color);
-    }
-
-    /// <summary>
-    /// Adds a route line through ordered longitude/latitude points on capable map charts.
-    /// </summary>
-    /// <param name="label">The route label.</param>
-    /// <param name="routePoints">The ordered route points, including the source and target points.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddMapRoute(string label, params ChartMapPoint[] routePoints) {
-        return AddMapConnector(label, routePoints);
-    }
-
-    /// <summary>
     /// Adds a connector line between two existing dotted-map point labels.
     /// </summary>
     /// <remarks>Repeated labels are accepted when every match has exactly the same longitude and latitude.
@@ -149,18 +114,6 @@ public sealed partial class Chart {
         var from = ResolveDottedMapPoint(fromPointLabel, nameof(fromPointLabel));
         var to = ResolveDottedMapPoint(toPointLabel, nameof(toPointLabel));
         return AddMapConnector(label, from.X, from.Y, to.X, to.Y, color);
-    }
-
-    /// <summary>
-    /// Adds a route line between two existing dotted-map point labels.
-    /// </summary>
-    /// <param name="label">The route label.</param>
-    /// <param name="fromPointLabel">The source dotted-map point label.</param>
-    /// <param name="toPointLabel">The target dotted-map point label.</param>
-    /// <param name="color">An optional route color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddMapRouteBetweenPoints(string label, string fromPointLabel, string toPointLabel, ChartColor? color = null) {
-        return AddMapConnectorBetweenPoints(label, fromPointLabel, toPointLabel, color);
     }
 
     private ChartPoint ResolveDottedMapPoint(string pointLabel, string parameterName) {

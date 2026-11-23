@@ -50,7 +50,7 @@ ChartGrid HeroDashboard(ThemeMode mode) {
         .XLabels(HeroSeries).AddDonut("Sign-ins", Values(HeroData.Select(series => series[^1]).ToArray()));
     var posture = Chart.Create().ThemeMode(mode).Title("Security posture").Subtitle("Current against target")
         .XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring").YAxis(y => y.Bounds(0, 100)).DataLabels(false)
-        .AddRadarArea("Current", Values(91, 72, 88, 95, 79, 84)).AddRadarLine("Target", Values(95, 90, 95, 95, 90, 92));
+        .AddRadar("Current", Values(91, 72, 88, 95, 79, 84)).AddRadarLine("Target", Values(95, 90, 95, 95, 90, 92));
     var hours = new[] { "0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22" };
     var days = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
     var activity = days.Select((day, d) => hours.Select((hour, h) => {

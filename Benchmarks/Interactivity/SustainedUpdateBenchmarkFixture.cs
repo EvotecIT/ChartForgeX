@@ -74,7 +74,7 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
         _series = Enumerable.Range(0, _secondary ? 2 : 1).Select(series => {
             var data = ChartSeries.CreateLine(new ChartSeriesId(Key(series)), series == 0 ? "Measurements" : "Companion",
                 Enumerable.Range(0, _count).Select(index => Point(index, series)))
-                .ObservationIds(Enumerable.Range(0, _count).Select(Id)).PointColor(_count / 2, "#7c3aed");
+                .ObservationIds(Enumerable.Range(0, _count).Select(Id)).PointColor(_count / 2, ChartColor.FromHex("#7c3aed"));
             data.Markers(markers => { markers.Enabled = true; markers.Radius = _count == 32 ? 3 : 2; });
             if (series > 0) data.SecondaryAxis();
             source.AddSeries(data); return data;

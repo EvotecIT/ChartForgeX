@@ -228,14 +228,6 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Sets the color for one point from hex notation.
-    /// </summary>
-    /// <param name="pointIndex">The zero-based point index.</param>
-    /// <param name="hex">The point color in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries PointColor(int pointIndex, string hex) => PointColor(pointIndex, ChartColor.FromHex(hex));
-
-    /// <summary>
     /// Sets the same color for a contiguous point range.
     /// </summary>
     /// <param name="startPointIndex">The zero-based first point index.</param>
@@ -249,15 +241,6 @@ public sealed partial class ChartSeries {
         for (var i = 0; i < count; i++) PointColor(startPointIndex + i, color);
         return this;
     }
-
-    /// <summary>
-    /// Sets the same color for a contiguous point range from hex notation.
-    /// </summary>
-    /// <param name="startPointIndex">The zero-based first point index.</param>
-    /// <param name="count">The number of points to color.</param>
-    /// <param name="hex">The point color in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries PointColorRange(int startPointIndex, int count, string hex) => PointColorRange(startPointIndex, count, ChartColor.FromHex(hex));
 
     /// <summary>
     /// Sets the texture overlay for one point. Pass null to use the series fill pattern.

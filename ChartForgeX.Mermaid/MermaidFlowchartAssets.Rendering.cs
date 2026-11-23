@@ -88,7 +88,7 @@ internal static partial class MermaidFlowchartAssets {
         if (target.ShowLabel) {
             target.CaptionPlacement = Value(source, "pos") == "t" ? TopologyCaptionPlacement.Top : TopologyCaptionPlacement.Bottom;
             target.CaptionGap = 8;
-            target.CaptionTextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = target.TextStyle?.FontSize ?? captionSize, FontWeight = target.TextStyle?.FontWeight ?? "400" };
+            target.CaptionTextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = target.TextStyle?.FontSize ?? captionSize, FontWeight = target.TextStyle?.FontWeight ?? 400 };
         }
     }
 

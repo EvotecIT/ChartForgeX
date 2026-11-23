@@ -19,12 +19,12 @@ internal static partial class SmokeTests {
             .XLabels("first quarter", "second quarter", "third quarter", "fourth quarter")
             .DataLabels()
             .Legend(l => l.Position(ChartLegendPosition.Right))
-            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontFamily("Comic Sans MS, cursive").FontWeight("900").Italic().UnderlineStyle(TextDecorationStyle.Wavy).StrikethroughStyle(TextDecorationStyle.Wavy).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase).FontSize(24))
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontFamily("Comic Sans MS, cursive").FontWeight(900).Italic().UnderlineStyle(TextDecorationStyle.Wavy).StrikethroughStyle(TextDecorationStyle.Wavy).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase).FontSize(24))
             .SubtitleStyle(style => style.Color(ChartColor.FromHex("#0e7490")).Italic())
             .AxisTitleStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).UnderlineStyle(TextDecorationStyle.Double).TextCase(TextCaseTransform.Lowercase))
-            .TickLabelStyle(style => style.Color(ChartColor.FromHex("#2563eb")).FontWeight("650").Italic().TextCase(TextCaseTransform.Uppercase))
+            .TickLabelStyle(style => style.Color(ChartColor.FromHex("#2563eb")).FontWeight(650).Italic().TextCase(TextCaseTransform.Uppercase))
             .LegendStyle(style => style.Color(ChartColor.FromHex("#15803d")).Underline())
-            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#b45309")).FontWeight("800").UnderlineStyle(TextDecorationStyle.Dotted))
+            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#b45309")).FontWeight(800).UnderlineStyle(TextDecorationStyle.Dotted))
             .AddBar("North America adoption is intentionally long", Points(28, 41, 64, 83))
             .AddLine("Europe expansion is also intentionally long", Points(18, 35, 52, 74));
         var svg = chart.ToSvg();
@@ -48,8 +48,8 @@ internal static partial class SmokeTests {
         var regularTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("Raster Italic Title").AddLine("Values", Points(1, 3, 2)).ToPng();
         var italicTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("Raster Italic Title").TitleStyle(style => style.Italic()).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!regularTitle.SequenceEqual(italicTitle), "PNG chart titles should render italic pixels instead of silently using regular text.");
-        var normalWeightTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("Raster Weight Title").TitleStyle(style => style.FontWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
-        var boldWeightTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("Raster Weight Title").TitleStyle(style => style.FontWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var normalWeightTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("Raster Weight Title").TitleStyle(style => style.FontWeight(400)).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var boldWeightTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("Raster Weight Title").TitleStyle(style => style.FontWeight(700)).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!normalWeightTitle.SequenceEqual(boldWeightTitle), "PNG text styles should honor explicit normal and bold font weights.");
         var serifTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("MMMM Raster Family iii").TitleStyle(style => style.FontFamily("serif")).AddLine("Values", Points(1, 3, 2)).ToPng();
         var monospaceTitle = Chart.Create().Theme(VisualTheme.Graphite()).Size(360, 220).Title("MMMM Raster Family iii").TitleStyle(style => style.FontFamily("monospace")).AddLine("Values", Points(1, 3, 2)).ToPng();
@@ -144,7 +144,7 @@ internal static partial class SmokeTests {
             .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent))
             .XLabels("Primary", "Secondary")
             .AddDonut("Audience", Points(60, 40));
-        autoConnectorDonut.Series[0].PointColor(1, "#8B5CF6");
+        autoConnectorDonut.Series[0].PointColor(1, ChartColor.FromHex("#8B5CF6"));
         var automatic = PrepareForTypography(autoConnectorDonut);
         var automaticConnectors = automatic.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "data-label-connector").ToArray();
         Assert(automaticConnectors.Any(node => node.Stroke!.Value.R == 225 && node.Stroke.Value.G == 29 && node.Stroke.Value.B == 72), "Pie and donut callout connectors should use slice colors by default.");

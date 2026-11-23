@@ -63,7 +63,7 @@ public sealed class V2ExportRequestTests {
         builder.Text("Small text", 5, 25, 11, ChartColor.Black);
         var prepared = new PreparedVisual(builder.Build());
         var before = prepared.ToSvg();
-        var pixels = prepared.ToRgba(new VisualRenderOptions(scale: 2, textHinting: TextHinting.None));
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(scale: 2, textHinting: TextHinting.None));
         Assert.Equal(320, pixels.Width); Assert.Equal(100, pixels.Height);
         Assert.Equal(before, prepared.ToSvg());
         Assert.Throws<ArgumentOutOfRangeException>(() => new VisualRenderOptions(textHinting: (TextHinting)999));

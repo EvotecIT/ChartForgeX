@@ -11,7 +11,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>Renders factual blocks through their static SVG owner in the Visuals package.</summary>
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     /// <summary>Renders a factual block to SVG.</summary>
     public string Render(IVisualBlock block) => Render(block, string.Empty);
     /// <summary>Renders factual SVG with a caller-provided embedding identity.</summary>

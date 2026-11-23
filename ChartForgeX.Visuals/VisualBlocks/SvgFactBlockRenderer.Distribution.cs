@@ -8,7 +8,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderDistributionRows(SvgMarkupWriter writer, SegmentedMetricBlock card) {
         var options = card.Options;
         var theme = options.ResolvedTheme;

@@ -49,7 +49,7 @@ public sealed class VisualCanvasFontTests {
             .AddText(20, 12, 560, "Plain canvas text", 24, ChartColors.White)
             .AddText(20, 60, 560, "Emphasized canvas text", 24, ChartColors.White, emphasized: true);
         var png = Png(canvas);
-        var svg = SvgRasterizer.ToImage(canvas.ToSvg());
+        var svg = SvgRasterizer.ToRgbaImage(canvas.ToSvg());
         foreach (var band in new[] { (Top: 0, Bottom: 50), (Top: 50, Bottom: 110) }) {
             var fromPng = InkBounds(png, band.Top, band.Bottom);
             var fromSvg = InkBounds(svg, band.Top, band.Bottom);
@@ -67,7 +67,7 @@ public sealed class VisualCanvasFontTests {
         var canvas = Canvas(family)
             .AddText(left, 10, width, "Emphasized text that is far too long for its box", 22, ChartColors.White, emphasized: true)
             .AddKeyValueBlock(left, 60, width + 40, new[] { VisualCanvasKeyValueItem.Pair("Operating system", "Windows Server 2025 Datacenter with a long edition name") }, labelFontSize: 16, valueFontSize: 16, columnGap: 12);
-        foreach (var image in new[] { Png(canvas), SvgRasterizer.ToImage(canvas.ToSvg()) }) {
+        foreach (var image in new[] { Png(canvas), SvgRasterizer.ToRgbaImage(canvas.ToSvg()) }) {
             Assert.True(InkBounds(image, 0, 50).Right <= left + width + 1, "Fitted text must end inside its layer.");
             Assert.True(InkBounds(image, 55, image.Height).Right <= left + width + 40 + 1, "Wrapped key/value text must end inside its block.");
         }
@@ -81,7 +81,7 @@ public sealed class VisualCanvasFontTests {
         var canvas = VisualCanvas.Create(600, 130).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddHeroTitle(20, 10, 560, 40, new[] { new VisualCanvasTextRun("iiiiii", ChartColors.White), new VisualCanvasTextRun("MMMMMM", ChartColors.White) });
         var png = InkBounds(Png(canvas), 0, 130);
-        var svg = InkBounds(SvgRasterizer.ToImage(canvas.ToSvg()), 0, 130);
+        var svg = InkBounds(SvgRasterizer.ToRgbaImage(canvas.ToSvg()), 0, 130);
         Assert.InRange(png.Right - svg.Right, -2, 2);
     }
 
@@ -91,7 +91,7 @@ public sealed class VisualCanvasFontTests {
         var canvas = VisualCanvas.Create(600, 130).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .Style(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)
             .AddHeroTitle(left, 10, width, 82, new[] { new VisualCanvasTextRun("Power", ChartColors.White), new VisualCanvasTextRun("BGInfo", ChartColors.White) });
-        foreach (var image in new[] { Png(canvas), SvgRasterizer.ToImage(canvas.ToSvg()) }) {
+        foreach (var image in new[] { Png(canvas), SvgRasterizer.ToRgbaImage(canvas.ToSvg()) }) {
             var bounds = InkBounds(image, 0, image.Height);
             Assert.True(bounds.Right <= left + width + 1, "A hero title wider than its layer must be shrunk to fit it.");
             Assert.True(bounds.Right >= left + width - 12, "A shrunk hero title should still fill its layer.");

@@ -34,8 +34,8 @@ public sealed partial class VisualSvgOptions {
     private VisualSvgOptions Copy() => (VisualSvgOptions)MemberwiseClone();
 
     /// <summary>Retains the complete export policy when an adapter scopes another emission.</summary>
-    internal VisualSvgOptions WithIdPrefix(string? idPrefix) {
-        var copy = Copy(); copy.IdPrefix = idPrefix == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idPrefix); return copy;
+    internal VisualSvgOptions WithIdPrefix(string? idScope) {
+        var copy = Copy(); copy.IdScope = idScope == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idScope); return copy;
     }
 
     internal bool HasColorVariables => _colorVariables != null;
@@ -45,19 +45,19 @@ public sealed partial class VisualSvgOptions {
     }
 
     /// <summary>Creates a detached SVG export policy.</summary>
-    /// <param name="idPrefix">Unique host namespace; null uses a deterministic content namespace.</param>
+    /// <param name="idScope">Unique host namespace; null uses a deterministic content namespace.</param>
     /// <param name="colorVariables">Host CSS properties with resolved static fallback colors. The mapping is copied.</param>
     /// <param name="linkTarget">Whether safe scene links use the current browsing context or a new protected context.</param>
     /// <param name="effectProfile">Baked native effect pixels, or supported typed native SVG effects on retained vectors.</param>
     /// <param name="effectRasterOptions">Existing native raster options for baked effects; unused by native SVG filter math.</param>
     /// <param name="responsive">Whether inline SVG shrinks to its host width while preserving the logical viewport and aspect ratio.</param>
-    public VisualSvgOptions(string? idPrefix = null, SvgColorVariables? colorVariables = null, VisualSvgLinkTarget linkTarget = VisualSvgLinkTarget.SameContext,
+    public VisualSvgOptions(string? idScope = null, SvgColorVariables? colorVariables = null, VisualSvgLinkTarget linkTarget = VisualSvgLinkTarget.SameContext,
         bool responsive = false, VisualSvgEffectProfile effectProfile = VisualSvgEffectProfile.Baked, VisualRenderOptions? effectRasterOptions = null) {
         if (!Enum.IsDefined(typeof(VisualSvgLinkTarget), linkTarget)) throw new ArgumentOutOfRangeException(nameof(linkTarget));
         if (!Enum.IsDefined(typeof(VisualSvgEffectProfile), effectProfile)) throw new ArgumentOutOfRangeException(nameof(effectProfile));
         EffectProfile = effectProfile;
         EffectRasterOptions = effectRasterOptions;
-        IdPrefix = idPrefix == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idPrefix);
+        IdScope = idScope == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idScope);
         _colorVariables = colorVariables?.Clone();
         LinkTarget = linkTarget;
         Responsive = responsive;
@@ -68,7 +68,7 @@ public sealed partial class VisualSvgOptions {
     /// <summary>Gets immutable density/coverage/cap options for baked effects; null resolves native defaults only when needed.</summary>
     public VisualRenderOptions? EffectRasterOptions { get; }
     /// <summary>Gets the host ID namespace, or null for a deterministic content namespace.</summary>
-    public string? IdPrefix { get; private set; }
+    public string? IdScope { get; private set; }
     /// <summary>Gets an independent copy of the host color mapping.</summary>
     public SvgColorVariables? ColorVariables => _colorVariables?.Clone();
     /// <summary>Gets the safe link target policy.</summary>

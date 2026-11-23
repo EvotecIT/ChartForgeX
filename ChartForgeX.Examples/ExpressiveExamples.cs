@@ -158,7 +158,7 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .Title("People Infographic Showcase")
             .Subtitle("Demographic panels using pictorial people, donut split, rings, horizontal bars, and trend lines")
-            .TitleStyle(style => style.Color(ChartColor.FromHex("#0F172A")).FontWeight("900"))
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#0F172A")).FontWeight(900))
             .SubtitleStyle(style => style.Color(ChartColor.FromHex("#475569")))
             .Theme(brand)
             .Columns(3)
@@ -366,10 +366,10 @@ internal static partial class ExpressiveExamples {
             .XLabels("Advocacy", "Retention", "Preference", "Awareness")
             .AddHorizontalBar("Score", Points(31, 48, 64, 82), ChartColor.FromRgb(20, 184, 166));
         chart.Series[0]
-            .PointColor(0, "#F97316")
-            .PointColor(1, "#F59E0B")
-            .PointColor(2, "#8B5CF6")
-            .PointColor(3, "#14B8A6");
+            .PointColor(0, ChartColor.FromHex("#F97316"))
+            .PointColor(1, ChartColor.FromHex("#F59E0B"))
+            .PointColor(2, ChartColor.FromHex("#8B5CF6"))
+            .PointColor(3, ChartColor.FromHex("#14B8A6"));
         return chart;
     }
 
@@ -405,7 +405,7 @@ internal static partial class ExpressiveExamples {
                 new ChartInterval(3, 96, 142),
                 new ChartInterval(4, 128, 196)
             }, ChartColor.FromRgb(14, 165, 233));
-        chart.Series[0].PointColor(2, "#F97316").PointDataLabelStyle(2, style => style.Color(ChartColor.FromHex("#9A3412")).FontWeight("900"));
+        chart.Series[0].PointColor(2, ChartColor.FromHex("#F97316")).PointDataLabelStyle(2, style => style.Color(ChartColor.FromHex("#9A3412")).FontWeight(900));
         return chart;
     }
 
@@ -425,7 +425,7 @@ internal static partial class ExpressiveExamples {
                 new ChartDumbbell(3, 51, 72),
                 new ChartDumbbell(4, 43, 67)
             }, ChartColor.FromRgb(37, 99, 235));
-        chart.Series[0].PointColor(1, "#0EA5E9").PointColor(2, "#8B5CF6");
+        chart.Series[0].PointColor(1, ChartColor.FromHex("#0EA5E9")).PointColor(2, ChartColor.FromHex("#8B5CF6"));
         return chart;
     }
 
@@ -444,7 +444,7 @@ internal static partial class ExpressiveExamples {
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104),
                 new ChartBoxPlot(3, 86, 102, 118, 146, 188)
             }, ChartColor.FromRgb(96, 165, 250));
-        chart.Series[0].PointColor(1, "#A78BFA").PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#C4B5FD")).Underline());
+        chart.Series[0].PointColor(1, ChartColor.FromHex("#A78BFA")).PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#C4B5FD")).Underline());
         return chart;
     }
 
@@ -458,7 +458,7 @@ internal static partial class ExpressiveExamples {
             .DataLabels()
             .XLabels("W1", "W2", "W3", "W4")
             .AddCandlestick("Signal", SignalWindows());
-        chart.Series[0].PointColor(2, "#DB2777").PointDataLabelStyle(2, style => style.Color(ChartColor.FromHex("#BE123C")).FontWeight("900"));
+        chart.Series[0].PointColor(2, ChartColor.FromHex("#DB2777")).PointDataLabelStyle(2, style => style.Color(ChartColor.FromHex("#BE123C")).FontWeight(900));
         return chart;
     }
 
@@ -472,7 +472,7 @@ internal static partial class ExpressiveExamples {
             .DataLabels()
             .XLabels("W1", "W2", "W3", "W4")
             .AddOhlc("Signal", SignalWindows());
-        chart.Series[0].PointColor(1, "#22D3EE").PointColor(3, "#F59E0B");
+        chart.Series[0].PointColor(1, ChartColor.FromHex("#22D3EE")).PointColor(3, ChartColor.FromHex("#F59E0B"));
         return chart;
     }
 
@@ -487,9 +487,9 @@ internal static partial class ExpressiveExamples {
             .FormatValuesBy(Percent)
             .AddSlope("Readiness", 46, 82, "Before", "After", ChartColor.FromRgb(20, 184, 166));
         chart.Series[0]
-            .PointColor(0, "#F97316")
-            .PointColor(1, "#14B8A6")
-            .PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#0F766E")).FontWeight("900").Underline());
+            .PointColor(0, ChartColor.FromHex("#F97316"))
+            .PointColor(1, ChartColor.FromHex("#14B8A6"))
+            .PointDataLabelStyle(1, style => style.Color(ChartColor.FromHex("#0F766E")).FontWeight(900).Underline());
         return chart;
     }
 
@@ -533,7 +533,7 @@ internal static partial class ExpressiveExamples {
         .Theme(VisualTheme.Graphite())
         .Size(800, 465)
         .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-        .Pictorial(p => p.Columns(10).Max(100).SvgPath("M12 2 L15 9 L22 9 L17 14 L19 22 L12 17 L5 22 L7 14 L2 9 L9 9 Z", ChartPictorialShape.Star))
+        .Pictorial(p => p.Columns(10).Max(100).SvgPath("M12 2 L15 9 L22 9 L17 14 L19 22 L12 17 L5 22 L7 14 L2 9 L9 9 Z"))
         .AddPictorial("Segments", new[] {
             new ChartPictorialItem("New users", 84, ChartColor.FromRgb(14, 165, 233)),
             new ChartPictorialItem("Returning users", 62, ChartColor.FromRgb(236, 72, 153)),

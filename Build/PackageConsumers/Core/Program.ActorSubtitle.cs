@@ -15,7 +15,7 @@ internal static partial class Program {
             .AddEdge("request", "author", "publish", "requests", routing: TopologyEdgeRouting.Straight);
         var actor = chart.Nodes[0]; actor.Shape = TopologyNodeShape.Actor; actor.ShowStatusBadge = false;
         actor.PreserveDisplayModeSize = true; actor.DisplayMode = TopologyNodeDisplayMode.Card;
-        actor.TextStyle = new TextStyleOverride { FontSize = 16, FontWeight = "500" };
+        actor.TextStyle = new TextStyleOverride { FontSize = 16, FontWeight = 500 };
         var prepared = chart.Prepare(); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var document = XDocument.Parse(svg);
         PackageAssertions.Require(document.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "topology-node-subtitle"),

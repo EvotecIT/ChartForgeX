@@ -9,7 +9,7 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>Renders genuine core diagrams and delegates other blocks to their static producer.</summary>
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     /// <summary>Renders a genuine diagram or delegates static output to its owning producer.</summary>
     public string Render(IVisualBlock block) => Render(block, string.Empty);
     /// <summary>Renders static output with a caller-provided embedding identity.</summary>

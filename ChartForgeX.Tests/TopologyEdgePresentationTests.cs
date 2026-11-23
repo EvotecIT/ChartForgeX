@@ -73,7 +73,7 @@ public sealed class TopologyEdgePresentationTests {
         var legend = TopologyLegend.Resolve(chart, TopologyLegendMode.Explicit)!;
         Assert.Equal(new[] { "IP", "SMTP" }, legend.Items.Select(item => item.Label));
 
-        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.Visual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.True(Count(image, 0x25, 0x63, 0xEB) > 10, "The PNG paints the first stripe colour.");
         Assert.True(Count(image, 0xF9, 0x73, 0x16) > 10, "The PNG paints the second stripe colour.");
         Assert.True(Count(image, 0x16, 0xA3, 0x4A) > 10, "The PNG paints the third stripe colour.");

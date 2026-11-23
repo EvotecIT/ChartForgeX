@@ -70,7 +70,7 @@ public sealed class NativeTransitionCaptureTests {
         var middle = VisualSeriesVisibilityCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3)[1]; SaveNative("legend-native-grouping", middle);
         Assert.Contains(middle.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "series-visibility" && group.Opacity == .5);
         var actual = to.WideEmission!; Assert.Equal(actual.Svg, to.PreparedVisual.ForInteractivePngExport().ToSvg(actual.Options));
-        Assert.Equal(actual.Options.IdPrefix, actual.Prefix);
+        Assert.Equal(actual.Options.IdScope, actual.Prefix);
     }
     [Theory, InlineData("gauge-needle"), InlineData("gauge-combined"), InlineData("gauge-vertical"), InlineData("bullet-shared-vertical")]
     public void FlashRetainsFiniteNativeNeedleMarkerAndAlternateBulletAnatomy(string kind) {

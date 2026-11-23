@@ -62,7 +62,7 @@ public sealed class TopologyExternalUnitsCausalTests {
             Width = shrink ? 920 : 220, Height = shrink ? 720 : 140, Shape = TopologyNodeShape.Rounded, IconShape = glyph,
             Kind = TopologyNodeKind.Generic, DisplayMode = mode, PreserveDisplayModeSize = true, ShowStatusBadge = false, Color = "#2563EB",
             TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family },
-            SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = "500" }
+            SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = 500 }
         });
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });
         return chart;

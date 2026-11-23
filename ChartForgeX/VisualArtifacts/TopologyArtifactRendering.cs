@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -33,7 +34,7 @@ public static class TopologyArtifactRendering {
         artifact.HasModelAccessibilitySnapshot = true;
 
         var prepared = RefreshRegions(artifact, topology, null);
-        artifact.NaturalSize = new VisualArtifactSize(prepared.Width, prepared.Height);
+        artifact.NaturalSize = new VisualSize(prepared.Width, prepared.Height);
         artifact.TopologyNaturalSizeSnapshot = artifact.NaturalSize;
         return artifact;
     }

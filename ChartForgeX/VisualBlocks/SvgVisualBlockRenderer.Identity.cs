@@ -3,7 +3,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     internal static string BuildProvisionalId(IVisualBlock block, string idScope) {
         var options = block.Options;
         return SvgRenderedIdentity.CreateProvisionalId(

@@ -11,7 +11,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderBlockHierarchy(SvgMarkupWriter writer, BlockLayoutBlock block, ChartRect frame, string id) {
         var plan = VisualBlockRendering.BlockHierarchy(block, frame);
         var theme = block.Options.ResolvedTheme;

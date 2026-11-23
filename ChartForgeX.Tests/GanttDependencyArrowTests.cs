@@ -24,7 +24,7 @@ public sealed class GanttDependencyArrowTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var arrow = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
         var tip = arrow.Commands[1];
-        var actual = prepared.ToRgba();
+        var actual = prepared.ToRgbaImage();
         // Keep the projection and connector identical; only the arrow wings are absent from the control.
         var scene = prepared.Scene;
         var controlScene = new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "gantt-dependency-arrow").ToArray(), scene.Diagnostics, scene.Regions);

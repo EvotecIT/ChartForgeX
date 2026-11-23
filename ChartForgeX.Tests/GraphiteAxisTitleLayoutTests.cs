@@ -25,7 +25,7 @@ public sealed class GraphiteAxisTitleLayoutTests {
         var bounds = Bounds(title);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text != title),
             neighbor => Assert.False(Intersects(bounds, Bounds(neighbor)), "Axis title overlaps " + neighbor.Role));
-        var image = prepared.ToRgba(request.RasterOptions); var ink = 0;
+        var image = prepared.ToRgbaImage(request.RasterOptions); var ink = 0;
         for (var y = Math.Max(0, (int)Math.Floor(bounds.Top)); y < Math.Min(image.Height, (int)Math.Ceiling(bounds.Bottom)); y++)
             for (var x = Math.Max(0, (int)Math.Floor(bounds.Left)); x < Math.Min(image.Width, (int)Math.Ceiling(bounds.Right)); x++) {
                 var offset = (y * image.Width + x) * 4;

@@ -5,7 +5,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderGitGraph(SvgMarkupWriter writer, GitGraphBlock graph) {
         var options = graph.Options;
         var theme = options.ResolvedTheme;

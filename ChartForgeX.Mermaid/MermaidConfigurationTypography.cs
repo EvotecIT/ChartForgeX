@@ -19,7 +19,7 @@ internal static partial class MermaidConfigurationTypography {
         }
         var weight = configuration.Last(prefix + "FontWeight");
         if (weight != null) {
-            if (TryWeight(weight.Value, out var value)) style.FontWeight = value;
+            if (TryWeight(weight.Value, out var value)) style.FontWeight = ChartForgeX.Typography.TextStyleOverride.ParseFontWeight(value);
             else Invalid(weight, "must be normal, bold, bolder, lighter or an integer from 1 through 1000");
         }
         return style.HasOverrides ? style : null;

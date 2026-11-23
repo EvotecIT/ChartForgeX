@@ -136,7 +136,7 @@ public sealed class V2ScheduleTests {
     }
 
     private static Chart Fixture(ChartSeriesKind kind) => kind switch {
-        ChartSeriesKind.Timeline => Chart.Create().AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
+        ChartSeriesKind.Timeline => Chart.Create().AddTimelineItem("Plan", 1, 3).AddTimelineItem("Build", 2, 4),
         ChartSeriesKind.Gantt => GanttFixture(),
         ChartSeriesKind.StateTimeline => Chart.Create().AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }),
         _ => Chart.Create().AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "high") })

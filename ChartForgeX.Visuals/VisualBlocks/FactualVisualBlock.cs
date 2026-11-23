@@ -9,7 +9,7 @@ public abstract class FactualVisualBlock<TSelf> : VisualBlock<TSelf>, IFactualVi
     public override string RenderSvg(string idScope) => new SvgFactBlockRenderer().Render(this, idScope);
     /// <summary>Renders factual pixels using the configured static output scale.</summary>
     public override RgbaImage RenderRgba() => new PngFactBlockRenderer().RenderImage(this);
-    RgbaImage IFactualVisualPixels.RenderAtScale(int outputScale) => new PngFactBlockRenderer().RenderCanvas(this, outputScale).ToImage();
+    RgbaImage IFactualVisualPixels.RenderAtScale(int outputScale) => new PngFactBlockRenderer().RenderCanvas(this, outputScale).ToRgbaImage();
 }
 
 /// <summary>Preserves composition density without changing a factual model's configured export scale.</summary>

@@ -64,7 +64,7 @@ internal static partial class VisualSceneRasterRenderer {
                     _options.Scale, useDefaultOutlineFont: false);
                 PaintTransformedText(canvas, _original, VisualSceneTransform.Identity, _options.TextHinting,
                     new ChartPoint(Bounds.X, Bounds.Y));
-                image = canvas.ToImage();
+                image = canvas.ToRgbaImage();
             } else image = Render(_scene, _options.Scale, _options.Supersampling, _options.PixelBudget, _options.TextHinting, cancellation);
             cancellation.ThrowIfCancellationRequested();
             var captured = new VisualSceneImageData(image);

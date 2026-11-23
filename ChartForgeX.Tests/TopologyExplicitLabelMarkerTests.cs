@@ -22,7 +22,7 @@ public sealed class TopologyExplicitLabelMarkerTests {
         edge.LabelAnchor = new ChartPoint(370, 100);
         edge.SourceMarkerStyle = new TopologyMarkerStyle { Scale = 1.5, Offset = 2, StrokeWidth = 0 };
         edge.TargetMarkerStyle = new TopologyMarkerStyle { Scale = 2, Offset = 3, StrokeWidth = 0 };
-        edge.TextStyle = new TextStyleOverride { FontSize = 18, FontWeight = "400" };
+        edge.TextStyle = new TextStyleOverride { FontSize = 18, FontWeight = 400 };
         return chart;
     }
 

@@ -555,7 +555,7 @@ internal static partial class SmokeTests {
             .DataLabels()
             .XAxis(x => x.LabelBy(value => "W" + value.ToString("0", CultureInfo.InvariantCulture)))
             .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "w")
-            .AddTimelineRange("Numeric rollout", 1, 4)
+            .AddTimelineItem("Numeric rollout", 1, 4)
             .ToSvg();
         var numericGantt = Chart.Create()
             .Size(640, 360)

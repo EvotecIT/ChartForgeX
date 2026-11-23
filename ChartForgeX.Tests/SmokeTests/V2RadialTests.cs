@@ -107,8 +107,8 @@ public sealed class V2RadialTests {
         Assert.Equal(retained.Outer * .1, Math.Sqrt(Math.Pow(retained.Cx - other.Cx, 2) + Math.Pow(retained.Cy - other.Cy, 2)), 10);
         Assert.Contains(aggregatedOffset.Nodes.OfType<VisualSceneGroup>(), group =>
             group.Metadata.TryGetValue("data-cfx-source-points", out var sources) && sources == "1,2");
-        Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idPrefix: "offset-proof"),
-            VisualSceneSvgRenderer.Render(aggregatedOffset, idPrefix: "offset-proof"));
+        Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idScope: "offset-proof"),
+            VisualSceneSvgRenderer.Render(aggregatedOffset, idScope: "offset-proof"));
         Assert.Equal(VisualSceneRasterRenderer.Render(baseline).Pixels, VisualSceneRasterRenderer.Render(aggregatedOffset).Pixels);
     }
 
@@ -119,8 +119,8 @@ public sealed class V2RadialTests {
         var baseline = Compile(chart);
         chart.Series[0].PointSliceOffset(1, .35);
         var zeroOffset = Compile(chart);
-        Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idPrefix: "zero-offset-proof"),
-            VisualSceneSvgRenderer.Render(zeroOffset, idPrefix: "zero-offset-proof"));
+        Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idScope: "zero-offset-proof"),
+            VisualSceneSvgRenderer.Render(zeroOffset, idScope: "zero-offset-proof"));
         Assert.Equal(VisualSceneRasterRenderer.Render(baseline).Pixels, VisualSceneRasterRenderer.Render(zeroOffset).Pixels);
         Assert.Equal(3, VisualRadialCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(ThemeMode.Light)).Count);
     }

@@ -14,7 +14,7 @@ public sealed class NativeSceneOpacityTests {
     [InlineData(0)] [InlineData(.5)] [InlineData(1)]
     public void WholeGroupCompositesOverlappingChildrenOnceAndRetainsNativeSvg(double opacity) {
         var scene = Wrap(NativeOpacityDefaultControls.Scene(3), opacity); var prepared = new PreparedVisual(scene);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Capture(prepared, "group-" + opacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal((byte)Math.Round(255 * opacity), Alpha(image, 10, 10));
         Assert.Equal((byte)Math.Round(255 * opacity), Alpha(image, 3, 3));
@@ -34,7 +34,7 @@ public sealed class NativeSceneOpacityTests {
         if (kind == "rect") builder.Rect(new ChartRect(4, 4, 16, 16), color, color, 6, role: "element", opacity: .5);
         else if (kind == "ellipse") builder.Ellipse(12, 12, 8, 8, color, color, 6, "element", opacity: .5);
         else builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(4, 4), ChartPathCommand.LineTo(20, 4), ChartPathCommand.LineTo(20, 20), ChartPathCommand.LineTo(4, 20) }), color, color, 6, "element", close: true, opacity: .5);
-        var prepared = new PreparedVisual(builder.Build()); var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var prepared = new PreparedVisual(builder.Build()); var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Capture(prepared, "element-" + kind);
         Assert.Equal(128, Alpha(image, kind == "ellipse" ? 18 : 5, kind == "ellipse" ? 12 : 5));
         Assert.Contains("opacity=\"0.5\"", prepared.ToSvg("native-opacity"));
@@ -47,17 +47,17 @@ public sealed class NativeSceneOpacityTests {
         var builder = new VisualSceneBuilder(new VisualSize(32, 24), FontSpec.SystemSans()); var red = ChartColor.FromHex("#CC2030");
         builder.Rect(new ChartRect(2, 2, 16, 16), red, opacity: .5); builder.Rect(new ChartRect(8, 4, 16, 16), red, opacity: .5);
         var separate = new PreparedVisual(builder.Build()); Capture(separate, "separate-elements");
-        Assert.Equal(192, Alpha(separate.ToRgba(new VisualRenderOptions(supersampling: 1)), 10, 10));
+        Assert.Equal(192, Alpha(separate.ToRgbaImage(new VisualRenderOptions(supersampling: 1)), 10, 10));
         var nested = new PreparedVisual(Wrap(Wrap(NativeOpacityDefaultControls.Scene(3), .5), .5)); Capture(nested, "nested-groups");
-        Assert.Equal(64, Alpha(nested.ToRgba(new VisualRenderOptions(supersampling: 1)), 10, 10));
+        Assert.Equal(64, Alpha(nested.ToRgbaImage(new VisualRenderOptions(supersampling: 1)), 10, 10));
     }
 
     [Theory]
     [InlineData(4)] [InlineData(5)] [InlineData(6)] [InlineData(7)]
     public void NativeClipTransformCapturedTextAndImagesShareTheSameCompletedGroupPaint(int sample) {
         var original = NativeOpacityDefaultControls.Scene(sample); var source = new PreparedVisual(original);
-        var actual = new PreparedVisual(Wrap(original, .5)); var full = source.ToRgba(new VisualRenderOptions(supersampling: 1));
-        var image = actual.ToRgba(new VisualRenderOptions(supersampling: 1)); Capture(actual, "native-owner-" + sample);
+        var actual = new PreparedVisual(Wrap(original, .5)); var full = source.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
+        var image = actual.ToRgbaImage(new VisualRenderOptions(supersampling: 1)); Capture(actual, "native-owner-" + sample);
         for (var index = 0; index < full.Pixels.Length; index += 4) {
             Assert.Equal((byte)Math.Round(full.Pixels[index + 3] * .5), image.Pixels[index + 3]);
             if (image.Pixels[index + 3] != 0) for (var channel = 0; channel < 3; channel++) Assert.Equal(full.Pixels[index + channel], image.Pixels[index + channel]);
@@ -69,7 +69,7 @@ public sealed class NativeSceneOpacityTests {
         var builder = new VisualSceneBuilder(new VisualSize(32, 24), FontSpec.SystemSans());
         using (builder.PushClip(new ChartRect(4, 4, 8, 8))) using (builder.PushGroup(null, "child-opacity", opacity: .5))
             builder.Rect(new ChartRect(0, 0, 24, 24), ChartColor.FromHex("#CC2030"));
-        var prepared = new PreparedVisual(builder.Build()); var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var prepared = new PreparedVisual(builder.Build()); var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Capture(prepared, "ancestor-clip"); Assert.Equal(128, Alpha(image, 5, 5)); Assert.Equal(0, Alpha(image, 2, 2));
     }
 
@@ -93,9 +93,9 @@ public sealed class NativeSceneOpacityTests {
         var source = NativeOpacityDefaultControls.Scene(0); var nodes = new List<VisualSceneNode>();
         for (var index = 0; index < 65; index++) { nodes.Add(Group(.5)); nodes.AddRange(source.Nodes); nodes.Add(new VisualSceneEndGroup()); }
         var large = new PreparedVisual(new VisualScene(new VisualSize(1024, 1024), nodes, source.Diagnostics, source.Regions));
-        Assert.Throws<ArgumentOutOfRangeException>(() => large.ToRgba(new VisualRenderOptions(supersampling: 1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => large.ToRgbaImage(new VisualRenderOptions(supersampling: 1)));
         var nested = source; for (var index = 0; index < 65; index++) nested = Wrap(nested, .5);
-        Assert.Throws<NotSupportedException>(() => new PreparedVisual(nested).ToRgba(new VisualRenderOptions(supersampling: 1)));
+        Assert.Throws<NotSupportedException>(() => new PreparedVisual(nested).ToRgbaImage(new VisualRenderOptions(supersampling: 1)));
     }
 
     [Fact]

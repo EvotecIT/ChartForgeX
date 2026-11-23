@@ -93,7 +93,7 @@ public sealed class StateTimelineLabelPolicyTests {
     public void ToSvg_DenseTimelineRanges_KeepEveryLaneNameWhenTheRowPitchFitsTheText() {
         // Range bars are thinner than their row; the label may use the row pitch, so a thin bar doesn't hide its name.
         var chart = Chart.Create().Size(720, 420).Legend(false);
-        for (var lane = 0; lane < 20; lane++) chart.AddTimelineRange("Window " + lane, lane, lane + 3);
+        for (var lane = 0; lane < 20; lane++) chart.AddTimelineItem("Window " + lane, lane, lane + 3);
 
         var labels = Texts(XDocument.Parse(chart.ToSvg()), ChartDomRoles.ScheduleRowLabel);
 

@@ -38,7 +38,7 @@ public sealed partial class VisualTheme {
     private static void ReadLabel(ChartForgeX.Typography.TextStyleOverride style, Dictionary<string, GeoJsonValue> source, string path) {
         if (source.TryGetValue("fontFamily", out var family)) style.FontFamily = family.AsString(path + ".fontFamily");
         if (source.TryGetValue("fontSize", out var size)) style.FontSize = size.AsNumber(path + ".fontSize");
-        if (source.TryGetValue("fontWeight", out var weight)) style.FontWeight = weight.AsString(path + ".fontWeight");
+        if (source.TryGetValue("fontWeight", out var weight)) style.FontWeight = TextStyleOverride.ParseFontWeight(weight.AsString(path + ".fontWeight")) ?? throw new FormatException(path + ".fontWeight must be a font weight.");
         if (source.TryGetValue("color", out var color)) style.Color = Hex(color.AsString(path + ".color"), "dataLabel.color");
     }
 
@@ -74,7 +74,7 @@ public sealed partial class VisualTheme {
         writer.Property("dataLabel"); writer.StartObject();
         if (style.FontFamily != null) { writer.Property("fontFamily"); writer.String(style.FontFamily); }
         if (style.FontSize is { } size) WriteNumber(writer, "fontSize", size);
-        if (style.FontWeight != null) { writer.Property("fontWeight"); writer.String(style.FontWeight); }
+        if (style.FontWeight != null) { writer.Property("fontWeight"); writer.String(style.FontWeight.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
         if (style.Color is { } color) WriteColor(writer, "color", color);
         writer.EndObject();
     }

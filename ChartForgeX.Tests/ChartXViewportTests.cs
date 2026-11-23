@@ -33,7 +33,7 @@ public sealed class ChartAxisWindowTests {
         var pointGroups = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(new[] { "0", "10" }, pointGroups.Select(node => (string?)node.Attribute("data-cfx-x")));
         Assert.Equal(new[] { "0", "1" }, pointGroups.Select(node => (string?)node.Attribute("data-cfx-source-point")));
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         AssertBlueNear(image, projection.Project(5), projection.PlotBounds.Bottom - projection.PlotBounds.Height * (step ? .2 : .5));
         AssertBlueInside(image, projection.PlotBounds);
         Assert.False(chart.Options.ClipMarksToPlot);
@@ -51,7 +51,7 @@ public sealed class ChartAxisWindowTests {
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "point"));
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
         Assert.Equal(2, line.Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
-        Assert.Empty(BluePixels(prepared.ToRgba()));
+        Assert.Empty(BluePixels(prepared.ToRgbaImage()));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class ChartAxisWindowTests {
         var markers = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
         Assert.Equal(2, markers.Length); Assert.Equal(Blue, markers[0].Fill); Assert.Equal(second, markers[1].Fill);
         Assert.Equal(projection.PlotBounds.Left, markers[0].Cx); Assert.Equal(projection.PlotBounds.Right, markers[1].Cx);
-        AssertBlueInside(prepared.ToRgba(), projection.PlotBounds);
+        AssertBlueInside(prepared.ToRgbaImage(), projection.PlotBounds);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class ChartAxisWindowTests {
         Assert.Equal(Math.Min(projection.Project(3), projection.Project(5)), region.Bounds.Left, 9);
         Assert.Equal(projection.PlotBounds.Height * .6, region.Bounds.Height, 9);
         Assert.Equal(0, prepared.Regions.Single(item => item.Id == "plot-region-1").Bounds.Width);
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         var pixel = ((int)(projection.PlotBounds.Bottom - projection.PlotBounds.Height * .7) * image.Width + (int)projection.Project(4)) * 4;
         Assert.Equal(220, image.Pixels[pixel]); Assert.Equal(180, image.Pixels[pixel + 1]); Assert.Equal(40, image.Pixels[pixel + 2]);
         var svg = XDocument.Parse(prepared.ToSvg());

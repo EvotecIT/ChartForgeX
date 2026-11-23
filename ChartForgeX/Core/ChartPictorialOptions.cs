@@ -25,7 +25,6 @@ public sealed class ChartPictorialOptions {
 
     private ChartRect _pictorialSvgPathViewBox = new(0, 0, 24, 24);
 
-    private ChartPictorialShape _pictorialPngFallbackShape = ChartPictorialShape.Circle;
 
 
     /// <summary>
@@ -141,38 +140,20 @@ public sealed class ChartPictorialOptions {
     }
 
 
-    /// <summary>
-    /// Gets or sets the fallback shape for the legacy PNG exporter when <see cref="ChartPictorialOptions.SvgPathData"/> is configured.
-    /// Prepared SVG and native PNG output use the actual custom path and ignore this legacy setting.
-    /// </summary>
-    public ChartPictorialShape PngFallbackShape {
-        get => _pictorialPngFallbackShape;
-        set {
-            if (!Enum.IsDefined(typeof(ChartPictorialShape), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown pictorial fallback shape.");
-            _pictorialPngFallbackShape = value;
-        }
-    }
-
-
-    /// <summary>Draws symbols from SVG path data drawn in <paramref name="viewBox"/>; PNG output draws <paramref name="pngFallbackShape"/>.</summary>
+    /// <summary>Draws symbols from SVG path data drawn in <paramref name="viewBox"/>, in SVG and native PNG output.</summary>
     /// <param name="pathData">The SVG path data.</param>
     /// <param name="viewBox">The view box the path was drawn in.</param>
-    /// <param name="pngFallbackShape">The built-in shape PNG output draws.</param>
     /// <returns>The same options.</returns>
-    public ChartPictorialOptions SvgPath(string pathData, ChartRect viewBox, ChartPictorialShape pngFallbackShape = ChartPictorialShape.Circle) {
+    public ChartPictorialOptions SvgPath(string pathData, ChartRect viewBox) {
         SvgPathData = pathData;
         SvgPathViewBox = viewBox;
-        PngFallbackShape = pngFallbackShape;
-    
         return this;
     }
 
-    /// <summary>Draws symbols from SVG path data drawn in a 24-unit square; PNG output draws <paramref name="pngFallbackShape"/>.</summary>
+    /// <summary>Draws symbols from SVG path data drawn in a 24-unit square, in SVG and native PNG output.</summary>
     /// <param name="pathData">The SVG path data.</param>
-    /// <param name="pngFallbackShape">The built-in shape PNG output draws.</param>
     /// <returns>The same options.</returns>
-    public ChartPictorialOptions SvgPath(string pathData, ChartPictorialShape pngFallbackShape = ChartPictorialShape.Circle) =>
-        SvgPath(pathData, new ChartRect(0, 0, 24, 24), pngFallbackShape);
+    public ChartPictorialOptions SvgPath(string pathData) => SvgPath(pathData, new ChartRect(0, 0, 24, 24));
 
     private ChartPictorialFillDirection _pictorialFillDirection;
 

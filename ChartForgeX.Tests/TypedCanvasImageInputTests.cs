@@ -79,8 +79,8 @@ public sealed class TypedCanvasImageInputTests {
 
     [Fact]
     public void AnimatedPngHelpersEmbedOnlyTheDecodedStaticImage() {
-        var first = ImageComposition.Create(3, 2, ChartColor.FromHex("#ff0000")).ToImage();
-        var second = ImageComposition.Create(3, 2, ChartColor.FromHex("#00ff00")).ToImage();
+        var first = ImageComposition.Create(3, 2, ChartColor.FromHex("#ff0000")).ToRgbaImage();
+        var second = ImageComposition.Create(3, 2, ChartColor.FromHex("#00ff00")).ToRgbaImage();
         var encoded = RasterAnimationEncoder.Encode([
             new RasterAnimationFrame(first, TimeSpan.FromMilliseconds(100)),
             new RasterAnimationFrame(second, TimeSpan.FromMilliseconds(100))

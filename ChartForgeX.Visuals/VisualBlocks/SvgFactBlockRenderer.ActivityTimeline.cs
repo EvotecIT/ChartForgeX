@@ -9,7 +9,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderActivityTimeline(SvgMarkupWriter writer, ActivityTimelineBlock block) {
         var options = block.Options;
         var theme = options.ResolvedTheme;

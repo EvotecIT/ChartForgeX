@@ -14,7 +14,7 @@ internal static class VisualGridChartRendering {
 
     internal static RgbaImage Image(Chart chart, int density) {
         var prepared = Prepare(chart, out var raster);
-        return prepared.ToRgba(new VisualRenderOptions(density, raster.Supersampling, raster.PixelBudget, raster.TextHinting));
+        return prepared.ToRgbaImage(new VisualRenderOptions(density, raster.Supersampling, raster.PixelBudget, raster.TextHinting));
     }
 
     private static PreparedVisual Prepare(Chart chart, out VisualRenderOptions raster) {

@@ -22,7 +22,7 @@ public sealed class BubbleSizeScaleTests {
         Assert.All(rings, ring => Assert.Contains(marks.Take(2), mark => mark.Cx == ring.Cx && mark.Cy == ring.Cy && mark.Rx == ring.Rx));
         Assert.All(rings, ring => Assert.True(ring.StrokeWidth > marks[0].StrokeWidth && ring.Fill == null));
         Assert.Equal(2, System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "bubble-separator"));
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var without = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size, prepared.Scene.Nodes.Where(node => node.Role != "bubble-separator").ToArray(),
             prepared.Scene.Diagnostics, prepared.Scene.Regions), supersampling: 1);
         Assert.NotEqual(without.Pixels, image.Pixels);

@@ -38,7 +38,7 @@ public sealed class VisualMotionPresentation : IStaticVisualSource {
     /// <summary>Applies a timeline to source identities already retained in a prepared native scene.</summary>
     public static VisualMotionPresentation Create(PreparedVisual prepared, VisualMotionTimeline timeline) {
         if (prepared == null) throw new ArgumentNullException(nameof(prepared));
-        return new VisualMotionPresentation(prepared.ToSvg("motion-input"), prepared.ToRgba(), timeline);
+        return new VisualMotionPresentation(prepared.ToSvg("motion-input"), prepared.ToRgbaImage(), timeline);
     }
 
     /// <summary>Exports animated SVG with deterministic scoped IDs and a reduced-motion/print fallback.</summary>

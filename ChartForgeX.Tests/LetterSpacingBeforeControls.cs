@@ -12,20 +12,20 @@ public sealed class LetterSpacingBeforeControls : IDisposable {
 
     [Fact]
     public void AuthoredRelativeTrackingChangesNativeInkThroughTheExistingSvgImporter() {
-        var ordinary = SvgRasterizer.ToImage(Source("normal"));
-        var tracked = SvgRasterizer.ToImage(Source("0.06em"));
+        var ordinary = SvgRasterizer.ToRgbaImage(Source("normal"));
+        var tracked = SvgRasterizer.ToRgbaImage(Source("0.06em"));
         Capture("normal", ordinary); Capture("tracked", tracked);
         Assert.NotEqual(ordinary.Pixels, tracked.Pixels);
     }
     [Fact]
     public void NormalAndExplicitZeroPreserveNativeBytes() {
-        Assert.Equal(SvgRasterizer.ToImage(Source("normal")).Pixels, SvgRasterizer.ToImage(Source("0px")).Pixels);
-        Assert.Equal(SvgRasterizer.ToImage(Source("0px")).Pixels, SvgRasterizer.ToImage(Source("0em")).Pixels);
+        Assert.Equal(SvgRasterizer.ToRgbaImage(Source("normal")).Pixels, SvgRasterizer.ToRgbaImage(Source("0px")).Pixels);
+        Assert.Equal(SvgRasterizer.ToRgbaImage(Source("0px")).Pixels, SvgRasterizer.ToRgbaImage(Source("0em")).Pixels);
     }
     [Fact]
     public void RelativeTrackingUsesTheFinalSameElementFontSizeRegardlessOfDeclarationOrder() {
-        var first = SvgRasterizer.ToImage(Source("0.06em", "letter-spacing:0.06em;font-size:20px"));
-        var second = SvgRasterizer.ToImage(Source("1.2px", "font-size:20px;letter-spacing:1.2px"));
+        var first = SvgRasterizer.ToRgbaImage(Source("0.06em", "letter-spacing:0.06em;font-size:20px"));
+        var second = SvgRasterizer.ToRgbaImage(Source("1.2px", "font-size:20px;letter-spacing:1.2px"));
         Assert.Equal(first.Pixels, second.Pixels);
     }
     private static string Source(string spacing, string? style = null) => "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='64' viewBox='0 0 120 64'>"

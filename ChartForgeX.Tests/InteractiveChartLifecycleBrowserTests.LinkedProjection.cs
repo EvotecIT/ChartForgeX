@@ -135,7 +135,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(46000, 46002)]
     public async Task TimeRangesAndNativeBrushPairsKeepOneUnitAcrossTheOleEpoch(double start, double end) {
         if (!Enabled) return;
-        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale().Bounds(start, end)).AddTimelineRange("Interval", start, end);
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale().Bounds(start, end)).AddTimelineItem("Interval", start, end);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), 820, 650);
         await BindLinkedEventsAsync(session.Page);
         var target = await session.Page.EvaluateAsync<JsonElement>("()=>{chartController.select({seriesKeys:[JSON.parse(chartController.root.dataset.cfxPreparedChart).series[0].key]});return chartController.getSelection()[0]}");

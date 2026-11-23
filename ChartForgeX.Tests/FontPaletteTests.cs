@@ -152,13 +152,13 @@ public sealed class FontPaletteTests {
     public void SvgPaletteRulesInheritanceAndNormalResetReachRasterGlyphs() {
         WithRegisteredFont(_ => {
             var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='440' height='160'><style>@font-palette-values --warm{font-family:'CFX Palette';base-palette:1}</style><g font-family='CFX Palette' font-size='100' fill='#00ff00' style='font-palette:--warm'><text x='40' y='80'>😀<tspan style='font-palette:normal'>😀</tspan></text></g></svg>";
-            var actual = SvgRasterizer.ToImage(svg);
+            var actual = SvgRasterizer.ToRgbaImage(svg);
             var canvas = new RgbaCanvas(440, 160, 1, Font(), 1, useDefaultOutlineFont: false);
             Font().WithColorPalette(1).Draw(canvas, 40, 0, "😀", new ChartColor(0, 255, 0), 100);
             Font().Draw(canvas, 140, 0, "😀", new ChartColor(0, 255, 0), 100);
             Assert.Equal(canvas.ToOutputPixels(), actual.Pixels);
             var wrongFamily = svg.Replace("font-family:'CFX Palette';base-palette:1", "font-family:'Different';base-palette:1");
-            Assert.NotEqual(actual.Pixels, SvgRasterizer.ToImage(wrongFamily).Pixels);
+            Assert.NotEqual(actual.Pixels, SvgRasterizer.ToRgbaImage(wrongFamily).Pixels);
         });
     }
     [Fact]
@@ -166,13 +166,13 @@ public sealed class FontPaletteTests {
         WithRegisteredFont(_ => {
             const string rules = "@font-palette-values --selected{font-family:Missing;base-palette:2}@font-palette-values --selected{font-family:'CFX Palette';base-palette:1}";
             var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='160'><style>" + rules + "</style><text x='40' y='80' font-family='Missing, CFX Palette' font-size='100' fill='#00ff00' style='font-palette:--selected'>😀</text></svg>";
-            Assert.Equal(Draw(Font().WithColorPalette(1)).ToOutputPixels(), SvgRasterizer.ToImage(svg).Pixels);
+            Assert.Equal(Draw(Font().WithColorPalette(1)).ToOutputPixels(), SvgRasterizer.ToRgbaImage(svg).Pixels);
             var primaryPath = Path.Combine(Path.GetTempPath(), "cfx-palette-primary-" + Guid.NewGuid().ToString("N") + ".ttf");
             File.WriteAllBytes(primaryPath, Bytes("language"));
             try {
                 FontRegistry.Register("CFX Primary", primaryPath);
                 var fallback = svg.Replace("Missing, CFX Palette", "CFX Primary, CFX Palette").Replace("😀</text>", "A</text>");
-                Assert.Equal(Draw(Font().WithColorPalette(1), "A").ToOutputPixels(), SvgRasterizer.ToImage(fallback).Pixels);
+                Assert.Equal(Draw(Font().WithColorPalette(1), "A").ToOutputPixels(), SvgRasterizer.ToRgbaImage(fallback).Pixels);
             } finally { File.Delete(primaryPath); }
         });
     }
@@ -190,7 +190,7 @@ public sealed class FontPaletteTests {
     public void ImportedPaletteKeepsTheChosenFamilyAfterFileCacheEviction() {
         WithRegisteredFont(path => {
             var svg = PaletteSvg("CFX Palette");
-            var expected = SvgRasterizer.ToImage(svg).Pixels;
+            var expected = SvgRasterizer.ToRgbaImage(svg).Pixels;
             var directory = Path.Combine(Path.GetTempPath(), "cfx-palette-eviction-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
             try {
@@ -198,7 +198,7 @@ public sealed class FontPaletteTests {
                     var copy = Path.Combine(directory, i + ".ttf"); File.Copy(path, copy);
                     TextLayoutEngine.Measure("😀", new TextStyle { Font = FontSpec.FromFile(copy), FontSize = 100 });
                 }
-                Assert.Equal(expected, SvgRasterizer.ToImage(svg).Pixels);
+                Assert.Equal(expected, SvgRasterizer.ToRgbaImage(svg).Pixels);
             } finally { Directory.Delete(directory, recursive: true); }
         });
     }
@@ -207,10 +207,10 @@ public sealed class FontPaletteTests {
         WithRegisteredFont(path => {
             FontRegistry.Register("CFX Alias", path);
             var svg = PaletteSvg("CFX Palette").Replace("</style>", "@font-palette-values --selected{font-family:'CFX Alias';base-palette:2}</style>");
-            Assert.Equal(Draw(Font().WithColorPalette(1)).ToOutputPixels(), SvgRasterizer.ToImage(svg).Pixels);
+            Assert.Equal(Draw(Font().WithColorPalette(1)).ToOutputPixels(), SvgRasterizer.ToRgbaImage(svg).Pixels);
             var alias = svg.Replace("font-family='CFX Palette'", "font-family='CFX Alias'");
-            Assert.Equal(Draw(Font().WithColorPalette(2)).ToOutputPixels(), SvgRasterizer.ToImage(alias).Pixels);
-            Assert.Equal(Draw(Font()).ToOutputPixels(), SvgRasterizer.ToImage(PaletteSvg("CFX Alias")).Pixels);
+            Assert.Equal(Draw(Font().WithColorPalette(2)).ToOutputPixels(), SvgRasterizer.ToRgbaImage(alias).Pixels);
+            Assert.Equal(Draw(Font()).ToOutputPixels(), SvgRasterizer.ToRgbaImage(PaletteSvg("CFX Alias")).Pixels);
         });
     }
     [Fact]
@@ -222,7 +222,7 @@ public sealed class FontPaletteTests {
             try {
                 FontRegistry.Register("CFX Primary", primary);
                 var svg = PaletteSvg("CFX Primary, CFX Alias").Replace("</style>", "@font-palette-values --selected{font-family:'CFX Alias';base-palette:2}</style>").Replace("😀</text>", "A</text>").Replace("font-size='100'", "font-size='100' style='font-language-override:\"TRK\";font-variation-settings:\"wght\" 700'");
-                Assert.Equal(Draw(Font().WithColorPalette(2), "A").ToOutputPixels(), SvgRasterizer.ToImage(svg).Pixels);
+                Assert.Equal(Draw(Font().WithColorPalette(2), "A").ToOutputPixels(), SvgRasterizer.ToRgbaImage(svg).Pixels);
             } finally { File.Delete(primary); }
         });
     }

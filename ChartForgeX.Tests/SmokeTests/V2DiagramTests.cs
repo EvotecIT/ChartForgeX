@@ -28,7 +28,7 @@ public sealed class V2DiagramTests {
         var line = Assert.Single(edge.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
         Assert.Equal(css, line.Attribute("stroke")?.Value);
         Assert.Equal(css, edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").Attribute("fill")?.Value);
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         var route = prepared.SemanticInterchange!.Edges.Single().ResolvedRoute;
         var x = (int)Math.Round((route.First().X + route.Last().X) / 2);
         var y = (int)Math.Round((route.First().Y + route.Last().Y) / 2);
@@ -65,7 +65,7 @@ public sealed class V2DiagramTests {
         Assert.Equal(Find(firstSvg, "frame-heading").ToString(), Find(secondSvg, "frame-heading").ToString());
         Assert.Equal(Find(firstSvg, "background").Attribute("fill")?.Value, Find(secondSvg, "background").Attribute("fill")?.Value);
         Assert.Equal(context.Theme.Resolve(mode).Status.Pass.Fill.ToCss(), Find(firstSvg, "topology-status").Attribute("fill")?.Value);
-        Assert.Equal(640, first.ToRgba().Width); Assert.Equal(400, second.ToRgba().Height);
+        Assert.Equal(640, first.ToRgbaImage().Width); Assert.Equal(400, second.ToRgbaImage().Height);
         Assert.Contains(first.Regions, region => region.Id == "source" && region.Role == "topology-node");
         Assert.Contains(first.Regions, region => region.Id == "route" && region.Role == "topology-edge");
         Assert.Contains(second.Regions, region => region.Id == "client" && region.Role == "sequence-participant");
@@ -106,7 +106,7 @@ public sealed class V2DiagramTests {
     public void CommonTransparentBackgroundSurvivesDiagramFrameResolution() {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), frame: new VisualFrame(showLegend: false, transparentBackground: true));
         foreach (var visual in new IVisualRenderable[] { Topology(), Sequence() }) {
-            var prepared = visual.Prepare(context); var image = prepared.ToRgba();
+            var prepared = visual.Prepare(context); var image = prepared.ToRgbaImage();
             Assert.Equal(0, image.Pixels[3]);
             Assert.DoesNotContain("data-cfx-role=\"background\"", prepared.ToSvg());
         }

@@ -22,7 +22,7 @@ internal static class FoundationExamples {
                 .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(false).DataLabels()
                 .Map(m => m.Viewport(ChartMapViewport.Europe()))
                 .AddDottedMap("Places", new[] { new ChartMapPoint("Madrid", -3.7, 40.4), new ChartMapPoint("Warsaw", 21, 52.2) })
-                .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
+                .AddMapConnectorBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
             SaveChart(map, output, "foundation-map-typography-" + (dark ? "dark" : "light"), pngOutputScale);
             var typographyGrid = ChartGrid.Create().Title("Dashboard typography").Columns(2)
                 .PngOutputScale((int)pngOutputScale).Add(map).Add(histogram);

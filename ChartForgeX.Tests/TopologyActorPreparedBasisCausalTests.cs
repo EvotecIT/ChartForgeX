@@ -54,7 +54,7 @@ public sealed class TopologyActorPreparedBasisCausalTests {
         node.Kind = TopologyNodeKind.Generic; node.DisplayMode = mode; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
         node.Color = "#2563EB"; node.Subtitle = "A native caption";
         node.TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family };
-        node.SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = "500" };
+        node.SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = 500 };
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });
         return chart;
     }

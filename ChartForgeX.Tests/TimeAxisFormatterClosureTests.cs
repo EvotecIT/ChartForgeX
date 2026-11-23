@@ -87,7 +87,7 @@ public sealed class TimeAxisFormatterClosureTests {
         var svgLabels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "schedule-tick-label");
         Assert.Equal(texts, svgLabels.Select(node => node.Value));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(width, image.Width); Assert.Equal((int)Math.Ceiling(prepared.Size.Height), image.Height);Assert.InRange(image.Height, 120, 359);
         chart.XAxis(axis => axis.TickCount = 4);
         Assert.InRange(Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Length, 2, 4);

@@ -96,7 +96,7 @@ public sealed class TreeLabelReadabilityTests {
     }
 
     private static void AssertNativeCaptionInk(PreparedVisual prepared, IEnumerable<VisualSceneText> captions) {
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var caption in captions) {
             var scene = prepared.Scene;
             var without = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size,

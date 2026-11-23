@@ -10,7 +10,7 @@ internal static class NativeRetainedMaskExamples {
                 var source = NativeRetainedMaskExample.PrepareSource(variant, mode);
                 var masked = source.WithMask(NativeRetainedMaskExample.CreateMask(source));
                 var stem = Path.Combine(output, "native-retained-mask-" + variant + "-" + mode.ToString().ToLowerInvariant());
-                var native = masked.ToSvg(new VisualSvgOptions(idPrefix: "retained-mask-example", effectProfile: VisualSvgEffectProfile.NativeFilters));
+                var native = masked.ToSvg(new VisualSvgOptions(idScope: "retained-mask-example", effectProfile: VisualSvgEffectProfile.NativeFilters));
                 File.WriteAllText(stem + ".svg", masked.ToSvg());
                 File.WriteAllText(stem + ".native.svg", native);
                 File.WriteAllBytes(stem + ".png", masked.ToPng());

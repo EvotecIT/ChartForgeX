@@ -22,7 +22,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
             .WithPatternTiles();
         var hostedOptions = options.WithoutProductFonts();
         Assert.NotSame(options, hostedOptions);
-        Assert.Equal("original-policy", hostedOptions.IdPrefix);
+        Assert.Equal("original-policy", hostedOptions.IdScope);
         Assert.True(hostedOptions.Responsive);
         Assert.True(hostedOptions.PatternTiles);
 
@@ -35,8 +35,8 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         Assert.DoesNotContain("@font-face", hostedSvg, StringComparison.Ordinal);
         Assert.True(XNode.DeepEquals(standalone, hosted), "Host font ownership must preserve every other SVG node and attribute.");
         Assert.Contains("var(--hfx-", hostedSvg, StringComparison.Ordinal);
-        Assert.Equal("original-policy", options.IdPrefix);
-        Assert.Equal("original-policy", hostedOptions.IdPrefix);
+        Assert.Equal("original-policy", options.IdScope);
+        Assert.Equal("original-policy", hostedOptions.IdScope);
         Assert.Equal(chart.ToSvg(scope), chart.ToSvg(defaults, scope));
         Assert.Equal(chart.ToSvg(), chart.ToSvg(defaults, null));
         var policyIds = XDocument.Parse(chart.ToSvg(hostedOptions, null)).Descendants().Attributes("id").ToArray();

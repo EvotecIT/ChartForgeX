@@ -26,7 +26,7 @@ public sealed class FontRegistryMemoryTests : IDisposable {
                 .XLabels("H", "O").AddBar("H", ChartPoints.FromValues(12, 18));
             var png = chart.ToPng();
             var svg = chart.ToSvg();
-            var raster = SvgRasterizer.ToImage(svg).Pixels;
+            var raster = SvgRasterizer.ToRgbaImage(svg).Pixels;
             var measured = VisualCanvasTextFace.Resolve(Family, 400, TextMeasurementMode.PortableEstimate).Measure("HOx", 20);
             FontRegistry.Clear();
 
@@ -37,7 +37,7 @@ public sealed class FontRegistryMemoryTests : IDisposable {
             Assert.Equal(measured, VisualCanvasTextFace.Resolve(Family, 400, TextMeasurementMode.PortableEstimate).Measure("HOx", 20));
             Assert.Equal(png, chart.ToPng());
             Assert.Equal(svg, chart.ToSvg());
-            Assert.Equal(raster, SvgRasterizer.ToImage(chart.ToSvg()).Pixels);
+            Assert.Equal(raster, SvgRasterizer.ToRgbaImage(chart.ToSvg()).Pixels);
             Assert.True(stream.CanRead);
             if (fromStream) Assert.Equal(stream.Length, stream.Position);
         } finally {

@@ -34,7 +34,7 @@ public sealed class RadialFiniteFractionTests {
         ordinary.Options.Legend.Visible = false;
         ordinary.Options.DataLabels.Visible = false;
         ordinary.Options.Pie.ShowCenterLabel = false;
-        Assert.Equal(ordinary.ToRgbaImage().Pixels, prepared.ToRgba().Pixels);
+        Assert.Equal(ordinary.ToRgbaImage().Pixels, prepared.ToRgbaImage().Pixels);
         Assert.True(prepared.ToPng().Length > 64);
     }
 

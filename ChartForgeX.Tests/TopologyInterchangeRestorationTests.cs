@@ -34,7 +34,7 @@ public sealed class TopologyInterchangeRestorationTests {
         Assert.Equal(portable.Topology.Artwork!.SvgBody, node.Artwork!.SvgBody);
         Assert.Equal(portable.Ports.Single().Id, node.Ports.Single().Id); Assert.Equal("outbound", node.Ports[0].Metadata["meaning"]);
         Assert.Equal("queued", node.Metrics["phase"]); Assert.Equal("Complete <value>", node.Details[0].Value);
-        Assert.Equal("detail", node.Details[0].Metadata["kind"]); Assert.Equal("600", node.Details[0].TextStyle!.FontWeight);
+        Assert.Equal("detail", node.Details[0].Metadata["kind"]); Assert.Equal(600, node.Details[0].TextStyle!.FontWeight);
         var edge = imported.Edges.Single(); var portableEdge = envelope.Edges.Single();
         Assert.Equal(portableEdge.Topology!.Waypoints.Select(point => (point.X, point.Y)), edge.Waypoints.Select(point => (point.X, point.Y)));
         Assert.Equal(portableEdge.Topology.DashPattern, edge.DashPattern); Assert.Equal(0, edge.RouteLane);
@@ -58,7 +58,7 @@ public sealed class TopologyInterchangeRestorationTests {
 
         var before = imported.ToSvg(); var beforePng = imported.ToPng();
         node.Label = "Edited source"; node.Details[0].Value = "Delivered"; node.Metadata["changed"] = "local";
-        node.Ports[0].Metadata["meaning"] = "changed"; node.Details[0].TextStyle!.FontWeight = "400";
+        node.Ports[0].Metadata["meaning"] = "changed"; node.Details[0].TextStyle!.FontWeight = 400;
         node.Artwork!.SvgBody = "<circle cx=\"12\" cy=\"12\" r=\"6\"/>";
         // Artwork mode keeps its caption outside the artwork; explicitly choose a factual card for editable detail rows.
         node.DisplayMode = TopologyNodeDisplayMode.Card;
@@ -142,7 +142,7 @@ public sealed class TopologyInterchangeRestorationTests {
         node.Ports.Add(new TopologyNodePort { Id = "send", Side = TopologyEdgePort.Right, Offset = .4, Label = "Send" });
         node.Ports[0].Metadata["meaning"] = "outbound";
         node.Details.Add(new TopologyNodeDetail { Label = "Payload", Value = "Complete <value>", Status = TopologyHealthStatus.Warning,
-            TextStyle = new TextStyleOverride { FontWeight = "600" } }); node.Details[0].Metadata["kind"] = "detail";
+            TextStyle = new TextStyleOverride { FontWeight = 600 } }); node.Details[0].Metadata["kind"] = "detail";
         chart.Nodes.Add(node); chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Worker", GroupId = "region", X = 410, Y = 85, Width = 190, Height = 110,
             ShowStatusBadge = false, Shape = TopologyNodeShape.Rounded });
         var edge = new TopologyEdge { Id = "request", SourceNodeId = "source", TargetNodeId = "target", SourcePortId = "send",

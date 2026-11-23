@@ -8,7 +8,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderScheduleTimeline(SvgMarkupWriter writer, ScheduleTimelineBlock block) {
         var options = block.Options;
         var theme = options.ResolvedTheme;

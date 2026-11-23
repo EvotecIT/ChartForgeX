@@ -25,7 +25,7 @@ internal static class SvgGaussianImportExamples {
             var report = ImageComposition.Create(width, 220, background).DrawImage(imported.Image, 0, 0, width, 180)
                 .DrawText(24, 184, width - 48, "One explicit imported Gaussian", 16, foreground);
             var canvas = VisualCanvas.Create(width, 220).PngOutputScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
-                .Title("Bounded Gaussian import").AddImage(report.ToImage(), 0, 0, width, 220);
+                .Title("Bounded Gaussian import").AddImage(report.ToRgbaImage(), 0, 0, width, 220);
             var stem = Path.Combine(output, "svg-gaussian-import-" + (dark ? "dark-" : "light-") + width.ToString(CultureInfo.InvariantCulture));
             File.WriteAllText(stem + ".source.svg", source);
             canvas.SaveSvg(stem + ".svg"); canvas.SavePng(stem + ".png"); canvas.SaveHtml(stem + ".html");

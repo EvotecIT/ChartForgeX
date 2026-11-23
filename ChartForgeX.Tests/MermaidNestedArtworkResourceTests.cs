@@ -25,7 +25,7 @@ public sealed class MermaidNestedArtworkResourceTests {
             DisplayMode = TopologyNodeDisplayMode.Artwork, Artwork = artwork, ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true });
         chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false, IncludeTitle = false });
         // This supported host model replacement retains the actual source export policy and image property span.
-        artifact.Model = chart; artifact.NaturalSize = new VisualArtifactSize(320, 240); artifact.PreserveNaturalSize = true;
+        artifact.Model = chart; artifact.NaturalSize = new VisualSize(320, 240); artifact.PreserveNaturalSize = true;
         foreach (var export in new Action[] { () => artifact.ToPng(), () => artifact.ToSvg(), () => artifact.ToHtmlPage() }) {
             var failure = Assert.Throws<MermaidResourceLimitException>(export);
             Assert.Equal("NativeRasterResourceBytes", failure.LimitName);

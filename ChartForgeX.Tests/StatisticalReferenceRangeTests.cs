@@ -29,7 +29,7 @@ public sealed class StatisticalReferenceRangeTests {
         Assert.True(coordinates.Max() - coordinates.Min() > (horizontal ? 360 : 640) * .9);
         var coordinate = horizontal ? guide.Commands[0].X : guide.Commands[0].Y;
         Assert.InRange(coordinate, 20 - .001, (horizontal ? 640 : 360) - 20 + .001);
-        var pixels = prepared.ToRgba();
+        var pixels = prepared.ToRgbaImage();
         var painted = 0;
         for (var position = 0; position < (horizontal ? pixels.Width : pixels.Height); position++) {
             var offset = horizontal ? ((pixels.Height / 2) * pixels.Width + position) * 4

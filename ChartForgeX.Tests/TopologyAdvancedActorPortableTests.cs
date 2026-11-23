@@ -91,7 +91,7 @@ public sealed class TopologyAdvancedActorPortableTests {
             .AddNode("action", "Submit request", 390, 60, width: 180, height: 90)
             .AddEdge("submit", "actor", "action", routing: TopologyEdgeRouting.Straight);
         var actor = chart.Nodes[0]; actor.LabelContent = TextContent.FromRuns(new[] { new TextContentRun("External "), new TextContentRun("participant", TextInlineEmphasis.Bold) }); actor.Kind = TopologyNodeKind.Generic; actor.Shape = shape; actor.Subtitle = "Business participant";
-        actor.SubtitleTextStyle = new TextStyleOverride { FontSize = 13, FontWeight = "500", FontFamily = BrowserProofFonts.Family };
+        actor.SubtitleTextStyle = new TextStyleOverride { FontSize = 13, FontWeight = 500, FontFamily = BrowserProofFonts.Family };
         if (shape == TopologyNodeShape.ActorIcon) actor.IconShape = TopologyIconShape.Router;
         chart.Nodes[1].Kind = TopologyNodeKind.Generic; chart.Nodes[1].Shape = TopologyNodeShape.Ellipse;
         foreach (var node in chart.Nodes) { node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true; node.DisplayMode = TopologyNodeDisplayMode.Card; }
@@ -111,7 +111,7 @@ public sealed class TopologyAdvancedActorPortableTests {
         Assert.Contains(subtitle.Descendants(), item => (string?)item.Attribute("data-cfx-native-text-ink") == "true");
         NativeInlineContentTests.AssertResources(prepared.ToSvg());
         Assert.Equal(13, captured.Topology!.SubtitleTextStyle!.FontSize);
-        Assert.Equal("500", captured.Topology.SubtitleTextStyle.FontWeight);
+        Assert.Equal(500, captured.Topology.SubtitleTextStyle.FontWeight);
         Assert.Equal(BrowserProofFonts.Family, captured.Topology.SubtitleTextStyle.FontFamily);
         Assert.Equal(TextInlineEmphasis.Bold, captured.Topology.LabelContent!.Runs[1].Emphasis);
         var loaded = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson()).ToTopologyChart();

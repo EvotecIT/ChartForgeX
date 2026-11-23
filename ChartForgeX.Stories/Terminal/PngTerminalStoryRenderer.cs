@@ -9,7 +9,7 @@ namespace ChartForgeX.Terminal;
 /// <summary>
 /// Renders the completed state of a terminal story as a dependency-free PNG image.
 /// </summary>
-public sealed class PngTerminalStoryRenderer {
+internal sealed class PngTerminalStoryRenderer {
     /// <summary>Renders a terminal story to PNG bytes.</summary>
     public byte[] Render(TerminalStory story) {
         if (story == null) throw new ArgumentNullException(nameof(story));
@@ -115,7 +115,7 @@ public sealed class PngTerminalStoryRenderer {
             }
         }
 
-        return canvas.ToImage();
+        return canvas.ToRgbaImage();
     }
 
     internal static TrueTypeFont? ResolveTableFont(ResolvedTerminalStyle theme, TrueTypeFont? outlineFont) {

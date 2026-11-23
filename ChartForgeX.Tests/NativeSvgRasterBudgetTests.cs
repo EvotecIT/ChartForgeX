@@ -50,7 +50,7 @@ public sealed class NativeSvgRasterBudgetTests {
             (index == 0 ? "image" : "image_" + index) + "@{img: 'key'}"));
         VisualArtifact SourceArtifact(MermaidFlowchartDocument model) {
             var value = model.ToVisualArtifact(new MermaidFlowchartRenderOptions { Width = 320, Height = 240, FitContent = false, Title = "" });
-            value.Model = chart; value.NaturalSize = new VisualArtifactSize(320, 240); value.PreserveNaturalSize = true;
+            value.Model = chart; value.NaturalSize = new VisualSize(320, 240); value.PreserveNaturalSize = true;
             return value;
         }
         var control = SourceArtifact(Assert.IsType<MermaidFlowchartDocument>(new MermaidParser().Parse(source).Document));
@@ -92,7 +92,7 @@ public sealed class NativeSvgRasterBudgetTests {
         var artifact = document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Width = 320, Height = 240, FitContent = false, Title = "" });
         var header = Encoding.ASCII.GetBytes("P6\n6000 6000\n255\n");
         artifact.Model = Chart(TopologyIconArtwork.Image("data:image/x-portable-pixmap;base64," + Convert.ToBase64String(header)), 1);
-        artifact.NaturalSize = new VisualArtifactSize(320, 240); artifact.PreserveNaturalSize = true;
+        artifact.NaturalSize = new VisualSize(320, 240); artifact.PreserveNaturalSize = true;
         var failure = Observe("source-raster-resource-limit.png", () => artifact.ToPng());
         var error = Assert.IsType<MermaidResourceLimitException>(failure.Error);
         Assert.Equal("NativeRasterResourceBytes", error.LimitName); Assert.Equal(2, error.Span.Line);
@@ -109,7 +109,7 @@ public sealed class NativeSvgRasterBudgetTests {
         }
         var scene = new VisualScene(new VisualSize(8, 8), commands, Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>());
         var identity = Observe("identity-real-pixel-work", () => VisualSceneSvgRenderer.Identity(scene, null, null, null, false));
-        var explicitPrefix = Observe("identity-explicit-prefix.svg", () => VisualSceneSvgRenderer.Render(scene, idPrefix: "host"));
+        var explicitPrefix = Observe("identity-explicit-prefix.svg", () => VisualSceneSvgRenderer.Render(scene, idScope: "host"));
         var error = Assert.IsType<VisualResourceLimitException>(identity.Error);
         Assert.Equal("SvgImageIdentityWorkSamples", error.Limit); Assert.Equal(RasterEffectPreflight.MaximumWorkSamples, error.Maximum);
         Assert.Equal(1_004_000_000, error.Observed); Assert.Equal("image-250", error.ItemId);
@@ -125,7 +125,7 @@ public sealed class NativeSvgRasterBudgetTests {
             new VisualSceneGroup(null, null, null, null, imageResource: resource), fallback, new VisualSceneEndGroup()
         }, Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>());
         var rejected = Observe("embedded-svg-resource-bound", () => VisualSceneSvgRenderer.Render(scene, maximumCharacters: 1024));
-        var ordinary = Observe("embedded-svg-resource-control.svg", () => VisualSceneSvgRenderer.Render(scene, idPrefix: "host"));
+        var ordinary = Observe("embedded-svg-resource-control.svg", () => VisualSceneSvgRenderer.Render(scene, idScope: "host"));
         Assert.IsType<VisualResourceLimitException>(rejected.Error); Assert.Null(ordinary.Error);
         Assert.Contains("data:image/svg+xml;base64,", ordinary.Value!); Assert.DoesNotContain("data:image/png;base64,", ordinary.Value!);
     }

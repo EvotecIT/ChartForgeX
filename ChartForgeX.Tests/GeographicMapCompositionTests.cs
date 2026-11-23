@@ -200,7 +200,7 @@ public sealed class GeographicMapCompositionTests {
         Assert.Throws<InvalidOperationException>(() => Prepare(tiles));
         var duplicates = Chart.Create().AddDottedMap("First", new[] { new ChartMapPoint("Shared", 1, 1) })
             .AddDottedMap("Second", new[] { new ChartMapPoint("Shared", 2, 2), new ChartMapPoint("Other", 3, 3) });
-        Assert.Contains("one geographic location", Assert.Throws<ArgumentException>(() => duplicates.AddMapRouteBetweenPoints("Ambiguous", "Shared", "Other")).Message);
+        Assert.Contains("one geographic location", Assert.Throws<ArgumentException>(() => duplicates.AddMapConnectorBetweenPoints("Ambiguous", "Shared", "Other")).Message);
     }
 
     [Theory]
@@ -214,7 +214,7 @@ public sealed class GeographicMapCompositionTests {
             .AddDottedMap("First", acrossDatasets ? new[] { first, destination } : new[] { first, peer, destination });
         if (acrossDatasets) chart.AddDottedMap("Second", new[] { peer });
         if (acrossDatasets) chart.AddMapConnectorBetweenPoints("Shared route", "SHARED", "Other");
-        else chart.AddMapRouteBetweenPoints("Shared route", " SHARED ", "Other");
+        else chart.AddMapConnectorBetweenPoints("Shared route", " SHARED ", "Other");
         var connector = Assert.Single(chart.Options.Map.Connectors);
         Assert.Equal((21d, 52d, 10d, 60d),
             (connector.FromLongitude, connector.FromLatitude, connector.ToLongitude, connector.ToLatitude));
@@ -238,7 +238,7 @@ public sealed class GeographicMapCompositionTests {
         var latitude = longitudeDiffers ? 52 : Math.BitIncrement(52d);
         var chart = Chart.Create().AddDottedMap("First", new[] { new ChartMapPoint("Shared", 21, 52) })
             .AddDottedMap("Second", new[] { new ChartMapPoint("Shared", longitude, latitude), new ChartMapPoint("Other", 10, 60) });
-        var error = Assert.Throws<ArgumentException>(() => chart.AddMapRouteBetweenPoints("Ambiguous", "Shared", "Other"));
+        var error = Assert.Throws<ArgumentException>(() => chart.AddMapConnectorBetweenPoints("Ambiguous", "Shared", "Other"));
         Assert.Equal("fromPointLabel", error.ParamName);
         Assert.Empty(chart.Options.Map.Connectors);
         Assert.Equal(3, chart.Series.Sum(series => series.MapPoints.Count));

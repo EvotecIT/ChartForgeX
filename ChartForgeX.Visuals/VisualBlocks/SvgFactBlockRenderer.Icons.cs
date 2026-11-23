@@ -6,7 +6,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void WriteIcon(SvgMarkupWriter writer, Icon icon, double x, double y, double size, ChartColor color) {
         if (icon.IsEmpty) return;
         var stroke = Math.Max(1.6, size * 0.16);

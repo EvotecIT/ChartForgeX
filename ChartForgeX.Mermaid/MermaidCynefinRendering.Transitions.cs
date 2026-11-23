@@ -19,7 +19,7 @@ public static partial class MermaidCynefinRendering {
         edge.Routing = TopologyEdgeRouting.Curved;
         edge.LabelPosition = new TopologyLabelPosition(new ChartForgeX.Primitives.ChartPoint(cx, cy - 6), TopologyLabelVerticalAnchor.TextBaseline);
         chart.DefaultRenderOptions!.IncludeEdgeLabelBackplates = false;
-        edge.TextStyle ??= new ChartForgeX.Typography.TextStyleOverride(); edge.TextStyle.FontWeight = "400";
+        edge.TextStyle ??= new ChartForgeX.Typography.TextStyleOverride(); edge.TextStyle.FontWeight = 400;
         edge.TargetMarkerStyle = new TopologyMarkerStyle { Scale = .75 * (edge.StrokeWidth ?? 2), Offset = .6 * (edge.StrokeWidth ?? 2), StrokeWidth = 0 };
 
     }

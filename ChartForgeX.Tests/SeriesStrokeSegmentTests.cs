@@ -54,7 +54,7 @@ public sealed class SeriesStrokeSegmentTests {
         var join = Lines(segmented)[1].Commands.First().X;
         foreach (var (before, after) in new[] {
             (RasterImageDecoder.Decode(solid.ToPng()), RasterImageDecoder.Decode(segmented.ToPng())),
-            (SvgRasterizer.ToImage(solid.ToSvg()), SvgRasterizer.ToImage(segmented.ToSvg())) }) {
+            (SvgRasterizer.ToRgbaImage(solid.ToSvg()), SvgRasterizer.ToRgbaImage(segmented.ToSvg())) }) {
             var changed = Enumerable.Range(0, after.Width).Where(x => Column(before, x) != Column(after, x)).ToArray();
             Assert.NotEmpty(changed);
             // Round caps may reach half the 4px stroke back across the join, never further.

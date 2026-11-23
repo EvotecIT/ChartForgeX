@@ -66,7 +66,7 @@ public sealed class LabelMeasurementCacheTests {
     [InlineData("  Segoe UI  ")]
     [InlineData("Arial")]
     public void MeasureText_DefaultFamily_MeasuresAsTheStyleWithThatDefaultFamily(string family) {
-        var style = new TextStyleOverride { FontWeight = "600" };
+        var style = new TextStyleOverride { FontWeight = 600 };
         var expected = ChartLabelScene.MeasureText("Default family", 13, style.WithDefaultFontFamily(family), 400);
         Assert.Equal(expected, ChartLabelScene.MeasureText("Default family", 13, style, 400, family));
     }

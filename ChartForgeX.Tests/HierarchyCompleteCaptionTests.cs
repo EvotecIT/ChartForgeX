@@ -137,7 +137,7 @@ public sealed class HierarchyCompleteCaptionTests {
 
     private static void AssertCaptionInk(PreparedVisual prepared, VisualSceneText caption, ChartRect mark) {
         var scene = prepared.Scene;
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var without = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size,
             scene.Nodes.Where(node => !ReferenceEquals(node, caption)).ToArray(), scene.Diagnostics, scene.Regions), supersampling: 1);
         var painted = new bool[caption.Text.Lines.Count];

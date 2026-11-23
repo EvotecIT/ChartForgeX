@@ -87,7 +87,7 @@ public sealed class FallbackWeightTests {
             Assert.Single(glyphs);
             Assert.True(glyphs[0].Face.HasSelectedAxis("wght"));
             Assert.False(face.Font!.NeedsSyntheticBold(glyphs));
-            RgbaImage Render(string family) => SvgRasterizer.ToImage($"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='60'><text x='70' y='40' text-anchor='{anchor}' font-family='{family}' font-weight='900' font-variation-settings=\"'wght' 900\" font-size='40' fill='rgba(17,17,17,.5)'>B</text></svg>");
+            RgbaImage Render(string family) => SvgRasterizer.ToRgbaImage($"<svg xmlns='http://www.w3.org/2000/svg' width='150' height='60'><text x='70' y='40' text-anchor='{anchor}' font-family='{family}' font-weight='900' font-variation-settings=\"'wght' 900\" font-size='40' fill='rgba(17,17,17,.5)'>B</text></svg>");
             Assert.Equal(Render("CFX Variable").Pixels, Render("CFX Static, CFX Variable").Pixels);
         } finally { FontRegistry.Clear(); Directory.Delete(root, true); }
     }
@@ -112,7 +112,7 @@ public sealed class FallbackWeightTests {
             }
             FontRegistry.Register("CFX Primary", Path.Combine(root, "primary.ttf"), primaryWeight);
             FontRegistry.Register("CFX Fallback", Path.Combine(root, "regular.ttf"), 400);
-            RgbaImage Render(string family) => SvgRasterizer.ToImage($"<svg xmlns='http://www.w3.org/2000/svg' width='100' height='60'><text x='20' y='40' font-family='{family}' font-weight='900' font-size='40' fill='rgba(17,17,17,.5)'>B</text></svg>");
+            RgbaImage Render(string family) => SvgRasterizer.ToRgbaImage($"<svg xmlns='http://www.w3.org/2000/svg' width='100' height='60'><text x='20' y='40' font-family='{family}' font-weight='900' font-size='40' fill='rgba(17,17,17,.5)'>B</text></svg>");
             var stack = Render("CFX Primary, CFX Fallback"); var direct = Render("CFX Fallback");
             Assert.Equal(direct.Pixels, stack.Pixels);
             Assert.InRange(Enumerable.Range(0, stack.Pixels.Length / 4).Max(i => stack.Pixels[i * 4 + 3]), 1, 128);
@@ -120,7 +120,7 @@ public sealed class FallbackWeightTests {
     }
     private static RgbaImage Draw(FontSpec font, string text) {
         var style = TextStyle.Create(40, ChartColor.Black); style.Font = font;
-        return ImageComposition.CreateTransparent(100, 60).DrawText(20, 8, 70, text, style, TextWrapMode.NoWrap, null, TextTrimming.None).ToImage();
+        return ImageComposition.CreateTransparent(100, 60).DrawText(20, 8, 70, text, style, TextWrapMode.NoWrap, null, TextTrimming.None).ToRgbaImage();
     }
     private static long Alpha(RgbaImage image) => Enumerable.Range(0, image.Pixels.Length / 4).Sum(i => (long)image.Pixels[i * 4 + 3]);
 }

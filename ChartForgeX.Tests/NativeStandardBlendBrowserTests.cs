@@ -49,7 +49,7 @@ public sealed class NativeStandardBlendBrowserTests {
                 .Replace("id='source'", "id='source-" + item.Name + "'");
             var native = ImageComposition.Create(2, 2, ChartColor.FromRgba(0, 0, 255, 128))
                 .DrawLayer(sourceLayer, 0, 0, item.Mode, orderedDither: false);
-            nativePixels.Add(item.Name, CompositeOperatorFixture.Pixel(native.ToImage(), 0, 0).Select(value => (int)value).ToArray());
+            nativePixels.Add(item.Name, CompositeOperatorFixture.Pixel(native.ToRgbaImage(), 0, 0).Select(value => (int)value).ToArray());
             html.Append("<figure data-mode='").Append(item.Name).Append("'><figcaption>").Append(item.Name)
                 .Append("</figcaption><div class='samples'><section>").Append(source)
                 .Append("<small>SVG source</small></section><section><img alt='Native ").Append(item.Name)

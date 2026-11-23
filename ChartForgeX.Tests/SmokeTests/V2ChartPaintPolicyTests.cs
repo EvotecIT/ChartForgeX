@@ -80,9 +80,9 @@ public sealed class V2ChartPaintPolicyTests {
         Assert.All(Paints(mapped, "axis-x", "stroke"), paint => Assert.Contains("var(--axis,", paint));
         var markers = Paints(mapped, "marker", "fill");
         Assert.Contains("var(--series,", markers[0]); Assert.Contains("var(--status,", markers[1]);
-        var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels;
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels;
         chart.Options.SvgColorVariables = null;
-        Assert.Equal(pixels, chart.Prepare(context).ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels);
+        Assert.Equal(pixels, chart.Prepare(context).ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels);
         Assert.DoesNotContain("var(--", prepared.ToSvg(new VisualSvgOptions()));
     }
 

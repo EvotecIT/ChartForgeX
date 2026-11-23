@@ -39,7 +39,7 @@ public sealed class V2SparklineBarSlotTests {
             Assert.Equal(slotWidth * (observed[index] + .16), x, 3);
             Assert.InRange(x, 0, 300); Assert.InRange(x + width, 0, 300);
         }
-        var raster = visual.ToRgba(new VisualRenderOptions(scale: 2, supersampling: 1));
+        var raster = visual.ToRgbaImage(new VisualRenderOptions(scale: 2, supersampling: 1));
         var spans = InkSpans(raster, 150);
         Assert.Equal(observed.Length, spans.Length);
         for (var index = 0; index < spans.Length; index++) {

@@ -25,7 +25,7 @@ internal static partial class Program {
             .DrawImage(image, 10, 10, 320, 200, VisualCanvasImageFit.Contain)
             .DrawText(12, 12, 150, "Packed composition", 12, ChartColors.DarkGreen);
         PackageAssertions.Png(composition.ToPng());
-        PackageAssertions.Require(composition.ToImage().Pixels[3] == 0, "Composition lost its transparent edge.");
+        PackageAssertions.Require(composition.ToRgbaImage().Pixels[3] == 0, "Composition lost its transparent edge.");
         var canvas = VisualCanvas.Create(340, 220).BackgroundTop(ChartColor.Transparent).BackgroundBottom(ChartColor.Transparent)
             .AddText(12, 14, 300, "Packed canvas", 20, ChartColors.DarkGreen);
         PackageAssertions.Require(PackageAssertions.Contains(canvas.ToSvg(), "Packed canvas"), "Canvas text is missing.");

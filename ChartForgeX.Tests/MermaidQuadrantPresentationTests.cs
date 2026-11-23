@@ -38,7 +38,7 @@ public sealed class MermaidQuadrantPresentationTests {
         var mapped = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions("quadrant-host", variables)));
         Assert.Contains("var(--host-quadrant,", Paints(mapped, "plot-region-fill")[0]);
         Assert.Contains("var(--host-quadrant,", Paints(mapped, "plot-region-label-backplate")[0]);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var regions = prepared.Regions.Where(region => region.Role == "plot-region").ToArray();
         // Keep the exact projection and captions: clearing every region makes this
         // empty chart enter its no-data path and can put new text under the sample.

@@ -6,7 +6,7 @@ using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderWardleyMap(SvgMarkupWriter writer, WardleyMapBlock map) {
         var options = map.Options;
         var theme = options.ResolvedTheme;

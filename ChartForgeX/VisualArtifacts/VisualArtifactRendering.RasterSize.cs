@@ -11,7 +11,7 @@ public static partial class VisualArtifactRendering {
     /// <remarks>Uses the same native preparation and output scale as raster export, including natural topology and
     /// sequence growth. Optional static producers and decorators supply their own exact pixel measurement through
     /// <see cref="IMeasuredStaticVisualSource"/>. Unmeasured producer-owned sources remain unsupported.</remarks>
-    public static VisualArtifactSize MeasureRasterSize(this VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
+    public static VisualSize MeasureRasterSize(this VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.RenderSource is IMeasuredStaticVisualSource measuredSource) return MeasuredSourceSize(measuredSource);
         if (artifact.RenderSource != null) throw new InvalidOperationException("A producer-owned render source must implement IMeasuredStaticVisualSource before raster-size policy checks.");
@@ -50,12 +50,12 @@ public static partial class VisualArtifactRendering {
             default:
                 throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a core native raster-size contract.");
         }
-        return new VisualArtifactSize(Math.Ceiling(width * scale), Math.Ceiling(height * scale));
+        return new VisualSize(Math.Ceiling(width * scale), Math.Ceiling(height * scale));
     }
 
-    private static VisualArtifactSize MeasuredSourceSize(IMeasuredStaticVisualSource source) {
+    private static VisualSize MeasuredSourceSize(IMeasuredStaticVisualSource source) {
         var size = source.MeasureRasterSize();
-        var result = new VisualArtifactSize(size.Width, size.Height);
+        var result = new VisualSize(size.Width, size.Height);
         if (size.Width != Math.Ceiling(size.Width) || size.Height != Math.Ceiling(size.Height))
             throw new InvalidOperationException("A static source raster measurement must contain whole destination pixel dimensions.");
         return result;

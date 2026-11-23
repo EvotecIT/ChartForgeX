@@ -82,7 +82,7 @@ public sealed class SvgRasterStyledBidiTests : IDisposable {
     }
 
     private static byte[] Render(string content, string anchor = "start", string definitions = "") =>
-        SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'>" + definitions + "<text x='70' y='40' font-family='CFX Styled Bidi' font-size='20' text-anchor='" + anchor + "'>" + content + "</text></svg>").Pixels;
+        SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='240' height='60'>" + definitions + "<text x='70' y='40' font-family='CFX Styled Bidi' font-size='20' text-anchor='" + anchor + "'>" + content + "</text></svg>").Pixels;
 
     private static byte[] Alpha(byte[] pixels) => Enumerable.Range(0, pixels.Length / 4).Select(i => pixels[i * 4 + 3]).ToArray();
 

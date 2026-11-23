@@ -48,7 +48,7 @@ public sealed class GanttProjectEndpointTests {
             });
             Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
             ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-project-endpoints-{policy}-{width}-{mode}");
-            var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+            var pixels = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
             Assert.Equal(width, pixels.Width); Assert.Equal(300, pixels.Height);
         }
         Assert.Equal(Captions(automatic).Select(label => (label.Text.Lines.Single().Text, label.X)),

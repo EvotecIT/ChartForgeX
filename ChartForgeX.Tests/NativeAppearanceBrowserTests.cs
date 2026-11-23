@@ -21,20 +21,20 @@ public sealed class NativeAppearanceBrowserTests {
         var bloom = NativeAppearanceExample.Create("bloom", variant, mode);
         var glow = NativeAppearanceExample.Create("glow", variant, mode);
         var retainedGlow = glow.Source.WithDropShadow(NativeAppearanceExample.AlphaGlowPolicy(mode));
-        var glowNativeSvg = retainedGlow.ToSvg(new VisualSvgOptions(idPrefix: "glow-native",
+        var glowNativeSvg = retainedGlow.ToSvg(new VisualSvgOptions(idScope: "glow-native",
             effectProfile: VisualSvgEffectProfile.NativeFilters));
         var sourceTextCount = System.Xml.Linq.XDocument.Parse(glow.Source.ToSvg()).Descendants()
             .Count(item => item.Name.LocalName == "text");
         var glass = NativeGlassCompositionExample.Create(variant, mode);
-        var image = glass.ToImage();
+        var image = glass.ToRgbaImage();
         var svg = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddImage(image, 0, 0, image.Width, image.Height).ToSvg();
         var width = variant == "compact" ? 390 : 1100;
         var html = "<style>body{margin:0}section svg{max-width:100%;height:auto}</style>"
-            + "<section id='outline'>" + outline.Visual.ToSvg(new VisualSvgOptions(idPrefix: "outline")) + "</section>"
-            + "<section id='bloom'>" + bloom.Visual.ToSvg(new VisualSvgOptions(idPrefix: "bloom")) + "</section>"
+            + "<section id='outline'>" + outline.Visual.ToSvg(new VisualSvgOptions(idScope: "outline")) + "</section>"
+            + "<section id='bloom'>" + bloom.Visual.ToSvg(new VisualSvgOptions(idScope: "bloom")) + "</section>"
             + "<section id='glass'>" + svg + "</section>"
-            + "<section id='glow'>" + glow.Visual.ToSvg(new VisualSvgOptions(idPrefix: "glow")) + "</section>"
+            + "<section id='glow'>" + glow.Visual.ToSvg(new VisualSvgOptions(idScope: "glow")) + "</section>"
             + "<section id='glow-native'>" + glowNativeSvg + "</section><canvas id='sample'></canvas>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 1200);
         var observed = await session.Page.EvaluateAsync<JsonElement>("""

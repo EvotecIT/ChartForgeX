@@ -54,7 +54,7 @@ public sealed class GanttEndpointDateContextTests {
         if (policy == "counted") Assert.InRange(labels.Length, 1, 2);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-endpoint-date-context-{policy}-{mode}");
-        var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(400, pixels.Width); Assert.Equal(300, pixels.Height);
     }
 

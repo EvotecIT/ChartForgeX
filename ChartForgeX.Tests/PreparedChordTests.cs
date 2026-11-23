@@ -89,7 +89,7 @@ public sealed class PreparedChordTests {
             Assert.InRange(region.Bounds.Left, 24 - .1, width - 24 + .1); Assert.InRange(region.Bounds.Right, 24 - .1, width - 24 + .1);
             Assert.InRange(region.Bounds.Top, 24 - .1, height - 24 + .1); Assert.InRange(region.Bounds.Bottom, 24 - .1, height - 24 + .1);
         });
-        var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)); Assert.Equal(width, pixels.Width); Assert.Equal(height, pixels.Height);
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)); Assert.Equal(width, pixels.Width); Assert.Equal(height, pixels.Height);
         Assert.Equal(8, prepared.Scene.Nodes.Count(node => node.Role == "chord-ribbon"));
         Assert.DoesNotContain("<script", prepared.ToSvg(), StringComparison.OrdinalIgnoreCase);
     }

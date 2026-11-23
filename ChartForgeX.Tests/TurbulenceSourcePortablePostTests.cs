@@ -109,7 +109,7 @@ public sealed class TurbulenceSourcePortablePostTests {
         var layer=root.CaptureLayer(new VisualLayerBlur(1,orderedDither:false),new VisualRenderOptions(supersampling:1));
         var terminal=layer.ToArtifact().ToInterchangeEnvelope();
         var restored=terminal.ApplyCapturedLayer(bare);
-        Assert.Equal(layer.Bounds,restored.Bounds);Assert.Equal(layer.ToImage().Pixels,restored.ToImage().Pixels);
+        Assert.Equal(layer.Bounds,restored.Bounds);Assert.Equal(layer.ToRgbaImage().Pixels,restored.ToRgbaImage().Pixels);
         Assert.Equal("2",restored.ToArtifact().ToInterchangeEnvelope().Extensions["edit-revision"]);
         Assert.Throws<OperationCanceledException>(()=>terminal.ApplyCapturedLayer(bare,new CancellationToken(true)));
         var before=replay.ToPng();original.Presentation!.CapturedEffects[1].Mask!.Pixels[3]=0;

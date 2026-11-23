@@ -17,7 +17,7 @@ public static class SvgRasterizer {
 
     /// <summary>Rasterizes an SVG document to PNG using optional output dimensions.</summary>
     public static byte[] ToPng(string svg, int? width, int? height, RasterImageOptions? options = null) {
-        RgbaImage image = ToImage(svg, width, height);
+        RgbaImage image = ToRgbaImage(svg, width, height);
         return PngWriter.WriteRgba(image.Width, image.Height, image.Pixels, options);
     }
 
@@ -26,7 +26,7 @@ public static class SvgRasterizer {
     /// dimensions. Use this instead of <see cref="ToPng(string, RasterImageOptions)"/> when the pixels
     /// go straight into a composition, so they are not encoded and decoded on the way.
     /// </summary>
-    public static RgbaImage ToImage(string svg, int? width = null, int? height = null) => Rasterize(svg, width, height).Image;
+    public static RgbaImage ToRgbaImage(string svg, int? width = null, int? height = null) => Rasterize(svg, width, height).Image;
 
     /// <summary>Rasterizes SVG and reports encountered unsupported content. Strict mode rejects output with diagnostics.</summary>
     /// <param name="svg">The SVG document.</param>
@@ -88,9 +88,9 @@ public static class SvgRasterizer {
     }
 
     /// <summary>Rasterizes UTF-8 SVG bytes to RGBA pixels.</summary>
-    public static RgbaImage ToImage(byte[] svgBytes, int? width = null, int? height = null) {
+    public static RgbaImage ToRgbaImage(byte[] svgBytes, int? width = null, int? height = null) {
         if (svgBytes == null) throw new ArgumentNullException(nameof(svgBytes));
-        return ToImage(Encoding.UTF8.GetString(svgBytes), width, height);
+        return ToRgbaImage(Encoding.UTF8.GetString(svgBytes), width, height);
     }
 
     /// <summary>Rasterizes UTF-8 SVG bytes to PNG.</summary>

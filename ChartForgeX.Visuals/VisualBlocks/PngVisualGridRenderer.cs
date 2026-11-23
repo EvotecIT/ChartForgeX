@@ -10,12 +10,12 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// Renders visual grids to dependency-free PNG images.
 /// </summary>
-public sealed class PngVisualGridRenderer {
+internal sealed class PngVisualGridRenderer {
 
     /// <summary>Renders a visual grid to PNG bytes.</summary>
     public byte[] Render(VisualGrid grid) => PngWriter.WriteRgba(RenderImage(grid));
 
-    internal RgbaImage RenderImage(VisualGrid grid) => RenderCanvas(grid).ToImage();
+    internal RgbaImage RenderImage(VisualGrid grid) => RenderCanvas(grid).ToRgbaImage();
 
     internal RgbaCanvas RenderCanvas(VisualGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
@@ -59,7 +59,7 @@ public sealed class PngVisualGridRenderer {
                     font.TileLabelSize, font.TileValueSize, font.TileDetailSize);
             });
             if (block is IFactualVisualPixels factual) return factual.RenderAtScale(density);
-            if (SvgVisualBlockRenderer.IsNativeBlock(block)) return new PngVisualBlockRenderer().RenderCanvas(block, density).ToImage();
+            if (SvgVisualBlockRenderer.IsNativeBlock(block)) return new PngVisualBlockRenderer().RenderCanvas(block, density).ToRgbaImage();
             return block.RenderRgba();
         }
         finally {

@@ -19,7 +19,7 @@ public sealed class NativeRetainedMaskExampleTests {
         RetainedMaskFixture.Capture("retained-mask-example-" + variant + "-" + mode,
             source, example, RetainedMaskFixture.Pixels);
         Assert.Equal(direct.ToPng(), example.ToPng());
-        var svg = example.ToSvg(new VisualSvgOptions(idPrefix: "retained-example", effectProfile: VisualSvgEffectProfile.NativeFilters));
+        var svg = example.ToSvg(new VisualSvgOptions(idScope: "retained-example", effectProfile: VisualSvgEffectProfile.NativeFilters));
         Assert.Contains("<mask", svg);
         Assert.Contains("href=\"#guide\"", svg);
         Assert.Contains(XDocument.Parse(svg).Descendants(), element => element.Name.LocalName == "text");

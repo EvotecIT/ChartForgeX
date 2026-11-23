@@ -62,11 +62,11 @@ public sealed partial class V2PreparedFamilyPaintTests {
         Assert.Contains("var(--series,", Paints(prepared, variables, "bubble", "fill")[0]);
         Assert.Contains("color-mix(in srgb,", Paints(prepared, variables, "bubble", "stroke")[0]);
         Assert.All(Paints(prepared, variables, "bubble", "fill").Skip(1), paint => Assert.Contains("var(--status,", paint));
-        var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels;
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels;
         prepared.ToSvg(new VisualSvgOptions(colorVariables: variables));
-        Assert.Equal(pixels, prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels);
+        Assert.Equal(pixels, prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels);
         chart.Options.SvgColorVariables = variables;
-        Assert.Equal(pixels, chart.Prepare(Context()).ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels);
+        Assert.Equal(pixels, chart.Prepare(Context()).ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels);
     }
 
     [Fact]

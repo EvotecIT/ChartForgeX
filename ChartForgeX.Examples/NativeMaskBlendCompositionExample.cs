@@ -5,7 +5,7 @@ public static class NativeMaskBlendCompositionExample {
         ChartForgeX.Effects.VisualBlendMode blendMode = ChartForgeX.Effects.VisualBlendMode.Screen) {
         var source = NativeMaskExample.PrepareSource(variant, mode); var width = variant == "compact" ? 320 : 740;
         var maskPixels = ChartForgeX.Composition.ImageComposition.CreateTransparent(width, 240)
-            .FillRectangleLinearGradient(0, 0, width, 240, ChartColor.White, ChartColor.FromRgba(255, 255, 255, 96)).ToImage();
+            .FillRectangleLinearGradient(0, 0, width, 240, ChartColor.White, ChartColor.FromRgba(255, 255, 255, 96)).ToRgbaImage();
         var mask = new ChartForgeX.Effects.VisualMask(maskPixels);
         var layer = source.CaptureLayer(mask, new VisualRenderOptions(supersampling: 2));
         var background = mode == ThemeMode.Dark ? ChartColor.FromHex("#0F172A") : ChartColor.FromHex("#E2E8F0");

@@ -113,9 +113,9 @@ public sealed class FinancialMarkOptionsTests {
         Assert.Contains("var(--series,", Attribute(svg, "candlestick-wick", "stroke", 0));
         Assert.Contains("var(--status,", Attribute(svg, "candlestick-body", "stroke", 1));
         Assert.Contains("color-mix(", Attribute(svg, "candlestick-wick", "stroke", 0));
-        var pixels = prepared.ToRgba().Pixels;
+        var pixels = prepared.ToRgbaImage().Pixels;
         prepared.ToSvg(new VisualSvgOptions(colorVariables: variables));
-        Assert.Equal(pixels, prepared.ToRgba().Pixels);
+        Assert.Equal(pixels, prepared.ToRgbaImage().Pixels);
     }
 
     [Theory]

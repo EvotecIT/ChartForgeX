@@ -76,9 +76,9 @@ public sealed class FullTextHintingTests {
         using (var output = File.Create(path)) source.CopyTo(output);
         try {
             style.Font = FontSpec.FromFile(path);
-            var full = ImageComposition.CreateTransparent(80, 24).DrawText(2.24, 2.4, 70, "I I", style).ToImage().Pixels;
+            var full = ImageComposition.CreateTransparent(80, 24).DrawText(2.24, 2.4, 70, "I I", style).ToRgbaImage().Pixels;
             style.Hinting = TextHinting.Auto;
-            var auto = ImageComposition.CreateTransparent(80, 24).DrawText(2.24, 2.4, 70, "I I", style).ToImage().Pixels;
+            var auto = ImageComposition.CreateTransparent(80, 24).DrawText(2.24, 2.4, 70, "I I", style).ToRgbaImage().Pixels;
             Assert.Equal(255, Strongest(full)); Assert.True(Strongest(auto) < 255);
         } finally { File.Delete(path); }
     }

@@ -27,10 +27,10 @@ internal static class CapturedNativeLayerExamples {
             var composition = ImageComposition.Create(width, 320, background).DrawLayer(layer, 36, 32)
                 .DrawText(32, 272, width - 64, "One captured chart and caption", 16, color);
             var canvas = VisualCanvas.Create(width, 320).Title("Captured native report inset").PngOutputScale(1)
-                .BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(composition.ToImage(), 0, 0, width, 320);
+                .BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(composition.ToRgbaImage(), 0, 0, width, 320);
             var name = "captured-native-layer-" + (dark ? "dark-" : "light-") + width;
             File.WriteAllText(Path.Combine(output, name + ".layer.svg"), layer.Visual.ToSvg());
-            File.WriteAllBytes(Path.Combine(output, name + ".layer.png"), PngWriter.WriteRgba(layer.ToImage()));
+            File.WriteAllBytes(Path.Combine(output, name + ".layer.png"), PngWriter.WriteRgba(layer.ToRgbaImage()));
             canvas.SaveSvg(Path.Combine(output, name + ".svg")); canvas.SavePng(Path.Combine(output, name + ".png"));
             canvas.SaveHtml(Path.Combine(output, name + ".html"));
         }

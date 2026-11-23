@@ -12,7 +12,7 @@ namespace ChartForgeX.Composition;
 /// <summary>
 /// Renders visual canvases to self-contained SVG.
 /// </summary>
-public sealed class SvgVisualCanvasRenderer {
+internal sealed class SvgVisualCanvasRenderer {
 
     /// <summary>Renders a visual canvas to SVG markup.</summary>
     public string Render(VisualCanvas canvas) => Render(canvas, string.Empty);

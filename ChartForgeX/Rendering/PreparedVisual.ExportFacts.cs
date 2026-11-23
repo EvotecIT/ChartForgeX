@@ -24,7 +24,7 @@ public sealed partial class PreparedVisual {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options = options.WithoutProductFonts();
         var svg = VisualSceneSvgRenderer.RenderForHtml(_scene, _accessibility.Name, _accessibility.Description,
-            _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options, _capturePngText, out var prefix, out var fonts);
+            _accessibility.Language, _accessibility.IsDecorative, options.IdScope, options, _capturePngText, out var prefix, out var fonts);
         return new VisualSvgEmission(svg, prefix, _capturePngText, options, fonts);
     }
 }

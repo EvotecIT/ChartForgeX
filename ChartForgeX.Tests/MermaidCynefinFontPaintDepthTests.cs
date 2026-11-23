@@ -35,14 +35,14 @@ public sealed class MermaidCynefinFontPaintDepthTests {
             var subtitle = Assert.IsType<ChartForgeX.Typography.TextStyleOverride>(node.SubtitleTextStyle);
             Assert.Null(subtitle.FontSize); Assert.True(subtitle.Italic); Assert.Equal(ChartColor.FromHex("#123456"), subtitle.Color);
         });
-        Assert.Null(host.Edges[0].TextStyle!.FontSize); Assert.Equal("400", host.Edges[0].TextStyle!.FontWeight);
+        Assert.Null(host.Edges[0].TextStyle!.FontSize); Assert.Equal(400, host.Edges[0].TextStyle!.FontWeight);
         var ordinary = Assert.IsType<MermaidCynefinDocument>(new MermaidParser().Parse(MermaidCynefinNativeDepthTests.Body).Document).ToTopologyChart();
         Assert.All(ordinary.Nodes, node => {
             Assert.Null(node.TextStyle); Assert.Null(node.Details[0].TextStyle);
             var subtitle = Assert.IsType<ChartForgeX.Typography.TextStyleOverride>(node.SubtitleTextStyle);
             Assert.Null(subtitle.FontSize); Assert.True(subtitle.Italic); Assert.Null(subtitle.Color);
         });
-        Assert.Null(ordinary.Edges[0].TextStyle!.FontSize); Assert.Equal("400", ordinary.Edges[0].TextStyle!.FontWeight);
+        Assert.Null(ordinary.Edges[0].TextStyle!.FontSize); Assert.Equal(400, ordinary.Edges[0].TextStyle!.FontWeight);
     }
     [Theory]
     [InlineData("domainFontSize", "0")] [InlineData("domainFontSize", "false")]

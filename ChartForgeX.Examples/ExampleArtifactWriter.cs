@@ -8,9 +8,9 @@ internal static class ExampleArtifactWriter {
 
     // A standalone image cannot inherit the gallery page's private font alias.
     // Keep its captured ink without embedding two complete faces in every thumbnail.
-    internal static string Svg(PreparedVisual prepared, string? idPrefix = null, VisualAccessibility? accessibility = null) {
+    internal static string Svg(PreparedVisual prepared, string? idScope = null, VisualAccessibility? accessibility = null) {
         var names = accessibility ?? prepared.Accessibility;
-        string Render(VisualSvgTextPresentation presentation) => prepared.ToSvg(names, idPrefix, textPresentation: presentation);
+        string Render(VisualSvgTextPresentation presentation) => prepared.ToSvg(names, idScope, textPresentation: presentation);
         try { return Render(VisualSvgTextPresentation.NativeContours); }
         catch (NotSupportedException) { return Render(VisualSvgTextPresentation.Automatic); }
     }

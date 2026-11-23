@@ -53,7 +53,7 @@ public sealed class PreparedPolarIdentityTests {
     [Fact]
     public void MissingRadarCategoriesHaveDistinctDerivedFactsWithoutClaimingAnAuthoredZero() {
         var chart = Bare().XLabels("North", "East", "South", "West")
-            .AddRadarArea("Observed", new[] { new ChartPoint(1, 0), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) })
+            .AddRadar("Observed", new[] { new ChartPoint(1, 0), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) })
             .AddRadarLine("Target", new[] { new ChartPoint(1, 0), new ChartPoint(4, 80) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radar-point-source").ToArray();

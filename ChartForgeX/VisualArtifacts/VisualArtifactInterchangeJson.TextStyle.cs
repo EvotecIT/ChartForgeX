@@ -11,7 +11,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (style == null) return;
         writer.Property(name); writer.StartObject();
         OptionalString(writer, "color", style.Color is { } color ? color.A == 255 ? color.ToHex() : color.ToHexRgba() : null);
-        OptionalString(writer, "fontFamily", style.FontFamily); OptionalString(writer, "fontWeight", style.FontWeight);
+        OptionalString(writer, "fontFamily", style.FontFamily); OptionalString(writer, "fontWeight", style.FontWeight?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         OptionalNumber(writer, "fontSize", style.FontSize); OptionalNumber(writer, "letterSpacing", style.LetterSpacing);
         if (style.ItalicOverride.HasValue) Boolean(writer, "italic", style.ItalicOverride.Value);
         if (style.UnderlineOverride.HasValue) Boolean(writer, "underline", style.UnderlineOverride.Value);
@@ -32,7 +32,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (!detail.TryGetValue(name, out var value) || value.IsNull) return null;
         var item = value.AsObject("detail text style");
         var style = new TextStyleOverride {
-            FontFamily = OptionalString(item, "fontFamily"), FontWeight = OptionalString(item, "fontWeight"), FontSize = OptionalNumber(item, "fontSize"), LetterSpacing = OptionalNumber(item, "letterSpacing"),
+            FontFamily = OptionalString(item, "fontFamily"), FontWeight = ReadFontWeight(OptionalString(item, "fontWeight")), FontSize = OptionalNumber(item, "fontSize"), LetterSpacing = OptionalNumber(item, "letterSpacing"),
             UnderlineStyle = OptionalEnum<TextDecorationStyle>(item, "underlineStyle"), StrikethroughStyle = OptionalEnum<TextDecorationStyle>(item, "strikethroughStyle"),
             Baseline = OptionalEnum<TextBaseline>(item, "baseline"), TextCase = OptionalEnum<TextCaseTransform>(item, "textCase"),
             OpenTypeLanguageTag = OptionalString(item, "openTypeLanguageTag"), ColorPaletteIndex = OptionalInt(item, "colorPaletteIndex")
@@ -50,4 +50,7 @@ internal static partial class VisualArtifactInterchangeJson {
         }
         return style;
     }
+
+    private static int? ReadFontWeight(string? value) =>
+        value == null ? null : TextStyleOverride.ParseFontWeight(value) ?? throw new ArgumentException("Text style font weight '" + value + "' is not a font weight.");
 }

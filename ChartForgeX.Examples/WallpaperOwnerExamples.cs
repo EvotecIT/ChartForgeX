@@ -22,7 +22,7 @@ public static class WallpaperOwnerExamples {
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline, miniChartValues: new[] { 18d, 28d, 24d, 42d }, miniChartMaximum: 100);
         } else if (layout == "ContrastBox") {
             var panel = ImageComposition.Create(620, 320, ChartColor.Transparent)
-                .FillRoundedRectangle(0, 0, 620, 320, 18, ChartColor.FromRgba(0, 0, 0, 220)).ToImage();
+                .FillRoundedRectangle(0, 0, 620, 320, 18, ChartColor.FromRgba(0, 0, 0, 220)).ToRgbaImage();
             var bounds = canvas.ResolvePlacement(VisualCanvasPlacement.At(VisualCanvasAnchor.MiddleRight, 34, -60), 620, 320);
             canvas.AddRasterImage(bounds.X, bounds.Y, 620, 320, panel);
             canvas.AddInfoTile(bounds.X + 24, bounds.Y + 24, 572, 120, "IP", "NETWORK", "10.0.0.42", "192.168.1.42", accent,

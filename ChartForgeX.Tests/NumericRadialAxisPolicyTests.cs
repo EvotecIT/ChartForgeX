@@ -54,11 +54,11 @@ public sealed class NumericRadialAxisPolicyTests {
     [InlineData(true)]
     public void RelativeOffsetsKeepEquivalentFullTurnsAndDoNotRotateTitlesOrDataLabels(bool bars) {
         var chart = RelativeChart(bars).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
-        var prepared = Prepare(chart); var svg = prepared.ToSvg(); var pixels = prepared.ToRgba().Pixels;
+        var prepared = Prepare(chart); var svg = prepared.ToSvg(); var pixels = prepared.ToRgbaImage().Pixels;
         chart.Options.XAxis.LabelAngle += 720;
         chart.Options.YAxis.LabelAngle -= 360;
         chart.Options.SecondaryYAxis.LabelAngle += 1080;
-        Assert.Equal(svg, Prepare(chart).ToSvg()); Assert.Equal(pixels, Prepare(chart).ToRgba().Pixels);
+        Assert.Equal(svg, Prepare(chart).ToSvg()); Assert.Equal(pixels, Prepare(chart).ToRgbaImage().Pixels);
         Assert.All(NumericRadialAxisTextTests.Footprints(prepared.Scene).Where(item => item.Text.Role is "radial-category-axis-title" or "radial-value-axis-title" or "radial-data-label"),
             item => Assert.Equal(0, item.Angle));
     }

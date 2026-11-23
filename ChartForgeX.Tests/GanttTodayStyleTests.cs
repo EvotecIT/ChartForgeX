@@ -126,7 +126,7 @@ public sealed class GanttTodayStyleTests {
             .Legend(false).DataLabels(false).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gantt-now-line");
-        var actual = prepared.ToRgba();
+        var actual = prepared.ToRgbaImage();
         var control = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size, prepared.Scene.Nodes.Where(node => node.Role != "gantt-now-line").ToArray(), prepared.Scene.Diagnostics, prepared.Scene.Regions));
         var task = Assert.Single(prepared.Regions, region => region.Role == "gantt-task");
         var changed = 0;

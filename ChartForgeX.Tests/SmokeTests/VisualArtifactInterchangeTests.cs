@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using System;
 using System.Linq;
@@ -222,7 +223,7 @@ internal static partial class SmokeTests {
         Assert(groupFilteredEnvelope.Nodes.Count == 2 && groupFilteredEnvelope.Edges.Count == 1,
             "Interchange topology views should expose prepared entity collections directly instead of redundant count metadata.");
 
-        artifact.NaturalSize = new VisualArtifactSize(1777, 1333);
+        artifact.NaturalSize = new VisualSize(1777, 1333);
         artifact.PreserveNaturalSize = true;
         var naturalEnvelope = artifact.ToInterchangeEnvelope();
         Assert(naturalEnvelope.Width == 1777 && naturalEnvelope.Height == 1333,
@@ -501,7 +502,7 @@ internal static partial class SmokeTests {
 
         var wideSequence = SequenceArtifact.Create("wide").Title("Initial").Width(320).Height(240).AddParticipant("participant-0", "Participant 0");
         var wideArtifact = wideSequence.ToVisualArtifact();
-        VisualArtifactSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
+        VisualSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
         var initialPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
         wideSequence.Id = "wide-current";
         wideSequence.Title = "Current";
@@ -509,7 +510,7 @@ internal static partial class SmokeTests {
         wideSequence.AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "participant-0" }, "Late note");
         wideSequence.Notes[0].StepIndex = 20;
         var wideEnvelope = wideArtifact.ToInterchangeEnvelope();
-        VisualArtifactSize currentNaturalSize = wideSequence.ToVisualArtifact().NaturalSize.GetValueOrDefault();
+        VisualSize currentNaturalSize = wideSequence.ToVisualArtifact().NaturalSize.GetValueOrDefault();
         var currentPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
         Assert(currentPreparedSize.Width > initialPreparedSize.Width && currentPreparedSize.Height > initialPreparedSize.Height,
             "Native default sequence preparation should grow in both dimensions when participants and late annotations are added.");

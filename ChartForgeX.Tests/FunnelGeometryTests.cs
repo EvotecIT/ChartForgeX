@@ -175,7 +175,7 @@ public sealed class FunnelGeometryTests {
         var chart = Funnel(new[] { 100d, 30 }, form, ChartOrientation.Vertical).DataLabels();
         var authored = ChartColor.FromHex("#2468AC"); var ink = ChartColor.FromHex("#AB1234");
         chart.Series[0].PointColor(0, authored).PointFillPattern(0, ChartFillPattern.DiagonalForward)
-            .PointDataLabelStyle(0, style => style.Color(ink).FontWeight("700"));
+            .PointDataLabelStyle(0, style => style.Color(ink).FontWeight(700));
         chart.Series[0].PointLabel(0, "Complete");
         var prepared = new PreparedVisual(Compile(chart));
         var mark = prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role is "funnel-stage-line" or "funnel-segment");

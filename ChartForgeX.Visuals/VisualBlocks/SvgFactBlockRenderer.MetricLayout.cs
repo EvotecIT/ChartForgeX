@@ -5,7 +5,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     /// <summary>Fits required metric rows only when their established measured geometry exceeds the available height.</summary>
     private static MetricTextLayout LayoutMetricText(MetricCard card, ChartRect content, double labelSize, double valueSize, double valueYOffset,
         bool inset, double valueWidth, ChartRect? badgeBounds) {

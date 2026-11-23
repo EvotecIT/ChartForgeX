@@ -30,7 +30,7 @@ public sealed class TopologyQuietEdgeLabelTests {
         Assert.Equal("400", (string?)Role(svg, "topology-edge-label-text").First().Attribute("font-weight") ?? "400");
 
         // Native pixels: the chip masks the route with its own tone and paints no border.
-        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.Visual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPixel(image, x + 2.5, y + height / 2, tone);
         AssertPixel(image, x + width / 2, y + 1, tone);
     }
@@ -51,7 +51,7 @@ public sealed class TopologyQuietEdgeLabelTests {
         // The wider second line sets the pill width, so the pill is wider than a single-line caption pill.
         var single = Source(dark).Prepare().ToSvg();
         Assert.True(Number(surface, "width") > Number(Role(XDocument.Parse(single), "topology-edge-label-surface").Single(), "width") + 20);
-        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.Visual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var tone = ChartColorMath.Blend(colors.Background, colors.Foreground, TopologyRenderPrimitives.EdgeLabelQuietTint);
         AssertPixel(image, Number(surface, "x") + Number(surface, "height") / 2 + 1, (top + bottom) / 2, tone);
     }

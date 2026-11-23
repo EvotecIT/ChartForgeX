@@ -11,7 +11,7 @@ namespace ChartForgeX.Terminal;
 /// <summary>
 /// Renders terminal stories as self-contained, script-free animated SVG.
 /// </summary>
-public sealed class SvgTerminalStoryRenderer {
+internal sealed class SvgTerminalStoryRenderer {
     /// <summary>Renders a terminal story to SVG markup.</summary>
     public string Render(TerminalStory story) => Render(story, string.Empty);
 

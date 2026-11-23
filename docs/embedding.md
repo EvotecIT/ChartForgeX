@@ -25,7 +25,7 @@ var point = new ChartPoint(1, 24).WithMarkOptions(new ChartMarkOptions(
 
 var chart = Chart.Create().AddBar("Updates", new[] { point });
 var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
-    new VisualSvgOptions(idPrefix: "activity-daily"));
+    new VisualSvgOptions(idScope: "activity-daily"));
 ```
 
 Use `linkTarget: VisualSvgLinkTarget.NewContext` for a publisher's page. New-context links receive `target="_blank"` and `rel="noopener noreferrer"`. Other authored links use the current context, independently of the render-wide default. Links receive a keyboard tab stop, `role="link"` and an accessible name. `Tooltip` becomes a plain-text SVG `<title>`; `AccessibleLabel` takes precedence over the generated name.
@@ -202,7 +202,7 @@ Each drawing is prepared at its own width, so ticks, captions and legends are la
 
 ## ID scopes, CSP and testing
 
-Pass a unique, stable `idPrefix` for every occurrence on a page, including repeated equal charts. An automatic content namespace is deterministic, so two identical occurrences otherwise reuse definition IDs. Use a route-safe prefix such as `release-4-track`; keep source record identifiers in validated host data attributes.
+Pass a unique, stable `idScope` for every occurrence on a page, including repeated equal charts. An automatic content namespace is deterministic, so two identical occurrences otherwise reuse definition IDs. Use a route-safe prefix such as `release-4-track`; keep source record identifiers in validated host data attributes.
 
 Static SVG, native links, fluid tracks and data tables need no inline script. By default the output includes `style` attributes and scoped `style` elements. For a page whose policy allows styles only from nonce'd elements (`style-src 'nonce-…'` without `'unsafe-inline'`), set a nonce:
 

@@ -40,6 +40,6 @@ public sealed class NativeCompositeExampleTests {
         Assert.Contains("SvgRasterFilterOptions", program);
         Assert.Contains("SourceWithOpacity", program);
         var cutout = NativeCompositeCompositionExample.Create(variant, mode, VisualCompositeOperator.DestinationOut);
-        Assert.False(composition.ToImage().Pixels.SequenceEqual(cutout.ToImage().Pixels));
+        Assert.False(composition.ToRgbaImage().Pixels.SequenceEqual(cutout.ToRgbaImage().Pixels));
     }
 }

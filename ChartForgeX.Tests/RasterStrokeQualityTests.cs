@@ -152,17 +152,17 @@ public sealed class RasterStrokeQualityTests {
     [Fact]
     public void RasterizerReturnsTheSamePixelsAsItsPngOutput() {
         const string svg = "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='40'><rect width='60' height='40' fill='#123456'/><circle cx='30' cy='20' r='12' fill='none' stroke='#fedcba' stroke-width='3'/></svg>";
-        var direct = SvgRasterizer.ToImage(svg);
+        var direct = SvgRasterizer.ToRgbaImage(svg);
         var decoded = RasterImageDecoder.Decode(SvgRasterizer.ToPng(svg));
         Assert.Equal(60, direct.Width);
         Assert.Equal(40, direct.Height);
         Assert.Equal(decoded.Pixels, direct.Pixels);
 
-        var scaled = SvgRasterizer.ToImage(System.Text.Encoding.UTF8.GetBytes(svg), 120);
+        var scaled = SvgRasterizer.ToRgbaImage(System.Text.Encoding.UTF8.GetBytes(svg), 120);
         Assert.Equal(120, scaled.Width);
         Assert.Equal(80, scaled.Height);
-        Assert.Throws<ArgumentException>(() => SvgRasterizer.ToImage(" "));
-        Assert.Throws<FormatException>(() => SvgRasterizer.ToImage("<svg"));
+        Assert.Throws<ArgumentException>(() => SvgRasterizer.ToRgbaImage(" "));
+        Assert.Throws<FormatException>(() => SvgRasterizer.ToRgbaImage("<svg"));
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class RasterStrokeQualityTests {
             .StrokeCircle(140, 60, 30, ChartColors.White, 4)
             .FillEllipse(60, 150, 40, 20, ChartColors.White)
             .StrokeEllipse(140, 150, 40, 20, ChartColors.White, 2)
-            .ToImage();
+            .ToRgbaImage();
         Assert.Equal(255, Alpha(image, 60, 60));
         Assert.Equal(0, Alpha(image, 25, 25));
         // The disc's area is its coverage: pi * r^2.
@@ -190,53 +190,53 @@ public sealed class RasterStrokeQualityTests {
 
     [Fact]
     public void CompositionDrawsArcsAndProgressRings() {
-        var arc = ImageComposition.CreateTransparent(200, 200).DrawArc(100, 100, 70, -90, 90, ChartColors.White, 16).ToImage();
+        var arc = ImageComposition.CreateTransparent(200, 200).DrawArc(100, 100, 70, -90, 90, ChartColors.White, 16).ToRgbaImage();
         AssertEvenRing(arc, 100, 100, 70, 16, -85, -5);
         Assert.Equal(0, Alpha(arc, 100, 170));
         Assert.Equal(0, Alpha(arc, 30, 100));
         // Round caps by default: just before twelve o'clock is still covered.
         Assert.True(Alpha(arc, 95, 30) > 200);
-        var butt = ImageComposition.CreateTransparent(200, 200).DrawArc(100, 100, 70, -90, 90, ChartColors.White, 16, ImageLineCap.Butt).ToImage();
+        var butt = ImageComposition.CreateTransparent(200, 200).DrawArc(100, 100, 70, -90, 90, ChartColors.White, 16, ImageLineCap.Butt).ToRgbaImage();
         Assert.Equal(0, Alpha(butt, 95, 30));
-        var counterClockwise = ImageComposition.CreateTransparent(200, 200).DrawArc(100, 100, 70, -90, -90, ChartColors.White, 16).ToImage();
+        var counterClockwise = ImageComposition.CreateTransparent(200, 200).DrawArc(100, 100, 70, -90, -90, ChartColors.White, 16).ToRgbaImage();
         Assert.Equal(255, Alpha(counterClockwise, 51, 51));
         Assert.Equal(0, Alpha(counterClockwise, 149, 51));
 
         var track = ChartColor.FromHex("#222A38");
-        var ring = ImageComposition.Create(200, 200, ChartColors.Black).DrawProgressRing(100, 100, 70, 16, 0.25, track, ChartColors.Red).ToImage();
+        var ring = ImageComposition.Create(200, 200, ChartColors.Black).DrawProgressRing(100, 100, 70, 16, 0.25, track, ChartColors.Red).ToRgbaImage();
         Assert.Equal((255, 0, 0), Rgb(ring, 149, 51));
         Assert.Equal((track.R, track.G, track.B), Rgb(ring, 100, 170));
         Assert.Equal((0, 0, 0), Rgb(ring, 100, 100));
-        var full = ImageComposition.Create(200, 200, ChartColors.Black).DrawProgressRing(100, 100, 70, 16, 1.5, track, ChartColors.Red).ToImage();
+        var full = ImageComposition.Create(200, 200, ChartColors.Black).DrawProgressRing(100, 100, 70, 16, 1.5, track, ChartColors.Red).ToRgbaImage();
         for (var degrees = 0; degrees < 360; degrees += 5) {
             var radians = degrees * Math.PI / 180;
             Assert.Equal((255, 0, 0), Rgb(full, (int)Math.Round(100 + Math.Cos(radians) * 70), (int)Math.Round(100 + Math.Sin(radians) * 70)));
         }
 
-        var empty = ImageComposition.Create(200, 200, ChartColors.Black).DrawProgressRing(100, 100, 70, 16, 0, track, ChartColors.Red).ToImage();
+        var empty = ImageComposition.Create(200, 200, ChartColors.Black).DrawProgressRing(100, 100, 70, 16, 0, track, ChartColors.Red).ToRgbaImage();
         Assert.Equal((track.R, track.G, track.B), Rgb(empty, 100, 30));
     }
 
     [Fact]
     public void CompositionFillsLinearAndRadialGradients() {
-        var horizontal = ImageComposition.CreateTransparent(101, 40).FillRectangleLinearGradient(0, 0, 101, 40, ChartColors.Black, ChartColors.White, 0).ToImage();
+        var horizontal = ImageComposition.CreateTransparent(101, 40).FillRectangleLinearGradient(0, 0, 101, 40, ChartColors.Black, ChartColors.White, 0).ToRgbaImage();
         Assert.InRange(horizontal.Pixels[0], 0, 3);
         Assert.InRange(horizontal.Pixels[(20 * 101 + 50) * 4], 125, 130);
         Assert.InRange(horizontal.Pixels[(20 * 101 + 100) * 4], 252, 255);
 
-        var vertical = ImageComposition.CreateTransparent(40, 101).FillRectangleLinearGradient(0, 0, 40, 101, ChartColors.Black, ChartColors.White).ToImage();
+        var vertical = ImageComposition.CreateTransparent(40, 101).FillRectangleLinearGradient(0, 0, 40, 101, ChartColors.Black, ChartColors.White).ToRgbaImage();
         Assert.InRange(vertical.Pixels[(0 * 40 + 20) * 4], 0, 3);
         Assert.InRange(vertical.Pixels[(100 * 40 + 20) * 4], 252, 255);
         Assert.Equal(vertical.Pixels[(50 * 40 + 2) * 4], vertical.Pixels[(50 * 40 + 37) * 4]);
 
-        var rounded = ImageComposition.CreateTransparent(60, 60).FillRectangleLinearGradient(0, 0, 60, 60, ChartColors.Red, ChartColors.Blue, 45, 20).ToImage();
+        var rounded = ImageComposition.CreateTransparent(60, 60).FillRectangleLinearGradient(0, 0, 60, 60, ChartColors.Red, ChartColors.Blue, 45, 20).ToRgbaImage();
         Assert.Equal(0, Alpha(rounded, 1, 1));
         Assert.Equal(255, Alpha(rounded, 30, 30));
 
         var accent = ChartColor.FromHex("#2C5FF0");
         var glow = ImageComposition.Create(120, 80, ChartColors.Black)
             .FillRectangleRadialGradient(0, 0, 120, 80, 120, 0, 60, accent, ChartColor.FromRgba(accent.R, accent.G, accent.B, 0))
-            .ToImage();
+            .ToRgbaImage();
         Assert.True(Rgb(glow, 118, 1).Item3 > 220, "The gradient center should take the inner color.");
         Assert.InRange(Rgb(glow, 90, 1).Item3, 100, 140);
         Assert.Equal((0, 0, 0), Rgb(glow, 20, 60));
@@ -256,7 +256,7 @@ public sealed class RasterStrokeQualityTests {
     }
 
     private static RgbaImage Render(int width, int height, string body) =>
-        SvgRasterizer.ToImage($"<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>{body}</svg>");
+        SvgRasterizer.ToRgbaImage($"<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>{body}</svg>");
 
     private static string Number(double value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 

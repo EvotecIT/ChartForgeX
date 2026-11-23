@@ -19,10 +19,10 @@ public static class UseCaseSourceDepthRecipe {
             node.Kind = TopologyNodeKind.Generic; node.Shape = node.Id == "Operator" ? TopologyNodeShape.Actor : TopologyNodeShape.Ellipse;
             node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
             node.FitLabelToContent = node.Shape != TopologyNodeShape.Actor; node.MaximumTextWidth = 150;
-            if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = "400" };
+            if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = 400 };
         }
         chart.Nodes[0].Subtitle = "«primary»";
-        chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = "500" };
+        chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = 500 };
         chart.Nodes[1].Subtitle = "«business action»";
         chart.AddEdge("request", "Operator", "Publish", "requests", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
         var request = chart.Edges[0]; request.Color = "#2563EB"; request.LabelColor = "#0F766E";

@@ -378,7 +378,7 @@ internal static partial class MermaidExamples {
                 lifetimes.Typography = null;
             }
             if (item.Key == "mermaid-cynefin-basic") {
-                result.Artifact.NaturalSize = new VisualArtifactSize(960, 621);
+                result.Artifact.NaturalSize = new VisualSize(960, 621);
                 result.Artifact.PreserveNaturalSize = true;
             }
             if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block

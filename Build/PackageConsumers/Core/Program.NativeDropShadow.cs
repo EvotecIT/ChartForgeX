@@ -17,8 +17,8 @@ internal static partial class Program {
         PackageAssertions.Require(ReferenceEquals(source, layer.Source) && source.ToSvg() == before, "Native shadow mutated its prepared source.");
         PackageAssertions.Require(layer.Bounds.X < 0 && layer.Bounds.Width > 320 && layer.Bounds.Height > 240, "Native shadow discarded propagated union support.");
         PackageAssertions.Require(svg.Contains("data:image/png;base64,") && !svg.Contains("<filter"), "Native shadow confused baked output with an SVG filter profile.");
-        var image = layer.ToImage(); Array.Clear(image.Pixels, 0, image.Pixels.Length);
-        PackageAssertions.Require(layer.ToImage().Pixels.Any(value => value > 0) && svg == layer.Visual.ToSvg(), "Native shadow exposed its private snapshot pixels.");
+        var image = layer.ToRgbaImage(); Array.Clear(image.Pixels, 0, image.Pixels.Length);
+        PackageAssertions.Require(layer.ToRgbaImage().Pixels.Any(value => value > 0) && svg == layer.Visual.ToSvg(), "Native shadow exposed its private snapshot pixels.");
         PackageAssertions.Png(png);
     }
 }

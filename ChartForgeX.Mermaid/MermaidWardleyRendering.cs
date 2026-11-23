@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.VisualArtifacts;
@@ -72,7 +73,7 @@ public static class MermaidWardleyRendering {
         artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
         artifact.Title = block.Title;
         artifact.Subtitle = block.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
+        artifact.NaturalSize = new VisualSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
         var fit = document.Configuration.Wardley?.UseMaxWidth;
         if (fit.HasValue) artifact.HtmlSizing = fit.Value ? VisualArtifactHtmlSizing.FitToWidth : VisualArtifactHtmlSizing.PreserveSize;

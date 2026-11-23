@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -18,7 +19,7 @@ public sealed class TopologyRoutingMilestoneTests {
         var chart = DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(600, 300)).LayoutMode(mode);
         chart.DefaultRenderOptions(Options());
         var artifact = chart.ToVisualArtifact();
-        if (explicitSize) artifact.NaturalSize = new VisualArtifactSize(480, 240);
+        if (explicitSize) artifact.NaturalSize = new VisualSize(480, 240);
         artifact.PreserveNaturalSize = true;
         var size = artifact.NaturalSize!.Value;
         var view = Options();

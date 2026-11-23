@@ -15,7 +15,7 @@ internal static partial class VisualArtifactInterchangeValidation {
             if(font==null&&(value.Font.FilePath!=null||value.Font.CapturedExplicitFile))
                 throw new ArgumentException("An owned frame font requires its shared captured context-font owner.");
             Text(value.Font.Family,"frame font family");OptionalText(value.Font.FaceName,"frame requested face");OptionalText(value.OpenTypeLanguageTag,"frame language");
-            ValidateDetailTextStyle(new TextStyleOverride{FontFamily=value.Font.Family,FontWeight=value.Font.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ValidateDetailTextStyle(new TextStyleOverride{FontFamily=value.Font.Family,FontWeight=value.Font.Weight,
                 Italic=value.Font.Italic,Variations=value.Font.Variations,ColorPaletteIndex=value.Font.ColorPaletteIndex});
             Defined(value.Alignment,"frame text alignment",envelope);PositiveOptional(value.FontSize,"frame font size");
         }
