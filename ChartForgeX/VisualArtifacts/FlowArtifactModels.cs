@@ -150,16 +150,16 @@ public sealed partial class FlowArtifact {
     public static FlowArtifact Create(string id) => new() { Id = id };
 
     /// <summary>Adds a flow lane.</summary>
-    public FlowArtifact AddLane(string id, string label, Tone status = default, string? color = null) {
+    public FlowArtifact AddLane(string id, string label, Tone tone = default, string? color = null) {
         if (ContainsLane(id)) throw new ArgumentException("Flow lane ids must be unique.", nameof(id));
-        _lanes.Add(new FlowArtifactLane(id, label) { Status = status, Color = color });
+        _lanes.Add(new FlowArtifactLane(id, label) { Tone = tone, Color = color });
         return this;
     }
 
     /// <summary>Adds a flow step.</summary>
-    public FlowArtifact AddStep(string id, string label, FlowArtifactStepKind kind = FlowArtifactStepKind.Step, string? laneId = null, Tone status = default) {
+    public FlowArtifact AddStep(string id, string label, FlowArtifactStepKind kind = FlowArtifactStepKind.Step, string? laneId = null, Tone tone = default) {
         if (ContainsStep(id)) throw new ArgumentException("Flow step ids must be unique.", nameof(id));
-        _steps.Add(new FlowArtifactStep(id, label, kind) { LaneId = laneId, Status = status });
+        _steps.Add(new FlowArtifactStep(id, label, kind) { LaneId = laneId, Tone = tone });
         return this;
     }
 
@@ -174,11 +174,11 @@ public sealed partial class FlowArtifact {
     }
 
     /// <summary>Adds a flow connector.</summary>
-    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, Tone status = default, string? color = null) {
+    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, Tone tone = default, string? color = null) {
         if (!ContainsStep(sourceId)) throw new ArgumentException("Flow connector source step does not exist: " + sourceId + ".", nameof(sourceId));
         if (!ContainsStep(targetId)) throw new ArgumentException("Flow connector target step does not exist: " + targetId + ".", nameof(targetId));
         var id = sourceId + "-" + targetId + "-" + (_connectors.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
-        _connectors.Add(new FlowArtifactConnector(id, sourceId, targetId) { Label = label ?? string.Empty, Kind = kind, Direction = direction, Status = status, Color = color });
+        _connectors.Add(new FlowArtifactConnector(id, sourceId, targetId) { Label = label ?? string.Empty, Kind = kind, Direction = direction, Tone = tone, Color = color });
         return this;
     }
 
@@ -247,7 +247,7 @@ public sealed class FlowArtifactLane {
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the lane status.</summary>
-    public Tone Status { get; set; }
+    public Tone Tone { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
@@ -283,7 +283,7 @@ public sealed class FlowArtifactStep {
     public string? LaneId { get; set; }
 
     /// <summary>Gets or sets the step status.</summary>
-    public Tone Status { get; set; }
+    public Tone Tone { get; set; }
 
     /// <summary>Gets or sets an optional subtitle.</summary>
     public string? Subtitle { get; set; }
@@ -312,7 +312,7 @@ public sealed class FlowArtifactStep {
 
     internal FlowArtifactStep Clone() {
         var copy = new FlowArtifactStep(Id, Label, Kind) {
-            LaneId = LaneId, Status = Status, Subtitle = Subtitle, Icon = Icon, Symbol = Symbol,
+            LaneId = LaneId, Tone = Tone, Subtitle = Subtitle, Icon = Icon, Symbol = Symbol,
             Color = Color, Badge = Badge, Width = Width, Height = Height, FitLabelToContent = FitLabelToContent
         };
         foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
@@ -358,14 +358,14 @@ public sealed class FlowArtifactConnector {
     public VisualLinkDirection Direction { get; set; } = VisualLinkDirection.Forward;
 
     /// <summary>Gets or sets connector status.</summary>
-    public Tone Status { get; set; }
+    public Tone Tone { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
 
     internal FlowArtifactConnector Clone() {
         var copy = new FlowArtifactConnector(Id, SourceId, TargetId) {
-            Label = Label, Kind = Kind, Direction = Direction, Status = Status, Color = Color
+            Label = Label, Kind = Kind, Direction = Direction, Tone = Tone, Color = Color
         };
         foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
         return copy;

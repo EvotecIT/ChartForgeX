@@ -494,7 +494,7 @@ rows:
         Assert(table.Columns[2].Type == TableArtifactColumnType.Number && table.Columns[2].Alignment == TextAlignment.Right, "Typed table columns should map type and alignment.");
         Assert(!table.Columns[2].Searchable && table.Columns[2].Sortable && !table.Columns[2].Filterable, "Typed table columns should map host behavior flags.");
         Assert(table.Rows[0].Key == "api" && table.Rows[0].Cells[0].DisplayText == "API", "Typed table rows should use key without rendering it as the first cell.");
-        Assert(table.Rows[1].Cells[1].Status == Tone.Warning, "Status columns should map recognized status text to cell status.");
+        Assert(table.Rows[1].Cells[1].Tone == Tone.Warning, "Status columns should map recognized status text to cell status.");
     }
 
     private static void VisualMarkupParserMapsTableFencesToArtifacts() {

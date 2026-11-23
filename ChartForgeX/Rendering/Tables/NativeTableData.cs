@@ -37,7 +37,7 @@ internal sealed class NativeTableData {
             var copy = new NativeTableRow { Key = row.Key };
             foreach (var cell in row.Cells) copy.Cells.Add(new NativeTableCell { Text = cell.DisplayText,
                 Content = cell.Content ?? (cell.DisplayText.IndexOf('\n') >= 0 ? TextContent.Plain(cell.DisplayText) : null),
-                Status = cell.Status == Tone.None ? row.Status : cell.Status });
+                Status = cell.Tone == Tone.None ? row.Tone : cell.Tone });
             data.Rows.Add(copy);
         }
         return data;

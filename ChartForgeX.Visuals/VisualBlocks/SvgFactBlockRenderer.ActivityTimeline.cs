@@ -28,7 +28,7 @@ public sealed partial class SvgFactBlockRenderer {
             var item = block.Items[i];
             var rowHeight = ActivityRowHeight(item);
             if (y + rowHeight > bottom + 1) break;
-            var color = item.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status);
+            var color = item.Tone == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Tone);
             if (item.Kind == ActivityTimelineItemKind.Section) RenderActivitySection(writer, block, item, y, spineX, content.X, content.Width);
             else if (item.Kind == ActivityTimelineItemKind.ChecklistItem) RenderActivityChecklistItem(writer, block, item, y, spineX, content.X, content.Width, color);
             else if (item.Kind == ActivityTimelineItemKind.HiddenSummary) RenderActivityHiddenSummary(writer, block, item, y, spineX, content.X, content.Width, color);

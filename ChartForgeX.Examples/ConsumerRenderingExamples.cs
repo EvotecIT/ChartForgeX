@@ -228,11 +228,11 @@ public static class ConsumerRenderingExamples {
                 .AddRadar("Target", Enumerable.Range(1, 6).Select(i => new ChartPoint(i, 80)).ToArray());
             SaveExample( "radar-" + suffix, radar.ToSvg(), radar.ToPng());
             var card = MetricCard.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(330, 150).Padding(0)
-                .Metric("CPU", "38").Status(Tone.Info).Symbol("CPU")
+                .Metric("CPU", "38").Tone(Tone.Info).Symbol("CPU")
                 .MiniSparkline(new[] { 12d, 24, 18, 38, 27, 38 });
             SaveExample( "metric-" + suffix, card.ToSvg(), card.ToPng());
             var compactMetric = MetricCard.Create().Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(subtitleSize: 9))).ThemeMode(mode)
-                .Size(281, 55).Padding(6.5).ShowCard(false).Metric("Memory", 68, unit: "%").Status(Tone.Success);
+                .Size(281, 55).Padding(6.5).ShowCard(false).Metric("Memory", 68, unit: "%").Tone(Tone.Success);
             SaveExample("metric-compact-" + suffix, compactMetric.ToSvg(), compactMetric.ToPng());
             var markerTheme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
             var list = ChartList.Create().Theme(markerTheme).ThemeMode(mode).Size(330, 140).Padding(0).ShowCard(false)

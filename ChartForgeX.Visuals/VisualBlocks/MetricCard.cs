@@ -30,7 +30,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     private double? _miniSparklineMinimum;
     private double? _miniSparklineMaximum;
     private Icon _icon;
-    private Tone _status;
+    private Tone _tone;
     private MetricCardBadgePlacement _badgePlacement;
     private MetricCardMicroVisualPlacement _microVisualPlacement;
     private ChartLineAreaForm _miniSparklineStyle;
@@ -144,7 +144,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     public Icon Icon { get => _icon; set => _icon = value; }
 
     /// <summary>Gets or sets the metric status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     /// <summary>Gets or sets the badge placement when an icon or symbol is configured.</summary>
     public MetricCardBadgePlacement BadgePlacement {
@@ -188,8 +188,8 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     }
 
     /// <summary>Adds a compact detail row to the card.</summary>
-    public MetricCard AddDetail(string label, object? value, Tone? status = null, string? format = null) {
-        _details.Add(new MetricCardDetail(label, ChartTableCell.FromValue(value, format).Text, status));
+    public MetricCard AddDetail(string label, object? value, Tone? tone = null, string? format = null) {
+        _details.Add(new MetricCardDetail(label, ChartTableCell.FromValue(value, format).Text, tone));
         return this;
     }
 
@@ -281,13 +281,13 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
 public sealed class MetricCardDetail {
     private string _label;
     private string _value;
-    private Tone _status;
+    private Tone _tone;
 
     /// <summary>Initializes a metric card detail.</summary>
-    public MetricCardDetail(string label, string value, Tone? status = null) {
+    public MetricCardDetail(string label, string value, Tone? tone = null) {
         _label = label ?? throw new ArgumentNullException(nameof(label));
         _value = value ?? throw new ArgumentNullException(nameof(value));
-        Status = status ?? Tone.Neutral;
+        Tone = tone ?? Tone.Neutral;
     }
 
     /// <summary>Gets or sets the detail label.</summary>
@@ -297,5 +297,5 @@ public sealed class MetricCardDetail {
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the semantic status color for the detail marker.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 }

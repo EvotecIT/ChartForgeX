@@ -15,7 +15,7 @@ public sealed class MetricCardCompactLayoutTests {
     [InlineData("success", true)]
     [InlineData("none", false)]
     public void ShortMetricKeepsItsLabelValueAndUnitInsideTheFixedContent(string status, bool unit) {
-        var card = Compact(55).Metric("Memory", 68, unit: unit ? "%" : null).Status(Tone.Parse(status));
+        var card = Compact(55).Metric("Memory", 68, unit: unit ? "%" : null).Tone(Tone.Parse(status));
         var text = Text(card);
         var label = Bounds(text["metric-label"]);
         var value = Bounds(text["metric-value"]);
@@ -67,7 +67,7 @@ public sealed class MetricCardCompactLayoutTests {
 
     [Fact]
     public void NormalMetricRetainsItsEstablishedLabelAndValueGeometry() {
-        var text = Text(Compact(140).Metric("Memory", 68, unit: "%").Status(Tone.Success));
+        var text = Text(Compact(140).Metric("Memory", 68, unit: "%").Tone(Tone.Success));
         Assert.Equal(17.5, Number(text["metric-label"], "y"));
         Assert.Equal(11, Number(text["metric-label"], "font-size"));
         Assert.Equal(62.3, Number(text["metric-value"], "y"));
@@ -115,7 +115,7 @@ public sealed class MetricCardCompactLayoutTests {
         var inset = kind.StartsWith("inset", StringComparison.Ordinal);
         var card = Compact(55).Metric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" :
                 kind == "top-right-unit-narrow" ? new string('i', 17) : "68", unit: "%")
-            .Status(Tone.Success);
+            .Tone(Tone.Success);
         if (kind == "top-left") card.Icon(MetricCardIcons.Lightning).BadgePlacement(MetricCardBadgePlacement.TopLeft);
         else if (kind == "top-right-long" || kind == "top-right-unit-narrow") card.Symbol("RAM").BadgePlacement(MetricCardBadgePlacement.TopRight);
         else if (kind == "inset-symbol") card.Symbol("RAM").MicroVisualSurface(MetricCardMicroVisualSurface.Inset);

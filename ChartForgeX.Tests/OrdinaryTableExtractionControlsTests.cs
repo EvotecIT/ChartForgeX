@@ -64,7 +64,7 @@ public sealed class OrdinaryTableExtractionControlsTests {
                 row.Cells[2].MiniBars(new[] { 0d, 2, 4 }, minimum: 0, maximum: 4);
                 row.Cells[3].Sparkline(new SparklineData(new double?[] { 0, null, 4, 2 }, minimum: 0, maximum: 4));
             });
-            table.UpdateRow(1, row => { row.Cells[1].Status = Tone.Warning; row.Cells[2].Alignment = TextAlignment.Center;
+            table.UpdateRow(1, row => { row.Cells[1].Tone = Tone.Warning; row.Cells[2].Alignment = TextAlignment.Center;
                 row.Cells[2].Foreground = ChartColor.FromHex("#245C41"); row.Cells[2].Background = ChartColor.FromHex("#D8F0E2"); });
         } else {
             table.Columns("Name", "Value").AddRow("API", 0).AddRow("Queue", false).AddRow("Missing", null).AddRow("Empty", "");
@@ -81,7 +81,7 @@ public sealed class OrdinaryTableExtractionControlsTests {
     private static string Source(ChartTable table) => JsonSerializer.Serialize(new { table.Dense, table.ShowHeader, table.RowStriping, table.StatusColumnIndex,
         columns = table.Columns.Select(column => new { column.Header, column.Alignment, column.Width, column.Format }),
         rows = table.Rows.Select(row => new { row.Background, row.Foreground, cells = row.Cells.Select(cell => new {
-            cell.Text, cell.Alignment, cell.Foreground, cell.Background, cell.Status, cell.BadgeText, cell.BadgeStyle, cell.BadgeStatus, cell.BadgeColor,
+            cell.Text, cell.Alignment, cell.Foreground, cell.Background, cell.Tone, cell.BadgeText, cell.BadgeStyle, cell.BadgeTone, cell.BadgeColor,
             cell.MicroVisualKind, cell.MicroVisualMinimum, cell.MicroVisualMaximum, cell.MicroVisualColor, cell.MicroVisualValues,
             slots = cell.SparklineData?.Values }) }) });
 }

@@ -36,9 +36,9 @@ internal static partial class SmokeTests {
 
         table.Columns[1].Metadata["facet"] = "health";
         table.UpdateRow(1, row => {
-            row.Status = Tone.Warning;
+            row.Tone = Tone.Warning;
             row.Metadata["source"] = "probe";
-            row.Cells[1].Status = Tone.Warning;
+            row.Cells[1].Tone = Tone.Warning;
         });
 
         Assert(table.Supports(TableArtifactCapabilities.Search), "TableArtifact should declare full-table search capability.");
@@ -46,8 +46,8 @@ internal static partial class SmokeTests {
         Assert(table.SupportsExport(VisualArtifactExportFormat.Csv), "TableArtifact should declare data export formats independently from static previews.");
         Assert(table.Columns[2].Alignment == TextAlignment.Right, "TableArtifact columns should preserve static preview alignment hints.");
         Assert(table.Columns[1].Metadata["facet"] == "health", "TableArtifact columns should preserve host metadata.");
-        Assert(table.Rows[1].Status == Tone.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
-        Assert(table.Rows[1].Cells[1].Status == Tone.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
+        Assert(table.Rows[1].Tone == Tone.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
+        Assert(table.Rows[1].Cells[1].Tone == Tone.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
 
         var artifact = table.ToVisualArtifact();
         Assert(artifact.Kind == VisualArtifactKind.Table, "TableArtifact should wrap into a product-neutral visual artifact envelope.");
@@ -67,8 +67,8 @@ internal static partial class SmokeTests {
             .AddRow("a", "Ada Lovelace", "Enabled")
             .AddRow("g", "Grace Hopper", "Disabled")
             .UpdateRow(1, row => {
-                row.Status = Tone.Danger;
-                row.Cells[1].Status = Tone.Danger;
+                row.Tone = Tone.Danger;
+                row.Cells[1].Tone = Tone.Danger;
             });
 
         var block = table.ToPreviewBlock();
@@ -384,9 +384,9 @@ internal static partial class SmokeTests {
             new("worker") {
                 Cells = {
                     new TableArtifactCell("Worker"),
-                    new TableArtifactCell("Warning") { Status = Tone.Warning }
+                    new TableArtifactCell("Warning") { Tone = Tone.Warning }
                 },
-                Status = Tone.Warning
+                Tone = Tone.Warning
             }
         };
         var result = new TableArtifactQueryResult(rows, totalRowCount: 125);

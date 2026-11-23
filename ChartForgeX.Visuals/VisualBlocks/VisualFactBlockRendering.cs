@@ -199,7 +199,7 @@ internal static partial class VisualFactBlockRendering {
         var count = card.MiniBars.Count;
         var gap = count > 5 ? ChartVisualPrimitives.MiniBarDenseGap : ChartVisualPrimitives.MiniBarGap;
         var barWidth = Math.Max(ChartVisualPrimitives.MiniBarMinWidth, (width - gap * Math.Max(0, count - 1)) / count);
-        var activeColor = card.MiniBarColor ?? (card.Status == Tone.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Status));
+        var activeColor = card.MiniBarColor ?? (card.Tone == Tone.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Tone));
         var mutedColor = card.MiniBarMutedColor ?? theme.MutedText.WithAlpha(85);
         var bars = new VisualMiniBar[count];
         for (var i = 0; i < count; i++) {
@@ -228,7 +228,7 @@ internal static partial class VisualFactBlockRendering {
     private static VisualMiniSparkline CreateMiniSparkline(MetricCard card, SparklineData samples, ChartColor? lineColor, ChartColor? fill, double x, double y, double width, double height) {
         var theme = card.Options.ResolvedTheme;
         var bounds = MiniSparklineBounds(card);
-        var color = lineColor ?? (card.Status == Tone.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Status));
+        var color = lineColor ?? (card.Tone == Tone.None ? PaletteAt(theme, 0) : StatusColor(theme, card.Tone));
         var fillColor = fill ?? color.WithAlpha((byte)Math.Round(255 * ChartVisualPrimitives.MiniSparklineFillOpacity));
         var data = new SparklineData(samples.Values, bounds.Minimum, bounds.Maximum, samples.MissingDataPolicy);
         var points = SparklineLayout.Project(data, new ChartRect(x, y, width, height));
@@ -243,7 +243,7 @@ internal static partial class VisualFactBlockRendering {
     public static int FilledSegments(SegmentedMetricItem item) => Math.Max(0, Math.Min(item.Segments, (int)Math.Round(item.Segments * SegmentRatio(item.Value, item.Maximum))));
 
     public static ChartColor SegmentedItemColor(ResolvedVisualTheme theme, SegmentedMetricItem item, int index) =>
-        item.Color ?? (item.Status == Tone.None ? PaletteAt(theme, index) : StatusColor(theme, item.Status));
+        item.Color ?? (item.Tone == Tone.None ? PaletteAt(theme, index) : StatusColor(theme, item.Tone));
 
     public static double SegmentedShare(SegmentedMetricItem item, ChartPositiveSum total) => total.Fraction(item.Value);
 
@@ -277,7 +277,7 @@ internal static partial class VisualFactBlockRendering {
             : Math.Round(SegmentRatio(item.Value, item.Maximum) * 100).ToString("0", CultureInfo.InvariantCulture) + "%";
 
     public static ChartColor SegmentedDeltaColor(ResolvedVisualTheme theme, SegmentedMetricItem item, ChartColor fallback) =>
-        item.Status == Tone.None ? fallback : StatusColor(theme, item.Status);
+        item.Tone == Tone.None ? fallback : StatusColor(theme, item.Tone);
 
     public static bool SegmentedMetricRequiresMetric(SegmentedMetricStyle style) =>
         style == SegmentedMetricStyle.CompositionStrip || style == SegmentedMetricStyle.DistributionRows;

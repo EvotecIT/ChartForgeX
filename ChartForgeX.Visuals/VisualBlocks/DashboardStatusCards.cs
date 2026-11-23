@@ -90,7 +90,7 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
         double maximum = 100,
         int segments = 40,
         ChartColor? color = null,
-        Tone status = default,
+        Tone tone = default,
         ChartFillPattern pattern = ChartFillPattern.None,
         string? delta = null,
         string? symbol = null,
@@ -100,7 +100,7 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
             Maximum = maximum,
             Segments = segments,
             Color = color,
-            Status = status,
+            Tone = tone,
             Pattern = pattern,
             Delta = delta ?? string.Empty,
             Symbol = symbol ?? string.Empty,
@@ -139,7 +139,7 @@ public sealed class SegmentedMetricItem {
     private string _delta = string.Empty;
     private string _symbol = string.Empty;
     private string _displayValue = string.Empty;
-    private Tone _status;
+    private Tone _tone;
     private ChartFillPattern _pattern;
 
     /// <summary>Initializes a segmented metric item.</summary>
@@ -173,7 +173,7 @@ public sealed class SegmentedMetricItem {
     public string DisplayValue { get => _displayValue; set => _displayValue = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the semantic item status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     /// <summary>Gets or sets an optional fill pattern hint.</summary>
     public ChartFillPattern Pattern {

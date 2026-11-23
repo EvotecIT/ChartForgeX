@@ -43,7 +43,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(2)]
     public void CardStatusBarSpansTheLogicalCardAtEveryOutputScale(int scale) {
         var card = MetricCard.Create().Size(460, 200).ShowCard().Metric("CPU", "38")
-            .Status(Tone.Warning).PngOutputScale(scale);
+            .Tone(Tone.Warning).PngOutputScale(scale);
         var image = card.RenderRgba();
         var svg = XDocument.Parse(card.ToSvg());
         var bar = svg.Descendants().Single(e => Role(e) == "metric-status-bar");
@@ -445,7 +445,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [Fact]
     public void InfoStatusUsesThemeInfoAndListMarkersUseOnePaletteColor() {
         var theme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
-        var status = MetricCard.Create().Theme(theme).Size(260, 120).Status(Tone.Info).Metric("Replication", "Pending");
+        var status = MetricCard.Create().Theme(theme).Size(260, 120).Tone(Tone.Info).Metric("Replication", "Pending");
         var statusBar = XDocument.Parse(status.ToSvg()).Descendants().Single(e => Role(e) == "metric-status-bar");
         Assert.Equal(theme.Resolve(ThemeMode.Light).Info.ToCss(), (string?)statusBar.Attribute("fill"));
 
@@ -460,7 +460,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(VisualListMarker.Bullet, "r", 4)]
     [InlineData(VisualListMarker.Number, "font-size", 11)]
     [InlineData(VisualListMarker.Check, "r", 7)]
-    [InlineData(VisualListMarker.Status, "r", 6)]
+    [InlineData(VisualListMarker.Tone, "r", 6)]
     public void ListMarkersAndReservedWidthFollowThemeBodyTypography(VisualListMarker markerType, string geometryAttribute, double baselineGeometry) {
         static (double Geometry, double MarkerStroke, double CheckStroke, double TextGap) Render(double size, VisualListMarker markerType, string geometryAttribute) {
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: size));

@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
             .BadgePlacement(MetricCardBadgePlacement.TopLeft)
             .Trend("+2.4 pp")
             .Caption("since previous run")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .AddDetail("Ready", "84%", Tone.Success)
             .AddDetail("Risk", "6%", Tone.Warning)
             .MiniBars(new[] { 72d, 78d, 83d, 80d, 98d }, maximum: 100)
@@ -40,7 +40,7 @@ internal static partial class SmokeTests {
             .Metric("Patch Rate", "94%", "OK")
             .Symbol("WRN")
             .BadgePlacement(MetricCardBadgePlacement.TopLeft)
-            .Status(Tone.Warning)
+            .Tone(Tone.Warning)
             .Theme(VisualTheme.TransparentOverlay()).ThemeMode(ThemeMode.Dark)
             .Size(300, 170);
         var symbolMetricSvg = symbolMetric.ToSvg("visual-block-metric-symbol");
@@ -111,7 +111,7 @@ internal static partial class SmokeTests {
 
         var sparkMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
             .Metric("Network", "842 Mbps")
-            .Status(Tone.Info)
+            .Tone(Tone.Info)
             .MiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
         var sparkSvg = sparkMetric.ToSvg("visual-block-metric-sparkline");
         Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline\"", StringComparison.Ordinal), "MetricCard should render compact sparkline groups.");

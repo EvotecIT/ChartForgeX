@@ -23,7 +23,7 @@ public sealed partial class SvgFactBlockRenderer {
             var source = table.Rows[i]; var row = new NativeTableRow { Key = i.ToString(CultureInfo.InvariantCulture), Background = source.Background, Foreground = source.Foreground };
             foreach (var cell in source.Cells) {
                 var copy = new NativeTableCell { Text = cell.Text, Alignment = cell.Alignment, Foreground = cell.Foreground, Background = cell.Background,
-                    Status = cell.Status, BadgeText = cell.BadgeText, BadgeStatus = cell.BadgeStatus, BadgeColor = cell.BadgeColor,
+                    Status = cell.Tone, BadgeText = cell.BadgeText, BadgeStatus = cell.BadgeTone, BadgeColor = cell.BadgeColor,
                     Minimum = cell.MicroVisualMinimum, Maximum = cell.MicroVisualMaximum, MicroColor = cell.MicroVisualColor,
                     BadgeTreatment = cell.BadgeStyle switch { VisualBadgeStyle.Solid => NativeTableBadgeTreatment.Solid, VisualBadgeStyle.Outline => NativeTableBadgeTreatment.Outline, _ => NativeTableBadgeTreatment.Soft },
                     MicroVisual = cell.MicroVisualKind switch { ChartTableCellMicroVisualKind.MiniBars => NativeTableMicroVisual.MiniBars,

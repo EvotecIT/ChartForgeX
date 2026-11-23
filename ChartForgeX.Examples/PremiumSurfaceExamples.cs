@@ -69,7 +69,7 @@ internal static class PremiumSurfaceExamples {
             .Metric(label, value)
             .Caption(caption)
             .Symbol(symbol)
-            .Status(status)
+            .Tone(status)
             .MiniSparkline(history, color: color, fillColor: color.WithAlpha(34));
 
         var cards = new[] {

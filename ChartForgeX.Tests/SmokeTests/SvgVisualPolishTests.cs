@@ -162,7 +162,7 @@ internal static partial class SmokeTests {
     private static void MetricStatusBarsRespectRoundedCards() {
         var metric = MetricCard.Create()
             .Metric("Monthly Recurring Revenue", "$120,400")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .Theme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .Size(420, 190);
         var svg = metric.ToSvg("rounded-status-bar");
@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
 
         var transparentMetric = MetricCard.Create()
             .Metric("Monthly Recurring Revenue", "$120,400")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .TransparentBackground()
             .Theme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .Size(420, 190);
@@ -198,7 +198,7 @@ internal static partial class SmokeTests {
 
         var noCard = MetricCard.Create()
             .Metric("Monthly Recurring Revenue", "$120,400")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .ShowCard(false)
             .Theme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .Size(420, 190);
@@ -236,8 +236,8 @@ internal static partial class SmokeTests {
         Assert(transparentCardMetric.ToPng().Length > 64, "Transparent visual block cards should still render PNG output.");
 
         var transparentGrid = VisualGrid.CreateMetricStrip("Transparent", new[] {
-                MetricCard.Create().Metric("Patch Rate", "94%").Status(Tone.Success).Theme(transparentCardTheme),
-                MetricCard.Create().Metric("Warnings", "18").Status(Tone.Warning).Theme(transparentCardTheme)
+                MetricCard.Create().Metric("Patch Rate", "94%").Tone(Tone.Success).Theme(transparentCardTheme),
+                MetricCard.Create().Metric("Warnings", "18").Tone(Tone.Warning).Theme(transparentCardTheme)
             }, columns: 2)
             .Theme(transparentCardTheme);
         var transparentGridSvg = transparentGrid.ToSvg("transparent-grid");

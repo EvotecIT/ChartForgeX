@@ -33,7 +33,7 @@ public sealed partial class ChartTableCell {
     private ChartTableCellMicroVisualKind _microVisualKind;
     private readonly List<double> _microVisualValues = new();
     private string _badgeText = string.Empty;
-    private Tone _badgeStatus = Tone.Neutral;
+    private Tone _badgeTone = Tone.Neutral;
     private VisualBadgeStyle _badgeStyle = VisualBadgeStyle.Soft;
 
     /// <summary>Gets the configured cell microvisual kind.</summary>
@@ -68,7 +68,7 @@ public sealed partial class ChartTableCell {
     public string BadgeText { get => _badgeText; set => _badgeText = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets optional badge status.</summary>
-    public Tone BadgeStatus { get => _badgeStatus; set => _badgeStatus = value; }
+    public Tone BadgeTone { get => _badgeTone; set => _badgeTone = value; }
 
     /// <summary>Gets or sets optional badge style.</summary>
     public VisualBadgeStyle BadgeStyle {
@@ -105,9 +105,9 @@ public sealed partial class ChartTableCell {
     }
 
     /// <summary>Sets a compact badge for this table cell.</summary>
-    public ChartTableCell Badge(string text, Tone? status = null, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
+    public ChartTableCell Badge(string text, Tone? tone = null, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
         BadgeText = text ?? throw new ArgumentNullException(nameof(text));
-        BadgeStatus = status ?? Tone.Neutral;
+        BadgeTone = tone ?? Tone.Neutral;
         BadgeColor = color;
         BadgeStyle = style;
         return this;
@@ -115,10 +115,10 @@ public sealed partial class ChartTableCell {
 
     internal ChartTableCell Clone() {
         var copy = new ChartTableCell(Text) {
-            Alignment = Alignment, Foreground = Foreground, Background = Background, Status = Status,
+            Alignment = Alignment, Foreground = Foreground, Background = Background, Tone = Tone,
             MicroVisualKind = MicroVisualKind, MicroVisualMinimum = MicroVisualMinimum,
             MicroVisualMaximum = MicroVisualMaximum, MicroVisualColor = MicroVisualColor, SparklineData = SparklineData,
-            BadgeText = BadgeText, BadgeStatus = BadgeStatus, BadgeStyle = BadgeStyle, BadgeColor = BadgeColor
+            BadgeText = BadgeText, BadgeTone = BadgeTone, BadgeStyle = BadgeStyle, BadgeColor = BadgeColor
         };
         copy._microVisualValues.AddRange(_microVisualValues);
         return copy;

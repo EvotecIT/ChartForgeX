@@ -66,8 +66,8 @@ public sealed partial class SvgFactBlockRenderer {
         var options = card.Options;
         var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
-        var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
-        if (card.Status != Tone.None) {
+        var statusColor = VisualBlockRendering.StatusColor(theme, card.Tone);
+        if (card.Tone != Tone.None) {
             var left = Math.Max(content.X, ChartVisualPrimitives.MetricStatusBarWidth + 5);
             content = new ChartRect(left, content.Y, Math.Max(1, content.Right - left), content.Height);
         }
@@ -80,7 +80,7 @@ public sealed partial class SvgFactBlockRenderer {
         var valueYOffset = 0.0;
         var badgeBottom = content.Y;
         ChartRect? badgeBounds = null;
-        if (card.Status != Tone.None) {
+        if (card.Tone != Tone.None) {
             var barInset = options.ShowCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
             writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", barInset).Attribute("y", barInset).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", Math.Max(1, options.Size.Height - barInset * 2)).Attribute("fill", statusColor.ToCss());
             if (options.ShowCard) writer.Attribute("clip-path", "url(#" + id + "-visualCardClip)");
@@ -88,7 +88,7 @@ public sealed partial class SvgFactBlockRenderer {
         }
 
         if (!valueInsetSurface && (card.Icon != Icon.None || card.Symbol.Length > 0)) {
-            var badgeColor = card.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
+            var badgeColor = card.Tone == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
             var leftBadge = card.BadgePlacement == MetricCardBadgePlacement.TopLeft;
             var cx = leftBadge ? content.X + badgeRadius : options.Size.Width - options.Padding.Right - badgeRadius - 16;
@@ -152,7 +152,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderMetricDetail(SvgMarkupWriter writer, MetricCard card, double baseline, double x, double width) {
         var theme = card.Options.ResolvedTheme;
-        var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
+        var statusColor = VisualBlockRendering.StatusColor(theme, card.Tone);
         var trendSize = Math.Max(10, theme.SubtitleFontSize);
         var captionSize = Math.Max(10, theme.SubtitleFontSize - 1);
         if (card.Trend.Length > 0) {
@@ -243,7 +243,7 @@ public sealed partial class SvgFactBlockRenderer {
             var row = i / columns;
             var x = content.X + column * (cellWidth + gap);
             var y = top + row * rowHeight;
-            var marker = VisualBlockRendering.StatusColor(theme, detail.Status);
+            var marker = VisualBlockRendering.StatusColor(theme, detail.Tone);
             writer.StartElement("g").Attribute("data-cfx-role", "metric-detail").Attribute("data-cfx-label", detail.Label).EndStartElement().Line();
             writer.StartElement("rect").Attribute("x", x).Attribute("y", y).Attribute("width", cellWidth).Attribute("height", rowHeight - 4).Attribute("rx", Math.Min(8, (rowHeight - 4) / 2)).Attribute("fill", theme.PlotBackground.WithAlpha(150).ToCss()).Attribute("stroke", theme.CardBorder.WithAlpha(120).ToCss()).EndEmptyElement().Line();
             writer.StartElement("circle").Attribute("cx", x + 10).Attribute("cy", y + rowHeight / 2 - 2).Attribute("r", 3.2).Attribute("fill", marker.ToCss()).EndEmptyElement().Line();
@@ -289,7 +289,7 @@ public sealed partial class SvgFactBlockRenderer {
         writer.StartElement("g").Attribute("data-cfx-role", "workload-list-block").EndStartElement().Line();
         for (var i = 0; i < block.Rows.Count && y + rowHeight <= bottom + 1; i++) {
             var row = block.Rows[i];
-            var color = row.Color ?? (row.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, row.Status));
+            var color = row.Color ?? (row.Tone == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, row.Tone));
             var avatarSize = Math.Min(34, rowHeight - 14);
             var avatarX = content.X;
             var centerY = y + rowHeight * 0.42;
@@ -308,7 +308,7 @@ public sealed partial class SvgFactBlockRenderer {
             WriteText(writer, row.Label, textX, y + 15, textWidth, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
             if (row.Subtitle.Length > 0) WriteText(writer, row.Subtitle, textX, y + 31, textWidth, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "500");
             var valueText = row.Note.Length > 0 ? row.Note + "  " + VisualFactBlockRendering.WorkloadDisplayValue(row) : VisualFactBlockRendering.WorkloadDisplayValue(row);
-            WriteText(writer, valueText, content.X + content.Width - valueWidth, y + 19, valueWidth, TextAlignment.Right, row.Status == Tone.Danger || row.Status == Tone.Warning ? color : theme.Text, theme.FontFamily, theme.SubtitleFontSize, "750");
+            WriteText(writer, valueText, content.X + content.Width - valueWidth, y + 19, valueWidth, TextAlignment.Right, row.Tone == Tone.Danger || row.Tone == Tone.Warning ? color : theme.Text, theme.FontFamily, theme.SubtitleFontSize, "750");
             if (block.ShowProgressRails) {
                 var railY = y + rowHeight - 13;
                 var railX = textX;
@@ -374,7 +374,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y, double scale) {
         var theme = list.Options.ResolvedTheme;
-        var color = item.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : VisualBlockRendering.StatusColor(theme, item.Status);
+        var color = item.Tone == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : VisualBlockRendering.StatusColor(theme, item.Tone);
         if (list.Marker == VisualListMarker.None) return;
         if (list.Marker == VisualListMarker.Number) {
             writer.StartElement("text").Attribute("data-cfx-role", "list-marker").Attribute("x", x - 5 * scale).Attribute("y", y + 4 * scale).Attribute("fill", color.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 11 * scale).Attribute("font-weight", "800").Text((index + 1).ToString(CultureInfo.InvariantCulture)).EndElement().Line();
@@ -387,7 +387,7 @@ public sealed partial class SvgFactBlockRenderer {
             return;
         }
 
-        writer.StartElement("circle").Attribute("data-cfx-role", "list-marker").Attribute("cx", x).Attribute("cy", y).Attribute("r", (list.Marker == VisualListMarker.Status ? 6 : 4) * scale).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
+        writer.StartElement("circle").Attribute("data-cfx-role", "list-marker").Attribute("cx", x).Attribute("cy", y).Attribute("r", (list.Marker == VisualListMarker.Tone ? 6 : 4) * scale).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
     }
 
     private static string WorkloadAvatar(WorkloadListRow row) {

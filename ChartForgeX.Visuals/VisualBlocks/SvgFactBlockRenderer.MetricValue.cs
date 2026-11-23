@@ -16,7 +16,7 @@ public sealed partial class SvgFactBlockRenderer {
         var valueSize = textLayout.ValueSize;
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));
         writer.StartElement("rect").Attribute("data-cfx-role", "metric-value-surface").Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", height).Attribute("rx", radius).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.WithAlpha(140).ToCss()).EndEmptyElement().Line();
-        var badgeColor = card.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
+        var badgeColor = card.Tone == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
         var hasBadge = card.Icon != Icon.None || card.Symbol.Length > 0;
         var valueX = textLayout.ValuePlacement.X;
         if (hasBadge) {

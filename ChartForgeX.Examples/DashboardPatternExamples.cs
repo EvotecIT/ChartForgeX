@@ -113,7 +113,7 @@ internal static class DashboardPatternExamples {
         .Metric("Total Appointment", "24")
         .Trend("+12%")
         .Caption("vs last week")
-        .Status(Tone.Success)
+        .Tone(Tone.Success)
         .Theme(OperationsTheme())
         .MiniBars(new[] { 42d, 58d, 61d, 72d, 83d }, maximum: 100, color: Teal);
 
@@ -122,7 +122,7 @@ internal static class DashboardPatternExamples {
         .Metric("Needs owner", "6")
         .Trend("-12%")
         .Caption("vs last week")
-        .Status(Tone.Danger)
+        .Tone(Tone.Danger)
         .Theme(OperationsTheme())
         .MiniBars(new[] { 31d, 28d, 24d, 22d, 18d }, maximum: 100, color: Red);
 
@@ -130,7 +130,7 @@ internal static class DashboardPatternExamples {
         .Title("Available Staff")
         .Subtitle("Shift-ready staff list with service labels.")
         .Theme(OperationsTheme())
-        .Marker(VisualListMarker.Status)
+        .Marker(VisualListMarker.Tone)
         .Dense()
         .AddStatusItem("Raihan Fikri", Tone.Success, "Zumba")
         .AddStatusItem("Wildan Rizal", Tone.Info, "Special Zumba Package")
@@ -141,7 +141,7 @@ internal static class DashboardPatternExamples {
         .Title("AI Prediction")
         .Subtitle("Peak 1h30m from 14:00-18:00.")
         .Theme(OperationsTheme())
-        .Marker(VisualListMarker.Status)
+        .Marker(VisualListMarker.Tone)
         .Dense()
         .AddStatusItem("Stay estimate", Tone.Info, "1-2h")
         .AddStatusItem("Busy time", Tone.Warning, "Fri 5 PM - 6 PM")
@@ -155,8 +155,8 @@ internal static class DashboardPatternExamples {
         .Theme(ProjectTheme())
         .PngOutputScale(outputScale)
         .HeaderSymbol("%")
-        .AddItem("Performing Progress", 89, segments: 44, color: Green, delta: "+10.2%", status: Tone.Success)
-        .AddItem("Target Sales", 67, segments: 44, color: Blue, delta: "+2.2%", status: Tone.Info)
+        .AddItem("Performing Progress", 89, segments: 44, color: Green, delta: "+10.2%", tone: Tone.Success)
+        .AddItem("Target Sales", 67, segments: 44, color: Blue, delta: "+2.2%", tone: Tone.Info)
         .Subtitle("Up by 6% compared to last week, great momentum.");
 
     private static SegmentedMetricBlock CertificateInventoryCompositionStrip(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
@@ -188,12 +188,12 @@ internal static class DashboardPatternExamples {
         .Size(800, 449)
         .Theme(ProjectTheme())
         .PngOutputScale(outputScale)
-        .AddItem(new SegmentedMetricItem("Posts", 86).Maximum(100).Segments(44).Color(Blue).DisplayValue("132,034").Delta("+4.3%").Status(Tone.Success))
-        .AddItem(new SegmentedMetricItem("Replies", 62).Maximum(100).Segments(44).Color(ChartColor.FromHex("#7894F8")).DisplayValue("56,234").Delta("-6.4%").Status(Tone.Danger))
-        .AddItem(new SegmentedMetricItem("Likes", 84).Maximum(100).Segments(44).Color(ChartColor.FromHex("#8B7AF4")).DisplayValue("125,485,958").Delta("+12.34%").Status(Tone.Success))
-        .AddItem(new SegmentedMetricItem("Reposts", 79).Maximum(100).Segments(44).Color(Purple).DisplayValue("94,344").Delta("+10.02%").Status(Tone.Success))
-        .AddItem(new SegmentedMetricItem("Bookmarks", 61).Maximum(100).Segments(44).Color(ChartColor.FromHex("#9A7CF0")).DisplayValue("12,344").Delta("+4%").Status(Tone.Success))
-        .AddItem(new SegmentedMetricItem("Shares", 48).Maximum(100).Segments(44).Color(ChartColor.FromHex("#A75AEF")).DisplayValue("42,344").Delta("-3.4%").Status(Tone.Danger));
+        .AddItem(new SegmentedMetricItem("Posts", 86).Maximum(100).Segments(44).Color(Blue).DisplayValue("132,034").Delta("+4.3%").Tone(Tone.Success))
+        .AddItem(new SegmentedMetricItem("Replies", 62).Maximum(100).Segments(44).Color(ChartColor.FromHex("#7894F8")).DisplayValue("56,234").Delta("-6.4%").Tone(Tone.Danger))
+        .AddItem(new SegmentedMetricItem("Likes", 84).Maximum(100).Segments(44).Color(ChartColor.FromHex("#8B7AF4")).DisplayValue("125,485,958").Delta("+12.34%").Tone(Tone.Success))
+        .AddItem(new SegmentedMetricItem("Reposts", 79).Maximum(100).Segments(44).Color(Purple).DisplayValue("94,344").Delta("+10.02%").Tone(Tone.Success))
+        .AddItem(new SegmentedMetricItem("Bookmarks", 61).Maximum(100).Segments(44).Color(ChartColor.FromHex("#9A7CF0")).DisplayValue("12,344").Delta("+4%").Tone(Tone.Success))
+        .AddItem(new SegmentedMetricItem("Shares", 48).Maximum(100).Segments(44).Color(ChartColor.FromHex("#A75AEF")).DisplayValue("42,344").Delta("-3.4%").Tone(Tone.Danger));
 
     private static SegmentedMetricBlock ConversionFunnelColumns(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
         .Title("Conversion Funnel")
@@ -214,9 +214,9 @@ internal static class DashboardPatternExamples {
         .PngOutputScale(outputScale)
         .ShowCard(false)
         .Metric("Tasks", 23, "Task")
-        .AddItem("On Going", 12, color: Blue, status: Tone.Info, pattern: ChartFillPattern.DiagonalForward)
-        .AddItem("Under Review", 6, color: Orange, status: Tone.Warning, pattern: ChartFillPattern.DiagonalBackward)
-        .AddItem("Finish", 4, color: Green, status: Tone.Success);
+        .AddItem("On Going", 12, color: Blue, tone: Tone.Info, pattern: ChartFillPattern.DiagonalForward)
+        .AddItem("Under Review", 6, color: Orange, tone: Tone.Warning, pattern: ChartFillPattern.DiagonalBackward)
+        .AddItem("Finish", 4, color: Green, tone: Tone.Success);
 
     private static Chart ProjectTrackCard() => Chart.Create()
         .Title("Project Track")
@@ -268,17 +268,17 @@ internal static class DashboardPatternExamples {
         .PngOutputScale(outputScale)
         .ShowEventSurfaces(false)
         .AddSection("In-progress")
-        .AddEvent("Shipment", status: Tone.Info, detail: "Delivery by: Royal Mail (Standard)", symbol: "S")
+        .AddEvent("Shipment", tone: Tone.Info, detail: "Delivery by: Royal Mail (Standard)", symbol: "S")
         .AddChecklistItem("Estimated dispatch: Today", completed: false)
         .AddChecklistItem("Estimated delivery: 2-3 business days", completed: false)
-        .AddEvent("Shipment 1", status: Tone.Neutral, symbol: "1")
+        .AddEvent("Shipment 1", tone: Tone.Neutral, symbol: "1")
         .AddChecklistItem("Carrier: Royal Mail (Standard)", completed: true, muted: true)
         .AddChecklistItem("Shipping label generated", completed: true, muted: true)
         .AddChecklistItem("Packing in progress", completed: false)
-        .AddEvent("Shipment 2", status: Tone.Neutral, symbol: "2")
+        .AddEvent("Shipment 2", tone: Tone.Neutral, symbol: "2")
         .AddSection("Completed")
         .AddHiddenSummary(6, "items hidden")
-        .AddEvent("Order created", status: Tone.Success, detail: "UK#2337 created via Shopify", symbol: "OK");
+        .AddEvent("Order created", tone: Tone.Success, detail: "UK#2337 created via Shopify", symbol: "OK");
 
     private static VisualGrid HrOperationsGrid(int outputScale) => VisualGrid.Create()
         .Title("HR Operations Dashboard")
@@ -306,7 +306,7 @@ internal static class DashboardPatternExamples {
         .Title(label)
         .Metric(label, value)
         .Trend(trend)
-        .Status(status)
+        .Tone(status)
         .Theme(HrTheme())
         .MiniBars(new[] { 30d, 44d, 52d, 49d, 62d }, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#E9EEF8"));
 
@@ -403,7 +403,7 @@ internal static class DashboardPatternExamples {
         .Title(label)
         .Metric(label, value)
         .Trend(trend)
-        .Status(status)
+        .Tone(status)
         .Theme(PaymentTheme())
         .MiniSparkline(new[] { 20d, 26d, 27d, 35d, 33d, 31d, 38d, 42d }, color: color, fillColor: color.WithAlpha(32));
 
@@ -413,12 +413,12 @@ internal static class DashboardPatternExamples {
         .Theme(PaymentTheme())
         .Padding(34, 28, 34, 28)
         .Metric("Net earning", "EUR 56,980.00", "Last month")
-        .AddItem("Russian Ruble (RUB)", 9.74, color: ChartColor.FromHex("#FF3B13"), symbol: "RUB", displayValue: "EUR 12.23", status: Tone.Warning)
-        .AddItem("Euro (EUR)", 38.48, color: ChartColor.FromHex("#1389F2"), symbol: "EUR", displayValue: "EUR 20.23", status: Tone.Info)
-        .AddItem("Japanese Yen (JPY)", 12.55, color: ChartColor.FromHex("#AE14E8"), symbol: "JPY", displayValue: "EUR 10.00", status: Tone.Info)
-        .AddItem("United States Dollar (USD)", 14.11, color: ChartColor.FromHex("#24D47B"), symbol: "USD", displayValue: "EUR 12.00", status: Tone.Success)
-        .AddItem("Ukrainian Hryvnia (UAH)", 12.55, color: ChartColor.FromHex("#F5D318"), symbol: "UAH", displayValue: "EUR 14.00", status: Tone.Warning)
-        .AddItem("British Pound Sterling (GBP)", 12.55, color: Mint, symbol: "GBP", displayValue: "EUR 10.00", status: Tone.Info);
+        .AddItem("Russian Ruble (RUB)", 9.74, color: ChartColor.FromHex("#FF3B13"), symbol: "RUB", displayValue: "EUR 12.23", tone: Tone.Warning)
+        .AddItem("Euro (EUR)", 38.48, color: ChartColor.FromHex("#1389F2"), symbol: "EUR", displayValue: "EUR 20.23", tone: Tone.Info)
+        .AddItem("Japanese Yen (JPY)", 12.55, color: ChartColor.FromHex("#AE14E8"), symbol: "JPY", displayValue: "EUR 10.00", tone: Tone.Info)
+        .AddItem("United States Dollar (USD)", 14.11, color: ChartColor.FromHex("#24D47B"), symbol: "USD", displayValue: "EUR 12.00", tone: Tone.Success)
+        .AddItem("Ukrainian Hryvnia (UAH)", 12.55, color: ChartColor.FromHex("#F5D318"), symbol: "UAH", displayValue: "EUR 14.00", tone: Tone.Warning)
+        .AddItem("British Pound Sterling (GBP)", 12.55, color: Mint, symbol: "GBP", displayValue: "EUR 10.00", tone: Tone.Info);
 
     private static Chart TransactionMap() => Chart.Create()
         .Title("Transaction by Country")
@@ -448,7 +448,7 @@ internal static class DashboardPatternExamples {
     private static ChartList TransactionCountryList() => ChartList.Create()
         .Title("Currency Details")
         .Theme(PaymentTheme())
-        .Marker(VisualListMarker.Status)
+        .Marker(VisualListMarker.Tone)
         .AddStatusItem("Russian Ruble (RUB)", Tone.Danger, "9.74%")
         .AddStatusItem("Euro (EUR)", Tone.Info, "38.48%")
         .AddStatusItem("Japanese Yen (JPY)", Tone.Neutral, "12.55%")

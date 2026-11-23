@@ -194,7 +194,7 @@ internal static class WellnessDashboardExamples {
                 .Caption(caption)
                 .Symbol(symbol)
                 .BadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .Status(status)
+                .Tone(status)
                 .MiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#64748B").WithAlpha(112));
 
         MetricCard SparkCard(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color) =>
@@ -206,7 +206,7 @@ internal static class WellnessDashboardExamples {
                 .Caption(caption)
                 .Symbol(symbol)
                 .BadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .Status(status)
+                .Tone(status)
                 .MiniSparkline(history, color: color, fillColor: color.WithAlpha(42));
 
         var cards = new[] {
@@ -249,7 +249,7 @@ internal static class WellnessDashboardExamples {
                 .Caption(caption)
                 .Symbol(symbol)
                 .BadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .Status(status);
+                .Tone(status);
             return sparkline
                 ? card.MiniSparkline(history, color: color, fillColor: color.WithAlpha(36))
                 : card.MiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#CBD5E1").WithAlpha(160));
@@ -295,7 +295,7 @@ internal static class WellnessDashboardExamples {
                 .Caption(caption)
                 .Symbol(symbol)
                 .BadgePlacement(MetricCardBadgePlacement.TopLeft)
-                .Status(status);
+                .Tone(status);
             return sparkline
                 ? card.MiniSparkline(history, color: color, fillColor: color.WithAlpha(46))
                 : card.MiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromRgba(148, 163, 184, 70));
