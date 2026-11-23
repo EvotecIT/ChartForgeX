@@ -189,7 +189,7 @@ internal static class ReportingExamples {
                 if (state == "up") up += 15;
             }
 
-            chart.AddStateTimelineLane(names[lane], segments, (up / observed).ToString("0.0%", System.Globalization.CultureInfo.InvariantCulture), sites[lane]);
+            chart.AddStateTimelineLane(names[lane], segments, sites[lane], (up / observed).ToString("0.0%", System.Globalization.CultureInfo.InvariantCulture));
         }
 
         chart.SaveSvg(Path.Combine(output, "reporting-state-timeline.svg"));

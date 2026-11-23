@@ -254,6 +254,7 @@ public Func<double, string>? LabelFormatter {
     /// With a culture, day labels use its short month-day form (for example "27 Oct", "27. Okt." or "27 paź"),
     /// times use its short time pattern, and full instants in tooltips and accessible names use its short date and time.
     /// </remarks>
+    [NoFluent]
     public System.Globalization.CultureInfo? Culture { get; set; }
 
     /// <summary>Gets or sets explicitly included intervals for a compressed time X axis, or null for continuous elapsed time.</summary>

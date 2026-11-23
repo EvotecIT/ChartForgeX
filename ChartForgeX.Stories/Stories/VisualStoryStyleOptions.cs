@@ -22,11 +22,11 @@ public sealed class VisualStoryStyleOptions {
     /// <summary>Creates independent local controls and syntax colors.</summary>
     public VisualStoryStyleOptions Clone() => new() { WindowStyle = WindowStyle, WindowHeader = WindowHeader, BackgroundEnd = BackgroundEnd, Syntax = Syntax?.Clone() };
     /// <summary>Creates traffic-light window chrome and a violet desktop gradient.</summary>
-    public static VisualStoryStyleOptions MacOS(bool light = false) => FromRecipe(ResolvedVisualStoryStyle.MacOS(light));
+    public static VisualStoryStyleOptions MacOS(ThemeMode mode = ThemeMode.Dark) => FromRecipe(ResolvedVisualStoryStyle.MacOS(mode == ThemeMode.Light));
     /// <summary>Creates tab-aware window chrome and a blue desktop gradient.</summary>
-    public static VisualStoryStyleOptions Windows(bool light = false) => FromRecipe(ResolvedVisualStoryStyle.Windows(light));
+    public static VisualStoryStyleOptions Windows(ThemeMode mode = ThemeMode.Dark) => FromRecipe(ResolvedVisualStoryStyle.Windows(mode == ThemeMode.Light));
     /// <summary>Creates right-hand window chrome and an aubergine desktop gradient.</summary>
-    public static VisualStoryStyleOptions Linux(bool light = false) => FromRecipe(ResolvedVisualStoryStyle.Linux(light));
+    public static VisualStoryStyleOptions Linux(ThemeMode mode = ThemeMode.Dark) => FromRecipe(ResolvedVisualStoryStyle.Linux(mode == ThemeMode.Light));
     private static VisualStoryStyleOptions FromRecipe(ResolvedVisualStoryStyle recipe) => new() {
         WindowStyle = recipe.WindowStyle, WindowHeader = recipe.WindowHeader,
         BackgroundEnd = recipe.BackgroundEnd, Syntax = recipe.Syntax.Clone()

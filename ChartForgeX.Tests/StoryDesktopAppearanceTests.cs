@@ -214,9 +214,9 @@ public sealed class StoryDesktopAppearanceTests {
         TerminalWindowStyle.WindowsTerminal => VisualStoryThemes.Windows(),
         _ => VisualStoryThemes.Linux()
     }, light ? ThemeMode.Light : ThemeMode.Dark, style switch {
-        TerminalWindowStyle.MacOS => VisualStoryStyleOptions.MacOS(light),
-        TerminalWindowStyle.WindowsTerminal => VisualStoryStyleOptions.Windows(light),
-        _ => VisualStoryStyleOptions.Linux(light)
+        TerminalWindowStyle.MacOS => VisualStoryStyleOptions.MacOS(light ? ThemeMode.Light : ThemeMode.Dark),
+        TerminalWindowStyle.WindowsTerminal => VisualStoryStyleOptions.Windows(light ? ThemeMode.Light : ThemeMode.Dark),
+        _ => VisualStoryStyleOptions.Linux(light ? ThemeMode.Light : ThemeMode.Dark)
     });
     private sealed class StoryAppearance {
         internal StoryAppearance(VisualTheme palette, ThemeMode mode, VisualStoryStyleOptions style) { Palette = palette; Mode = mode; Style = style; }

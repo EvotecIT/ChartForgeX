@@ -308,10 +308,10 @@ public sealed class StatePresentationTests {
         chart.Options.StateTimeline.SummaryHeader = "Available";
         ChartStateTimelineSegment[] Segments() => new[] { new ChartStateTimelineSegment(Day, Day.AddHours(18), "up"), new ChartStateTimelineSegment(Day.AddHours(18), Day.AddHours(24), "down") };
         return chart
-            .AddStateTimelineLane("A1", Segments(), "75%", grouped ? "North" : null)
-            .AddStateTimelineLane("A2", Segments(), "75%", grouped ? "North" : null)
-            .AddStateTimelineLane("B1", Segments(), "75%", grouped ? "South" : null)
-            .AddStateTimelineLane("Spare", Segments(), "75%");
+            .AddStateTimelineLane("A1", Segments(), grouped ? "North" : null, "75%")
+            .AddStateTimelineLane("A2", Segments(), grouped ? "North" : null, "75%")
+            .AddStateTimelineLane("B1", Segments(), grouped ? "South" : null, "75%")
+            .AddStateTimelineLane("Spare", Segments(), summary: "75%");
     }
 
     private static Chart Matrix(bool grouped = true) => Chart.Create().Theme(VisualTheme.Graphite()).Size(760, 440)

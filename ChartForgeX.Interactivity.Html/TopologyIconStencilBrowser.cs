@@ -19,6 +19,10 @@ public sealed class TopologyIconStencilBrowserOptions {
     /// <summary>Gets or sets the page title.</summary>
     public string Title { get; set; } = "Topology Stencil Browser";
 
+    /// <summary>Gets or sets the content security policy nonce. The script element carries it, and the page has no
+    /// <c>style</c> attributes: inline styles and style elements move into one <c>style</c> element with this nonce.</summary>
+    public string? Nonce { get; set; }
+
     /// <summary>Gets or sets the page subtitle.</summary>
     public string? Subtitle { get; set; } = "Browse reusable icon packs, vendor folders, and stencil categories.";
 
@@ -118,10 +122,10 @@ public static class TopologyIconStencilBrowserExtensions {
         WriteInspector(writer);
         writer.EndElement().Line()
             .EndElement().Line()
-            .StartElement("script").RawTrusted(Script()).EndElement().Line()
+            .StartElement("script").Attribute("nonce", Nonce(options)).RawTrusted(Script()).EndElement().Line()
             .EndElement().Line()
             .EndElement().Line();
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), Nonce(options));
     }
 
     private static void WriteHeader(HtmlMarkupWriter writer, TopologyIconStencilBrowserOptions options, int iconCount, int packCount) {
@@ -220,4 +224,6 @@ public static class TopologyIconStencilBrowserExtensions {
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Value cannot be empty.", parameterName);
         return value!.Trim();
     }
+
+    private static string? Nonce(TopologyIconStencilBrowserOptions options) => string.IsNullOrWhiteSpace(options.Nonce) ? null : options.Nonce!.Trim();
 }

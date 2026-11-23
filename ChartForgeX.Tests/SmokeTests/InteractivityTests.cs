@@ -279,7 +279,6 @@ internal static partial class SmokeTests {
             options.PageTitle = "Executive interactive dashboard";
             options.IdScope = "exec-dashboard";
             options.Columns = 2;
-            options.Nonce = "nonce-dashboard";
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.GroupName = "exec-review";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
@@ -296,7 +295,7 @@ internal static partial class SmokeTests {
         });
 
         Assert(html.Contains("<title>Executive interactive dashboard</title>", StringComparison.Ordinal), "Interactive dashboards should use the configured page title.");
-        Assert(html.Contains("<script nonce=\"nonce-dashboard\">", StringComparison.Ordinal), "Interactive dashboards should support CSP nonces.");
+        Assert(charts.ToInteractiveHtmlDashboardPage(options => options.Nonce = "nonce-dashboard").Contains("<script nonce=\"nonce-dashboard\">", StringComparison.Ordinal), "Interactive dashboards should support CSP nonces.");
         Assert(html.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal), "Interactive dashboards should render a grouped dashboard surface.");
         Assert(html.Contains("--cfx-dashboard-columns:2", StringComparison.Ordinal), "Interactive dashboards should honor configured column counts.");
         Assert(CountOccurrences(html, "class=\"cfx-interactive-chart\"") == 2, "Interactive dashboards should render one interactive chart section per chart.");
@@ -310,8 +309,9 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(html, "data-cfx-deep-link-state=\"true\"") == 2, "Interactive dashboards should preserve reusable scenario deep-link state for each child chart.");
         Assert(CountOccurrences(html, "data-cfx-scenario-playback-delay=\"1200\"") == 2 && CountOccurrences(html, "data-cfx-scenario-loop=\"true\"") == 2 && CountOccurrences(html, "data-cfx-scenario-autoplay=\"true\"") == 2 && CountOccurrences(html, "data-cfx-scenario-focus-mode=\"spotlight\"") == 2, "Interactive dashboards should preserve scenario playback and focus settings in every child chart.");
         Assert(CountOccurrences(html, "&quot;durationMilliseconds&quot;:1600") == 2, "Interactive dashboards should preserve per-step playback durations in every child chart.");
-        Assert(CountOccurrences(html, "<script nonce=\"nonce-dashboard\">") == 1
-            && html.Contains("<script nonce=\"nonce-dashboard\">" + HtmlInteractiveChartRenderer.Script + "</script>", StringComparison.Ordinal),
+        var noncedDashboard = charts.ToInteractiveHtmlDashboardPage(options => options.Nonce = "nonce-dashboard");
+        Assert(CountOccurrences(noncedDashboard, "<script nonce=\"nonce-dashboard\">") == 1
+            && noncedDashboard.Contains("<script nonce=\"nonce-dashboard\">" + HtmlInteractiveChartRenderer.Script + "</script>", StringComparison.Ordinal),
             "Interactive dashboards should share one copy of the actual shipped runtime under the authored CSP nonce.");
         Assert(html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal) && html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal), "Interactive dashboards should include enabled per-chart export controls.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should not reference external stylesheets.");

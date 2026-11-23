@@ -1,3 +1,4 @@
+using PowerForge.Fluent;
 using System.Collections.Generic;
 
 namespace ChartForgeX.Topology;
@@ -46,6 +47,7 @@ public sealed class TopologyView {
     public List<TopologyEdgeKind> EdgeKinds { get; } = new();
 
     /// <summary>Gets health statuses to include across nodes, groups, and edges. When empty, all statuses are eligible.</summary>
+    [Child("HealthStatus")]
     public List<TopologyHealthStatus> HealthStatuses { get; } = new();
 
     /// <summary>Gets or sets the number of edge hops to include around focus nodes.</summary>

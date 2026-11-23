@@ -362,6 +362,7 @@ public sealed class TopologyRenderOptions {
     public string? EdgeTertiaryLabelMetricKey { get; set; }
 
     /// <summary>Gets health statuses to highlight while dimming non-matching topology elements.</summary>
+    [Child("HighlightStatus")]
     public List<TopologyHealthStatus> HighlightStatuses { get; private set; } = new();
 
     /// <summary>Gets group ids to highlight while dimming non-matching topology elements.</summary>

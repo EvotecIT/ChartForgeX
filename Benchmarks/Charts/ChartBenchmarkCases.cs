@@ -60,9 +60,7 @@ public static class ChartBenchmarkCases {
                 if (at >= Start.AddDays(7)) break;
             }
 
-            chart.AddStateTimelineLane("Site " + lane.ToString("00", System.Globalization.CultureInfo.InvariantCulture), segments,
-                (90 + random.NextDouble() * 10).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%",
-                grouped ? groups[lane * groups.Length / lanes] : null);
+            chart.AddStateTimelineLane("Site " + lane.ToString("00", System.Globalization.CultureInfo.InvariantCulture), segments, grouped ? groups[lane * groups.Length / lanes] : null, (90 + random.NextDouble() * 10).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%");
         }
 
         return chart;

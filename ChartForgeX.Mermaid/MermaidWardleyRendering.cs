@@ -24,7 +24,7 @@ public static class MermaidWardleyRendering {
             .Padding(document.Configuration.Wardley?.Padding ?? options.Padding);
 
         block.ShowGrid = document.Configuration.Wardley?.ShowGrid ?? false;
-        block.SetStages(document.Stages);
+        block.Stages(document.Stages);
         if (document.Stages.Count > 0) {
             if (document.StageBoundaries.Count == document.Stages.Count) block.StageBoundaries(document.StageBoundaries);
             else {

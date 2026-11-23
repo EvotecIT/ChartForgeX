@@ -85,7 +85,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-label-leader=\"true\"", StringComparison.Ordinal), "Node-anchored displaced labels should render leader lines in relationship overview mode.");
         Assert(chart.ToPng(options).Length > 64, "PNG topology output should render node-anchored label leaders.");
 
-        chart.UpdateEdge("source-target", edge => edge.LabelAnchor(new ChartPoint(270, 120)));
+        chart.UpdateEdge("source-target", edge => edge.LabelAnchorNodeId(null).LabelAnchor(new ChartPoint(270, 120)));
         svg = chart.ToSvg(options);
         Assert(svg.Contains("data-label-anchor-override=\"true\"", StringComparison.Ordinal), "Displaced edge labels should expose explicit point anchors for annotation-style placement.");
         Assert(svg.Contains("data-label-anchor-x=\"270\"", StringComparison.Ordinal), "Explicit point anchors should drive SVG label-leader metadata.");

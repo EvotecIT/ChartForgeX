@@ -51,6 +51,46 @@ What behaves differently:
 
 The [fluent API map](fluent-api-map.md) lists every renamed method and moved property.
 
+## One name for each thing
+
+5.0 also settles names and removes duplicate routes, so each task has one spelling. Rename as follows; the compiler finds every call.
+
+| Old | New |
+| --- | --- |
+| `ScriptNonce`, `StyleNonce` on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions`, `HtmlResponsiveChartRenderer` and `HtmlChartRenderer` | `Nonce`, which marks script elements and moves inline styles into one nonce'd stylesheet |
+| `HtmlInteractiveChartRenderer.BuildFragmentStyle()`, `BuildInteractionScript()`, `BuildFeatureScript()` | `HtmlInteractiveChartRenderer.StyleSheet`, `Script`, `FeatureScript` |
+| `HtmlGraphExplorerRenderer.BuildFragmentStyle()`, `BuildInteractionScript()` | `HtmlGraphExplorerRenderer.StyleSheet`, `Script` |
+| `HtmlInteractiveTopologyRenderer.BuildInteractionScript(options)` | `HtmlInteractiveTopologyRenderer.Script(options)` |
+| `TopologyHtmlRenderer.BuildFragmentStyle(...)`, `BuildAutoThemeStyle(...)` | `TopologyHtmlRenderer.StyleSheet(...)`, `AutoThemeStyleSheet(...)` |
+| `HtmlResponsiveChartRenderer.InitializationScript`, `Stylesheet`, `AutoThemeStylesheet(chart)` | `HtmlResponsiveChartRenderer.Script`, `StyleSheet`, `AutoThemeStyleSheet(chart)` |
+| `HtmlEnhanceAssets.Style`, `StyleFile` | `HtmlEnhanceAssets.StyleSheet`, `StyleSheetFile` |
+| `flow.ToInteractiveHtmlPage(context, configureLocalization)` (and fragments, and sequences) | `flow.ToInteractiveHtmlPage(context, o => o.Localization...)` with `HtmlInteractiveDiagramOptions`, which also has `Nonce` |
+| `HtmlGraphExplorerTheme` and `options.Theme` on `HtmlGraphExplorerOptions` and `GraphSceneStaticRenderOptions` | `ThemeMode` and `options.ThemeMode`; `System` is `ThemeMode.Auto` |
+| `TerminalTextTone` | `Tone`: `Default` is `Tone.None`, `Accent` is `Tone.Info`, `Error` is `Tone.Danger` |
+| `TerminalTabIcon` | `Icon` keys from `TerminalTabIcons`; `TerminalTabIcon.None` is `Icon.None` |
+| `VisualCanvasInfoTileIconKind`, `VisualCanvasInfoTileLayer.IconKind` | `Icon` keys from `VisualCanvasIcons` on `VisualCanvasInfoTileLayer.Icon`; the tile's text badge is `IconText`, and `AddInfoTile` takes `iconText` and `icon` |
+| `AddInfoTileWithTextOptions(...)` | `AddInfoTile(..., textOptions: ...)` |
+| `Accent` with `AccentOverride` on info tiles and hero badges | one nullable `Accent`; null uses the theme accent |
+| `TreeViewIcon` | `Icon?` on `TreeViewItem.Icon`: null follows the item kind, `Icon.None` paints nothing, `TreeViewIcons.File` and `TreeViewIcons.Folder` draw the outlines, other keys draw a question mark |
+| `ChartForgeX.VisualBlocks.Icons` | `MetricCardIcons` |
+| `Status` (a `Tone`) on metric cards, card details, list items, table cells, strip items, timeline events, workload rows, segmented items, flow steps, lanes and connectors and table rows and cells; `ChartTableCell.BadgeStatus` | `Tone`, `BadgeTone`; the `status` parameters are now `tone` |
+| `TopologyEdge.LabelAnchorX`, `LabelAnchorY`, `HasLabelAnchorOverride`; `EdgeLabelAnchor`, `EdgeLabelAnchorNode`, `ClearEdgeLabelAnchor`, `EdgeLabelAnnotationOffset` | `TopologyEdge.LabelAnchor` (a `ChartPoint?`) and `LabelAnchorNodeId`, set through `UpdateEdge(id, e => e.LabelAnchor(point))` |
+| `EdgeRouteLane(id, lane)` | `UpdateEdge(id, e => e.RouteLane(lane))`; setting `RouteLane` now always fixes the lane, including zero |
+| `HtmlScenarioControls`, `HtmlScenarioControlMode`, `HtmlScenarioPanel`, `HtmlScenarioSequence`, `HtmlSelectionPanel`, `HtmlFullscreenControl`, `HtmlScenarioUrlState`, `HtmlForceGraphControls`, `HtmlFindControls` on `TopologyRenderOptions` | `.Html(h => h.ScenarioPanel())` and so on; turning a panel or control on also turns on the interactions it needs |
+| `SelectNode`, `SelectEdge`, `SelectGroup` | `SelectedNodeId`, `SelectedEdgeId`, `SelectedGroupId` |
+| `topology.Theme(theme, mode)` | `topology.Theme(theme).ThemeMode(mode)` |
+| `AddMapRoute`, `AddMapRouteBetweenPoints` | `AddMapConnector`, `AddMapConnectorBetweenPoints` |
+| `AddRadarArea` | `AddRadar` |
+| `AddColumnLineCombo`, `AddColumnAreaCombo` | `AddBarLineCombo`, `AddBarAreaCombo` |
+| `AddTimelineRange(name, start, end)` | `AddTimelineItem(name, start, end)` |
+| `Palette(params string[])`, `PointColor(index, "#hex")`, `PointColorRange(start, count, "#hex")` | the `ChartColor` overloads, with `ChartColor.FromHex("#hex")` |
+| `ChartPictorialOptions.PngFallbackShape` and the shape argument of `SvgPath` | removed; SVG and native PNG both draw the custom path |
+| `TextStyleOverride.FontWeight` as a string (`"700"`, `"bold"`) | an `int?` from 1 to 1000 (`700`) |
+| `VisualArtifactSize` | `VisualSize` |
+| `PreparedVisual.ToRgba`, `SvgRasterizer.ToImage`, `CapturedVisualLayer.ToImage`, `VisualMask.ToImage`, `ImageComposition.ToImage` | `ToRgbaImage` |
+| `PreparedVisual.ToSvg(idPrefix)`, `VisualSvgOptions.IdPrefix` | `ToSvg(idScope)`, `VisualSvgOptions.IdScope` |
+| `SvgVisualBlockRenderer`, `PngVisualBlockRenderer`, `HtmlVisualBlockRenderer` and the grid, canvas, story, terminal and fact-block renderer classes | the `ToSvg`, `ToPng`, `ToRgbaImage`, `ToHtmlFragment` and `ToHtmlPage` extensions |
+
 ## Shared theme mode, tone and icon types
 
 ChartForgeX now uses the `ThemeMode`, `Tone` and `Icon` types that every Evotec rendering engine shares. They live in the `ChartForgeX` namespace, so code in a `ChartForgeX.*` namespace needs no new `using`; other code adds `using ChartForgeX;`. Rename the old types and values:

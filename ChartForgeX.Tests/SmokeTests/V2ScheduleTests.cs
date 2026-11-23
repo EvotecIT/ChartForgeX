@@ -27,7 +27,7 @@ public sealed class V2ScheduleTests {
     [Fact]
     public void StateLanesCoalesceAdjacentBucketsButPreserveGapProvenanceAndSummaries() {
         var chart = Chart.Create().StateCategories(new ChartStateCategory("up", "Available", ChartColor.FromHex("#1d8a52")))
-            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 2, "up"), new ChartStateTimelineSegment(2, 3, "up"), new ChartStateTimelineSegment(4, 5, "pending") }, "99%", "Production");
+            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 2, "up"), new ChartStateTimelineSegment(2, 3, "up"), new ChartStateTimelineSegment(4, 5, "pending") }, "Production", "99%");
         chart.Options.StateTimeline.SummaryHeader = "Availability";
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var segments = ByRole(document, "state-timeline-segment"); Assert.Equal(2, segments.Length);

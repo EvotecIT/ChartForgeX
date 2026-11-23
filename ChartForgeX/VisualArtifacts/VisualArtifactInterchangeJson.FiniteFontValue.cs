@@ -24,6 +24,8 @@ internal static partial class VisualArtifactInterchangeJson {
     private static FontSpec ReadFontValueFields(Dictionary<string,GeoJsonValue> item) {
         var fields=OptionalObject(item,"policy")??throw new ArgumentException("A finite font policy is required.");
         foreach(var key in fields.Keys)if(key is not("fontFamily" or "fontWeight" or "italic" or "colorPaletteIndex" or "variations"))throw new ArgumentException("A font value cannot introduce text-role fields.");
+        // A portable font value names its weight numerically; CSS keywords belong to text-role styles only.
+        if(fields.TryGetValue("fontWeight",out var rawWeight)&&!int.TryParse(rawWeight.AsString("font weight"),NumberStyles.None,CultureInfo.InvariantCulture,out _))throw new ArgumentException("A finite font weight must be numeric.");
         var value=ReadDetailTextStyle(item,"policy")!;
         if(value.FontWeight is not int weight)throw new ArgumentException("A finite font weight must be numeric.");
         return new FontSpec{Family=value.FontFamily??throw new ArgumentException("A font family is required."),Weight=weight,Italic=value.ItalicOverride??false,

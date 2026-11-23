@@ -19,12 +19,11 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>Creates a state timeline lane, retaining ordered states and details with each interval.</summary>
-    public static ChartSeries CreateStateTimelineLane(ChartSeriesId id, string name, IEnumerable<ChartStateTimelineSegment> segments,
-        string? summary = null, string? group = null) =>
+    public static ChartSeries CreateStateTimelineLane(ChartSeriesId id, string name, IEnumerable<ChartStateTimelineSegment> segments, string? group = null, string? summary = null) =>
         StateTimeline(new ChartSeries(id, name, ChartSeriesKind.StateTimeline, Array.Empty<ChartPoint>()), segments, summary, group);
 
     internal static ChartSeries CreateStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments,
-        string? summary, string? group) =>
+        string? group, string? summary) =>
         StateTimeline(new ChartSeries(name, ChartSeriesKind.StateTimeline, Array.Empty<ChartPoint>()), segments, summary, group);
 
     private static ChartSeries StateTimeline(ChartSeries series, IEnumerable<ChartStateTimelineSegment> segments, string? summary, string? group) {

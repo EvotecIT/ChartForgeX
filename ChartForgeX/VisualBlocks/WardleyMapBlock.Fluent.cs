@@ -7,6 +7,10 @@ namespace ChartForgeX.VisualBlocks;
 
 /// <summary>Hand-written fluent methods of <see cref="WardleyMapBlock"/> that do more than set one property.</summary>
 public static partial class WardleyMapBlockFluent {
+    /// <summary>Sets the left-to-right evolution stages; blank names are skipped.</summary>
+    public static global::ChartForgeX.VisualBlocks.WardleyMapBlock Stages(this global::ChartForgeX.VisualBlocks.WardleyMapBlock wardleyMapBlock, global::System.Collections.Generic.IEnumerable<string> stages)
+        => (wardleyMapBlock ?? throw new System.ArgumentNullException(nameof(wardleyMapBlock))).SetStages(stages);
+
     /// <summary>Sets detached, strictly increasing stage right edges in (0,1], or clears them with null.</summary>
     public static global::ChartForgeX.VisualBlocks.WardleyMapBlock StageBoundaries(this global::ChartForgeX.VisualBlocks.WardleyMapBlock wardleyMapBlock, global::System.Collections.Generic.IEnumerable<double>? boundaries)
         => (wardleyMapBlock ?? throw new System.ArgumentNullException(nameof(wardleyMapBlock))).SetStageBoundaries(boundaries);

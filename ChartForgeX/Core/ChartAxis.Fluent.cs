@@ -9,6 +9,15 @@ namespace ChartForgeX.Core;
 
 /// <summary>Hand-written fluent methods of <see cref="ChartAxis"/> that do more than set one property.</summary>
 public static partial class ChartAxisFluent {
+    /// <summary>Sets the culture for this axis's tick labels and tooltips, or null for the invariant formatting.</summary>
+    /// <param name="chartAxis">The instance to configure.</param>
+    /// <param name="culture">The culture; it is stored read-only.</param>
+    /// <returns>The current axis.</returns>
+    public static global::ChartForgeX.Core.ChartAxis Culture(this global::ChartForgeX.Core.ChartAxis chartAxis, global::System.Globalization.CultureInfo? culture) {
+        (chartAxis ?? throw new System.ArgumentNullException(nameof(chartAxis))).Culture = culture;
+        return chartAxis;
+    }
+
     /// <summary>Selects a time scale with an explicit shared session domain; null restores continuous elapsed time.</summary>
     /// <param name="chartAxis">The instance to configure.</param>
     /// <param name="domain">The immutable included intervals, or null to remove compression.</param>

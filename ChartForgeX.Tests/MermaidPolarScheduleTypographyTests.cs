@@ -86,7 +86,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
             case ChartSeriesKind.Gantt: chart.AddGanttTask("API", 1, 3, .5).Gantt(g => g.Today(2d)); break;
             case ChartSeriesKind.Timeline: chart.AddTimelineItem("API", DateTime.FromOADate(1), DateTime.FromOADate(3)); break;
             case ChartSeriesKind.GanttLane: chart.AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "up", "Save") }, "Services", "99%").Gantt(g => g.Today(2d)); break;
-            case ChartSeriesKind.StateTimeline: chart.AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "99%", "Services"); break;
+            case ChartSeriesKind.StateTimeline: chart.AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "Services", "99%"); break;
         }
         if (kind is ChartSeriesKind.GanttLane or ChartSeriesKind.StateTimeline) chart.Options.StateTimeline.SummaryHeader = "Status";
         chart.Options.TickLabelStyle.FontSize = 256; chart.Options.DataLabelStyle.FontSize = 256;

@@ -183,11 +183,10 @@ internal static partial class SmokeTests {
 
         var html = scene.ToGraphExplorerHtmlPage(options => {
             options.PageTitle = "Graph Explorer";
-            options.Nonce = "nonce-graph";
         });
 
         Assert(html.Contains("<title>Graph Explorer</title>", StringComparison.Ordinal), "Graph explorer pages should honor configured page titles.");
-        Assert(html.Contains("<script nonce=\"nonce-graph\">", StringComparison.Ordinal), "Graph explorer pages should support CSP nonces.");
+        Assert(scene.ToGraphExplorerHtmlPage(options => options.Nonce = "nonce-graph").Contains("<script nonce=\"nonce-graph\">", StringComparison.Ordinal), "Graph explorer pages should support CSP nonces.");
         Assert(html.Contains("data-cfx-graph-id=\"service-map\"", StringComparison.Ordinal), "Graph explorer pages should expose a stable scene id.");
         Assert(html.Contains("data-cfx-graph-renderer=\"svg\"", StringComparison.Ordinal), "Graph explorer pages should default to a dependency-free SVG renderer.");
         Assert(html.Contains("data-cfx-graph-layout=\"structured-prepared\"", StringComparison.Ordinal), "Graph explorer pages should expose the graph-aware prepared layout path used before runtime physics starts.");

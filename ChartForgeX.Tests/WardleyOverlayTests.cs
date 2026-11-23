@@ -77,7 +77,7 @@ public sealed class WardleyOverlayTests {
     [Fact]
     public void StageBoundaryInputDetachesAtomicallyAndSourceLabelsUseAuthoredDomains() {
         var map = WardleyMapBlock.Create().Size(900, 600); map.AddNode("api", "API", .5, .5);
-        map.SetStages(new[] { "Genesis / Concept", "Product" }); var edges = new[] { .3, 1d }; map.StageBoundaries(edges); edges[0] = .8;
+        map.Stages(new[] { "Genesis / Concept", "Product" }); var edges = new[] { .3, 1d }; map.StageBoundaries(edges); edges[0] = .8;
         var xml = XDocument.Parse(map.ToSvg()); var plot = Assert.Single(Roles(xml, "wardley-plot")); var boundary = Assert.Single(Roles(xml, "wardley-stage-boundary"));
         Assert.Equal(Math.Round(N(plot, "x") + N(plot, "width") * .3, 3), N(boundary, "x1"));
         Assert.Equal(.3, map.StageBoundaries[0]); var old = map.ToSvg();

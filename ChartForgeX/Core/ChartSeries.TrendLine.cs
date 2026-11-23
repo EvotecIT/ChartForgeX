@@ -1,3 +1,4 @@
+using PowerForge.Fluent;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,6 +11,7 @@ public sealed partial class ChartSeries {
     private ChartTrendLineFit? _trendLineFit;
 
     /// <summary>Gets a detached configuration snapshot, or null when this is not a retained-source trend line.</summary>
+    [NoFluent]
     public ChartTrendLineOptions? TrendLineConfiguration => _trendLineFit == null ? null : _trendLineOptions.Capture();
     /// <summary>Gets immutable native fit/ribbon samples; raw observations remain in TrendLineSourcePoints.</summary>
     public IReadOnlyList<ChartTrendLineSample> TrendLineSamples => _trendLineFit?.Samples ?? Array.Empty<ChartTrendLineSample>();

@@ -10,7 +10,7 @@ internal static class StoryAppearanceExamples {
             foreach (var appearance in new[] { "macos", "windows", "linux" }) {
                 var theme = appearance == "macos" ? VisualStoryThemes.MacOS()
                     : appearance == "windows" ? VisualStoryThemes.Windows() : VisualStoryThemes.Linux();
-                var style = appearance == "macos" ? VisualStoryStyleOptions.MacOS(light) : appearance == "windows" ? VisualStoryStyleOptions.Windows(light) : VisualStoryStyleOptions.Linux(light);
+                var style = appearance == "macos" ? VisualStoryStyleOptions.MacOS(light ? ThemeMode.Light : ThemeMode.Dark) : appearance == "windows" ? VisualStoryStyleOptions.Windows(light ? ThemeMode.Light : ThemeMode.Dark) : VisualStoryStyleOptions.Linux(light ? ThemeMode.Light : ThemeMode.Dark);
                 var prepared = Create(theme, light ? ThemeMode.Light : ThemeMode.Dark, style).Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 0));
                 var name = "desktop-" + appearance + (light ? "-light" : "-dark");
                 var svg = prepared.ToAnimatedSvg(new VisualStoryFrameOptions(4));
