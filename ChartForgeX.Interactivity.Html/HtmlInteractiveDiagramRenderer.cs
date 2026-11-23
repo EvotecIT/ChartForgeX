@@ -14,7 +14,9 @@ namespace ChartForgeX.Interactivity.Html;
 /// <remarks>Geometry, text and identities come from one native preparation. The runtime only reads the captured
 /// facts emitted beside the SVG and paints highlight state; it never recomputes layout.</remarks>
 internal sealed class HtmlInteractiveDiagramRenderer {
-    internal HtmlChartLocalization Localization { get; } = new();
+    internal HtmlInteractiveDiagramOptions Options { get; } = new();
+    private HtmlChartLocalization Localization => Options.Localization;
+    private string? Nonce => string.IsNullOrWhiteSpace(Options.Nonce) ? null : Options.Nonce!.Trim();
 
     internal string Render(FlowArtifact flow, VisualRenderContext? context, bool page) {
         if (flow == null) throw new ArgumentNullException(nameof(flow));
@@ -95,9 +97,9 @@ internal sealed class HtmlInteractiveDiagramRenderer {
             .Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden", true).EndStartElement()
             .Text(Localization[HtmlChartText.DiagramHint]).EndElement().Line();
         writer.EndElement().Line();
-        writer.StartElement("script").EndStartElement().RawTrusted(HtmlDiagramAssets.Script).EndElement().Line();
+        writer.StartElement("script").Attribute("nonce", Nonce).EndStartElement().RawTrusted(HtmlDiagramAssets.Script).EndElement().Line();
         if (page) writer.EndElement().Line().EndElement().Line().EndElement().Line();
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), Nonce);
     }
 
     // Layout fills the requested viewport; the card shows only the drawn content so no empty bands sit above or below it.

@@ -77,7 +77,7 @@ internal static partial class SmokeTests {
         var html = chart.ToInteractiveHtmlPage(options => {
             options.PageTitle = "Interactive security posture";
             options.IdScope = "security-posture";
-            options.ScriptNonce = "nonce-1";
+            options.Nonce = "nonce-1";
             options.Interaction.ChartId = "security-posture";
             options.Interaction.GroupName = "dashboard-a";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
@@ -254,7 +254,7 @@ internal static partial class SmokeTests {
     private static void InteractiveHtmlEscapesHostProvidedAttributes() {
         var html = SampleChart().ToInteractiveHtmlPage(options => {
             options.PageTitle = "A < B & \"C\"";
-            options.ScriptNonce = "nonce\" data-bad=\"1";
+            options.Nonce = "nonce\" data-bad=\"1";
             options.Interaction.ChartId = "chart\" onmouseover=\"bad";
             options.Interaction.GroupName = "group<one>&\"two\"";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Export);
@@ -279,7 +279,7 @@ internal static partial class SmokeTests {
             options.PageTitle = "Executive interactive dashboard";
             options.IdScope = "exec-dashboard";
             options.Columns = 2;
-            options.ScriptNonce = "nonce-dashboard";
+            options.Nonce = "nonce-dashboard";
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.GroupName = "exec-review";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);

@@ -51,7 +51,7 @@ public sealed partial class HtmlChartRenderer {
         } finally {
             chart.Size(size.Width, size.Height);
         }
-        return HtmlStrictStyles.Apply(writer.Build(), _styleNonce);
+        return HtmlStrictStyles.Apply(writer.Build(), _nonce);
     }
 
     // The switching rules name their complete width set, so different sets on one page cannot select each other's

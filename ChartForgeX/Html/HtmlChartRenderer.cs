@@ -10,14 +10,14 @@ namespace ChartForgeX.Html;
 /// Renders charts as dependency-free HTML with inline SVG.
 /// </summary>
 public sealed partial class HtmlChartRenderer {
-    private string? _styleNonce;
+    private string? _nonce;
 
-    /// <summary>Gets or sets the content security policy nonce for style elements. When set, fragments and pages carry no
+    /// <summary>Gets or sets the content security policy nonce. When set, fragments and pages carry no
     /// <c>style</c> attributes: every inline style and style element moves into one <c>style</c> element with this nonce
     /// (see <see cref="HtmlStrictStyles"/>).</summary>
-    public string? StyleNonce {
-        get => _styleNonce;
-        set => _styleNonce = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
+    public string? Nonce {
+        get => _nonce;
+        set => _nonce = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public sealed partial class HtmlChartRenderer {
     /// <param name="chart">The chart to render.</param>
     /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
     /// <returns>An HTML fragment containing inline SVG.</returns>
-    public string RenderFragment(Chart chart, string idScope) => HtmlStrictStyles.Apply(RenderFragment(chart, idScope, constrainMaxWidth: true), _styleNonce);
+    public string RenderFragment(Chart chart, string idScope) => HtmlStrictStyles.Apply(RenderFragment(chart, idScope, constrainMaxWidth: true), _nonce);
 
     private string RenderFragment(Chart chart, string idScope, bool constrainMaxWidth) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
@@ -49,7 +49,7 @@ public sealed partial class HtmlChartRenderer {
     /// <returns>An HTML fragment containing SVG and, when requested, one captioned table per series.</returns>
     /// <exception cref="NotSupportedException">A requested table contains a typed series without a table representation.</exception>
     public string RenderFragment(Chart chart, VisualSvgOptions svgOptions, ChartDataTableMode dataTable = ChartDataTableMode.None) =>
-        HtmlStrictStyles.Apply(RenderFragment(chart, svgOptions, dataTable, constrainMaxWidth: true), _styleNonce);
+        HtmlStrictStyles.Apply(RenderFragment(chart, svgOptions, dataTable, constrainMaxWidth: true), _nonce);
 
     private string RenderFragment(Chart chart, VisualSvgOptions svgOptions, ChartDataTableMode dataTable, bool constrainMaxWidth) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
@@ -98,7 +98,7 @@ public sealed partial class HtmlChartRenderer {
             .RawTrusted(RenderFragment(chart, "html-page", constrainMaxWidth: false)).Line()
             .EndElement().Line()
             .EndElement();
-        return HtmlStrictStyles.Apply(writer.Build(), _styleNonce);
+        return HtmlStrictStyles.Apply(writer.Build(), _nonce);
     }
 
     internal static void WriteDocumentHead(HtmlMarkupWriter writer, string title, string? css) {

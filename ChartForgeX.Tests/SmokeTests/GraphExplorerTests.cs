@@ -183,7 +183,7 @@ internal static partial class SmokeTests {
 
         var html = scene.ToGraphExplorerHtmlPage(options => {
             options.PageTitle = "Graph Explorer";
-            options.ScriptNonce = "nonce-graph";
+            options.Nonce = "nonce-graph";
         });
 
         Assert(html.Contains("<title>Graph Explorer</title>", StringComparison.Ordinal), "Graph explorer pages should honor configured page titles.");
@@ -352,7 +352,7 @@ internal static partial class SmokeTests {
         var resourceMarkup = ResourceMarkup(html);
         Assert(!resourceMarkup.Contains("http://", StringComparison.OrdinalIgnoreCase) && !resourceMarkup.Contains("https://", StringComparison.OrdinalIgnoreCase), "Graph explorer pages should remain self-contained.");
 
-        var fragment = scene.ToGraphExplorerHtmlFragment(options => options.ScriptNonce = "fragment-nonce");
+        var fragment = scene.ToGraphExplorerHtmlFragment(options => options.Nonce = "fragment-nonce");
         Assert(fragment.Contains("data-cfx-graph-assets=\"true\"", StringComparison.Ordinal), "Graph explorer fragments should include embeddable CSS assets.");
         Assert(fragment.Contains("<script nonce=\"fragment-nonce\">", StringComparison.Ordinal), "Graph explorer fragments should support CSP nonces.");
         var scopedFragment = scene.ToGraphExplorerHtmlFragment(options => options.IdScope = "host-scope");

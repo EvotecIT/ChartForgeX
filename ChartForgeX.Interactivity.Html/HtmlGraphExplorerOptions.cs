@@ -12,13 +12,10 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets an optional page title for complete HTML documents.</summary>
     public string? PageTitle { get; set; }
 
-    /// <summary>Gets or sets an optional CSP nonce for inline script elements.</summary>
-    public string? ScriptNonce { get; set; }
-
-    /// <summary>Gets or sets an optional CSP nonce for style elements. When set, the output carries no <c>style</c>
+    /// <summary>Gets or sets the content security policy nonce. Script elements carry it, and the output has no <c>style</c>
     /// attributes: inline styles and style elements move into one <c>style</c> element with this nonce
     /// (see <see cref="ChartForgeX.Html.HtmlStrictStyles"/>).</summary>
-    public string? StyleNonce { get; set; }
+    public string? Nonce { get; set; }
 
     /// <summary>
     /// Gets or sets shared asset references. When set, <see cref="HtmlGraphExplorerRenderer.RenderPage"/> links the explorer

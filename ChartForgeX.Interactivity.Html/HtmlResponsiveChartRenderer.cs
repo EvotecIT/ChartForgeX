@@ -33,13 +33,10 @@ public sealed class HtmlResponsiveChartRenderer {
     /// once when using bundled fonts, unless the host already supplies them. Explicitly registered families require matching host-provided browser CSS.</remarks>
     public static string Stylesheet => "@media print{[data-cfx-responsive-chart]{min-width:0!important}}";
 
-    /// <summary>Gets or sets the content security policy nonce for the fragment's script element.</summary>
-    public string? ScriptNonce { get; set; }
-
-    /// <summary>Gets or sets the content security policy nonce for style elements. When set, the fragment carries no
-    /// <c>style</c> attributes: every inline style and style element moves into one <c>style</c> element with this nonce
-    /// (see <see cref="HtmlStrictStyles"/>).</summary>
-    public string? StyleNonce { get; set; }
+    /// <summary>Gets or sets the content security policy nonce. The fragment's script element carries it, and the fragment
+    /// has no <c>style</c> attributes: every inline style and style element moves into one <c>style</c> element with this
+    /// nonce (see <see cref="HtmlStrictStyles"/>).</summary>
+    public string? Nonce { get; set; }
 
     /// <summary>
     /// Returns the scoped stylesheet that lets a <see cref="ThemeMode.Auto"/> chart follow the viewer's colour scheme, or
@@ -68,7 +65,7 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <returns>A self-contained fragment with an offline debounced resize and print lifecycle.</returns>
     public string RenderFragment(Chart chart, int minimumWidth = 480, int maximumWidth = 1600, int? height = null,
         string? idScope = null, bool compressLayouts = false, int? printWidth = null) =>
-        HtmlStrictStyles.Apply(Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, true, Nonce(ScriptNonce)), Nonce(StyleNonce));
+        HtmlStrictStyles.Apply(Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, true, TrimmedNonce), TrimmedNonce);
 
     /// <summary>Renders a script-free host fragment with inert layout data for composition inside an interactive section.</summary>
     /// <remarks>Install <see cref="Stylesheet"/>, <see cref="InitializationScript"/> and matching fonts outside the section.
@@ -84,9 +81,9 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <returns>The drawing and inert layout data, without style or executable script elements.</returns>
     public string RenderFragmentWithoutAssets(Chart chart, int minimumWidth = 480, int maximumWidth = 1600, int? height = null,
         string? idScope = null, bool compressLayouts = false, int? printWidth = null) =>
-        HtmlStrictStyles.Apply(Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, false, null), Nonce(StyleNonce));
+        HtmlStrictStyles.Apply(Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, false, null), TrimmedNonce);
 
-    private static string? Nonce(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
+    private string? TrimmedNonce => string.IsNullOrWhiteSpace(Nonce) ? null : Nonce!.Trim();
 
     private static string Render(Chart chart, int minimumWidth, int maximumWidth, int? height,
         string? idScope, bool compressLayouts, int? printWidth, bool assets, string? scriptNonce) {

@@ -41,9 +41,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("\">");
         writer.Append(RenderGraph(scene, options));
         if (options.ExternalAssets == null) AppendScript(writer, options);
-        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteScript(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerScript, string.IsNullOrWhiteSpace(options.ScriptNonce) ? null : options.ScriptNonce)));
+        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteScript(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerScript, Nonce(options))));
         writer.Append("</body></html>");
-        return HtmlStrictStyles.Apply(writer.ToString(), StyleNonce(options));
+        return HtmlStrictStyles.Apply(writer.ToString(), Nonce(options));
     }
 
     /// <summary>
@@ -61,10 +61,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("</style>");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
-        return HtmlStrictStyles.Apply(writer.ToString(), StyleNonce(options));
+        return HtmlStrictStyles.Apply(writer.ToString(), Nonce(options));
     }
 
-    private static string? StyleNonce(HtmlGraphExplorerOptions options) => string.IsNullOrWhiteSpace(options.StyleNonce) ? null : options.StyleNonce!.Trim();
+    private static string? Nonce(HtmlGraphExplorerOptions options) => string.IsNullOrWhiteSpace(options.Nonce) ? null : options.Nonce!.Trim();
 
     /// <summary>
     /// Gets the scoped graph explorer CSS that hosts can register once.
@@ -614,7 +614,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {
         writer.Append("<script");
-        if (!string.IsNullOrWhiteSpace(options.ScriptNonce)) Attribute(writer, "nonce", options.ScriptNonce);
+        if (Nonce(options) is { } nonce) Attribute(writer, "nonce", nonce);
         writer.Append('>');
         writer.Append(WrappedInteractionScript());
         writer.Append("</script>");

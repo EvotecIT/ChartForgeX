@@ -20,8 +20,8 @@ public sealed class ExternalAssetTests {
     [Fact]
     public void RenderPage_ExternalAssets_ReferencesSharedFilesInsteadOfInlining() {
         var assets = new HtmlAssetReferences("assets");
-        var page = CreateChart().ToInteractiveHtmlPage(options => { options.ExternalAssets = assets; options.ScriptNonce = "n0nce"; });
-        var dashboard = new[] { CreateChart(), CreateChart() }.ToInteractiveHtmlDashboardPage(options => { options.ExternalAssets = assets; options.ScriptNonce = "d4sh"; });
+        var page = CreateChart().ToInteractiveHtmlPage(options => { options.ExternalAssets = assets; options.Nonce = "n0nce"; });
+        var dashboard = new[] { CreateChart(), CreateChart() }.ToInteractiveHtmlDashboardPage(options => { options.ExternalAssets = assets; options.Nonce = "d4sh"; });
         var script = HtmlInteractiveAssetFiles.ChartScript;
         var style = HtmlInteractiveAssetFiles.ChartStyle;
 
@@ -57,7 +57,7 @@ public sealed class ExternalAssetTests {
     public void GraphExplorerPage_ExternalAssets_MatchesInlineRuntime() {
         var scene = GraphScene.Create("g", "Graph").AddNode("a", "A").AddNode("b", "B").AddEdge("ab", "a", "b");
         var inline = new HtmlGraphExplorerRenderer().RenderPage(scene);
-        var external = new HtmlGraphExplorerRenderer().RenderPage(scene, options => { options.ExternalAssets = new HtmlAssetReferences("../shared"); options.ScriptNonce = "abc"; });
+        var external = new HtmlGraphExplorerRenderer().RenderPage(scene, options => { options.ExternalAssets = new HtmlAssetReferences("../shared"); options.Nonce = "abc"; });
         var script = HtmlInteractiveAssetFiles.GraphExplorerScript;
         Assert.Contains(script.Content, inline, StringComparison.Ordinal);
         Assert.Contains("<script src=\"../shared/" + script.FileName + "\" nonce=\"abc\"></script>", external, StringComparison.Ordinal);
