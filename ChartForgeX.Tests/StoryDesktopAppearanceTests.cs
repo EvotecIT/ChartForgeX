@@ -49,7 +49,7 @@ public sealed class StoryDesktopAppearanceTests {
             Assert.True(ChartColorMath.ContrastRatio(theme.Muted, background) >= 4.5);
         }
         var story = VisualStory.Create("Desktop demo").Format(VisualStoryFormat.Portrait, 480).Theme(theme.Palette).ThemeMode(theme.Mode).Style(theme.Style);
-        var replay = StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready", TerminalTextTone.Success);
+        var replay = StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready", Tone.Success);
         story.Scene("demo", "Source and output", 1, VisualStorySceneLayout.Stacked)
             .Panel("code", new VisualStorySourceSurface(StorySourceText.Create("$x = 42"), options: new VisualStorySourceOptions("demo.ps1", 16)))
             .Panel("output", new VisualStoryReplaySurface(replay, options: new VisualStoryTerminalOptions(16)));

@@ -76,7 +76,7 @@ internal static class Program {
 
         var topology = PackageAssertions.Topology();
         var recording = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
-            .Output(TimeSpan.FromSeconds(10), "Captured result", TerminalTextTone.Success);
+            .Output(TimeSpan.FromSeconds(10), "Captured result", Tone.Success);
         var replay = recording.CompressPauses(TimeSpan.FromSeconds(1));
         var replayStory = VisualStory.Create("Packed replay").Size(480, 320);
         replayStory.Scene("run", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));

@@ -30,7 +30,7 @@ internal sealed class ReplayState {
         switch (item.Kind) {
             case StoryReplayEventKind.Clear: target.Lines.Clear(); target.Discarded = 0; break;
             case StoryReplayEventKind.Directory: target.Tab.WorkingDirectory = item.Text; break;
-            case StoryReplayEventKind.Command: Add(target, target.Tab.Prompt() + item.Text, TerminalTextTone.Accent); break;
+            case StoryReplayEventKind.Command: Add(target, target.Tab.Prompt() + item.Text, Tone.Info); break;
             case StoryReplayEventKind.ReplaceLine:
                 if (target.Lines.Count > 0) target.Lines.RemoveAt(target.Lines.Count - 1);
                 Add(target, item.Text, item.Tone); break;
@@ -39,7 +39,7 @@ internal sealed class ReplayState {
                 break;
         }
     }
-    private void Add(ReplayTabState target, string text, TerminalTextTone tone) {
+    private void Add(ReplayTabState target, string text, Tone tone) {
         if (target.Lines.Count == _historyLines) { target.Lines.RemoveAt(0); target.Discarded++; }
         target.Lines.Add(new TerminalViewportLine(text, tone));
     }
@@ -53,8 +53,8 @@ internal sealed class ReplayTabState {
     internal int Discarded { get; set; }
 }
 internal readonly struct TerminalViewportLine {
-    internal TerminalViewportLine(string text, TerminalTextTone tone, double opacity = 1) { Text = text; Tone = tone; Opacity = opacity; }
+    internal TerminalViewportLine(string text, Tone tone, double opacity = 1) { Text = text; Tone = tone; Opacity = opacity; }
     internal string Text { get; }
-    internal TerminalTextTone Tone { get; }
+    internal Tone Tone { get; }
     internal double Opacity { get; }
 }

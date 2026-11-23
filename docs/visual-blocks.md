@@ -173,9 +173,9 @@ var console = TerminalStory.Create()
     .WindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WorkingDirectory(@"C:\OpenSource")
     .Command(@".\Invoke-Validation.ps1")
-    .Output("Running release validation...", TerminalTextTone.Muted)
+    .Output("Running release validation...", Tone.Muted)
     .Table(results)
-    .Output("Ready", TerminalTextTone.Success);
+    .Output("Ready", Tone.Success);
 
 console.SaveSvg("validation.svg");
 console.SaveGif("validation.gif");

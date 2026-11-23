@@ -25,24 +25,6 @@ public enum TerminalDialect {
 }
 
 /// <summary>
-/// Specifies the semantic color of terminal output.
-/// </summary>
-public enum TerminalTextTone {
-    /// <summary>Normal output.</summary>
-    Default,
-    /// <summary>Subdued output.</summary>
-    Muted,
-    /// <summary>Accent output.</summary>
-    Accent,
-    /// <summary>Successful output.</summary>
-    Success,
-    /// <summary>Warning output.</summary>
-    Warning,
-    /// <summary>Error output.</summary>
-    Error
-}
-
-/// <summary>
 /// Specifies a reusable terminal-story playback pace.
 /// </summary>
 public enum TerminalStoryPlaybackSpeed {
@@ -80,7 +62,7 @@ public enum TerminalStoryStepKind {
 /// Represents one typed terminal command, output block, pause, blank line, or table.
 /// </summary>
 public sealed class TerminalStoryStep {
-    internal TerminalStoryStep(TerminalStoryStepKind kind, string text, TerminalTextTone tone, double durationSeconds, TerminalTable? table, string tabId, TerminalTab? tab = null) {
+    internal TerminalStoryStep(TerminalStoryStepKind kind, string text, Tone tone, double durationSeconds, TerminalTable? table, string tabId, TerminalTab? tab = null) {
         Kind = kind;
         Text = text;
         Tone = tone;
@@ -97,7 +79,7 @@ public sealed class TerminalStoryStep {
     public string Text { get; }
 
     /// <summary>Gets the semantic output tone.</summary>
-    public TerminalTextTone Tone { get; }
+    public Tone Tone { get; }
 
     /// <summary>Gets an explicit duration, or zero for automatic timing.</summary>
     public double DurationSeconds { get; }
@@ -337,20 +319,18 @@ public sealed partial class TerminalStory {
 
     /// <summary>Adds a typed command.</summary>
     public TerminalStory Command(string command, double durationSeconds = 0) {
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.Command, OneLine(command, nameof(command), allowEmpty: false), TerminalTextTone.Default, Duration(durationSeconds), null, _activeTabId));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.Command, OneLine(command, nameof(command), allowEmpty: false), Tone.None, Duration(durationSeconds), null, _activeTabId));
     }
 
     /// <summary>Adds one or more output lines.</summary>
-    public TerminalStory Output(string text, TerminalTextTone tone = TerminalTextTone.Default) {
-        ValidateEnum(tone, nameof(tone));
+    public TerminalStory Output(string text, Tone? tone = null) {
         if (text == null) throw new ArgumentNullException(nameof(text));
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.Output, TerminalTextSanitizer.Transcript(text), tone, 0, null, _activeTabId));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.Output, TerminalTextSanitizer.Transcript(text), tone ?? Tone.None, 0, null, _activeTabId));
     }
 
     /// <summary>Adds captured transcript lines.</summary>
-    public TerminalStory Transcript(IEnumerable<string> lines, TerminalTextTone tone = TerminalTextTone.Default) {
+    public TerminalStory Transcript(IEnumerable<string> lines, Tone? tone = null) {
         if (lines == null) throw new ArgumentNullException(nameof(lines));
-        ValidateEnum(tone, nameof(tone));
         var prepared = new List<TerminalStoryStep>();
         foreach (var line in lines) {
             if (_steps.Count + prepared.Count >= 120) {
@@ -359,7 +339,7 @@ public sealed partial class TerminalStory {
             prepared.Add(new TerminalStoryStep(
                 TerminalStoryStepKind.Output,
                 TerminalTextSanitizer.Transcript(line ?? string.Empty),
-                tone,
+                tone ?? Tone.None,
                 0,
                 null,
                 _activeTabId));
@@ -369,19 +349,19 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Adds a blank output line.</summary>
-    public TerminalStory Blank() => Add(new TerminalStoryStep(TerminalStoryStepKind.Blank, string.Empty, TerminalTextTone.Default, 0, null, _activeTabId));
+    public TerminalStory Blank() => Add(new TerminalStoryStep(TerminalStoryStepKind.Blank, string.Empty, Tone.None, 0, null, _activeTabId));
 
     /// <summary>Adds a silent pause to the animation timeline.</summary>
     public TerminalStory Pause(double seconds) {
         FiniteRange(seconds, 0.01, 10, nameof(seconds));
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.Pause, string.Empty, TerminalTextTone.Default, seconds, null, _activeTabId));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.Pause, string.Empty, Tone.None, seconds, null, _activeTabId));
     }
 
     /// <summary>Adds a formatted terminal table.</summary>
     public TerminalStory Table(TerminalTable table) {
         if (table == null) throw new ArgumentNullException(nameof(table));
         table.Validate();
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.Table, string.Empty, TerminalTextTone.Default, 0, table, _activeTabId));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.Table, string.Empty, Tone.None, 0, table, _activeTabId));
     }
 
     /// <summary>Defines the initial persistent terminal tab before timeline authoring begins.</summary>
@@ -417,7 +397,7 @@ public sealed partial class TerminalStory {
         if (_tabs.Count >= 8) throw new InvalidOperationException("Terminal stories support at most eight tabs.");
         _tabs.Add(tab);
         _tabsById.Add(tab.Id, tab);
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.DeclareTab, string.Empty, TerminalTextTone.Default, 0, null, tab.Id, tab));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.DeclareTab, string.Empty, Tone.None, 0, null, tab.Id, tab));
     }
 
     /// <summary>Declares and activates a persistent terminal tab.</summary>
@@ -438,7 +418,7 @@ public sealed partial class TerminalStory {
         _tabs.Add(tab);
         _tabsById.Add(tab.Id, tab);
         _activeTabId = tab.Id;
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.OpenTab, string.Empty, TerminalTextTone.Default, transitionDuration, null, tab.Id, tab));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.OpenTab, string.Empty, Tone.None, transitionDuration, null, tab.Id, tab));
     }
 
     /// <summary>Activates a previously declared terminal tab without clearing its buffer.</summary>
@@ -449,7 +429,7 @@ public sealed partial class TerminalStory {
         if (!_tabsById.ContainsKey(normalizedId)) throw new ArgumentException("The selected terminal tab has not been declared.", nameof(id));
         if (string.Equals(_activeTabId, normalizedId, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("The selected terminal tab is already active.");
         _activeTabId = _tabsById[normalizedId].Id;
-        return Add(new TerminalStoryStep(TerminalStoryStepKind.SelectTab, string.Empty, TerminalTextTone.Default, transitionDuration, null, _activeTabId));
+        return Add(new TerminalStoryStep(TerminalStoryStepKind.SelectTab, string.Empty, Tone.None, transitionDuration, null, _activeTabId));
     }
 
     /// <summary>Adds a compact text progress bar.</summary>
@@ -458,7 +438,7 @@ public sealed partial class TerminalStory {
         if (width < 8 || width > 60) throw new ArgumentOutOfRangeException(nameof(width));
         var filled = (int)Math.Round(width * fraction);
         var bar = new string('#', filled) + new string('-', width - filled);
-        return Output("[" + bar + "] " + (fraction * 100).ToString("0", CultureInfo.InvariantCulture) + "%  " + OneLine(label, nameof(label), false), TerminalTextTone.Success);
+        return Output("[" + bar + "] " + (fraction * 100).ToString("0", CultureInfo.InvariantCulture) + "%  " + OneLine(label, nameof(label), false), Tone.Success);
     }
 
     internal string Prompt() => FirstTab.Prompt();

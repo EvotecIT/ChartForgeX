@@ -107,7 +107,7 @@ var terminal = TerminalStory.Create()
     })
     .WindowStyle(TerminalWindowStyle.WindowsTerminal)
     .Command("Get-Date")
-    .Output("2026-10-13", TerminalTextTone.Success);
+    .Output("2026-10-13", Tone.Success);
 ```
 
 `InitialTab`, `DeclareTab` and `OpenTab` accept a theme, explicit `themeMode` and local style for each session. Changing a palette does not choose window chrome or infer a mode from its brightness. Stories, terminals and canvases default to dark mode; charts and visual grids default to light mode. Pass the mode explicitly when sharing one theme across them.
@@ -121,7 +121,7 @@ Pass `VisualStoryTerminalOptions` to an authored terminal surface to select a fi
 ```csharp
 var recorded = StoryReplay.Create(TimeSpan.FromSeconds(60), workingDirectory: "~/demo")
     .Command(TimeSpan.FromSeconds(1), "./Test-Project.ps1")
-    .Output(TimeSpan.FromSeconds(35), "24 checks passed", TerminalTextTone.Success);
+    .Output(TimeSpan.FromSeconds(35), "24 checks passed", Tone.Success);
 var replay = recorded.Trim(TimeSpan.Zero, TimeSpan.FromSeconds(40))
     .CompressPauses(TimeSpan.FromSeconds(2))
     .Explain(TimeSpan.FromSeconds(1), "The recorded wait is shortened.");

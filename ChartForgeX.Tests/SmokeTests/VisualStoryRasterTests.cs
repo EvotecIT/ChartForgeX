@@ -91,7 +91,7 @@ internal static partial class SmokeTests {
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Command("Get-Process | Sort-Object CPU", 0.05)
-            .Output("ready", TerminalTextTone.Success);
+            .Output("ready", Tone.Success);
         var terminalRenderer = new PngTerminalStoryRenderer();
         var terminalNormal = PngReader.Decode(terminalRenderer.Render(terminal, 1));
         var terminalHighDensity = PngReader.Decode(terminalRenderer.Render(terminal, 4));

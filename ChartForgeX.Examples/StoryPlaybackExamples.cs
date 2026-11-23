@@ -38,9 +38,9 @@ internal static class StoryPlaybackExamples {
             .Pause(TimeSpan.FromSeconds(1.5));
         var failed = TerminalStory.Create().Width(480).Theme(VisualTheme.Graphite()).Title("dotnet run")
             .ShowFinalPrompt(false).Command("dotnet run", 0.75)
-            .Output("error CS1061: Chart has no\nmethod named 'AddBars'.", TerminalTextTone.Error);
+            .Output("error CS1061: Chart has no\nmethod named 'AddBars'.", Tone.Danger);
         var succeeded = TerminalStory.Create().Width(480).Theme(VisualTheme.Graphite()).Title("dotnet run")
-            .ShowFinalPrompt(false).Command("dotnet run", 0.75).Output("Saved builds.png", TerminalTextTone.Success);
+            .ShowFinalPrompt(false).Command("dotnet run", 0.75).Output("Saved builds.png", Tone.Success);
         var chart = Chart.Create().Title("Build results").XLabels("Mon", "Tue", "Wed").Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
             .Size(format == VisualStoryFormat.Portrait ? 412 : 1040, 500)
             .AddBar("Passed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18), new ChartPoint(3, 24) });

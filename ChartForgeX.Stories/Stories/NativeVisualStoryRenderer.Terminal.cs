@@ -46,7 +46,7 @@ internal static partial class NativeVisualStoryRenderer {
                 var state = TerminalLinePlayback.At(line, elapsed);
                 if (!state.Visible) continue;
                 var text = line.IsCommand && elapsed.HasValue ? TerminalLinePlayback.CommandText(line, elapsed.Value) : line.Text;
-                lines.Add(new TerminalViewportLine(text, line.IsCommand ? TerminalTextTone.Accent : line.Tone, state.Opacity));
+                lines.Add(new TerminalViewportLine(text, line.IsCommand ? Tone.Info : line.Tone, state.Opacity));
             }
             var discarded = Math.Max(0, lines.Count - surface.Options!.HistoryLines);
             if (discarded > 0) lines.RemoveRange(0, discarded);

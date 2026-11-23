@@ -44,16 +44,15 @@ public sealed partial class StoryReplay {
     /// <summary>Adds a submitted command at its recorded timestamp.</summary>
     public StoryReplay Command(TimeSpan at, string command) => Add(at, StoryReplayEventKind.Command, OneLine(command, nameof(command)));
     /// <summary>Adds completed, newline-separated output. Use ReplaceLine for a carriage-return update.</summary>
-    public StoryReplay Output(TimeSpan at, string text, TerminalTextTone tone = TerminalTextTone.Default) {
+    public StoryReplay Output(TimeSpan at, string text, Tone? tone = null) {
         var normalized = BoundedText(text, nameof(text));
         normalized = TerminalTextSanitizer.Transcript(normalized).Replace("\r\n", "\n");
         if (normalized.IndexOf('\r') >= 0) throw new ArgumentException("Resolve carriage-return updates with ReplaceLine before replay.", nameof(text));
-        ValidateTone(tone);
         return Add(at, StoryReplayEventKind.Output, normalized, tone);
     }
     /// <summary>Replaces the active tab's last line with resolved progress text.</summary>
-    public StoryReplay ReplaceLine(TimeSpan at, string text, TerminalTextTone tone = TerminalTextTone.Default) {
-        ValidateTone(tone); return Add(at, StoryReplayEventKind.ReplaceLine, OneLine(text, nameof(text)), tone);
+    public StoryReplay ReplaceLine(TimeSpan at, string text, Tone? tone = null) {
+        return Add(at, StoryReplayEventKind.ReplaceLine, OneLine(text, nameof(text)), tone);
     }
     /// <summary>Clears displayed lines in the active tab without discarding recorded transcript events.</summary>
     public StoryReplay Clear(TimeSpan at) => Add(at, StoryReplayEventKind.Clear, string.Empty);
@@ -122,7 +121,7 @@ public sealed partial class StoryReplay {
         if (item.Kind == StoryReplayEventKind.OpenTab) { _tabIds.Add(item.TabId); _characters += item.Tab!.Title.Length + item.Tab.WorkingDirectory.Length + item.Tab.CustomPrompt.Length; }
         if (item.Kind == StoryReplayEventKind.OpenTab || item.Kind == StoryReplayEventKind.SelectTab) _activeTabId = item.TabId;
     }
-    private StoryReplay Add(TimeSpan at, StoryReplayEventKind kind, string text, TerminalTextTone tone = TerminalTextTone.Default, string? tabId = null) {
+    private StoryReplay Add(TimeSpan at, StoryReplayEventKind kind, string text, Tone? tone = null, string? tabId = null) {
         CheckEvent(at, text); _events.Add(new StoryReplayEvent(at, at, kind, text, tabId ?? _activeTabId, tone)); _characters += text.Length; return this;
     }
     private void CheckEvent(TimeSpan at, string text, int metadataCharacters = 0) {
@@ -138,7 +137,6 @@ public sealed partial class StoryReplay {
     }
     private static string OneLine(string text, string name) => TerminalTextSanitizer.OneLine(BoundedText(text, name), name, "    ", false);
     private static string Heading(string text, string name) => VisualStorySurface.RequireHeading(OneLine(text, name), name);
-    private static void ValidateTone(TerminalTextTone tone) { if (!Enum.IsDefined(typeof(TerminalTextTone), tone)) throw new ArgumentOutOfRangeException(nameof(tone)); }
     private static TerminalTab Tab(string id, string title, TerminalDialect dialect, string directory, string? customPrompt) {
         id = VisualStorySurface.RequireIdentifier(id, nameof(id));
         if (id.Length > 40) throw new ArgumentOutOfRangeException(nameof(id));

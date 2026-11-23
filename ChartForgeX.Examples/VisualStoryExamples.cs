@@ -22,7 +22,7 @@ internal static class VisualStoryExamples {
             .Width(900)
             .ShowFinalPrompt(false)
             .Command("dotnet run")
-            .Output("Saved weekly-builds.png", TerminalTextTone.Success);
+            .Output("Saved weekly-builds.png", Tone.Success);
         var story = VisualStory.Create("Create a chart in five lines")
             .Description("Source, execution transcript, and the generated chart stay together.")
             .Size(800, 450);

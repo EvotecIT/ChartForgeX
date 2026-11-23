@@ -26,8 +26,8 @@ public enum StoryReplayEventKind {
 /// <summary>An immutable replay observation with recorded and presentation timestamps.</summary>
 public sealed class StoryReplayEvent {
     internal StoryReplayEvent(TimeSpan timestamp, TimeSpan? originalTimestamp, StoryReplayEventKind kind, string text,
-        string tabId, TerminalTextTone tone = TerminalTextTone.Default, TerminalTab? tab = null) {
-        Timestamp = timestamp; OriginalTimestamp = originalTimestamp; Kind = kind; Text = text; TabId = tabId; Tone = tone; Tab = tab;
+        string tabId, Tone? tone = null, TerminalTab? tab = null) {
+        Timestamp = timestamp; OriginalTimestamp = originalTimestamp; Kind = kind; Text = text; TabId = tabId; Tone = tone ?? Tone.None; Tab = tab;
     }
     /// <summary>Gets the event position in the edited presentation.</summary>
     public TimeSpan Timestamp { get; }
@@ -40,7 +40,7 @@ public sealed class StoryReplayEvent {
     /// <summary>Gets the affected persistent tab identifier.</summary>
     public string TabId { get; }
     /// <summary>Gets the output tone.</summary>
-    public TerminalTextTone Tone { get; }
+    public Tone Tone { get; }
     /// <summary>Gets the title of a tab-opening event.</summary>
     public string? TabTitle => Tab?.Title;
     /// <summary>Gets the dialect of a tab-opening event.</summary>
