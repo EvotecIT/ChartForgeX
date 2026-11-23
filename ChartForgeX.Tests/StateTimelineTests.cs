@@ -459,11 +459,11 @@ public sealed class StateTimelineTests {
                 new ChartStateTimelineSegment(Day, Day.AddHours(6), "up"),
                 new ChartStateTimelineSegment(Day.AddHours(6), Day.AddHours(9), "down", "LDAP bind failed"),
                 new ChartStateTimelineSegment(Day.AddHours(9), Day.AddHours(24), "up")
-            }, "87.5%")
+            }, summary: "87.5%")
             .AddStateTimelineLane("DC02", new[] {
                 new ChartStateTimelineSegment(Day, Day.AddHours(6), "up"),
                 new ChartStateTimelineSegment(Day.AddHours(12), Day.AddHours(24), "notObservable")
-            }, "100%")
+            }, summary: "100%")
             .AddStateTimelineLane("DC03", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(24), "up") });
         chart.Options.StateTimeline.SummaryHeader = "Available";
         return chart;

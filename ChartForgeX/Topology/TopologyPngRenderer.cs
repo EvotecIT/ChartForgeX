@@ -13,6 +13,6 @@ public sealed class TopologyPngRenderer {
 
     internal RgbaImage RenderImage(TopologyChart chart, TopologyRenderOptions? options = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        return chart.Prepare(options).ToRgba();
+        return chart.Prepare(options).ToRgbaImage();
     }
 }

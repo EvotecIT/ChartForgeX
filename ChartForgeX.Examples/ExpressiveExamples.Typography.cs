@@ -11,7 +11,7 @@ internal static partial class ExpressiveExamples {
         .Size(800, 383)
         .XAxis(x => x.Title("Font stack · Segoe UI Black · Segoe UI · Noto Sans Arabic"))
         .YAxis(y => y.Title("Samples"))
-        .TickLabelStyle(style => style.FontFamily("'Segoe UI Black', 'Segoe UI', 'Noto Sans Arabic', sans-serif").FontWeight("900").FontSize(28))
+        .TickLabelStyle(style => style.FontFamily("'Segoe UI Black', 'Segoe UI', 'Noto Sans Arabic', sans-serif").FontWeight(900).FontSize(28))
         .XLabels("Report", "مرحبا", "بِبّ", "Value 123")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateEmbeddedBitmapShowcase() {
@@ -25,7 +25,7 @@ internal static partial class ExpressiveExamples {
             .TickLabelStyle(style => style.FontFamily("Calibri, 'Noto Sans', sans-serif").FontSize(12))
             .XLabels("Report 12", "Chart AV", "office", "Value 123")
             .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
-        chart.Options.Png.TextHinting = TextHinting.Full;
+        chart.Options.Raster.TextHinting = TextHinting.Full;
         return chart;
     }
     private static Chart CreateFontPaletteShowcase() => Chart.Create()
@@ -62,7 +62,7 @@ internal static partial class ExpressiveExamples {
             .DataLabels()
             .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
         // Full fitting is visible at 1x export; 2x labels exceed the small-text pixel-size threshold.
-        chart.Options.Png.TextHinting = TextHinting.Full;
+        chart.Options.Raster.TextHinting = TextHinting.Full;
         return chart;
     }
 
@@ -186,17 +186,17 @@ internal static partial class ExpressiveExamples {
             .Legend(l => l.Position(ChartLegendPosition.TopRight))
             .DataLabels()
             .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontFamily("Georgia, 'Times New Roman', serif").FontWeight("900").Italic().UnderlineStyle(TextDecorationStyle.Wavy).TextCase(TextCaseTransform.TitleCase))
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#be123c")).FontFamily("Georgia, 'Times New Roman', serif").FontWeight(900).Italic().UnderlineStyle(TextDecorationStyle.Wavy).TextCase(TextCaseTransform.TitleCase))
             .SubtitleStyle(style => style.Color(ChartColor.FromHex("#0e7490")).Italic())
             .AxisTitleStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).UnderlineStyle(TextDecorationStyle.Double))
             .TickLabelStyle(style => style.Color(ChartColor.FromHex("#2563eb")).Italic().TextCase(TextCaseTransform.Uppercase))
             .LegendStyle(style => style.Color(ChartColor.FromHex("#15803d")).Underline())
-            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#b45309")).FontWeight("800").FontSize(15))
+            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#b45309")).FontWeight(800).FontSize(15))
             .XLabels("Trial", "First value", "Power user", "Advocate")
             .AddBar("Activation share", Points(38, 54, 72, 84), ChartColor.FromHex("#f472b6"))
             .AddSmoothLine("Referral lift", Points(20, 36, 55, 69), ChartColor.FromHex("#14b8a6"));
         chart.Series[0].PointDataLabelStyle(2, style => style.FontSize(15).Baseline(TextBaseline.Superscript));
-        chart.Series[1].DataLabelStyle(style => style.Color(ChartColor.FromHex("#0f766e")).FontWeight("900").FontSize(15).UnderlineStyle(TextDecorationStyle.Dotted).StrikethroughStyle(TextDecorationStyle.Single).Baseline(TextBaseline.Subscript));
+        chart.Series[1].DataLabelStyle(style => style.Color(ChartColor.FromHex("#0f766e")).FontWeight(900).FontSize(15).UnderlineStyle(TextDecorationStyle.Dotted).StrikethroughStyle(TextDecorationStyle.Single).Baseline(TextBaseline.Subscript));
         return chart;
     }
 

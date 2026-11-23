@@ -11,7 +11,7 @@ public sealed partial class PreparedVisual {
         if (options == null) throw new ArgumentNullException(nameof(options));
         cancellationToken.ThrowIfCancellationRequested();
         return VisualSceneSvgRenderer.Render(_scene, _accessibility.Name, _accessibility.Description,
-            _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options, _capturePngText, cancellationToken);
+            _accessibility.Language, _accessibility.IsDecorative, options.IdScope, options, _capturePngText, cancellationToken);
     }
 
     /// <summary>Exports native PNG with cancellation at native scopes and effect rows, without changing prepared facts.</summary>

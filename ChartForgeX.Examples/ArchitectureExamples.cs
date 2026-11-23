@@ -32,8 +32,8 @@ internal static class ArchitectureExamples {
         File.WriteAllText(Path.Combine(output, name + ".svg"), prepared.ToSvg(), Encoding.UTF8);
         File.WriteAllBytes(Path.Combine(output, name + ".png"), prepared.ToPng());
         var options = new TopologyRenderOptions { Html = { ScenarioUrlState = true }, ActiveScenarioId = chart.Scenarios.FirstOrDefault()?.Id }
-            .HtmlScenarioPanel()
-            .HtmlScenarioSequence();
+            .Html(html => html.ScenarioPanel())
+            .Html(html => html.ScenarioSequence());
         File.WriteAllText(Path.Combine(output, name + ".html"), ExampleTypography.EmbedInHtml(chart.ToInteractiveHtmlPage(options)), Encoding.UTF8);
         File.WriteAllText(Path.Combine(output, name + ".cfx.md"), source.Replace("\r\n", "\n"), Encoding.UTF8);
         var layout = TopologyCellLayout.Create(prepared, new TopologyCellLayoutOptions { MaximumColumns = 110 });

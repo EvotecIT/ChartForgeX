@@ -141,7 +141,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     public void TinyBandsOmitOrdinaryCaptionsWithoutLosingFullPathsOrConsumingThePlot() {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
-        var chart = CatalogChart(false).Size(150, 130).Png(p => p.FontPath(font)).TickLabelStyle(style => style.FontSize = 18);
+        var chart = CatalogChart(false).Size(150, 130).Raster(p => p.FontPath(font)).TickLabelStyle(style => style.FontSize = 18);
         var prepared = Prepare(chart);
         Assert.True(Plot(prepared).Width > 0); Assert.True(Plot(prepared).Height > 0);
         Assert.Equal(5, Groups(prepared).Length);
@@ -179,7 +179,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     public void PreparedParentInkAndContextStayDetachedForSvgAndNativeRaster() {
         var chart = CatalogChart(false).TickLabelStyle(style => style.Color = new ChartColor(190, 20, 210));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         var ink = 0;
         foreach (var region in prepared.Regions.Where(region => region.Role == "axis-x-category-group"))
             for (var y = Math.Max(0, (int)Math.Floor(region.Bounds.Top)); y < Math.Min(image.Height, (int)Math.Ceiling(region.Bounds.Bottom)); y++)

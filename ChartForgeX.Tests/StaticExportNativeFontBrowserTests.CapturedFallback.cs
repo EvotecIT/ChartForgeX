@@ -27,8 +27,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));
         var name = "fallback-browser-" + donut + "-" + width + "-" + initial;
         // Synthetic OpenType fixtures qualify captured native glyphs; real owned-face loading has separate browser contracts.
-        var html = "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + (initial ? to.Html : from.Html)
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        var html = "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + (initial ? to.Html : from.Html)
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 680); var page = session.Page;
         await page.WaitForFunctionAsync("()=>!!ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'))");
         var start = new DateTime(2026, 10, 25, 10, 0, 0, DateTimeKind.Utc); await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = start }); await page.Clock.PauseAtAsync(start.AddHours(1));

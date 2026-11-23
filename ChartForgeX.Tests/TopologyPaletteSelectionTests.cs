@@ -30,9 +30,9 @@ public sealed partial class TopologyPaletteSelectionTests {
         Assert.Equal(colors.Palette[2], Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "topology-edge-line").Stroke);
 
         var reference = Diagram(mode);
-        reference.Nodes[0].Color = colors.Palette[0].ToCss();
-        reference.Nodes[1].Color = colors.Palette[1].ToCss();
-        reference.Edges[0].Color = colors.Palette[2].ToCss();
+        reference.Nodes[0].Color = ChartColorText.Parse(colors.Palette[0].ToCss());
+        reference.Nodes[1].Color = ChartColorText.Parse(colors.Palette[1].ToCss());
+        reference.Edges[0].Color = ChartColorText.Parse(colors.Palette[2].ToCss());
         Assert.Equal(reference.ToPng(options), prepared.ToPng());
     }
 
@@ -42,11 +42,11 @@ public sealed partial class TopologyPaletteSelectionTests {
     public void ExplicitColorsBackgroundsAndStatusBadgesKeepTheirExistingMeaning(ThemeMode mode) {
         var chart = Diagram(mode);
         chart.Nodes[0].PaletteIndex = 1;
-        chart.Nodes[0].Color = "var(--authored-accent, #7C3AED)";
-        chart.Nodes[0].BackgroundColor = "var(--authored-fill, #FDE68A)";
+        chart.Nodes[0].Color = ChartColorText.Parse("var(--authored-accent, #7C3AED)");
+        chart.Nodes[0].BackgroundColor = ChartColorText.Parse("var(--authored-fill, #FDE68A)");
         chart.Nodes[0].Status = TopologyHealthStatus.Healthy;
         chart.Edges[0].PaletteIndex = 2;
-        chart.Edges[0].Color = "var(--authored-route, #C026D3)";
+        chart.Edges[0].Color = ChartColorText.Parse("var(--authored-route, #C026D3)");
         var options = Options(); options.IncludeStatusBadges = true;
         var prepared = chart.Prepare(options);
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -58,8 +58,8 @@ public sealed partial class TopologyPaletteSelectionTests {
             .Single(element => (string?)element.Attribute("data-cfx-role") == "topology-status").Attribute("fill"));
         var pixels = prepared.ToPng();
         chart.Nodes[0].PaletteIndex = null; chart.Edges[0].PaletteIndex = null;
-        chart.Nodes[0].Color = "#7C3AED"; chart.Nodes[0].BackgroundColor = "#FDE68A";
-        chart.Edges[0].Color = "#C026D3";
+        chart.Nodes[0].Color = ChartColor.FromHex("#7C3AED"); chart.Nodes[0].BackgroundColor = ChartColor.FromHex("#FDE68A");
+        chart.Edges[0].Color = ChartColor.FromHex("#C026D3");
         Assert.Equal(chart.ToPng(options), pixels);
 
         chart.Edges[0].PaletteIndex = 2; chart.Edges[0].IsMuted = true;
@@ -70,7 +70,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     [Fact]
     public void ResolvedIconColorsTakePrecedenceOverAPaletteSlot() {
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("palette", "Palette")
-            .AddIcon(new TopologyIconDefinition("palette", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = "#0F766E" }));
+            .AddIcon(new TopologyIconDefinition("palette", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = ChartColor.FromHex("#0F766E") }));
         var chart = Diagram(ThemeMode.Light);
         chart.Nodes[0].IconId = "palette:owner";
         chart.Nodes[0].PaletteIndex = 2;
@@ -106,15 +106,15 @@ public sealed partial class TopologyPaletteSelectionTests {
     public void MermaidDepthSectionsReachCustomThemePaintAndPermitHostOverrides(ThemeMode mode) {
         var parsed = new MermaidParser().ParseMindMap("%%{init: {'mindmap': {'colorBy': 'depth'}}}%%\nmindmap\n Root\n   Owner\n       Child");
         Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToTopologyChart().Theme(Theme(), mode);
+        var chart = parsed.Document!.ToTopologyChart().Theme(Theme()).ThemeMode(mode);
         var colors = chart.Theme.Resolve(mode);
         var options = Options();
         var svg = XDocument.Parse(chart.ToSvg(options));
         for (var index = 0; index < chart.Nodes.Count; index++)
             Assert.Equal(colors.Palette[index].ToCss(), (string?)Surface(svg, chart.Nodes[index].Id).Attribute("stroke"));
         Assert.All(chart.Edges, edge => Assert.Equal(colors.Palette[edge.PaletteIndex!.Value].ToCss(), (string?)Route(svg, edge.Id).Attribute("stroke")));
-        chart.Nodes[1].Color = "#115E59"; chart.Nodes[1].BackgroundColor = "#CCFBF1";
-        chart.Edges[0].Color = "#115E59";
+        chart.Nodes[1].Color = ChartColor.FromHex("#115E59"); chart.Nodes[1].BackgroundColor = ChartColor.FromHex("#CCFBF1");
+        chart.Edges[0].Color = ChartColor.FromHex("#115E59");
         var overridden = XDocument.Parse(chart.ToSvg(options));
         Assert.Equal("#115E59", (string?)Surface(overridden, chart.Nodes[1].Id).Attribute("stroke"));
         Assert.Equal("#CCFBF1", (string?)Surface(overridden, chart.Nodes[1].Id).Attribute("fill"));
@@ -139,7 +139,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     });
 
     private static TopologyChart Diagram(ThemeMode mode) => TopologyChart.Create().Id("palette-selection")
-        .Theme(Theme(), mode).Viewport(new TopologyViewport(500, 240, 20)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual)
+        .Theme(Theme()).ThemeMode(mode).Viewport(new TopologyViewport(500, 240, 20)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual)
         .AddNode("first", "First", 40, 80, width: 130, height: 60)
         .AddNode("second", "Second", 320, 80, width: 130, height: 60)
         .AddEdge("route", "first", "second", routing: TopologyEdgeRouting.Straight);

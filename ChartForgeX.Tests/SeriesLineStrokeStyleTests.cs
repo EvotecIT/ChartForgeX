@@ -124,11 +124,11 @@ public sealed class SeriesLineStrokeStyleTests {
         var path = Assert.IsType<VisualScenePath>(Foreground(prepared, "line"));
         var start = path.Commands.First(); var end = path.Commands.Last();
         var native = RasterImageDecoder.Decode(prepared.ToPng());
-        var svg = SvgRasterizer.ToImage(prepared.ToSvg());
+        var svg = SvgRasterizer.ToRgbaImage(prepared.ToSvg());
         series.StrokeStyle(new ChartStrokeStyle(width: 0));
         var hidden = Prepare(chart);
         var nativeBackground = RasterImageDecoder.Decode(hidden.ToPng());
-        var svgBackground = SvgRasterizer.ToImage(hidden.ToSvg());
+        var svgBackground = SvgRasterizer.ToRgbaImage(hidden.ToSvg());
         var nativeProfiles = new List<double>(); var svgProfiles = new List<double>();
         for (var x = (int)Math.Ceiling(start.X) + 3; x < (int)Math.Floor(end.X) - 3; x++) {
             nativeProfiles.Add(Coverage(native, nativeBackground, x, start.Y));
@@ -180,7 +180,7 @@ public sealed class SeriesLineStrokeStyleTests {
             case ChartSeriesKind.RangeArea: chart.AddRangeArea("Series", ranges, Fill); break;
             case ChartSeriesKind.DifferenceArea:
                 chart.AddDifferenceArea("Series", new[] { new ChartDifferencePoint(1, 30, 50), new ChartDifferencePoint(2, 60, 40), new ChartDifferencePoint(3, 40, 70) }, Fill); break;
-            case ChartSeriesKind.Radar: chart.AddRadarArea("Series", points, Fill); break;
+            case ChartSeriesKind.Radar: chart.AddRadar("Series", points, Fill); break;
             case ChartSeriesKind.Polar: chart.AddPolar("Series", points, Fill); break;
             case ChartSeriesKind.Slope: chart.AddSlope("Series", points, Fill); break;
             case ChartSeriesKind.TrendLine: chart.AddTrendLine("Series", points, Fill); break;

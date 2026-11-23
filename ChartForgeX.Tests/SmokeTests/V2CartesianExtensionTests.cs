@@ -35,7 +35,7 @@ public sealed class V2CartesianExtensionTests {
         Assert.NotNull(XDocument.Parse(svg).Root);
         var numericMarkup = SmokeTests.NumericMarkup(svg);
         Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
-        var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Contains(Enumerable.Range(0, pixels.Width * pixels.Height), index => pixels.Pixels[index * 4 + 3] > 0);
         chart.Series[0].PointLabel(0, "Changed after preparation");
         Assert.Equal(svg, prepared.ToSvg());

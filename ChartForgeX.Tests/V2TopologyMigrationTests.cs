@@ -38,7 +38,7 @@ public sealed class V2TopologyMigrationTests {
         }
         Assert.Contains("topology-marker", prepared.ToSvg());
         Assert.Contains("topology-node-surface", prepared.ToSvg());
-        Assert.Equal(960, prepared.ToRgba().Width);
+        Assert.Equal(960, prepared.ToRgbaImage().Width);
         var svg = prepared.ToSvg(); var json = artifact.ToInterchangeJson();
         chart.Nodes.Clear(); chart.Edges.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(json, artifact.ToInterchangeJson());
@@ -71,7 +71,7 @@ public sealed class V2TopologyMigrationTests {
         chart.Edges.Add(new TopologyEdge { Id = "path", SourceNodeId = "server", TargetNodeId = "endpoint", Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Label = "Link", SecondaryLabel = "Active", SourceLabel = "1", TargetLabel = "many" });
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(560, 310)), frame: new VisualFrame(showLegend: false, transparentBackground: true));
         var prepared = chart.Prepare(context, new TopologyRenderOptions { FitContentToViewport = true, IncludeGroupStatusDots = true });
-        Assert.Equal(0, prepared.ToRgba().Pixels[3]);
+        Assert.Equal(0, prepared.ToRgbaImage().Pixels[3]);
         var svg = XDocument.Parse(prepared.ToSvg());
         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-group-surface");
         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-node-icon");

@@ -41,11 +41,11 @@ public sealed class ChartGridPaginationTests {
     [Fact]
     public void PagesCopySettingsAndStylesWithoutSharingGridMutation() {
         var grid = ChartGrid.Create().Title("Fleet").Subtitle("Daily")
-            .Columns(3).Gap(12).Padding(20).PngOutputScale(2)
+            .Columns(3).Gap(12).Padding(20).RasterScale(2)
             .PanelSize(320, 200).PanelFit(VisualPanelFit.Contain)
             .UsePanelThemes()
             .TitleStyle(style => style.FontSize(21).Italic().UnderlineStyle(TextDecorationStyle.Double))
-            .SubtitleStyle(style => style.FontWeight("600").Baseline(TextBaseline.Superscript).Strikethrough());
+            .SubtitleStyle(style => style.FontWeight(600).Baseline(TextBaseline.Superscript).Strikethrough());
         for (var i = 0; i < 7; i++) grid.Add(Chart.Create().Size(320, 200).AddLine("Value", new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) }), i == 6 ? 2 : 1, i == 6 ? 2 : 1);
         var pages = grid.Paginate(6);
         var last = pages[1].Grid;
@@ -55,7 +55,7 @@ public sealed class ChartGridPaginationTests {
         Assert.True(last.PreserveEmptyColumns);
         Assert.Equal(12, last.Gap);
         Assert.Equal(20, last.Padding);
-        Assert.Equal(2, last.PngOutputScale);
+        Assert.Equal(2, last.RasterScale);
         Assert.Equal(grid.PanelSize, last.PanelSize);
         Assert.Equal(grid.PanelFit, last.PanelFit);
         Assert.True(last.UsePanelThemes);
@@ -65,7 +65,7 @@ public sealed class ChartGridPaginationTests {
         Assert.Equal(21, last.TitleStyle.FontSize);
         Assert.True(last.TitleStyle.Italic);
         Assert.Equal(TextDecorationStyle.Double, last.TitleStyle.UnderlineStyle);
-        Assert.Equal("600", last.SubtitleStyle.FontWeight);
+        Assert.Equal(600, last.SubtitleStyle.FontWeight);
         Assert.Equal(TextBaseline.Superscript, last.SubtitleStyle.Baseline);
         Assert.True(last.SubtitleStyle.Strikethrough);
         last.TitleStyle.FontSize = 30;

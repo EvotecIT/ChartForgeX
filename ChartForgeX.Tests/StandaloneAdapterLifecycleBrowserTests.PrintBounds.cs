@@ -37,7 +37,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         }
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
         })), width, 720);
         var page = session.Page;

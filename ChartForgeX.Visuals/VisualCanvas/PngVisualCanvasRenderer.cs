@@ -9,19 +9,19 @@ namespace ChartForgeX.Composition;
 /// <summary>
 /// Renders visual canvases to dependency-free PNG images.
 /// </summary>
-public sealed class PngVisualCanvasRenderer {
+internal sealed class PngVisualCanvasRenderer {
     /// <summary>Renders a visual canvas to PNG bytes.</summary>
     public byte[] Render(VisualCanvas canvas) => PngWriter.WriteRgba(RenderImage(canvas));
 
     internal RgbaImage RenderImage(VisualCanvas canvas) {
-        var source = RenderCanvas(canvas).ToImage();
+        var source = RenderCanvas(canvas).ToRgbaImage();
         if (!canvas.IsResponsive) return source;
 
-        var scale = canvas.PngOutputScale;
+        var scale = canvas.RasterScale;
         var background = canvas.BackdropStyle == VisualCanvasBackdropStyle.Transparent ? ChartColor.Transparent : canvas.BackgroundBottom;
         return ImageComposition.Create(canvas.Width * scale, canvas.Height * scale, background)
             .DrawImage(source, 0, 0, canvas.Width * scale, canvas.Height * scale, canvas.ResponsiveFit)
-            .ToImage();
+            .ToRgbaImage();
     }
 
     internal RgbaCanvas RenderCanvas(VisualCanvas canvas) {
@@ -29,7 +29,7 @@ public sealed class PngVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(canvas.BackdropStyle, nameof(canvas.BackdropStyle));
         var width = canvas.DesignWidth;
         var height = canvas.DesignHeight;
-        var output = new RgbaCanvas(width, height, 2, null, canvas.PngOutputScale);
+        var output = new RgbaCanvas(width, height, 2, null, canvas.RasterScale);
         output.Clear(ChartColor.Transparent);
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
             output.FillRoundedRectVerticalGradient(0, 0, width, height, 0, canvas.BackgroundTop, canvas.BackgroundBottom);
@@ -126,7 +126,6 @@ public sealed class PngVisualCanvasRenderer {
 
     private static void DrawInfoTile(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
-        VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
         var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile, theme);
@@ -138,7 +137,7 @@ public sealed class PngVisualCanvasRenderer {
         var radius = Math.Min(16, height * 0.18);
         var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
         var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
-        var accent = tile.AccentOverride ?? theme.Accent;
+        var accent = tile.Accent ?? theme.Accent;
         if (isRaised) {
             canvas.FillRoundedRect(x + 10, y + 13, width, height, radius + 2, ChartColor.Black.WithOpacity(0.42));
             canvas.FillRoundedRect(x + 4, y + 6, width, height, radius + 1, ChartColor.Black.WithOpacity(0.24));
@@ -169,7 +168,7 @@ public sealed class PngVisualCanvasRenderer {
         } else {
             canvas.StrokeRoundedRect(iconX, iconY, iconBox, iconBox, iconRadius, accent.WithOpacity(0.38), 1);
         }
-        DrawTileIcon(canvas, tile.IconKind, tile.Icon, iconX, iconY, iconBox, accent, theme.FontFamily, theme.TextMeasurementMode);
+        DrawTileIcon(canvas, tile.Glyph, tile.IconText, iconX, iconY, iconBox, accent, theme.FontFamily, theme.TextMeasurementMode);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
@@ -335,7 +334,7 @@ public sealed class PngVisualCanvasRenderer {
         var radius = Math.Min(22, badge.Height * 0.20);
         canvas.FillRoundedRect(badge.X - 6, badge.Y - 6, badge.Width + 12, badge.Height + 12, radius + 4, theme.HeroBadgeGlowColor);
         canvas.FillRoundedRectVerticalGradient(badge.X, badge.Y, badge.Width, badge.Height, radius, theme.HeroBadgeTop, theme.HeroBadgeBottom);
-        var accent = badge.AccentOverride ?? theme.SecondaryAccent;
+        var accent = badge.Accent ?? theme.SecondaryAccent;
         canvas.StrokeRoundedRect(badge.X, badge.Y, badge.Width, badge.Height, radius, accent, 2.4);
         if (badge.ImageRgba != null && badge.ImageSourceWidth > 0 && badge.ImageSourceHeight > 0) {
             var padding = Math.Max(0, Math.Min(Math.Min(badge.ImagePadding, badge.Width / 2 - 1), badge.Height / 2 - 1));

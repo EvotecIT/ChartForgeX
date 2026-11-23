@@ -18,7 +18,7 @@ public sealed class UseCaseAdvancedActorRecipeTests {
         Assert.Equal(lowered.Nodes.Select(n => (n.Id, n.Label, n.Subtitle, n.Kind, n.Shape, n.IconShape, n.IconId)), native.Nodes.Select(n => (n.Id, n.Label, n.Subtitle, n.Kind, n.Shape, n.IconShape, n.IconId)));
         Assert.Equal(lowered.Edges.Select(e => (e.Id, e.SourceNodeId, e.TargetNodeId, e.Kind, e.Direction)), native.Edges.Select(e => (e.Id, e.SourceNodeId, e.TargetNodeId, e.Kind, e.Direction)));
         Assert.Equal(lowered.Annotations.Select(n => (n.TargetId, n.Text)), native.Annotations.Select(n => (n.TargetId, n.Text)));
-        native.Theme(native.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
+        native.Theme(native.Theme.WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
         MermaidUseCaseAdvancedActorTests.AssertPaint(native.ToSvg()); Assert.NotEmpty(native.ToPng());
         var emitted = ExampleRecipeSource.Emit(ExampleRecipes.Named("usecase-advanced-actors"), variant, "Native actors", "Finite native authoring", mode,
             variant == "compact" ? 390 : 1100, variant == "compact" ? 1160 : 680, artifactKind: "Topology");
@@ -33,7 +33,7 @@ public sealed class UseCaseAdvancedActorRecipeTests {
     [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
     public void OrdinaryNativeSampleKeepsAuthoredGeometryInsteadOfShrinkingItsActorsToTheHostWidth(string variant, ThemeMode mode) {
         var model = UseCaseAdvancedActorsRecipe.Create(variant, mode);
-        model.Theme(model.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
+        model.Theme(model.Theme.WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
         var prepared = model.Prepare(); var facts = prepared.ToInterchangeEnvelope();
         if (Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); var name = Path.Combine(output, "ordinary-readable-actors-" + variant + "-" + mode);

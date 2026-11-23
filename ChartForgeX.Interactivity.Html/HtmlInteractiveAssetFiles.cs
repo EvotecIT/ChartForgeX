@@ -61,7 +61,7 @@ public static class HtmlInteractiveAssetFiles {
     }
 
     private static HtmlAssetFile CreateTopologyScript(TopologyRenderOptions? options) {
-        var script = HtmlInteractiveTopologyRenderer.BuildInteractionScript(HtmlInteractiveTopologyRenderer.Prepare(options));
+        var script = HtmlInteractiveTopologyRenderer.Script(HtmlInteractiveTopologyRenderer.Prepare(options));
         return new HtmlAssetFile("cfx-topology", "js", script);
     }
 

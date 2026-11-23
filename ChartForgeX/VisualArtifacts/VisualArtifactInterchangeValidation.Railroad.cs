@@ -15,7 +15,7 @@ internal static partial class VisualArtifactInterchangeValidation {
             Finite(padding, "railroad padding");
             if (padding < 0) throw new ArgumentOutOfRangeException(nameof(envelope), "Railroad padding must not be negative.");
         }
-        if (railroad.PngOutputScale < 1 || railroad.PngOutputScale > 4) throw new ArgumentOutOfRangeException(nameof(envelope), "Railroad PNG scale must be between one and four.");
+        if (railroad.RasterScale < 1 || railroad.RasterScale > 4) throw new ArgumentOutOfRangeException(nameof(envelope), "Railroad PNG scale must be between one and four.");
         if (envelope.Width.HasValue != envelope.Height.HasValue) throw new ArgumentException("Railroad frames require both dimensions or neither.", nameof(envelope));
         foreach (var dimension in new[] { envelope.Width, envelope.Height })
             if (dimension.HasValue && (dimension.Value > int.MaxValue || Math.Truncate(dimension.Value) != dimension.Value))

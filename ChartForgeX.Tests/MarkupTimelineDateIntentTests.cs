@@ -91,7 +91,7 @@ public sealed class MarkupTimelineDateIntentTests {
         var (chart, _) = Parse(source, false);
         var native = Chart.Create().Title("Numeric").Size(900, 460);
         if (gantt) native.Gantt(g => g.Today(3.0)).AddGanttTask("Work", 1, 5, .5).AddGanttMilestone("Ship", 7, native.Series[0]);
-        else native.AddTimelineRange("Work", 1, 5).AddTimelineRange("Ship", 7, 7);
+        else native.AddTimelineItem("Work", 1, 5).AddTimelineItem("Ship", 7, 7);
         Assert.Equal(ChartScaleKind.Linear, chart.Options.XAxis.Scale);
         Assert.Equal(TickLabels(XDocument.Parse(native.ToSvg())), TickLabels(XDocument.Parse(chart.ToSvg())));
         Assert.Equal(native.ToPng(), chart.ToPng());

@@ -103,7 +103,7 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
     public void CapturedCardSubtitleAndDetailRolesReuseTheSameOriginalUnitConversion(bool enlarge) {
         var chart = Detail("color", 1.2); chart.Viewport(new TopologyViewport(enlarge ? 1000 : 220, enlarge ? 700 : 140, 24));
         if (enlarge) chart.LayoutMode(TopologyLayoutMode.Layered);
-        chart.Nodes[0].Subtitle = "HOO"; chart.Nodes[0].SubtitleTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 12, FontWeight = "400", LetterSpacing = .6 };
+        chart.Nodes[0].Subtitle = "HOO"; chart.Nodes[0].SubtitleTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 12, FontWeight = 400, LetterSpacing = .6 };
         var options = chart.ResolveRenderOptions(null); options.FitContentToViewport = true;
         var before = chart.Prepare(options); CaptureNative("card-roles-" + enlarge + "-before-portable", before.Visual); var saved = before.ToInterchangeEnvelope(); var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart(); var after = restored.Prepare();
         Capture("card-roles-" + enlarge + "-direct", before.Visual); Capture("card-roles-" + enlarge + "-restored", after.Visual);
@@ -128,11 +128,11 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
         var chart = TopologyChart.Create().Id("tracking-external").Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(enlarge.HasValue ? enlarge.Value ? 1000 : 180 : 640, enlarge.HasValue ? enlarge.Value ? 700 : 140 : 400, 24))
             .Theme(VisualTheme.Graphite().WithFontFamily(Family)).LayoutMode(enlarge.HasValue ? TopologyLayoutMode.Layered : TopologyLayoutMode.Manual)
             .AddNode("node", "HOO HOO", 210, 150, width: 180, height: 90);
-        var node = chart.Nodes[0]; node.DisplayMode = mode; node.Shape = TopologyNodeShape.Rectangle; node.IconShape = TopologyIconShape.Router; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; node.Color = "#2563eb";
-        node.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, FontWeight = "400", LetterSpacing = .8 };
-        node.SubtitleTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 12, FontWeight = "400", LetterSpacing = .6 }; if (mode == TopologyNodeDisplayMode.Tile) node.Subtitle = "HOO";
+        var node = chart.Nodes[0]; node.DisplayMode = mode; node.Shape = TopologyNodeShape.Rectangle; node.IconShape = TopologyIconShape.Router; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; node.Color = ChartColor.FromHex("#2563eb");
+        node.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, FontWeight = 400, LetterSpacing = .8 };
+        node.SubtitleTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 12, FontWeight = 400, LetterSpacing = .6 }; if (mode == TopologyNodeDisplayMode.Tile) node.Subtitle = "HOO";
         node.CaptionPlacement = TopologyCaptionPlacement.Top; node.CaptionGap = 8; node.CaptionSurface = TopologyCaptionSurface.Plate;
-        node.CaptionTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 14, FontWeight = "400", LetterSpacing = 1.2 };
+        node.CaptionTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 14, FontWeight = 400, LetterSpacing = 1.2 };
         if (mode == TopologyNodeDisplayMode.Artwork) node.Artwork = TopologyIconArtwork.Portrait(new RgbaImage(2, 1, new byte[] { 255, 0, 0, 255, 0, 255, 0, 128 }));
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true, IncludeTileSubtitles = true, FitContentToViewport = false, MaxNodeLabelLines = 4, WrapNodeLabels = true }); return chart;
     }
@@ -140,7 +140,7 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
         var chart = TopologyChart.Create().Id("tracking-detail").Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(480, 300, 24)).Theme(VisualTheme.Graphite().WithFontFamily(Family)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("node", "H", 70, 60, width: 300, height: 180);
         var node = chart.Nodes[0]; node.ShowLabel = true; node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true; node.Shape = TopologyNodeShape.Rectangle; node.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, LetterSpacing = nodeSpacing };
-        node.Details.Add(new TopologyNodeDetail { Text = "HOO", TextStyle = kind == "color" ? new TextStyleOverride { Color = chart.Theme.Resolve(chart.ThemeMode).Foreground, LetterSpacing = spacing } : new TextStyleOverride { FontWeight = "400", LetterSpacing = spacing } });
+        node.Details.Add(new TopologyNodeDetail { Text = "HOO", TextStyle = kind == "color" ? new TextStyleOverride { Color = chart.Theme.Resolve(chart.ThemeMode).Foreground, LetterSpacing = spacing } : new TextStyleOverride { FontWeight = 400, LetterSpacing = spacing } });
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false }); return chart;
     }
     private static TopologyChart Edge(bool structured) {
@@ -148,7 +148,7 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
             .AddNode("a", "HOO", 50, 160, width: 150, height: 70).AddNode("b", "HOO", 540, 160, width: 150, height: 70).AddEdge("edge", "a", "b", "HOO HOO HOO\nHOO");
         foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
         var edge = chart.Edges[0]; edge.PathGeometry = new TopologyPathGeometry("M 200 195 C 300 25 440 25 540 195"); edge.LabelPosition = new TopologyLabelPosition(new ChartPoint(370, 70), TopologyLabelVerticalAnchor.TextBaseline);
-        edge.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 18, FontWeight = "400", LetterSpacing = 3 };
+        edge.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 18, FontWeight = 400, LetterSpacing = 3 };
         if (structured) edge.LabelContent = TextContent.FromRuns(new[] { new TextContentRun("HOO HOO "), new TextContentRun("HOO\nHOO", TextInlineEmphasis.Italic) }); return chart;
     }
     private static TextStyle FrameStyle(double size, int weight) => new() { Font = new FontSpec { Family = Family, Weight = weight }, FontSize = size, LineHeight = 1 };

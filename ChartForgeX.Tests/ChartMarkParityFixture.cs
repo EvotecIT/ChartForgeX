@@ -13,7 +13,7 @@ internal static class ChartMarkParityFixture {
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ink, ChartColor.FromRgba(170, 70, 30, alpha) }; });
         var chart = Chart.Create().Size(400, 280).Theme(theme).ShowCard(false).ShowPlotBackground(false).Legend(false);
         chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.DataLabels.Visible = false;
-        chart.Options.Png.OutputScale = density;
+        chart.Options.Raster.OutputScale = density;
         chart.Options.XAxis.Min = 0; chart.Options.XAxis.Max = 4;
         chart.Options.YAxis.Min = 0; chart.Options.YAxis.Max = 10;
         switch (family) {

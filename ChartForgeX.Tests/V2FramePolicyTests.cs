@@ -179,7 +179,7 @@ public sealed class V2FramePolicyTests {
             "map" => chart.AddTileMap("Count", new ChartTileMapDefinition("frame-policy", "Regions", new[] {
                 new ChartTileMapRegion("A", "First", 0, 0), new ChartTileMapRegion("B", "Second", 1, 0)
             }), new[] { new ChartRegionMapItem("A", 30), new ChartRegionMapItem("B", 80) }),
-            "schedule" => chart.AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
+            "schedule" => chart.AddTimelineItem("Plan", 1, 3).AddTimelineItem("Build", 2, 4),
             "state-schedule" => chart.StateCategories(states).AddStateTimelineLane("Service", new[] {
                 new ChartStateTimelineSegment(1, 2, "pass"), new ChartStateTimelineSegment(2, 3, "fail")
             }),

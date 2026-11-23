@@ -7,7 +7,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderNaturalFishbone(SvgMarkupWriter writer, FishboneDiagramBlock block) {
         var plan = VisualBlockRendering.MeasureFishboneNatural(block); var options = block.Options; var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options); var y = content.Top;

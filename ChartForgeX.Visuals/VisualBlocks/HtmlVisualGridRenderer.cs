@@ -13,7 +13,7 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// Renders visual grids as dependency-free static HTML.
 /// </summary>
-public sealed class HtmlVisualGridRenderer {
+internal sealed class HtmlVisualGridRenderer {
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid as an embeddable HTML fragment.</summary>

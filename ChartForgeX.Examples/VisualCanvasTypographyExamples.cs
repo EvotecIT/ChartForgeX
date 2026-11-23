@@ -24,10 +24,7 @@ internal static class VisualCanvasTypographyExamples {
         }
 
         var tooSmall = CreateCanvas(1920, 1080, ThemeMode.Dark)
-            .AddInfoTileWithTextOptions(48, 64, 320, 72, "PC", "HOSTNAME",
-                "A very long workstation name",
-                new VisualCanvasInfoTileTextOptions(textScale: 1.5),
-                "Windows 11 Enterprise workstation");
+            .AddInfoTile(48, 64, 320, 72, "PC", "HOSTNAME", "A very long workstation name", "Windows 11 Enterprise workstation", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.5));
         tooSmall.SavePng(Path.Combine(output, "tile-text-too-small-1.5-dark.png"));
         tooSmall.SaveSvg(Path.Combine(output, "tile-text-too-small-1.5-dark.svg"));
     }
@@ -36,13 +33,7 @@ internal static class VisualCanvasTypographyExamples {
         var canvas = CreateCanvas(1200, 630, mode)
             .AddInfoTile(48, 100, 520, 164, "PC", "WORKSTATION", "DEV-WKS-01", "Windows 11 Enterprise",
                 ChartColor.FromHex("#2F80FF"), surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised)
-            .AddInfoTileWithTextOptions(632, 100, 520, 164, "CPU", "PROCESSOR",
-                "Intel Core i7", new VisualCanvasInfoTileTextOptions(textScale: 1.25),
-                "Average load 23%",
-                ChartColor.FromHex("#22A7FF"),
-                surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
-                miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
-                miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d });
+            .AddInfoTile(632, 100, 520, 164, "CPU", "PROCESSOR", "Intel Core i7", "Average load 23%", ChartColor.FromHex("#22A7FF"), surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline, miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d }, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.25));
         var suffix = mode == ThemeMode.Dark ? "dark" : "light";
         canvas.SaveSvg(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".svg"));
         canvas.SavePng(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".png"));
@@ -52,14 +43,7 @@ internal static class VisualCanvasTypographyExamples {
     private static void SaveProof(string output, int width, int height, ThemeMode mode,
         double scale) {
         var canvas = CreateCanvas(width, height, mode)
-            .AddInfoTileWithTextOptions(48, 64, 680, 168, "CPU", "PROCESSOR",
-                "Intel Core i7 14700K",
-                new VisualCanvasInfoTileTextOptions(textScale: scale),
-                "20 cores, average load 23%",
-                ChartColor.FromHex("#2F80FF"), 0.23,
-                surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
-                miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
-                miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d });
+            .AddInfoTile(48, 64, 680, 168, "CPU", "PROCESSOR", "Intel Core i7 14700K", "20 cores, average load 23%", ChartColor.FromHex("#2F80FF"), 0.23, surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline, miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d }, textOptions: new VisualCanvasInfoTileTextOptions(textScale: scale));
         var suffix = mode == ThemeMode.Dark ? "dark" : "light";
         var name = "tile-text-" + scale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             + "-" + width + "x" + height + "-" + suffix;
@@ -69,12 +53,7 @@ internal static class VisualCanvasTypographyExamples {
 
     private static void SaveFallback(string output, ThemeMode mode) {
         var canvas = CreateCanvas(420, 100, mode)
-            .AddInfoTileWithTextOptions(48, 26, 320, 48, string.Empty,
-                "HOSTNAME", "WORKSTATION-01",
-                new VisualCanvasInfoTileTextOptions(textScale: 4),
-                "Windows desktop", ChartColor.FromHex("#38BDF8"),
-                surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
-                iconKind: VisualCanvasInfoTileIconKind.Computer);
+            .AddInfoTile(48, 26, 320, 48, string.Empty, "HOSTNAME", "WORKSTATION-01", "Windows desktop", ChartColor.FromHex("#38BDF8"), surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline, icon: VisualCanvasIcons.Computer, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 4));
         var suffix = mode == ThemeMode.Dark ? "dark" : "light";
         var name = "visual-canvas-tile-text-fallback-" + suffix;
         canvas.SaveSvg(Path.Combine(output, name + ".svg"));

@@ -25,7 +25,7 @@ internal static partial class SmokeTests {
             .Size(700, 280)
             .FormatValuesBy(_ => "generic-secondary")
             .YAxis(axis => axis.LabelFormatter = _ => "primary-fixed")
-            .TickLabelStyle(style => style.FontWeight("650").Italic())
+            .TickLabelStyle(style => style.FontWeight(650).Italic())
             .SecondaryYAxis(s => s.Title("Rate"))
             .AddLine("Rate", Points(20, 40, 60));
         secondary.Series[0].SecondaryAxis();

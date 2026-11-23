@@ -40,7 +40,7 @@ public sealed class NativeTopologySurfacePaintTests {
         var chart=Chart();var node=chart.Nodes[0];node.Shape=TopologyNodeShape.DoubleCircle;node.ShowLabel=false;node.Width=node.Height=100;node.StrokeWidth=10;
         if(surface)node.SurfaceOpacity=.5;else node.Opacity=.5;
         var prepared=Prepare(chart);var artifact=prepared.ToArtifact("opacity-scopes",VisualArtifactKind.Topology);Capture(artifact,surface?"separate-contour-opacity":"whole-node-opacity");
-        var facts=artifact.ToInterchangeEnvelope();var n=facts.Nodes[0];var image=prepared.ToRgba(new VisualRenderOptions(supersampling:1));
+        var facts=artifact.ToInterchangeEnvelope();var n=facts.Nodes[0];var image=prepared.ToRgbaImage(new VisualRenderOptions(supersampling:1));
         // The inner circle stroke overlaps the opaque outer filled circle, away from antialiased edges.
         var x=(int)(n.X!.Value+n.Width!.Value/2+42);var y=(int)(n.Y!.Value+n.Height!.Value/2);
         Assert.InRange(image.Pixels[(y*image.Width+x)*4+3],expectedAlpha-1,expectedAlpha+1);
@@ -50,17 +50,17 @@ public sealed class NativeTopologySurfacePaintTests {
     public void OneSurfaceElementIsolatesItsOverlappingFillAndStrokeOnce() {
         var chart=Chart();var node=chart.Nodes[0];node.ShowLabel=false;node.StrokeWidth=20;node.SurfaceOpacity=.5;
         var prepared=Prepare(chart);var artifact=prepared.ToArtifact("surface-element",VisualArtifactKind.Topology);Capture(artifact,"single-element-opacity");
-        var n=artifact.ToInterchangeEnvelope().Nodes[0];var image=prepared.ToRgba(new VisualRenderOptions(supersampling:1));
+        var n=artifact.ToInterchangeEnvelope().Nodes[0];var image=prepared.ToRgbaImage(new VisualRenderOptions(supersampling:1));
         var x=(int)n.X!.Value+2;var y=(int)(n.Y!.Value+n.Height!.Value/2);
         Assert.InRange(image.Pixels[(y*image.Width+x)*4+3],127,129);
     }
 
     [Fact]
     public void ContainerOpacityDoesNotDimTheContainedNode() {
-        var chart=Chart();chart.Groups.Add(new TopologyGroup{Id="scope",Label="Scope",X=12,Y=12,Width=240,Height=190,Opacity=.5,BackgroundColor="#ff0000",ShowLabel=false});
-        var node=chart.Nodes[0];node.GroupId="scope";node.BackgroundColor=node.Color="#0000ff";node.ShowLabel=false;
+        var chart=Chart();chart.Groups.Add(new TopologyGroup{Id="scope",Label="Scope",X=12,Y=12,Width=240,Height=190,Opacity=.5,BackgroundColor=ChartColor.FromHex("#ff0000"),ShowLabel=false});
+        var node=chart.Nodes[0];node.GroupId="scope";node.BackgroundColor=node.Color=ChartColor.FromHex("#0000ff");node.ShowLabel=false;
         var prepared=Prepare(chart);var artifact=prepared.ToArtifact("container-opacity",VisualArtifactKind.Topology);Capture(artifact,"container-opacity-isolates-children");
-        var n=artifact.ToInterchangeEnvelope().Nodes[0];var image=prepared.ToRgba(new VisualRenderOptions(supersampling:1));var x=(int)(n.X!.Value+n.Width!.Value/2);var y=(int)(n.Y!.Value+n.Height!.Value/2);var p=(y*image.Width+x)*4;
+        var n=artifact.ToInterchangeEnvelope().Nodes[0];var image=prepared.ToRgbaImage(new VisualRenderOptions(supersampling:1));var x=(int)(n.X!.Value+n.Width!.Value/2);var y=(int)(n.Y!.Value+n.Height!.Value/2);var p=(y*image.Width+x)*4;
         Assert.Equal(255,image.Pixels[p+2]);Assert.Equal(255,image.Pixels[p+3]);
     }
 
@@ -115,7 +115,7 @@ public sealed class NativeTopologySurfacePaintTests {
         foreach (var x in new[] { 100d, 800d }) {
             var node = new TopologyNode { Id = "node-" + x, X = x, Y = 80, Width = 140, Height = 150,
                 Shape = shape, DisplayMode = mode, PreserveDisplayModeSize = true, ShowLabel = false,
-                ShowStatusBadge = false, StrokeWidth = 4, Color = "#173B59", BackgroundColor = "#88CCEE" };
+                ShowStatusBadge = false, StrokeWidth = 4, Color = ChartColor.FromHex("#173B59"), BackgroundColor = ChartColor.FromHex("#88CCEE") };
             node.DashPattern.AddRange(new[] { 9d, 3d }); chart.Nodes.Add(node);
         }
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 16),
@@ -167,7 +167,7 @@ public sealed class NativeTopologySurfacePaintTests {
 
     private static TopologyChart Chart() {
         var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(300, 250, 0)).Legend((TopologyLegend?)null);
-        chart.Nodes.Add(new TopologyNode{Id="node",Label="Node",X=60,Y=60,Width=100,Height=80,Shape=TopologyNodeShape.Rectangle,BackgroundColor="#ff0000",Color="#ff0000",ShowStatusBadge=false,PreserveDisplayModeSize=true});return chart;
+        chart.Nodes.Add(new TopologyNode{Id="node",Label="Node",X=60,Y=60,Width=100,Height=80,Shape=TopologyNodeShape.Rectangle,BackgroundColor=ChartColor.FromHex("#ff0000"),Color=ChartColor.FromHex("#ff0000"),ShowStatusBadge=false,PreserveDisplayModeSize=true});return chart;
     }
     private static PreparedVisual Prepare(TopologyChart chart)=>chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(300,250),0),
         frame:new VisualFrame(showLegend:false,transparentBackground:true)),new TopologyRenderOptions{FitContentToViewport=false,CanvasSurfaceStyle=TopologyCanvasSurfaceStyle.Plain});

@@ -69,7 +69,7 @@ public sealed class ChartTypographyV2Tests {
         Assert.Equal(2, text.Count(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-percentage"));
         Assert.All(text.Where(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-value"), element => Assert.Equal("500", element.Attribute("font-weight")!.Value));
         Assert.All(text.Where(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-percentage"), element => Assert.Equal("400", element.Attribute("font-weight")!.Value));
-        chart.TitleStyle(style => style.FontWeight = "800").LegendStyle(style => style.FontWeight = "600");
+        chart.TitleStyle(style => style.FontWeight = 800).LegendStyle(style => style.FontWeight = 600);
         var authored = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Equal("800", authored.Single(element => element.Value == "Typography").Attribute("font-weight")!.Value);
         Assert.Equal(2, authored.Count(element => (string?)element.Parent?.Attribute("data-cfx-role") == "legend-value"));

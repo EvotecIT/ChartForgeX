@@ -37,7 +37,7 @@ internal static partial class VisualScheduleCompiler {
                 using (VisualStateSceneTools.Mark(builder, id, "gantt-vertical-marker", bounds, series.Name + ": " + format(item.Start), metadata)) {
                     var annotation = new ChartAnnotation(ChartAnnotationKind.VerticalLine, item.Start, null, series.Name, color, 1);
                     VisualAnnotationCompiler.Draw(new[] { annotation }, context, builder, plot, project, _ => 0, colors, false, obstacles,
-                        overflowCode: "schedule.annotation-label-overflow", idPrefix: id + "-annotation-", describeAnnotations: false, colorRole: colorRole);
+                        overflowCode: "schedule.annotation-label-overflow", idScope: id + "-annotation-", describeAnnotations: false, colorRole: colorRole);
                 }
             }
         }

@@ -97,7 +97,7 @@ public sealed class PreparedVisualArtifactTests {
         Assert.Null(XDocument.Parse(artifact.ToSvg()).Root!.Attribute("aria-label"));
         Assert.Equal(svg, prepared.ToSvg());
 
-        artifact.NaturalSize = new VisualArtifactSize(640, 400);
+        artifact.NaturalSize = new VisualSize(640, 400);
         Assert.Throws<InvalidOperationException>(() => artifact.ToSvg());
         Assert.Throws<InvalidOperationException>(() => artifact.ToInterchangeEnvelope());
     }

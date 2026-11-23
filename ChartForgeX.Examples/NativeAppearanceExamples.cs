@@ -37,7 +37,7 @@ internal static class NativeAppearanceExamples {
                     }
                 }
                 var glass = NativeGlassCompositionExample.Create(variant, mode);
-                var image = glass.ToImage();
+                var image = glass.ToRgbaImage();
                 var canvas = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
                     .AddImage(image, 0, 0, image.Width, image.Height);
                 var glassStem = Path.Combine(output, "native-glass-" + variant + "-" + mode);

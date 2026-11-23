@@ -102,7 +102,7 @@ public sealed class RadarStrokeStyleTests {
         var values = Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 65)).ToArray();
         var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(true).DataLabels(false).YAxis(y => y.Bounds(0, 100));
         if (mixed) chart.AddRadialColumn("Count", values);
-        chart.AddRadarArea("Target", values); chart.Series.Last().Radar.CurveTension = .25;
+        chart.AddRadar("Target", values); chart.Series.Last().Radar.CurveTension = .25;
         return chart;
     }
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

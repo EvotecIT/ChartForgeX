@@ -149,7 +149,7 @@ public static class TopologyInterchangeRecipe {
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().Id(&quot;saved-request-route&quot;).Title(&quot;An editable saved route&quot;)
             .Subtitle(&quot;The loaded graph owns independent native data&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 520 : 400));
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 520 : 400));
         chart.Nodes.Add(new TopologyNode { Id = &quot;request&quot;, Label = &quot;Request&quot;, X = 40, Y = 75, Width = 210, Height = 110,
             Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Queued&quot; });
@@ -232,7 +232,7 @@ public static class TopologyInterchangeRecipe {
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().Id(&quot;saved-request-route&quot;).Title(&quot;An editable saved route&quot;)
             .Subtitle(&quot;The loaded graph owns independent native data&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 520 : 400));
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 520 : 400));
         chart.Nodes.Add(new TopologyNode { Id = &quot;request&quot;, Label = &quot;Request&quot;, X = 40, Y = 75, Width = 210, Height = 110,
             Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Queued&quot; });

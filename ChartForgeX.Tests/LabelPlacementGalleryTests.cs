@@ -20,8 +20,8 @@ public sealed class LabelPlacementGalleryTests {
             Assert.True(prepared.Scene.Nodes.OfType<VisualSceneText>().Count() > 2);
             Assert.NotEmpty(prepared.Regions);
             var raster = chart.ToRgbaImage();
-            Assert.Equal(chart.Options.Size.Width * chart.Options.Png.OutputScale, raster.Width);
-            Assert.Equal(chart.Options.Size.Height * chart.Options.Png.OutputScale, raster.Height);
+            Assert.Equal(chart.Options.Size.Width * chart.Options.Raster.OutputScale, raster.Width);
+            Assert.Equal(chart.Options.Size.Height * chart.Options.Raster.OutputScale, raster.Height);
             Assert.NotEmpty(chart.ToPng());
         }
         var grid = LabelPlacementExamples.Scorecard(dark);
@@ -38,7 +38,7 @@ public sealed class LabelPlacementGalleryTests {
 
     [Fact]
     public void NativePngBulletMarksOccupyTheirPreparedSemanticRows() {
-        var chart = LabelPlacementExamples.Charts(false).Single(panel => panel.Name == "bullet").Chart.Png(p => p.OutputScale(2));
+        var chart = LabelPlacementExamples.Charts(false).Single(panel => panel.Name == "bullet").Chart.Raster(p => p.OutputScale(2));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var marks = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bullet-value").ToArray();
         var rows = prepared.Regions.Where(region => region.Role == "bullet-row").ToArray();

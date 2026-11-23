@@ -52,7 +52,7 @@ public static class CandlestickRecipe {
                 financial.Falling.FillOpacity = .65;
                 financial.Falling.Wick.Stroke = ChartColor.FromHex("#729BB7");
                 financial.Falling.Wick.StrokeWidth = 1.4;
-            }).PointColor(4, "#729BB7");
+            }).PointColor(4, ChartColor.FromHex("#729BB7"));
             if (variant is "dashed" or "compact-dashed") prices.Financial(financial => {
                 financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
                 financial.Rising.DashOffset = -3;

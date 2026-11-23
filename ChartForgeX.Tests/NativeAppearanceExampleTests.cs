@@ -20,7 +20,7 @@ public sealed class NativeAppearanceExampleTests {
             var image = Assert.Single(document.Descendants(), node => node.Name.LocalName == "image");
             var uri = image.Attribute("href")!.Value;
             var decoded = RasterImageDecoder.Decode(Convert.FromBase64String(uri[(uri.IndexOf(',') + 1)..]));
-            Assert.Equal(layer.ToImage().Pixels, decoded.Pixels);
+            Assert.Equal(layer.ToRgbaImage().Pixels, decoded.Pixels);
             var program = ExampleRecipeSource.EmitNativeAppearance(effect, variant, mode);
             Assert.DoesNotContain("{{", program);
             Assert.DoesNotContain("ChartForgeX.Composition", program);
@@ -31,8 +31,8 @@ public sealed class NativeAppearanceExampleTests {
         }
         var composition = NativeGlassCompositionExample.Create(variant, mode);
         AppearanceFixture.Capture("appearance-example-glass-" + variant + "-" + mode, composition);
-        Assert.Equal(variant == "compact" ? 390 : 1100, composition.ToImage().Width);
-        Assert.Equal(400, composition.ToImage().Height);
+        Assert.Equal(variant == "compact" ? 390 : 1100, composition.ToRgbaImage().Width);
+        Assert.Equal(400, composition.ToRgbaImage().Height);
         var optional = ExampleRecipeSource.EmitNativeGlassComposition(variant, mode);
         Assert.Contains("BlurRegion", optional);
         Assert.DoesNotContain("{{", optional);

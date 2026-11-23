@@ -30,7 +30,7 @@ public sealed class TopologyQuietEdgeLabelTests {
         Assert.Equal("400", (string?)Role(svg, "topology-edge-label-text").First().Attribute("font-weight") ?? "400");
 
         // Native pixels: the chip masks the route with its own tone and paints no border.
-        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.Visual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPixel(image, x + 2.5, y + height / 2, tone);
         AssertPixel(image, x + width / 2, y + 1, tone);
     }
@@ -51,7 +51,7 @@ public sealed class TopologyQuietEdgeLabelTests {
         // The wider second line sets the pill width, so the pill is wider than a single-line caption pill.
         var single = Source(dark).Prepare().ToSvg();
         Assert.True(Number(surface, "width") > Number(Role(XDocument.Parse(single), "topology-edge-label-surface").Single(), "width") + 20);
-        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.Visual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var tone = ChartColorMath.Blend(colors.Background, colors.Foreground, TopologyRenderPrimitives.EdgeLabelQuietTint);
         AssertPixel(image, Number(surface, "x") + Number(surface, "height") / 2 + 1, (top + bottom) / 2, tone);
     }
@@ -70,7 +70,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     [Fact]
     public void FittedCardsKeepTheirNaturalWidthBelowTheWrappingLimit() {
         var chart = TopologyChart.Create().Id("fitted-cards").Title("").Viewport(new TopologyViewport(900, 400, 24)).Legend((TopologyLegend?)null)
-            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(ThemeMode.Light);
         chart.AddNode("short", "Cache", 40, 100, width: 60, height: 60, subtitle: "Redis");
         chart.AddNode("long", "Order service", 400, 100, width: 60, height: 60, subtitle: "Validates every order, reserves stock and coordinates the payment provider");
         foreach (var node in chart.Nodes) {
@@ -90,7 +90,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     [Fact]
     public void DefaultConnectorsStayLegibleWhenAFittedDiagramScalesDown() {
         var chart = TopologyChart.Create().Id("fitted-connector").Title("").Viewport(new TopologyViewport(160, 120, 8)).Legend((TopologyLegend?)null)
-            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(ThemeMode.Light);
         chart.AddNode("a", "Plan", 0, 0, width: 140, height: 80); chart.AddNode("b", "Deliver", 900, 0, width: 140, height: 80);
         chart.AddEdge("handoff", "a", "b", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
         chart.Theme = DiagramTheme.Apply(chart.Theme);
@@ -101,7 +101,7 @@ public sealed class TopologyQuietEdgeLabelTests {
 
     private static TopologyChart Source(bool dark) {
         var chart = TopologyChart.Create().Id("quiet-label").Title("").Viewport(new TopologyViewport(760, 400, 24)).Legend((TopologyLegend?)null)
-            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddNode("a", "Plan", 60, 100, width: 140, height: 80); chart.AddNode("b", "Deliver", 500, 100, width: 140, height: 80);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; }
         chart.AddEdge("handoff", "a", "b", "Transfer", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);

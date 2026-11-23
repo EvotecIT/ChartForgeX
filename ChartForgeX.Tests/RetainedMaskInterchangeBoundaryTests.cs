@@ -19,7 +19,7 @@ public sealed class RetainedMaskInterchangeBoundaryTests {
         var masked = source.WithMask(mask);
         var json = masked.ToArtifact().ToInterchangeJson();
         RetainedMaskFixture.Capture("retained-mask-portable-validation", source, masked, RetainedMaskFixture.Pixels);
-        var encoded = Convert.ToBase64String(mask.ToImage().Pixels);
+        var encoded = Convert.ToBase64String(mask.ToRgbaImage().Pixels);
         Assert.Throws<NotSupportedException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"version\":2", "\"version\":1")));
         Assert.Throws<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace(encoded, encoded.Insert(1, " "))));
         var noncanonical = encoded.Substring(0, encoded.Length - 3) + "x==";
@@ -84,7 +84,7 @@ public sealed class RetainedMaskInterchangeBoundaryTests {
         artifact.ExportFormats |= VisualArtifactExportFormat.Json;
         Assert.Throws<NotSupportedException>(() => artifact.ToInterchangeJson());
         Assert.Contains("mask", composed.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
-        Assert.Contains(composed.ToRgba(RetainedMaskFixture.Pixels).Pixels, value => value > 0);
+        Assert.Contains(composed.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels, value => value > 0);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class RetainedMaskInterchangeBoundaryTests {
                 limit = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters, supportsJson, error = wireFailure?.ToString() }));
         Assert.False(supportsJson);
         Assert.IsType<InvalidOperationException>(wireFailure);
-        Assert.Equal(source.ToRgba(RetainedMaskFixture.Pixels).Pixels, masked.ToRgba(RetainedMaskFixture.Pixels).Pixels);
+        Assert.Equal(source.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels, masked.ToRgbaImage(RetainedMaskFixture.Pixels).Pixels);
         Assert.Equal(source.Regions.Select(region => region.Id), masked.Regions.Select(region => region.Id));
     }
 }

@@ -42,7 +42,7 @@ public sealed class TreeViewInterchangeRejectionTests {
     [InlineData("\"pngOutputScale\":1", "\"pngOutputScale\":5")]
     [InlineData("\"themeMode\":\"Auto\"", "\"themeMode\":\"99\"")]
     [InlineData("\"kind\":\"Auto\"", "\"kind\":\"ExecuteCallback\"")]
-    [InlineData("\"icon\":\"Auto\"", "\"icon\":\"FetchRemote\"")]
+    [InlineData("\"icon\":\"Auto\"", "\"icon\":\"fetch remote!\"")]
     [InlineData("\"rowIndent\":18", "\"rowIndent\":\"NaN\"")]
     public void InvalidNativeFramesSpacingAndKindsRejectAtTheWireBoundary(string before, string after) {
         var json = TreeViewInterchangeTests.Native().ToJson(); Assert.Contains(before, json);

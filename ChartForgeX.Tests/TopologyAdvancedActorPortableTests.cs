@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyAdvancedActorPortableTests {
     [Fact]
     public void CustomGenericRouterIsCapturedAsFiniteNativeFactsAndRestoresWithoutItsProducerCatalog() {
-        var definition = new TopologyIconDefinition("tools", "gateway", "A custom router", TopologyNodeKind.Generic, TopologyIconShape.Router) { Symbol = "R", Color = "#2563EB" };
+        var definition = new TopologyIconDefinition("tools", "gateway", "A custom router", TopologyNodeKind.Generic, TopologyIconShape.Router) { Symbol = "R", Color = ChartColor.FromHex("#2563EB") };
         var pack = new TopologyIconPack("tools", "Finite test icons").AddIcon(definition);
         var catalog = new TopologyIconCatalog().AddPack(pack);
         var family = new MermaidFlowchartRenderOptions { Width = 640, Height = 360, FitContent = false, IconCatalog = catalog,
@@ -69,7 +69,7 @@ public sealed class TopologyAdvancedActorPortableTests {
         var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Id("native-glyph-policy").Viewport(new TopologyViewport(480, 320, 0)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("router", "Native router", 100, 60, width: 170, height: 140);
         var node = chart.Nodes[0]; node.Kind = TopologyNodeKind.Database; node.IconShape = TopologyIconShape.Router;
-        node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Icon; node.PreserveDisplayModeSize = true; node.Color = "#2563EB";
+        node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Icon; node.PreserveDisplayModeSize = true; node.Color = ChartColor.FromHex("#2563EB");
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false });
         var direct = chart.Prepare(); var svg = direct.ToSvg(); Assert.NotEmpty(Glyph(svg, "router"));
         Assert.Equal(TopologyIconShape.Router, Assert.Single(direct.ToInterchangeEnvelope().Nodes).Topology!.IconShape);
@@ -91,7 +91,7 @@ public sealed class TopologyAdvancedActorPortableTests {
             .AddNode("action", "Submit request", 390, 60, width: 180, height: 90)
             .AddEdge("submit", "actor", "action", routing: TopologyEdgeRouting.Straight);
         var actor = chart.Nodes[0]; actor.LabelContent = TextContent.FromRuns(new[] { new TextContentRun("External "), new TextContentRun("participant", TextInlineEmphasis.Bold) }); actor.Kind = TopologyNodeKind.Generic; actor.Shape = shape; actor.Subtitle = "Business participant";
-        actor.SubtitleTextStyle = new TextStyleOverride { FontSize = 13, FontWeight = "500", FontFamily = BrowserProofFonts.Family };
+        actor.SubtitleTextStyle = new TextStyleOverride { FontSize = 13, FontWeight = 500, FontFamily = BrowserProofFonts.Family };
         if (shape == TopologyNodeShape.ActorIcon) actor.IconShape = TopologyIconShape.Router;
         chart.Nodes[1].Kind = TopologyNodeKind.Generic; chart.Nodes[1].Shape = TopologyNodeShape.Ellipse;
         foreach (var node in chart.Nodes) { node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true; node.DisplayMode = TopologyNodeDisplayMode.Card; }
@@ -111,7 +111,7 @@ public sealed class TopologyAdvancedActorPortableTests {
         Assert.Contains(subtitle.Descendants(), item => (string?)item.Attribute("data-cfx-native-text-ink") == "true");
         NativeInlineContentTests.AssertResources(prepared.ToSvg());
         Assert.Equal(13, captured.Topology!.SubtitleTextStyle!.FontSize);
-        Assert.Equal("500", captured.Topology.SubtitleTextStyle.FontWeight);
+        Assert.Equal(500, captured.Topology.SubtitleTextStyle.FontWeight);
         Assert.Equal(BrowserProofFonts.Family, captured.Topology.SubtitleTextStyle.FontFamily);
         Assert.Equal(TextInlineEmphasis.Bold, captured.Topology.LabelContent!.Runs[1].Emphasis);
         var loaded = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson()).ToTopologyChart();

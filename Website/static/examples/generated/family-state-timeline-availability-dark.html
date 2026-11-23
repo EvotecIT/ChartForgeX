@@ -140,8 +140,7 @@ public static class AvailabilityLanesRecipe {
             }
             segments.Add(new ChartStateTimelineSegment(cursor, start.AddHours(24), &quot;up&quot;));
             var available = 1 - down / (24 * 60);
-            chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId(&quot;target-&quot; + index.ToString(CultureInfo.InvariantCulture)), name, segments,
-                available.ToString(&quot;0.0%&quot;, CultureInfo.InvariantCulture), site));
+            chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId(&quot;target-&quot; + index.ToString(CultureInfo.InvariantCulture)), name, segments, site, available.ToString(&quot;0.0%&quot;, CultureInfo.InvariantCulture)));
         }
         return chart;
     }
@@ -214,8 +213,7 @@ public static class AvailabilityLanesRecipe {
             }
             segments.Add(new ChartStateTimelineSegment(cursor, start.AddHours(24), &quot;up&quot;));
             var available = 1 - down / (24 * 60);
-            chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId(&quot;target-&quot; + index.ToString(CultureInfo.InvariantCulture)), name, segments,
-                available.ToString(&quot;0.0%&quot;, CultureInfo.InvariantCulture), site));
+            chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId(&quot;target-&quot; + index.ToString(CultureInfo.InvariantCulture)), name, segments, site, available.ToString(&quot;0.0%&quot;, CultureInfo.InvariantCulture)));
         }
         return chart;
     }

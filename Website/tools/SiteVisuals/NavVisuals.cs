@@ -102,7 +102,7 @@ internal static class NavVisuals {
             .ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .WorkingDirectory(@"C:\Reports")
             .Width(Width * 3)
-            .PngOutputScale(1)
+            .RasterScale(1)
             .ShowFinalPrompt(false);
         foreach (var line in lines) story.Command(line);
         return story;

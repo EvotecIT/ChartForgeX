@@ -82,6 +82,6 @@ public sealed class SvgRasterVariableInheritanceTests {
             "<rect width='32' height='32' fill='#ff0000' clip-path='url(#c)'/>"));
     }
 
-    private static byte[] Render(string body) => SvgRasterizer.ToImage(
+    private static byte[] Render(string body) => SvgRasterizer.ToRgbaImage(
         "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>" + body + "</svg>").Pixels;
 }

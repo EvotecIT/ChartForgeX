@@ -23,7 +23,7 @@ internal static partial class SmokeTests {
             .AddRow("D:", 0.91, "34 GB", "Warning")
             .StatusColumn("Status")
             .Dense();
-        table.UpdateRow(1, row => row.Cells[3].Status = Tone.Warning);
+        table.UpdateRow(1, row => row.Cells[3].Tone = Tone.Warning);
         table.UpdateRow(0, row => row.Cells[1].Badge("72%", Tone.Success, ChartColor.FromHex("#22C55E")));
         table.UpdateRow(0, row => row.Cells[2].Sparkline(new[] { 96d, 118d, 128d }, color: ChartColor.FromHex("#38BDF8")));
         table.UpdateRow(1, row => row.Cells[2].MiniBars(new[] { 46d, 39d, 34d }, color: ChartColor.FromHex("#F97316")));
@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
 
         var list = ChartList.Create().Theme(VisualTheme.Graphite())
             .Title("Security checks")
-            .Marker(VisualListMarker.Status)
+            .Marker(VisualListMarker.Tone)
             .AddStatusItem("Disk encryption", Tone.Success, "ready")
             .AddStatusItem("Patch window", Tone.Warning, "due")
             .AddStatusItem("Backup age", Tone.Danger, "stale");
@@ -67,7 +67,7 @@ internal static partial class SmokeTests {
 
         var radialMetric = RadialMetricCard.Create().Theme(VisualTheme.Graphite())
             .Metric("Capacity left", "42%")
-            .Icon(Icons.Flame)
+            .Icon(MetricCardIcons.Flame)
             .AddLayer("Track", 100, color: ChartColor.FromHex("#E2E8F0"), configure: layer => layer.RadiusRatio(1).StrokeRatio(0.16).LineCap(ChartRadialLayerCap.Butt))
             .AddLayer("Current", 42, color: ChartColor.FromHex("#F97316"), configure: layer => layer.RadiusRatio(1).StrokeRatio(0.12));
         var radialSvg = radialMetric.ToSvg("visual-block-radial-metric");
@@ -81,8 +81,8 @@ internal static partial class SmokeTests {
             .Theme(VisualTheme.Graphite())
             .Size(620, 250)
             .HeaderSymbol("%")
-            .AddItem("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: Tone.Success)
-            .AddItem("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", status: Tone.Info)
+            .AddItem("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", tone: Tone.Success)
+            .AddItem("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", tone: Tone.Info)
             .Subtitle("Up by 6% compared to last week");
         var segmentedSvg = segmented.ToSvg("visual-block-segmented-metric");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-rows\"", StringComparison.Ordinal), "SegmentedMetricBlock should render progress-row treatments.");
@@ -139,13 +139,13 @@ internal static partial class SmokeTests {
                 .Color(ChartColor.FromHex("#5EA2F6"))
                 .DisplayValue("132,034")
                 .Delta("+4.3%")
-                .Status(Tone.Success))
+                .Tone(Tone.Success))
             .AddItem(new SegmentedMetricItem("Replies", 62)
                 .Maximum(100).Segments(44)
                 .Color(ChartColor.FromHex("#7894F8"))
                 .DisplayValue("56,234")
                 .Delta("-6.4%")
-                .Status(Tone.Danger));
+                .Tone(Tone.Danger));
         var performanceRowsSvg = performanceRows.ToSvg("visual-block-segmented-performance-rows");
         Assert(performanceRowsSvg.Contains("132,034", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render item display values when supplied.");
         Assert(performanceRowsSvg.Contains("+4.3%", StringComparison.Ordinal) && performanceRowsSvg.Contains("-6.4%", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render semantic deltas alongside exact values.");
@@ -244,7 +244,7 @@ internal static partial class SmokeTests {
             })
             .AddItem(new SegmentedMetricItem("Prebuilt", 4)
                 .Maximum(8).Segments(16)
-                .Status(Tone.Success)
+                .Tone(Tone.Success)
                 .Delta("+2"));
         var configuredItemsSvg = configuredItems.ToSvg("visual-block-segmented-configured-items");
         Assert(configuredItemsSvg.Contains("data-cfx-segments=\"20\"", StringComparison.Ordinal), "SegmentedMetricBlock should support callback-configured items without growing AddItem overloads.");
@@ -280,9 +280,9 @@ internal static partial class SmokeTests {
             .Theme(VisualTheme.Graphite())
             .Size(620, 360)
             .Metric("Tasks", 23, "Task")
-            .AddItem("On Going", 12, color: ChartColor.FromHex("#5EA2F6"), status: Tone.Info, pattern: ChartFillPattern.DiagonalForward)
-            .AddItem("Under Review", 6, color: ChartColor.FromHex("#FFB05C"), status: Tone.Warning)
-            .AddItem("Finish", 4, color: ChartColor.FromHex("#34C77B"), status: Tone.Success);
+            .AddItem("On Going", 12, color: ChartColor.FromHex("#5EA2F6"), tone: Tone.Info, pattern: ChartFillPattern.DiagonalForward)
+            .AddItem("Under Review", 6, color: ChartColor.FromHex("#FFB05C"), tone: Tone.Warning)
+            .AddItem("Finish", 4, color: ChartColor.FromHex("#34C77B"), tone: Tone.Success);
         var compositionSvg = composition.ToSvg("visual-block-composition-status");
         Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-composition\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a composition treatment.");
         Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-composition-strip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a stacked composition strip.");
@@ -399,7 +399,7 @@ internal static partial class SmokeTests {
             .ShowEventSurfaces(false)
             .AddSection("In-progress")
             .AddEvent("Shipment", "Just now", Tone.Info, "In-Progress", "Delivery by Royal Mail Standard", "S")
-            .AddEvent("Shipment 1", status: Tone.Neutral)
+            .AddEvent("Shipment 1", tone: Tone.Neutral)
             .AddChecklistItem("Carrier confirmed", completed: true, muted: true)
             .AddChecklistItem("Packing in progress", completed: false)
             .AddHiddenSummary(6, "items hidden")
@@ -453,7 +453,7 @@ internal static partial class SmokeTests {
             .StatusColumn("Status");
         var metric = MetricCard.Create()
             .Metric("Open items", 12)
-            .Status(Tone.Warning);
+            .Tone(Tone.Warning);
 
         var grid = VisualGrid.Create()
             .Title("System snapshot")

@@ -12,7 +12,7 @@ public sealed class TopologyExplicitLabelMarkerBrowserTests {
     [BrowserTheory]
     [InlineData(false, 390)] [InlineData(true, 1200)]
     public async Task RestoredPinnedBaselineAndFillOnlyMarkersUseTheNativeSvgAndPortableFacts(bool dark, int width) {
-        var source = TopologyExplicitLabelMarkerTests.Source().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var source = TopologyExplicitLabelMarkerTests.Source().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var saved = source.Prepare().ToInterchangeEnvelope(); var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();
         var artifact = restored.ToVisualArtifact();
         await using var session = await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.FitToWidth }), width, 720);

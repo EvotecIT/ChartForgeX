@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
             .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
             .AddEdge("center", "left", "right", "center", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .EdgeRouteLane("center", 0);
+            .UpdateEdge("center", edge => edge.RouteLane(0));
 
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[0])) < 0.0001, "Explicit zero route lanes should stay centered instead of being replaced by inferred parallel offsets.");
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[1])) > 0.0001, "Unset duplicate route lanes should still infer a parallel offset.");
@@ -277,7 +277,7 @@ internal static partial class SmokeTests {
     private static void TopologyEdgeLabelClearanceTintsAnyGroupColourAndUsesBackgroundWhenGroupsAreHidden() {
         (ChartColor Fill, string? SvgFill, byte[] Png) Clearance(string color, bool includeGroups) {
             var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).Viewport(new TopologyViewport(600, 360, 20)).Legend((TopologyLegend?)null)
-                .AddGroup("services", "Services", 10, 10, 560, 320, color: color)
+                .AddGroup("services", "Services", 10, 10, 560, 320, color: ChartColorText.Parse(color))
                 .AddNode("source", "Source", 70, 150, groupId: "services")
                 .AddNode("target", "Target", 350, 150, groupId: "services")
                 .AddEdge("connection", "source", "target", label: "Connection", routing: TopologyEdgeRouting.Straight);

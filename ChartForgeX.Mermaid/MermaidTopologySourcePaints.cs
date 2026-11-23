@@ -37,55 +37,55 @@ internal static class MermaidTopologySourcePaints {
         foreach (var node in chart.Nodes) {
             if (!nodeStyles.TryGetValue(node.Id, out var styles)) continue;
             var authoredFill = MermaidNativeStyles.Paint(styles, "fill"); var authoredStroke = MermaidNativeStyles.Paint(styles, "stroke");
-            if (background != null && authoredFill == null && node.Shape != TopologyNodeShape.TextBlock) node.BackgroundColor = background;
-            if (authoredStroke != null || border != null) node.BorderColor = authoredStroke ?? border;
-            if (text != null && MermaidNativeStyles.Paint(styles, "color") == null) node.LabelColor = text;
+            if (background != null && authoredFill == null && node.Shape != TopologyNodeShape.TextBlock) node.BackgroundColor = ChartColorText.Parse(background);
+            if (authoredStroke != null || border != null) node.BorderColor = ChartColorText.Parse(authoredStroke ?? border);
+            if (text != null && MermaidNativeStyles.Paint(styles, "color") == null) node.LabelColor = ChartColorText.Parse(text);
             if (node.Shape is TopologyNodeShape.Browser or TopologyNodeShape.Console or TopologyNodeShape.Bucket && border != null) {
-                node.Color = border; node.BorderColor = authoredStroke ?? border;
+                node.Color = ChartColorText.Parse(border); node.BorderColor = ChartColorText.Parse(authoredStroke ?? border);
             }
             if (node.Shape is TopologyNodeShape.FilledCircle or TopologyNodeShape.FramedCircle or TopologyNodeShape.SynchronizationBar) {
                 // These source paths style fill/stroke independently; native accent fill and contour are separate owners.
                 // The filled-circle default has a literal border-colored fill. An authored
                 // style replaces that literal; omitted fill then falls back to the surface.
-                node.Color = authoredFill ?? (node.Shape == TopologyNodeShape.FilledCircle && styles.Count == 0 ? markerBorder : markerBackground);
-                node.BorderColor = authoredStroke ?? markerBorder;
+                node.Color = ChartColorText.Parse(authoredFill ?? (node.Shape == TopologyNodeShape.FilledCircle && styles.Count == 0 ? markerBorder : markerBackground));
+                node.BorderColor = ChartColorText.Parse(authoredStroke ?? markerBorder);
             }
             if (node.Shape == TopologyNodeShape.TextBlock) {
                 // rect.text defaults to fill:none/stroke-width:0 upstream. Explicit visible
                 // source paint reuses Rectangle; the retained Mermaid shape fact stays TextBlock.
                 var outline = node.StrokeWidth.HasValue && (authoredStroke != null || border != null);
                 if (authoredFill != null || outline) {
-                    node.Shape = TopologyNodeShape.Rectangle; node.BackgroundColor = authoredFill ?? "none";
-                    node.BorderColor = outline ? authoredStroke ?? border : "none";
+                    node.Shape = TopologyNodeShape.Rectangle; node.BackgroundColor = ChartColorText.Parse(authoredFill ?? "none");
+                    node.BorderColor = ChartColorText.Parse(outline ? authoredStroke ?? border : "none");
                 }
             }
             if (node.Metadata.TryGetValue("mermaid.asset.kind", out var kind) && kind == "icon") {
                 var flow = (MermaidFlowchartDocument)document; var original = flow.Nodes.Find(item => item.Id == node.Id)!;
                 var framed = original.Properties.TryGetValue("form", out var form) && form is "circle" or "square" or "rounded";
-                if (authoredStroke != null || border != null) node.Color = authoredStroke ?? border;
+                if (authoredStroke != null || border != null) node.Color = ChartColorText.Parse(authoredStroke ?? border);
                 if (framed) {
-                    if (authoredFill != null || background != null) node.BorderColor = authoredFill ?? background;
+                    if (authoredFill != null || background != null) node.BorderColor = ChartColorText.Parse(authoredFill ?? background);
                 } else {
                     // The pinned placeholder always overrides its source fill/stroke to none. The glyph uses stroke as color.
-                    node.BackgroundColor = "none"; node.BorderColor = "none"; node.SurfaceOpacity = 0;
+                    node.BackgroundColor = ChartColorText.Parse("none"); node.BorderColor = ChartColorText.Parse("none"); node.SurfaceOpacity = 0;
                 }
             }
         }
         foreach (var group in chart.Groups) {
             if (!groupStyles.TryGetValue(group.Id, out var styles)) continue;
             // The pinned Agentflow flow-cluster has a later fill:none rule; clusterBkg does not color it.
-            if (document.Kind != MermaidDiagramKind.Agentflow && cluster != null && MermaidNativeStyles.Paint(styles, "fill") == null) group.BackgroundColor = cluster;
-            if (clusterBorder != null && MermaidNativeStyles.Paint(styles, "stroke") == null) group.BorderColor = clusterBorder;
-            if (clusterText != null && MermaidNativeStyles.Paint(styles, "color") == null) group.LabelColor = clusterText;
+            if (document.Kind != MermaidDiagramKind.Agentflow && cluster != null && MermaidNativeStyles.Paint(styles, "fill") == null) group.BackgroundColor = ChartColorText.Parse(cluster);
+            if (clusterBorder != null && MermaidNativeStyles.Paint(styles, "stroke") == null) group.BorderColor = ChartColorText.Parse(clusterBorder);
+            if (clusterText != null && MermaidNativeStyles.Paint(styles, "color") == null) group.LabelColor = ChartColorText.Parse(clusterText);
         }
         if (text != null) foreach (var edge in chart.Edges)
-            if (!edge.Metadata.ContainsKey("mermaid.style.color")) edge.LabelColor = text;
+            if (!edge.Metadata.ContainsKey("mermaid.style.color")) edge.LabelColor = ChartColorText.Parse(text);
         var line = Role("defaultLinkColor") ?? Role("lineColor");
         if (line != null) foreach (var edge in chart.Edges)
-            if (!edge.Metadata.ContainsKey("mermaid.style.stroke")) edge.Color = line;
+            if (!edge.Metadata.ContainsKey("mermaid.style.stroke")) edge.Color = ChartColorText.Parse(line);
         if (edgeBackground != null) {
             var fill = ChartColor.Parse(edgeBackground).ToHexRgba();
-            foreach (var edge in chart.Edges) edge.LabelBackgroundColor = fill;
+            foreach (var edge in chart.Edges) edge.LabelBackgroundColor = ChartColorText.Parse(fill);
         }
     }
 }

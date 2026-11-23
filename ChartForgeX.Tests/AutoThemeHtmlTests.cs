@@ -18,7 +18,7 @@ public sealed class AutoThemeHtmlTests {
     private static Chart Line(ThemeMode mode) => Chart.Create().Size(480, 300).ThemeMode(mode).Title("Orders")
         .AddLine("Orders", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5), new ChartPoint(3, 4) });
 
-    private static TopologyChart Topology(ThemeMode mode) => TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(640, 240, 20))
+    private static TopologyChart Topology(ThemeMode mode) => TopologyChart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(640, 240, 20))
         .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 340, 100).AddEdge("ab", "a", "b", "calls");
 
     public static IEnumerable<object[]> Renderers() {
@@ -86,12 +86,12 @@ public sealed class AutoThemeHtmlTests {
         var chart = Line(ThemeMode.Auto);
         var fragment = new HtmlResponsiveChartRenderer().RenderFragmentWithoutAssets(chart);
         Assert.Null(chart.Options.SvgColorVariables);
-        var css = HtmlResponsiveChartRenderer.AutoThemeStylesheet(chart);
+        var css = HtmlResponsiveChartRenderer.AutoThemeStyleSheet(chart);
         Assert.NotNull(css);
         Assert.DoesNotContain("<style", fragment);
         var scope = Regex.Match(fragment, "data-cfx-auto-theme=\"(cfx-auto-[0-9a-f]+)\"").Groups[1].Value;
         Assert.StartsWith("[data-cfx-auto-theme=\"" + scope + "\"]{", css);
-        Assert.Null(HtmlResponsiveChartRenderer.AutoThemeStylesheet(Line(ThemeMode.Light)));
+        Assert.Null(HtmlResponsiveChartRenderer.AutoThemeStyleSheet(Line(ThemeMode.Light)));
     }
 
     [Fact]

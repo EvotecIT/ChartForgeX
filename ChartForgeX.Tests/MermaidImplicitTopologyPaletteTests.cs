@@ -76,7 +76,7 @@ public sealed class MermaidImplicitTopologyPaletteTests {
         var saved = artifact.ToInterchangeEnvelope(); var restored = saved.ToTopologyChart().Prepare(); CaptureArtifact("recipe-" + family + "-" + variant + "-" + mode + "-restored", restored.Visual.ToArtifact());
         Assert.Equal(artifact.ToPng(), restored.ToPng()); Assert.Equal(3, saved.Nodes.Count); Assert.Equal(2, saved.Edges.Count);
     }
-    private static void Color(string expected, string? actual) => Assert.Equal(ChartColor.FromHex(expected), ChartColor.Parse(actual!));
+    private static void Color(string expected, ChartColor? actual) => Assert.Equal(ChartColor.FromHex(expected), actual!.Value);
     private static void Capture(string name, string source, MermaidRenderResult result) {
         if (Environment.GetEnvironmentVariable("CFX_SOURCE_CONTOUR_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); var stem = Path.Combine(output, "implicit-source-palette-" + name); File.WriteAllText(stem + ".mmd", source); File.WriteAllText(stem + ".diagnostics.json", JsonSerializer.Serialize(result.Diagnostics));

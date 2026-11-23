@@ -16,7 +16,7 @@ public sealed class ResponsiveChartGeometryTests {
         var chart = Chart.Create().Size(760, 280).ShowHeader(false).Legend(false).DataLabels(false)
             .AddBar("Count", new[] { new ChartPoint(1, 1) });
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 800, compressLayouts: true);
-        await using var session = await InteractiveChartBrowser.OpenAsync("<html><body><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script></body></html>");
+        await using var session = await InteractiveChartBrowser.OpenAsync("<html><body><script>" + HtmlResponsiveChartRenderer.Script + "</script></body></html>");
         await session.Page.EvaluateAsync("""
             fragment=>{
               const text=Response.prototype.text, Observer=ResizeObserver;
@@ -41,7 +41,7 @@ public sealed class ResponsiveChartGeometryTests {
             .Axes(false).DataLabels(false).ShowCard(false).Bars(b => b.Style(ChartBarStyle.Flat).MaxWidth(220))
             .AddBar("A", new[] { new ChartPoint(1, 1) });
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
-        var html = "<html><body style='margin:0'><div id='panel' style='width:320px'></div><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script></body></html>";
+        var html = "<html><body style='margin:0'><div id='panel' style='width:320px'></div><script>" + HtmlResponsiveChartRenderer.Script + "</script></body></html>";
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 600);
         // Mirrors a compressed chapter: script elements parsed through innerHTML stay inert.
         await session.Page.EvaluateAsync("html=>{const t=document.createElement('template');t.innerHTML=html;document.querySelector('#panel').append(t.content);}", fragment);

@@ -185,7 +185,7 @@ public sealed class MarkupTableParser {
         table.AddRow(rowKey, values);
         var row = table.Rows[table.Rows.Count - 1];
         for (var i = 0; i < row.Cells.Count; i++) {
-            if (table.Columns[i].Type == TableArtifactColumnType.Status) row.Cells[i].Status = ParseStatus(row.Cells[i].DisplayText);
+            if (table.Columns[i].Type == TableArtifactColumnType.Status) row.Cells[i].Tone = ParseStatus(row.Cells[i].DisplayText);
         }
     }
 

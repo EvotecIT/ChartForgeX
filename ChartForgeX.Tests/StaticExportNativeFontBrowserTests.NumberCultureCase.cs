@@ -25,7 +25,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             var readings = NativeNumberCultureCaseMotionTests.Readings(policy); var from = Section(readings.First); var to = Section(readings.Last); var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 5, null);
             var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 5));
             // Synthetic OpenType fixtures qualify captured native glyphs; real binary font delivery is checked separately.
-            var html = "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + from.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+            var html = "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + from.Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
             await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 680); var page = session.Page;
             await page.WaitForFunctionAsync("()=>!!ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'))");
             var start = new DateTime(2026, 10, 25, 10, 0, 0, DateTimeKind.Utc); await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = start }); await page.Clock.PauseAtAsync(start.AddHours(1));

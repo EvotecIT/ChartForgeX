@@ -29,8 +29,8 @@ internal static partial class SmokeTests {
         Assert(TypographyCss.FamilyWithGenericFallback("inherit") == "inherit", "CSS-wide keywords should stay unchanged.");
 
         // The appended generic family never changes which face the rasterizer picks, so SVG-derived PNG output keeps parity.
-        var withFallback = SvgRasterizer.ToImage(svg).Pixels;
-        var withoutFallback = SvgRasterizer.ToImage(svg.Replace(Missing + ", sans-serif", Missing)).Pixels;
+        var withFallback = SvgRasterizer.ToRgbaImage(svg).Pixels;
+        var withoutFallback = SvgRasterizer.ToRgbaImage(svg.Replace(Missing + ", sans-serif", Missing)).Pixels;
         Assert(withFallback.SequenceEqual(withoutFallback), "The generic fallback should not change rasterized SVG text.");
     }
 

@@ -34,10 +34,10 @@ public sealed class InnerShadowPresentationTests {
         AppearanceFixture.Capture("inner-recipe-" + variant + "-" + mode, layer);
         AppearanceFixture.Capture("inner-recipe-restored-" + variant + "-" + mode, terminal);
         NativeEffectBeforeCapture.Write("inner-retained-" + variant + "-" + mode, nativeSvg,
-            restored.ToPng(InnerShadowFixture.Unit), restored.ToRgba(InnerShadowFixture.Unit));
+            restored.ToPng(InnerShadowFixture.Unit), restored.ToRgbaImage(InnerShadowFixture.Unit));
         NativeEffectBeforeCapture.Json("inner-recipe-" + variant + "-" + mode + "-facts", new { json, terminalJson });
-        Assert.Equal(direct.ToImage().Pixels, layer.ToImage().Pixels);
-        Assert.Equal(layer.ToImage().Pixels, terminal.ToImage().Pixels);
+        Assert.Equal(direct.ToRgbaImage().Pixels, layer.ToRgbaImage().Pixels);
+        Assert.Equal(layer.ToRgbaImage().Pixels, terminal.ToRgbaImage().Pixels);
         Assert.Equal(retained.ToSvg(), restored.ToSvg());
         Assert.Equal(retained.ToPng(InnerShadowFixture.Unit), restored.ToPng(InnerShadowFixture.Unit));
         Assert.Equal(new ChartRect(0, 0, source.Size.Width, source.Size.Height), layer.Bounds);
@@ -80,8 +80,8 @@ public sealed class InnerShadowPresentationTests {
         var source = InnerShadowFixture.Source(128);
         var request = new VisualInnerShadow(ChartColor.FromRgb(0, 0, 255), 0, 0, 0, orderedDither: false);
         var mask = new VisualMask(AppearanceFixture.Solid(16, 16, 128), orderedDither: false);
-        var first = source.WithInnerShadow(request).WithMask(mask).ToRgba(InnerShadowFixture.Unit);
-        var second = source.WithMask(mask).WithInnerShadow(request).ToRgba(InnerShadowFixture.Unit);
+        var first = source.WithInnerShadow(request).WithMask(mask).ToRgbaImage(InnerShadowFixture.Unit);
+        var second = source.WithMask(mask).WithInnerShadow(request).ToRgbaImage(InnerShadowFixture.Unit);
         NativeEffectBeforeCapture.Write("inner-mask-after", null, first.ToPng(), first);
         NativeEffectBeforeCapture.Write("inner-mask-before", null, second.ToPng(), second);
         Assert.NotEqual(first.Pixels, second.Pixels);

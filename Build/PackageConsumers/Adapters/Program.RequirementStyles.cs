@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Linq;
 using System.Xml.Linq;
@@ -13,7 +14,7 @@ internal static partial class Program {
         var strict = RenderFixture(styled, options);
         var strictFence = CreateFixtureParser(options).Parse("```mermaid\n" + styled + "\n```");
         PackageAssertions.Require(!strict.HasErrors && strict.Diagnostics.Count == 0 && strict.Artifact?.Model is TopologyChart native
-            && native.Nodes.Single(node => node.Id == "req").BackgroundColor == "#ff0000"
+            && native.Nodes.Single(node => node.Id == "req").BackgroundColor == ChartColor.FromHex("#ff0000")
             && !strictFence.HasErrors && strictFence.Diagnostics.Count == 0 && strictFence.Artifacts.Count == 1,
             "Packed strict Requirement fill lost its native paint or Markdown application.");
         var artifact = strict.Artifact ?? throw new InvalidOperationException("Packed Requirement did not produce an artifact.");

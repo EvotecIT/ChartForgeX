@@ -65,7 +65,7 @@ public sealed partial class TopologyNodeDetail {
     public TopologyHealthStatus? Status { get; set; }
 
     /// <summary>Gets or sets an optional row accent color.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets arbitrary metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();

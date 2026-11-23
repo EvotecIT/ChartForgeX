@@ -81,7 +81,7 @@ public sealed class StoryReplayTests {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(10), workingDirectory: "~/demo")
             .Command(TimeSpan.FromSeconds(1), "Get-Status")
             .Output(TimeSpan.FromSeconds(2), "Starting")
-            .ReplaceLine(TimeSpan.FromSeconds(3), "Ready", TerminalTextTone.Success)
+            .ReplaceLine(TimeSpan.FromSeconds(3), "Ready", Tone.Success)
             .OpenTab(TimeSpan.FromSeconds(4), "bash", "Build", TerminalDialect.Bash, "~/src")
             .Command(TimeSpan.FromSeconds(5), "make")
             .SelectTab(TimeSpan.FromSeconds(6), "main")

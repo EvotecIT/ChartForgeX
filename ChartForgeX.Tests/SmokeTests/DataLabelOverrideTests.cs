@@ -12,8 +12,8 @@ internal static partial class SmokeTests {
     private static void TimelineAndGanttSeriesDataLabelOverridesAreHonored() {
         var timelineVisible = Chart.Create()
             .Size(640, 360)
-            .AddTimelineRange("Visible", 1, 5)
-            .AddTimelineRange("Hidden", 1, 4);
+            .AddTimelineItem("Visible", 1, 5)
+            .AddTimelineItem("Hidden", 1, 4);
         timelineVisible.Series[0].ShowDataLabels(true);
         var timelineVisibleSvg = timelineVisible.ToSvg();
         Assert(CountOccurrences(timelineVisibleSvg, "data-cfx-role=\"data-label\"") == 1, "Timeline series overrides should enable labels for one item without enabling every timeline row.");
@@ -21,7 +21,7 @@ internal static partial class SmokeTests {
         var timelineHidden = Chart.Create()
             .Size(640, 360)
             .DataLabels()
-            .AddTimelineRange("Hidden", 1, 5);
+            .AddTimelineItem("Hidden", 1, 5);
         timelineHidden.Series[0].ShowDataLabels(false);
         Assert(!timelineHidden.ToSvg().Contains("data-cfx-role=\"data-label\"", System.StringComparison.Ordinal), "Timeline series overrides should hide labels even when chart-level labels are enabled.");
 
@@ -188,14 +188,14 @@ internal static partial class SmokeTests {
             (() => Chart.Create().Theme(VisualTheme.Graphite()).Size(520, 360).DataLabels().AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("Mail", "Mail", "Root", 3), new ChartHierarchyItem("Web", "Web", "Root", 2) }), "sunburst-label", "sunburst"),
             (() => Chart.Create().Theme(VisualTheme.Graphite()).Size(460, 460).DataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),
             (() => Chart.Create().Theme(VisualTheme.Graphite()).Size(560, 260).DataLabels().AddBullet("Control", 82, 90), "bullet-row-label", "bullet"),
-            (() => Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 360).DataLabels().AddTimelineRange("Migration", 1, 5), "data-label", "timeline"),
+            (() => Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 360).DataLabels().AddTimelineItem("Migration", 1, 5), "data-label", "timeline"),
             (() => Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 360).DataLabels().AddGanttTask("Migration", 1, 5, 0.5), "data-label", "Gantt")
         };
 
         foreach (var item in cases) {
             var regular = item.Create();
             var styled = item.Create();
-            styled.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#c026d3")).FontFamily("monospace").FontWeight("750").Italic().Underline().FontSize(14));
+            styled.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#c026d3")).FontFamily("monospace").FontWeight(750).Italic().Underline().FontSize(14));
             var svg = styled.ToSvg();
             Assert(svg.Contains("data-cfx-role=\"" + item.Role + "\"", StringComparison.Ordinal), item.Name + " data labels should render when enabled.");
             var prepared = PreparedFamily(styled);

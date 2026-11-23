@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,9 +37,9 @@ internal static partial class SmokeTests {
 
         table.Columns[1].Metadata["facet"] = "health";
         table.UpdateRow(1, row => {
-            row.Status = Tone.Warning;
+            row.Tone = Tone.Warning;
             row.Metadata["source"] = "probe";
-            row.Cells[1].Status = Tone.Warning;
+            row.Cells[1].Tone = Tone.Warning;
         });
 
         Assert(table.Supports(TableArtifactCapabilities.Search), "TableArtifact should declare full-table search capability.");
@@ -46,8 +47,8 @@ internal static partial class SmokeTests {
         Assert(table.SupportsExport(VisualArtifactExportFormat.Csv), "TableArtifact should declare data export formats independently from static previews.");
         Assert(table.Columns[2].Alignment == TextAlignment.Right, "TableArtifact columns should preserve static preview alignment hints.");
         Assert(table.Columns[1].Metadata["facet"] == "health", "TableArtifact columns should preserve host metadata.");
-        Assert(table.Rows[1].Status == Tone.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
-        Assert(table.Rows[1].Cells[1].Status == Tone.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
+        Assert(table.Rows[1].Tone == Tone.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
+        Assert(table.Rows[1].Cells[1].Tone == Tone.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
 
         var artifact = table.ToVisualArtifact();
         Assert(artifact.Kind == VisualArtifactKind.Table, "TableArtifact should wrap into a product-neutral visual artifact envelope.");
@@ -67,8 +68,8 @@ internal static partial class SmokeTests {
             .AddRow("a", "Ada Lovelace", "Enabled")
             .AddRow("g", "Grace Hopper", "Disabled")
             .UpdateRow(1, row => {
-                row.Status = Tone.Danger;
-                row.Cells[1].Status = Tone.Danger;
+                row.Tone = Tone.Danger;
+                row.Cells[1].Tone = Tone.Danger;
             });
 
         var block = table.ToPreviewBlock();
@@ -221,8 +222,8 @@ internal static partial class SmokeTests {
         scaleWatermark.Anchor = VisualCanvasAnchor.Center;
         scaleWatermark.FontSize = 20;
         scaleWatermark.Opacity = 1;
-        var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 } };
-        var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
+        var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 1 } };
+        var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 2 } };
         var scaleOnePlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
         var scaleTwoPlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
         var scaleOneDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().AddWatermarks(scaleOneOptions, scaleWatermark).ToPng(scaleOneOptions));
@@ -268,7 +269,7 @@ internal static partial class SmokeTests {
         var fittedArtifactOptions = new VisualArtifactRenderOptions { Topology = fittedTopologyOptions };
         var widePlain = RasterImageDecoder.Decode(wideTopology.ToPng(fittedTopologyOptions));
         var wideArtifact = wideTopology.ToVisualArtifact();
-        wideArtifact.NaturalSize = new VisualArtifactSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
+        wideArtifact.NaturalSize = new VisualSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
         wideArtifact.PreserveNaturalSize = true;
         wideArtifact.AddWatermarks(fittedArtifactOptions, fittedWatermark);
         var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));
@@ -384,9 +385,9 @@ internal static partial class SmokeTests {
             new("worker") {
                 Cells = {
                     new TableArtifactCell("Worker"),
-                    new TableArtifactCell("Warning") { Status = Tone.Warning }
+                    new TableArtifactCell("Warning") { Tone = Tone.Warning }
                 },
-                Status = Tone.Warning
+                Tone = Tone.Warning
             }
         };
         var result = new TableArtifactQueryResult(rows, totalRowCount: 125);
@@ -404,7 +405,7 @@ internal static partial class SmokeTests {
             .AddLane("ops", "Operations")
             .AddStep("start", "Start", FlowArtifactStepKind.Start, "ops", Tone.Success)
             .AddStep("review", "Review", FlowArtifactStepKind.Decision, "ops", Tone.Warning)
-            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, Tone.Success, "#EF4444");
+            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, Tone.Success, ChartColor.FromHex("#EF4444"));
 
         var artifact = flow.ToVisualArtifact();
         var svg = flow.ToSvg();

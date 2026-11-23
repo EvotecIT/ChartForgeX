@@ -21,7 +21,7 @@ public sealed class MermaidEntityShellLifecycleTests {
         Assert.Equal(("#dcfce7", "#92400e", "#14532d"), (shell.Styles["fill"], shell.Styles["stroke"], shell.Styles["color"]));
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var native = chart.Groups.Single(group => group.Id == shell.Id);
-        Assert.Equal(("Data domain", "#dcfce7", "#92400e", "#14532d"), (native.Label, native.BackgroundColor, native.BorderColor, native.LabelColor));
+        Assert.Equal(("Data domain", ChartColor.FromHex("#dcfce7"), ChartColor.FromHex("#92400e"), ChartColor.FromHex("#14532d")), (native.Label, native.BackgroundColor, native.BorderColor, native.LabelColor));
         Assert.Equal("**Data** domain", native.Metadata["mermaid.source.label"]);
         Assert.DoesNotContain(chart.Nodes, node => document.Groups.Any(group => group.Id == node.Id));
         Assert.Equal("Order group", chart.Nodes.Single(node => node.Id == "C").GroupId);

@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using ChartForgeX.VisualBlocks;
 
@@ -39,7 +40,7 @@ public static class TableArtifactRendering {
             preview.AddRow(values);
             preview.UpdateRow(rowIndex, targetRow => {
                 for (var cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++) {
-                    targetRow.Cells[cellIndex].Status = row.Cells[cellIndex].Status == Tone.None ? row.Status : row.Cells[cellIndex].Status;
+                    targetRow.Cells[cellIndex].Tone = row.Cells[cellIndex].Tone == Tone.None ? row.Tone : row.Cells[cellIndex].Tone;
                 }
             });
         }
@@ -59,7 +60,7 @@ public static class TableArtifactRendering {
         artifact.Title = table.Title;
         artifact.Subtitle = table.Subtitle;
         artifact.ExportFormats = table.ExportFormats | VisualArtifactExportFormat.Html;
-        artifact.NaturalSize = new VisualArtifactSize(PreviewWidth, PreviewHeight);
+        artifact.NaturalSize = new VisualSize(PreviewWidth, PreviewHeight);
         artifact.Metadata["table.capabilities"] = table.Capabilities.ToString();
         artifact.Metadata["table.columns"] = table.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
         artifact.Metadata["table.rows"] = table.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);

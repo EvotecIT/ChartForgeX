@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Linq;
 using ChartForgeX.Core;
@@ -226,10 +227,10 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(topology.Groups.Count == 1 && topology.Groups[0].Id == "cluster", "Mermaid flowchart conversion should map subgraphs to topology groups.");
         Assert(topology.Nodes[0].GroupId == "cluster", "Mermaid flowchart conversion should preserve subgraph membership on nodes.");
         Assert(topology.Nodes[0].Href == "https://example.com/api" && topology.Nodes[0].Tooltip == "Open API", "Mermaid flowchart conversion should map click links to topology node links.");
-        Assert(topology.Nodes[0].BackgroundColor == "#fee" && topology.Nodes[0].Color == "#c00", "Mermaid flowchart conversion should map class styles to node colors.");
+        Assert(topology.Nodes[0].BackgroundColor == ChartColor.FromHex("#fee") && topology.Nodes[0].Color == ChartColor.FromHex("#c00"), "Mermaid flowchart conversion should map class styles to node colors.");
         Assert(topology.Nodes[0].Metadata["mermaid.classes"] == "alert", "Mermaid flowchart conversion should preserve class metadata.");
-        Assert(topology.Nodes[1].BackgroundColor == "#eef" && topology.Nodes[1].Color == "#00c", "Mermaid flowchart conversion should map direct node styles.");
-        Assert(topology.Edges[0].Color == "#f00" && topology.Edges[0].LineStyle == TopologyEdgeLineStyle.Dashed, "Mermaid flowchart conversion should map linkStyle to edge styling.");
+        Assert(topology.Nodes[1].BackgroundColor == ChartColor.FromHex("#eef") && topology.Nodes[1].Color == ChartColor.FromHex("#00c"), "Mermaid flowchart conversion should map direct node styles.");
+        Assert(topology.Edges[0].Color == ChartColor.FromHex("#f00") && topology.Edges[0].LineStyle == TopologyEdgeLineStyle.Dashed, "Mermaid flowchart conversion should map linkStyle to edge styling.");
 
         var artifact = document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "styled-flow" });
         Assert(artifact.Metadata["mermaid.subgraphs"] == "1", "Mermaid flowchart artifacts should expose subgraph counts.");
@@ -271,7 +272,7 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(artifactPng[16] == 0 && artifactPng[17] == 0 && artifactPng[18] == 2 && artifactPng[19] == 128
             && artifactPng[20] == 0 && artifactPng[21] == 0 && artifactPng[22] == 1 && artifactPng[23] == 104,
             "Mermaid artifacts should carry the explicit natural-size export policy into generic PNG rendering.");
-        artifact.NaturalSize = new VisualArtifactSize(480, 270);
+        artifact.NaturalSize = new VisualSize(480, 270);
         var resizedArtifactSvg = artifact.ToSvg();
         Assert(resizedArtifactSvg.Contains("width=\"480\"", StringComparison.Ordinal) && resizedArtifactSvg.Contains("height=\"270\"", StringComparison.Ordinal),
             "Generic topology artifact rendering should honor the artifact natural size when it differs from the model viewport.");

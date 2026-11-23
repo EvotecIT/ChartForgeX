@@ -44,7 +44,7 @@ public sealed class MixedNumericRadialTests {
         chart.Series[1].StackGroup("work").NormalizedTo(100);
         chart.Options.Bars.ShowTotals = true;
         var before = Prepare(chart);
-        chart.AddRadarArea("Reference", Values(40)).AddRadarLine("Target", Values(90));
+        chart.AddRadar("Reference", Values(40)).AddRadarLine("Target", Values(90));
         var after = Prepare(chart);
         var prior = before.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "radial-column").ToArray();
         var current = after.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "radial-column").ToArray();
@@ -110,7 +110,7 @@ public sealed class MixedNumericRadialTests {
     [InlineData(ChartFillPattern.DiagonalForward)]
     public void RadarAreaPatternsAndMarkerStrokesLeaveTheAnnularHoleTransparent(ChartFillPattern pattern) {
         var chart = Bare().RadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .3))
-            .AddRadialColumn("Observed", Values(20)).AddRadarArea("Reference", Values(80), ChartColor.FromHex("#2468AC"));
+            .AddRadialColumn("Observed", Values(20)).AddRadar("Reference", Values(80), ChartColor.FromHex("#2468AC"));
         chart.Series[1].Radar.FillOpacity = .4; chart.Series[1].FillPattern = pattern;
         var prepared = Prepare(chart); var mark = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-column");
         var image = RasterImageDecoder.Decode(prepared.ToPng());

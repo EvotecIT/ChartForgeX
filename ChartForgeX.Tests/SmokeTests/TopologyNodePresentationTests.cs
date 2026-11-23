@@ -83,7 +83,7 @@ internal static partial class SmokeTests {
             .Id("group-status-color")
             .Viewport(new TopologyViewport(360, 220, 20))
             .Legend((TopologyLegend?)null)
-            .AddGroup("site", "Blue Warning Site", 64, 72, 220, 92, TopologyHealthStatus.Warning, symbol: "globe", color: "#2563EB")
+            .AddGroup("site", "Blue Warning Site", 64, 72, 220, 92, TopologyHealthStatus.Warning, symbol: "globe", color: ChartColor.FromHex("#2563EB"))
             .AddNode("dc1", "DC 1", 96, 118, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "site", width: 14, height: 14)
             .UpdateNode("dc1", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
 
@@ -105,7 +105,7 @@ internal static partial class SmokeTests {
             .Id("group-header-fit")
             .Viewport(new TopologyViewport(360, 220, 20))
             .Legend((TopologyLegend?)null)
-            .AddGroup("app", longTitle, 52, 72, 260, 92, TopologyHealthStatus.Critical, subtitle: "Services", symbol: "application", color: "#F97316")
+            .AddGroup("app", longTitle, 52, 72, 260, 92, TopologyHealthStatus.Critical, subtitle: "Services", symbol: "application", color: ChartColor.FromHex("#F97316"))
             .AddNode("svc", "Payments Team", 112, 126, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, "app", width: 76, height: 44, symbol: "TM");
 
         var options = new TopologyRenderOptions { IncludeLegend = false }

@@ -117,7 +117,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
 
     private static TopologyRenderOptions Options() {
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
-            .SelectNode("domain").SelectEdge("finding-domain");
+            .SelectedNodeId("domain").SelectedEdgeId("finding-domain");
         options.ArrowMarkerStyle = TopologyArrowMarkerStyle.Diamond;
         return options;
     }
@@ -147,14 +147,14 @@ public sealed class TopologyObstacleAutomaticPortTests {
             .Viewport(new TopologyViewport(920, 420, 24))
             .Theme(VisualTheme.Graphite())
             .Legend(TopologyLegend.Create(null)
-                .AddEdgeKind("Verified", TopologyEdgeKind.Mapping, "#16A34A", TopologyEdgeLineStyle.Solid)
-                .AddEdgeKind("Observed", TopologyEdgeKind.Link, "#2563EB", TopologyEdgeLineStyle.Dashed)
-                .AddEdgeKind("Inferred", TopologyEdgeKind.Dependency, "#94A3B8", TopologyEdgeLineStyle.Dotted))
-            .AddNode("dns", "DNS: ad.evotec.xyz\n10.1.4.10", 72, 116, TopologyNodeKind.Network, TopologyHealthStatus.Healthy, subtitle: "internal", width: 178, height: 74, symbol: "DNS", color: "#0891B2")
-            .AddNode("ip", "IP: 192.168.2.146\nInternal", 72, 224, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, subtitle: "observed", width: 178, height: 74, symbol: "IP", color: "#0891B2")
-            .AddNode("domain", "ad.evotec.xyz\nCertificate", 372, 170, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "selected record", width: 186, height: 82, symbol: "D", color: "#2563EB")
-            .AddNode("server", "evotec-web-01\n192.168.2.15", 668, 92, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, subtitle: "hosting", width: 176, height: 74, symbol: "SRV", color: "#2563EB")
-            .AddNode("finding", "Finding (7)\n3 Critical + 4 High", 658, 232, TopologyNodeKind.Process, TopologyHealthStatus.Critical, subtitle: "risk evidence", width: 196, height: 80, symbol: "!", color: "#EF4444")
+                .AddEdgeKind("Verified", TopologyEdgeKind.Mapping, ChartColor.FromHex("#16A34A"), TopologyEdgeLineStyle.Solid)
+                .AddEdgeKind("Observed", TopologyEdgeKind.Link, ChartColor.FromHex("#2563EB"), TopologyEdgeLineStyle.Dashed)
+                .AddEdgeKind("Inferred", TopologyEdgeKind.Dependency, ChartColor.FromHex("#94A3B8"), TopologyEdgeLineStyle.Dotted))
+            .AddNode("dns", "DNS: ad.evotec.xyz\n10.1.4.10", 72, 116, TopologyNodeKind.Network, TopologyHealthStatus.Healthy, subtitle: "internal", width: 178, height: 74, symbol: "DNS", color: ChartColor.FromHex("#0891B2"))
+            .AddNode("ip", "IP: 192.168.2.146\nInternal", 72, 224, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, subtitle: "observed", width: 178, height: 74, symbol: "IP", color: ChartColor.FromHex("#0891B2"))
+            .AddNode("domain", "ad.evotec.xyz\nCertificate", 372, 170, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "selected record", width: 186, height: 82, symbol: "D", color: ChartColor.FromHex("#2563EB"))
+            .AddNode("server", "evotec-web-01\n192.168.2.15", 668, 92, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, subtitle: "hosting", width: 176, height: 74, symbol: "SRV", color: ChartColor.FromHex("#2563EB"))
+            .AddNode("finding", "Finding (7)\n3 Critical + 4 High", 658, 232, TopologyNodeKind.Process, TopologyHealthStatus.Critical, subtitle: "risk evidence", width: 196, height: 80, symbol: "!", color: ChartColor.FromHex("#EF4444"))
             .AddEdge("dns-domain", "dns", "domain", "verified", TopologyEdgeKind.Mapping, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "DNS")
             .AddEdge("ip-domain", "ip", "domain", "observed", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "IP")
             .AddEdge("domain-server", "domain", "server", "inferred", TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "host")
@@ -162,10 +162,10 @@ public sealed class TopologyObstacleAutomaticPortTests {
             .UpdateEdge("ip-domain", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
             .UpdateEdge("domain-server", e => e.LineStyle(TopologyEdgeLineStyle.Dotted))
             .UpdateEdge("finding-domain", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
-            .UpdateEdge("dns-domain", e => e.Color("#16A34A"))
-            .UpdateEdge("ip-domain", e => e.Color("#2563EB"))
-            .UpdateEdge("domain-server", e => e.Color("#94A3B8"))
-            .UpdateEdge("finding-domain", e => e.Color("#EF4444"));
+            .UpdateEdge("dns-domain", e => e.Color(ChartColor.FromHex("#16A34A")))
+            .UpdateEdge("ip-domain", e => e.Color(ChartColor.FromHex("#2563EB")))
+            .UpdateEdge("domain-server", e => e.Color(ChartColor.FromHex("#94A3B8")))
+            .UpdateEdge("finding-domain", e => e.Color(ChartColor.FromHex("#EF4444")));
     }
 
 }

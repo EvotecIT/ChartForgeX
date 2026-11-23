@@ -28,25 +28,25 @@ public sealed class NativeStandardBlendTests {
         int red, int green, int blue, int partialRed, int partialGreen, int partialBlue) {
         foreach (var alpha in new byte[] { 255, 128 }) {
             var layer = Layer(alpha);
-            var sourceBytes = layer.ToImage().Pixels.ToArray();
+            var sourceBytes = layer.ToRgbaImage().Pixels.ToArray();
             var actual = ImageComposition.Create(4, 3, ChartColor.FromRgba(48, 128, 224, alpha))
                 .DrawLayer(layer, 1, 1, mode, orderedDither: false);
             CompositeOperatorFixture.Capture("standard-native-" + mode + "-" + alpha, actual, layer);
             var expected = alpha == 255 ? new[] { red, green, blue, 255 }
                 : new[] { partialRed, partialGreen, partialBlue, 192 };
-            Assert.Equal(expected.Select(item => (byte)item), CompositeOperatorFixture.Pixel(actual.ToImage(), 1, 1));
-            Assert.Equal(new byte[] { 48, 128, 224, alpha }, CompositeOperatorFixture.Pixel(actual.ToImage(), 0, 0));
-            Assert.Equal(new byte[] { 240, 32, 192, alpha }, CompositeOperatorFixture.Pixel(layer.ToImage(), 0, 0));
-            Assert.Equal(sourceBytes, layer.ToImage().Pixels);
+            Assert.Equal(expected.Select(item => (byte)item), CompositeOperatorFixture.Pixel(actual.ToRgbaImage(), 1, 1));
+            Assert.Equal(new byte[] { 48, 128, 224, alpha }, CompositeOperatorFixture.Pixel(actual.ToRgbaImage(), 0, 0));
+            Assert.Equal(new byte[] { 240, 32, 192, alpha }, CompositeOperatorFixture.Pixel(layer.ToRgbaImage(), 0, 0));
+            Assert.Equal(sourceBytes, layer.ToRgbaImage().Pixels);
             Assert.Contains(layer.Source.Regions, region => region.Id == "source");
         }
         var transparent = Layer(0);
         var destination = ImageComposition.Create(4, 3, ChartColor.FromRgba(48, 128, 224, 128));
-        var unchanged = destination.ToImage().Pixels;
+        var unchanged = destination.ToRgbaImage().Pixels;
         destination.DrawLayer(transparent, 1, 1, mode, orderedDither: false);
-        Assert.Equal(unchanged, destination.ToImage().Pixels);
+        Assert.Equal(unchanged, destination.ToRgbaImage().Pixels);
         var sourceOnly = ImageComposition.CreateTransparent(4, 3).DrawLayer(Layer(128), 1, 1, mode, orderedDither: false);
-        Assert.Equal(new byte[] { 240, 32, 192, 128 }, CompositeOperatorFixture.Pixel(sourceOnly.ToImage(), 1, 1));
+        Assert.Equal(new byte[] { 240, 32, 192, 128 }, CompositeOperatorFixture.Pixel(sourceOnly.ToRgbaImage(), 1, 1));
     }
 
     [Fact]

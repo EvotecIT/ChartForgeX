@@ -22,10 +22,10 @@ public sealed class GraphSceneStaticThemeTests {
     }
 
     [Theory]
-    [InlineData(HtmlGraphExplorerTheme.Dark, "dark")]
-    [InlineData(HtmlGraphExplorerTheme.System, "system")]
-    public void StaticSvgCarriesTheRequestedTheme(HtmlGraphExplorerTheme theme, string expected) {
-        var svg = Scene().ToGraphSvg(configure: options => options.Theme = theme);
+    [InlineData(ThemeMode.Dark, "dark")]
+    [InlineData(ThemeMode.Auto, "system")]
+    public void StaticSvgCarriesTheRequestedTheme(ThemeMode theme, string expected) {
+        var svg = Scene().ToGraphSvg(configure: options => options.ThemeMode = theme);
         Assert.Contains("data-cfx-graph-theme=\"" + expected + "\"", svg, StringComparison.Ordinal);
     }
 
@@ -35,7 +35,7 @@ public sealed class GraphSceneStaticThemeTests {
         var dark = PngReader.Decode(Scene().ToGraphPng(configure: options => {
             options.Width = 320;
             options.Height = 180;
-            options.Theme = HtmlGraphExplorerTheme.Dark;
+            options.ThemeMode = ThemeMode.Dark;
         }));
 
         Assert.True(Luminance(light, 2, 2) > 240, "The light static graph should keep its white paper.");
@@ -47,14 +47,14 @@ public sealed class GraphSceneStaticThemeTests {
 
     [Fact]
     public void SystemThemePngRendersLight() {
-        var system = Scene().ToGraphPng(configure: options => { options.Width = 320; options.Height = 180; options.Theme = HtmlGraphExplorerTheme.System; });
+        var system = Scene().ToGraphPng(configure: options => { options.Width = 320; options.Height = 180; options.ThemeMode = ThemeMode.Auto; });
         var light = Scene().ToGraphPng(configure: options => { options.Width = 320; options.Height = 180; });
         Assert.Equal(light, system);
     }
 
     [Fact]
     public void UndefinedThemeIsRejected() {
-        Assert.Throws<InvalidOperationException>(() => Scene().ToGraphSvg(configure: options => options.Theme = (HtmlGraphExplorerTheme)42));
+        Assert.Throws<InvalidOperationException>(() => Scene().ToGraphSvg(configure: options => options.ThemeMode = (ThemeMode)42));
     }
 
     private static double Luminance(RgbaImage image, int x, int y) {

@@ -15,8 +15,8 @@ internal static class NativeInitialFadeExamples {
             var script = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));const play=()=>chart.presentInitial("
                 + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});document.querySelector('#replay').onclick=play;play();";
             var page = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>"
-                + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body><button id='replay' type='button'>Replay initial fade</button>" + final.Html
-                + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + script + "</script></body></html>";
+                + HtmlInteractiveChartRenderer.StyleSheet + "</style></head><body><button id='replay' type='button'>Replay initial fade</button>" + final.Html
+                + "<script>" + HtmlInteractiveChartRenderer.Script + "</script><script>" + script + "</script></body></html>";
             var prefix = Path.Combine(output, "native-initial-fade-" + kind + "-" + width + "-" + mode);
             File.WriteAllText(prefix + ".html", page); File.WriteAllText(prefix + ".final.html", final.Html); File.WriteAllText(prefix + ".transition.json", payload);
             File.WriteAllText(prefix + ".svg", final.PreparedVisual.ToSvg()); File.WriteAllBytes(prefix + ".png", final.PreparedVisual.ToPng());

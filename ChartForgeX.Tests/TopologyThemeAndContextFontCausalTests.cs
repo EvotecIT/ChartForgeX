@@ -45,7 +45,7 @@ public sealed class TopologyThemeAndContextFontCausalTests {
 
     private static TopologyChart Source(TopologyNodeDisplayMode mode) {
         var chart=TopologyChart.Create().Id("theme-context-before").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
-            .AddNode("node","Review request",210,150,width:180,height:90);var node=chart.Nodes[0];node.DisplayMode=mode;node.Shape=TopologyNodeShape.Rectangle;node.IconShape=TopologyIconShape.Router;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color="#2563eb";
+            .AddNode("node","Review request",210,150,width:180,height:90);var node=chart.Nodes[0];node.DisplayMode=mode;node.Shape=TopologyNodeShape.Rectangle;node.IconShape=TopologyIconShape.Router;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color=ChartColor.FromHex("#2563eb");
         chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeTitle=false,IncludeIconLabels=false,FitContentToViewport=false});return chart;
     }
     private static void Capture(string name,PreparedVisual visual,string json){if(Environment.GetEnvironmentVariable("CFX_TOPOLOGY_THEME_CAPTURE_DIRECTORY") is not {Length:>0} output)return;Directory.CreateDirectory(output);var path=Path.Combine(output,name);File.WriteAllText(path+".svg",visual.ToSvg());File.WriteAllBytes(path+".png",visual.ToPng());File.WriteAllText(path+".json",json);}

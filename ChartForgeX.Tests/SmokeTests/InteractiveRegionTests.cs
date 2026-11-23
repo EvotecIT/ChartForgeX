@@ -10,7 +10,7 @@ internal static partial class SmokeTests {
         var calendar = Chart.Create().AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1) });
         var map = Chart.Create().AddDottedMap("Visited", new[] {
             new ChartMapPoint("Spain", -3.7038, 40.4168), new ChartMapPoint("Poland", 19.1451, 51.9194)
-        }).AddMapRouteBetweenPoints("Spain to Poland", "Spain", "Poland");
+        }).AddMapConnectorBetweenPoints("Spain to Poland", "Spain", "Poland");
         var states = Chart.Create().AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 95) });
         foreach (var (chart, role) in new[] {
             (heatmap, "heatmap-cell"), (calendar, "calendar-cell"), (map, "dotted-map-point-source"),

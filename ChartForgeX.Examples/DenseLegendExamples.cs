@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class DenseLegendExamples {
-    internal static void Write(string output, ChartPngOutputScale scale) {
+    internal static void Write(string output, ChartRasterScale scale) {
         var line = Base("Dense series legend", "Legend entries are summarized; all 100 series remain plotted.", scale);
         for (var i = 0; i < 100; i++) line.AddLine("Service " + i.ToString("000"), Enumerable.Range(0, 12).Select(x => new ChartPoint(x, 10 + i + Math.Sin(x * 0.5) * 8)));
         Save(line, output, "dense-legend-series");
@@ -15,9 +15,9 @@ internal static class DenseLegendExamples {
         Save(Base("Dense radial legend", "All forty values remain visible as compact concentric rings while the legend stays bounded.", scale).AddProgressRing("Categories", radialValues), output, "dense-legend-radial");
     }
 
-    private static Chart Base(string title, string subtitle, ChartPngOutputScale scale) => Chart.Create()
+    private static Chart Base(string title, string subtitle, ChartRasterScale scale) => Chart.Create()
         .Title(title).Subtitle(subtitle).Size(800, 512)
-        .Theme(VisualTheme.Graphite()).Png(p => p.OutputScale((int)scale))
+        .Theme(VisualTheme.Graphite()).Raster(p => p.OutputScale((int)scale))
         .Legend(l => l.MaxRows(4));
 
     private static void Save(Chart chart, string output, string name) {

@@ -7,7 +7,7 @@ public static class TopologyTableContentRecipe {
         var compact = variant == "compact";
         var chart = TopologyChart.Create().Id("linked-table-content").Title("Approve a captured release")
             .Subtitle("The source table remains part of its graph vertex")
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
         chart.AddAutoNode("User", "Release coordinator", width: 180, height: 90);

@@ -18,7 +18,7 @@ public sealed class TopologyAccentSourceTests {
         var theme = graphite ? VisualTheme.Graphite() : VisualTheme.Graphite().Configure(b => { b.Light.Status.Critical = new VisualTokenColor(ChartColor.Parse("#AF1328"), ChartColor.Black); b.Dark.Status.Critical = new VisualTokenColor(ChartColor.Parse("#FA5376"), ChartColor.White); });
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         chart.Theme(theme).ThemeMode(mode);
-        chart.Nodes[0].Color = "#713CA6";
+        chart.Nodes[0].Color = ChartColor.FromHex("#713CA6");
         chart.Nodes[0].PaletteIndex = 1;
         var options = Options(TopologyAccentSource.Status);
         var expected = theme.Resolve(mode).Status.Critical.Fill;
@@ -28,7 +28,7 @@ public sealed class TopologyAccentSourceTests {
         var native = prepared.ToPng();
         options.SvgColorVariables = null;
         Assert.Equal(native, chart.ToPng(options));
-        var reference = Chart().Theme(theme, mode);
+        var reference = Chart().Theme(theme).ThemeMode(mode);
         reference.Nodes[0].IconId = null;
         reference.Nodes[0].Color = null;
         Assert.Equal(Surface(reference.ToSvg(options)), Surface(chart.ToSvg(options)));
@@ -40,13 +40,13 @@ public sealed class TopologyAccentSourceTests {
     [InlineData(TopologyAccentSource.Explicit, "#713CA6")]
     [InlineData(TopologyAccentSource.Icon, "#2468AC")]
     public void AccentPoliciesChooseTheirDeclaredSource(TopologyAccentSource source, string expected) {
-        var chart = Chart(); chart.Nodes[0].Color = "#713CA6";
+        var chart = Chart(); chart.Nodes[0].Color = ChartColor.FromHex("#713CA6");
         Assert.Equal(ChartColor.Parse(expected).ToCss(), Surface(chart.ToSvg(Options(source))));
     }
 
     [Fact]
     public void StatusSourceControlsTheWholeIconPaintAndIgnoresAuthoredVariablesAndPalette() {
-        var chart = Chart(); chart.Nodes[0].Color = "var(--icon-accent, #713CA6)"; chart.Nodes[0].PaletteIndex = 1;
+        var chart = Chart(); chart.Nodes[0].Color = ChartColorText.Parse("var(--icon-accent, #713CA6)"); chart.Nodes[0].PaletteIndex = 1;
         var reference = Chart();
         var options = Options(TopologyAccentSource.Status);
         options.SvgColorVariables = new SvgColorVariables().Add("--status", chart.Theme.Resolve(chart.ThemeMode).Status.Critical.Fill, SvgColorRole.Status);
@@ -80,16 +80,16 @@ public sealed class TopologyAccentSourceTests {
     [InlineData("   ", true)]
     public void AutoAccentSkipsBlankNodeColorForIconInSvgNativeAndGraph(string color, bool dark) {
         var chart = Chart().ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.Nodes[0].Color = color;
+        chart.Nodes[0].Color = ChartColorText.Parse(color);
         chart.Nodes[0].PaletteIndex = 1;
         var options = Options(TopologyAccentSource.Auto);
         var iconColor = ChartColor.Parse("#2468AC");
         Assert.Equal(iconColor.ToCss(), Surface(chart.ToSvg(options)));
         var reference = Chart().ThemeMode(chart.ThemeMode);
-        reference.Nodes[0].Color = "#2468AC";
+        reference.Nodes[0].Color = ChartColor.FromHex("#2468AC");
         Assert.Equal(reference.ToPng(options), chart.ToPng(options));
         var graph = chart.ToGraphScene(o => { o.IconCatalog = options.IconCatalog; o.AccentSource = TopologyAccentSource.Auto; });
-        Assert.Equal(iconColor.ToCss(), ChartColor.Parse(graph.Nodes[0].Style.BorderColor!).ToCss());
+        Assert.Equal(iconColor.ToCss(), graph.Nodes[0].Style.BorderColor);
         options.SvgColorVariables = new SvgColorVariables().Add("--icon-source", iconColor, SvgColorRole.Any)
             .Add("--status-source", chart.Theme.Resolve(chart.ThemeMode).Status.Critical.Fill, SvgColorRole.Status);
         Assert.Contains("var(--icon-source,", Surface(chart.ToSvg(options)));
@@ -104,7 +104,7 @@ public sealed class TopologyAccentSourceTests {
     }
 
     internal static TopologyRenderOptions Options(TopologyAccentSource source) {
-        var icon = new TopologyIconDefinition("accent-proof", "certificate", "Certificate", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = "#2468AC" };
+        var icon = new TopologyIconDefinition("accent-proof", "certificate", "Certificate", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = ChartColor.FromHex("#2468AC") };
         return new TopologyRenderOptions { AccentSource = source, IncludeLegend = false,
             NodeSurfaceStyle = TopologyNodeSurfaceStyle.Card,
             IconCatalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("accent-proof", "Common").AddIcon(icon)) };

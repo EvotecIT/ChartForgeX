@@ -17,7 +17,7 @@ internal static partial class Program {
         PackageAssertions.Require(section.PreparedVisual.HierarchyView!.RootId == "team"
             && section.NarrowPreparedVisual!.HierarchyView!.RootId == "team"
             && section.Html.Contains("data-cfx-hierarchy-control", StringComparison.Ordinal)
-            && HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("setHierarchyView", StringComparison.Ordinal),
+            && HtmlInteractiveChartRenderer.Script.Contains("setHierarchyView", StringComparison.Ordinal),
             "Packed HTML hierarchy section lost its native view or managed navigation capability.");
         PackageAssertions.Png(section.PreparedVisual.ToPng());
         var sunburst = Chart.Create().Size(520, 360).Legend(false).AddSunburst("Work", chart.Series[0].HierarchyItems)
@@ -30,7 +30,7 @@ internal static partial class Program {
             && spaced.PreparedVisual.HierarchyView!.RootId == "team" && spaced.NarrowPreparedVisual!.HierarchyView!.RootId == "team",
             "Packed adaptive Sunburst section lost its gap or committed native view.");
         PackageAssertions.Png(spaced.PreparedVisual.ToPng());
-        var script = HtmlInteractiveChartRenderer.BuildInteractionScript();
+        var script = HtmlInteractiveChartRenderer.Script;
         // The packaged contract is the public controller API, not an optimizer's private function names.
         PackageAssertions.Require(script.Contains("setHierarchyView", StringComparison.Ordinal)
             && script.Contains("connectNative", StringComparison.Ordinal)

@@ -28,7 +28,7 @@ public sealed class MermaidFlowchartStyleTests {
         Assert.Equal(className, Assert.Single(document.Nodes[0].Classes));
         var edge = Assert.Single(document.Edges);
         Assert.Equal(("A", "B", link), (edge.SourceId, edge.TargetId, edge.Operator));
-        Assert.Equal("#fed7aa", Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes[0].BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#fed7aa"), Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes[0].BackgroundColor);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class MermaidFlowchartStyleTests {
         var document = Assert.IsType<MermaidFlowchartDocument>(result.Document);
         Assert.Equal(new[] { "color", "box", "color" }, document.Nodes[0].Classes);
         var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
-        Assert.Equal("#ff0000", Assert.IsType<TopologyChart>(artifact.Model).Nodes[0].BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#ff0000"), Assert.IsType<TopologyChart>(artifact.Model).Nodes[0].BackgroundColor);
     }
 
     [Theory]
@@ -158,10 +158,10 @@ public sealed class MermaidFlowchartStyleTests {
         Assert.Empty(direct.Diagnostics);
         var colors = new[] { "#0f0", selectors.Contains('1') ? "#0f0" : "#f00", "#f00" };
         var chart = Assert.IsType<TopologyChart>(Assert.IsType<VisualArtifact>(direct.Artifact).Model);
-        Assert.Equal(colors, chart.Edges.Select(edge => edge.Color));
+        Assert.Equal(colors.Select(ChartColorText.Parse), chart.Edges.Select(edge => edge.Color));
         var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
         Assert.False(fenced.HasErrors);
-        Assert.Equal(colors, Assert.IsType<TopologyChart>(Assert.Single(fenced.Artifacts).Model).Edges.Select(edge => edge.Color));
+        Assert.Equal(colors.Select(ChartColorText.Parse), Assert.IsType<TopologyChart>(Assert.Single(fenced.Artifacts).Model).Edges.Select(edge => edge.Color));
     }
 
     [Trait("Category", "Browser")]

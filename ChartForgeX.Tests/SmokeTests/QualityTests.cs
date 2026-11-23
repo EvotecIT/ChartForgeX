@@ -147,11 +147,11 @@ internal static partial class SmokeTests {
     private static void PngSupersamplingScaleIsConfigurable() {
         var low = Chart.Create()
             .Size(180, 120)
-            .Png(p => p.SupersamplingScale(1))
+            .Raster(p => p.SupersamplingScale(1))
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         var high = Chart.Create()
             .Size(180, 120)
-            .Png(p => p.SupersamplingScale(4))
+            .Raster(p => p.SupersamplingScale(4))
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         foreach (var chart in new[] { low, high }) {
             chart.Options.ShowAxes = false;
@@ -167,8 +167,8 @@ internal static partial class SmokeTests {
         Assert(ReadBigEndianInt32(lowPng, 16) == 180 && ReadBigEndianInt32(lowPng, 20) == 120, "PNG supersampling should not alter low-quality output dimensions.");
         Assert(ReadBigEndianInt32(highPng, 16) == 180 && ReadBigEndianInt32(highPng, 20) == 120, "PNG supersampling should not alter high-quality output dimensions.");
         Assert(!lowPng.SequenceEqual(highPng), "Changing PNG supersampling should affect raster output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Png(p => p.SupersamplingScale(0)), "PNG supersampling should reject values below one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.Png.SupersamplingScale = 5, "PNG supersampling should reject values above four.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Raster(p => p.SupersamplingScale(0)), "PNG supersampling should reject values below one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.Raster.SupersamplingScale = 5, "PNG supersampling should reject values above four.");
     }
 
     private static void PngSmoothSeriesUseCurvedRasterPaths() {
@@ -252,7 +252,7 @@ internal static partial class SmokeTests {
             .Size(360, 220)
             .Title("PNG font")
             .Subtitle("Automatic fallback")
-            .Png(p => p.FontPath(missingFont))
+            .Raster(p => p.FontPath(missingFont))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
 
@@ -271,35 +271,35 @@ internal static partial class SmokeTests {
             .Size(360, 220)
             .Title("PNG collection")
             .Subtitle("TrueType collection")
-            .Png(p => p.FontPath(collectionPath))
+            .Raster(p => p.FontPath(collectionPath))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var indexedCollection = Chart.Create()
             .Size(360, 220)
             .Title("PNG collection")
             .Subtitle("TrueType collection")
-            .Png(p => p.FontPath(collectionPath).FontCollectionIndex(0))
+            .Raster(p => p.FontPath(collectionPath).FontCollectionIndex(0))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var namedCollection = Chart.Create()
             .Size(360, 220)
             .Title("PNG collection")
             .Subtitle("TrueType collection")
-            .Png(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue"))
+            .Raster(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue"))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var missingFace = Chart.Create()
             .Size(360, 220)
             .Title("PNG collection")
             .Subtitle("TrueType collection")
-            .Png(p => p.FontPath(collectionPath).FontFaceName("Definitely Missing Face"))
+            .Raster(p => p.FontPath(collectionPath).FontFaceName("Definitely Missing Face"))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var outOfRangeIndex = Chart.Create()
             .Size(360, 220)
             .Title("PNG collection")
             .Subtitle("TrueType collection")
-            .Png(p => p.FontPath(collectionPath).FontCollectionIndex(9999))
+            .Raster(p => p.FontPath(collectionPath).FontCollectionIndex(9999))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
 
@@ -319,14 +319,14 @@ internal static partial class SmokeTests {
             .Size(420, 240)
             .Title("München Łódź Café")
             .Subtitle("Zażółć gęślą jaźń")
-            .Png(p => p.FontPath(collectionPath).FontFaceName("Definitely Missing Face"))
+            .Raster(p => p.FontPath(collectionPath).FontFaceName("Definitely Missing Face"))
             .AddLine("Żółć", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var configured = Chart.Create()
             .Size(420, 240)
             .Title("München Łódź Café")
             .Subtitle("Zażółć gęślą jaźń")
-            .Png(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue"))
+            .Raster(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue"))
             .AddLine("Żółć", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
 
@@ -538,8 +538,8 @@ internal static partial class SmokeTests {
             .XAxis(x => x.Title("Schedule"))
             .YAxis(y => y.Title("Workstream"))
             .DataLabels()
-            .AddTimelineRange("Alpha", 10, 90, ChartColor.FromRgb(37, 99, 235))
-            .AddTimelineRange("Beta", 24, 70, ChartColor.FromRgb(16, 185, 129));
+            .AddTimelineItem("Alpha", 10, 90, ChartColor.FromRgb(37, 99, 235))
+            .AddTimelineItem("Beta", 24, 70, ChartColor.FromRgb(16, 185, 129));
         chart.Options.ShowCard = false;
         chart.Options.ShowHeader = false;
         chart.Options.Legend.Visible = false;

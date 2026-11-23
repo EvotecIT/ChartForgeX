@@ -59,7 +59,7 @@ public sealed class MinimumSpanBodyLayoutTests {
     private static PreparedVisual Prepare(bool boxPlot, bool horizontal, ChartBarStyle style, bool reversed) {
         var chart = Chart.Create().Size(480, 320).ShowHeader(false).Legend(false).DataLabels(false)
             .Axes(false).ShowGrid(false).Bars(b => b.Style(style)).Theme(VisualTheme.Graphite())
-            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .FontFamily("Carlito").Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         if (boxPlot) chart.BoxPlot(options => options.Orientation = orientation).AddBoxPlot("Summary", Intervals.Select((interval, point) => {
             var low = Math.Min(interval.Start, interval.End); var high = Math.Max(interval.Start, interval.End);
@@ -105,7 +105,7 @@ public sealed class MinimumSpanBodyLayoutTests {
     }
 
     private static int[] NativeInk(PreparedVisual prepared, VisualSceneRectangle[] bodies, ChartRect clip, bool horizontal) {
-        var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var raster = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var backgroundX = (int)(horizontal ? clip.Left + clip.Width / 2 : clip.Left + 2);
         var backgroundY = (int)(horizontal ? clip.Top + 2 : clip.Top + clip.Height / 2);
         var background = (backgroundY * raster.Width + backgroundX) * 4;

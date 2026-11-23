@@ -19,10 +19,10 @@ public sealed class NativeAppearanceLayerTests {
             .FillRectangle(3, 2, 1, 1, ChartColor.FromRgba(255, 0, 0, 255))
             .Outline(new VisualOutline(ChartColor.FromRgba(0, 0, 255, 255), 1, orderedDither: false));
         AppearanceFixture.Capture("appearance-outline-coverage", image);
-        Assert.Equal(new byte[] { 128, 0, 127, 255 }, AppearanceFixture.Pixel(image.ToImage(), 2, 2));
-        Assert.Equal(new byte[] { 255, 0, 0, 255 }, AppearanceFixture.Pixel(image.ToImage(), 3, 2));
-        Assert.Equal(new byte[] { 0, 0, 255, 128 }, AppearanceFixture.Pixel(image.ToImage(), 1, 2));
-        Assert.Equal(new byte[4], AppearanceFixture.Pixel(image.ToImage(), 0, 2));
+        Assert.Equal(new byte[] { 128, 0, 127, 255 }, AppearanceFixture.Pixel(image.ToRgbaImage(), 2, 2));
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, AppearanceFixture.Pixel(image.ToRgbaImage(), 3, 2));
+        Assert.Equal(new byte[] { 0, 0, 255, 128 }, AppearanceFixture.Pixel(image.ToRgbaImage(), 1, 2));
+        Assert.Equal(new byte[4], AppearanceFixture.Pixel(image.ToRgbaImage(), 0, 2));
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public sealed class NativeAppearanceLayerTests {
     public void CompleteNativeOutlineRetainsUniformHalfAlphaInteriorSupportIdentityAndSnapshots(int density) {
         var source = AppearanceFixture.Source();
         var options = new VisualRenderOptions(scale: density, supersampling: 1);
-        var raw = source.ToRgba(options);
+        var raw = source.ToRgbaImage(options);
         var layer = source.CaptureLayer(new VisualOutline(ChartColor.FromRgba(0, 0, 255, 255), 1, false), options);
         AppearanceFixture.Capture("appearance-outline-native-" + density, layer);
         Assert.Equal(new ChartRect(-1, -1, 10, 8), layer.Bounds);
@@ -38,10 +38,10 @@ public sealed class NativeAppearanceLayerTests {
         Assert.Equal(new byte[] { 0, 0, 255, 128 }, AppearanceFixture.WorldPixel(layer, 1, 3));
         Assert.Same(source, layer.Source);
         Assert.Equal("source-mark", Assert.Single(layer.Visual.Regions).Id);
-        Assert.Equal(raw.Pixels, source.ToRgba(options).Pixels);
-        var detached = layer.ToImage();
+        Assert.Equal(raw.Pixels, source.ToRgbaImage(options).Pixels);
+        var detached = layer.ToRgbaImage();
         Array.Clear(detached.Pixels, 0, detached.Pixels.Length);
-        Assert.Contains(layer.ToImage().Pixels, value => value != 0);
+        Assert.Contains(layer.ToRgbaImage().Pixels, value => value != 0);
     }
 
     [Theory]
@@ -53,7 +53,7 @@ public sealed class NativeAppearanceLayerTests {
         var actual = source.CaptureLayer(new VisualOutline(ChartColor.FromRgba(0, 0, 255, alpha), radius), options);
         AppearanceFixture.Capture("appearance-outline-noop-" + radius + "-" + alpha, actual);
         Assert.Equal(expected.Bounds, actual.Bounds);
-        Assert.Equal(expected.ToImage().Pixels, actual.ToImage().Pixels);
+        Assert.Equal(expected.ToRgbaImage().Pixels, actual.ToRgbaImage().Pixels);
         Assert.Equal(expected.Visual.ToSvg(), actual.Visual.ToSvg());
     }
 
@@ -64,7 +64,7 @@ public sealed class NativeAppearanceLayerTests {
             .Bloom(new VisualBloom(0, threshold, strength, orderedDither: false));
         AppearanceFixture.Capture("appearance-bloom-ramp-" + threshold + "-" + strength, composition);
         var expected = threshold == 0 && strength == 1 ? (byte)160 : (byte)128;
-        Assert.Equal(new byte[] { expected, expected, expected, 255 }, composition.ToImage().Pixels);
+        Assert.Equal(new byte[] { expected, expected, expected, 255 }, composition.ToRgbaImage().Pixels);
     }
 
     [Fact]
@@ -79,8 +79,8 @@ public sealed class NativeAppearanceLayerTests {
         AppearanceFixture.Capture("appearance-bloom-no-bright-masked", masked);
         Assert.Equal(baseline.Bounds, bloom.Bounds);
         Assert.Equal(baseline.Bounds, masked.Bounds);
-        Assert.Equal(baseline.ToImage().Pixels, bloom.ToImage().Pixels);
-        Assert.Equal(baseline.ToImage().Pixels, masked.ToImage().Pixels);
+        Assert.Equal(baseline.ToRgbaImage().Pixels, bloom.ToRgbaImage().Pixels);
+        Assert.Equal(baseline.ToRgbaImage().Pixels, masked.ToRgbaImage().Pixels);
         Assert.Equal(baseline.Visual.ToSvg(), bloom.Visual.ToSvg());
     }
 
@@ -144,10 +144,10 @@ internal static class AppearanceFixture {
         return new RgbaImage(width, height, pixels);
     }
     internal static byte[] Pixel(RgbaImage image, int x, int y) => image.Pixels.Skip((y * image.Width + x) * 4).Take(4).ToArray();
-    internal static byte[] WorldPixel(CapturedVisualLayer layer, int x, int y) => Pixel(layer.ToImage(),
+    internal static byte[] WorldPixel(CapturedVisualLayer layer, int x, int y) => Pixel(layer.ToRgbaImage(),
         (int)((x - layer.Bounds.X) * layer.PixelsPerUnit), (int)((y - layer.Bounds.Y) * layer.PixelsPerUnit));
     internal static void Capture(string stem, CapturedVisualLayer layer) =>
-        NativeEffectBeforeCapture.Write(stem, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
+        NativeEffectBeforeCapture.Write(stem, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToRgbaImage());
     internal static void Capture(string stem, ImageComposition composition) =>
-        NativeEffectBeforeCapture.Write(stem, null, composition.ToPng(), composition.ToImage());
+        NativeEffectBeforeCapture.Write(stem, null, composition.ToPng(), composition.ToRgbaImage());
 }

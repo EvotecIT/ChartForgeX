@@ -22,7 +22,7 @@ public static partial class VisualArtifactInterchangeMapping {
         var source = envelope.Journey!;
         var block = JourneyDiagramBlock.Create().Title(envelope.Title).Subtitle(envelope.Subtitle)
             .Theme(source.Theme).ThemeMode(source.ThemeMode).TransparentBackground(source.TransparentBackground)
-            .ShowCard(source.ShowCard).PngOutputScale(source.PngOutputScale);
+            .ShowCard(source.ShowCard).RasterScale(source.RasterScale);
         block.Options.Padding = source.Padding; block.Options.HostOwnsFrame = source.HostOwnsFrame;
         block.Options.Accessibility.Name = envelope.AccessibleName;
         block.Options.Accessibility.Description = envelope.AccessibleDescription;
@@ -42,7 +42,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Journey = new VisualArtifactInterchangeJourneyArtifact {
             Theme = source.Theme, ThemeMode = source.ThemeMode, Padding = source.ConfiguredPadding,
             TransparentBackground = source.TransparentBackground, ShowCard = source.ShowCard,
-            HostOwnsFrame = source.HostOwnsFrame, PngOutputScale = source.PngOutputScale
+            HostOwnsFrame = source.HostOwnsFrame, RasterScale = source.RasterScale
         };
         envelope.Journey.Sections.AddRange(block.Sections); envelope.Journey.Tasks.AddRange(block.Tasks);
         envelope.Width = source.Size.Width; envelope.Height = source.Size.Height;

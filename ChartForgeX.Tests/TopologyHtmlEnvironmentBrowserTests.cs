@@ -19,7 +19,7 @@ public sealed class TopologyHtmlEnvironmentBrowserTests {
         bool dark, bool externalAssets, int width, string prefix) {
         if (!Enabled) return;
         var chart = TopologyChart.Create().Id("environment-topology").Viewport(new TopologyViewport(840, 420, 20))
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Title("Trasa przetwarzania").Legend((TopologyLegend?)null).Accessibility(options => options.Language = "pl-PL")
             .AddNode("api", "Odbiór", 60, 150).AddNode("worker", "Przetwarzanie", 330, 150).AddNode("store", "Zapis", 620, 150)
             .AddEdge("request", "api", "worker", "Żądanie").AddEdge("result", "worker", "store", "Wynik");

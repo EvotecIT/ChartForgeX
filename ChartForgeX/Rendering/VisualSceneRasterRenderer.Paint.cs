@@ -87,7 +87,7 @@ internal static partial class VisualSceneRasterRenderer {
                 Math.Max(1, Dimension(node.StrokeWidth * density / 2)), node.Stroke.Value);
         }
         PaintText(buffer, new VisualSceneText(text, node.X - left, node.Baseline - top, node.Color, node.Alignment, null, null), textHinting);
-        var image = buffer.ToImage();
+        var image = buffer.ToRgbaImage();
         var origin = transform.Apply(new ChartPoint(left, top));
         canvas.DrawImageTransformed(image.Width, image.Height, image.Pixels,
             transform.A / density, transform.B / density, transform.C / density, transform.D / density, origin.X, origin.Y,

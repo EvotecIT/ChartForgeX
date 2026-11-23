@@ -323,20 +323,20 @@ public sealed partial class Chart {
     /// <param name="color">An optional item color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddTimelineItem(string name, DateTime start, DateTime end, ChartColor? color = null) {
-        AddTimelineRange(name, start.ToOADate(), end.ToOADate(), color);
+        AddTimelineItem(name, start.ToOADate(), end.ToOADate(), color);
         Options.XAxis.UseTimeScaleByDefault();
         return this;
     }
 
     /// <summary>
-    /// Adds a timeline range item with numeric bounds.
+    /// Adds a timeline item with numeric bounds.
     /// </summary>
     /// <param name="name">The timeline item label.</param>
     /// <param name="start">The range start value.</param>
     /// <param name="end">The range end value.</param>
     /// <param name="color">An optional item color.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddTimelineRange(string name, double start, double end, ChartColor? color = null) {
+    public Chart AddTimelineItem(string name, double start, double end, ChartColor? color = null) {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         if (end < start) throw new ArgumentOutOfRangeException(nameof(end), end, "Timeline end must be greater than or equal to start.");

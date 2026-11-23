@@ -111,7 +111,7 @@ public sealed partial class StageConeCaptionContrastTests {
         var scene = prepared.Scene; var noHalo = scene.Nodes.Select(node => ReferenceEquals(node, text)
             ? (VisualSceneNode)new VisualSceneText(text.Text, text.X, text.Baseline, text.Color, text.Alignment, text.Role, text.Id, text.Paint) : node).ToArray();
         var without = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size, noHalo, scene.Diagnostics, scene.Regions, scene.DataProjection));
-        var actual = prepared.ToRgba(); Assert.True(actual.Pixels.Where((value, index) => value != without.Pixels[index]).Count() > 4,
+        var actual = prepared.ToRgbaImage(); Assert.True(actual.Pixels.Where((value, index) => value != without.Pixels[index]).Count() > 4,
             "The readability halo must paint native glyph pixels, not just an SVG attribute.");
         Assert.Equal(3, chart.Series[0].Points.Count); Assert.Equal(new[] { 100d, 75, 25 }, chart.Series[0].Points.Select(point => point.Y));
     }

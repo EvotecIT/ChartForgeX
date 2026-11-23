@@ -33,17 +33,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>");
         writer.Append(Text(title));
         writer.Append("</title>");
-        if (options.ExternalAssets == null) writer.Append("<style>").Append(BuildFragmentStyle()).Append("</style>");
+        if (options.ExternalAssets == null) writer.Append("<style>").Append(StyleSheet).Append("</style>");
         else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteStylesheet(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerStyle, graphExplorer: true)));
         writer.Append("</head><body class=\"cfx-graph-shell");
-        if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
+        if (options.ThemeMode == ThemeMode.Dark) writer.Append(" cfx-graph-page-dark");
         if (options.FillAvailableHeight) writer.Append(" cfx-graph-shell-embedded");
         writer.Append("\">");
         writer.Append(RenderGraph(scene, options));
         if (options.ExternalAssets == null) AppendScript(writer, options);
-        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteScript(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerScript, string.IsNullOrWhiteSpace(options.ScriptNonce) ? null : options.ScriptNonce)));
+        else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteScript(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerScript, Nonce(options))));
         writer.Append("</body></html>");
-        return HtmlStrictStyles.Apply(writer.ToString(), StyleNonce(options));
+        return HtmlStrictStyles.Apply(writer.ToString(), Nonce(options));
     }
 
     /// <summary>
@@ -57,26 +57,26 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var options = BuildOptions(configure);
         var writer = new StringBuilder();
         writer.Append("<style data-cfx-graph-assets=\"true\">");
-        writer.Append(BuildFragmentStyle());
+        writer.Append(StyleSheet);
         writer.Append("</style>");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
-        return HtmlStrictStyles.Apply(writer.ToString(), StyleNonce(options));
+        return HtmlStrictStyles.Apply(writer.ToString(), Nonce(options));
     }
 
-    private static string? StyleNonce(HtmlGraphExplorerOptions options) => string.IsNullOrWhiteSpace(options.StyleNonce) ? null : options.StyleNonce!.Trim();
+    private static string? Nonce(HtmlGraphExplorerOptions options) => string.IsNullOrWhiteSpace(options.Nonce) ? null : options.Nonce!.Trim();
 
     /// <summary>
     /// Gets the scoped graph explorer CSS that hosts can register once.
     /// </summary>
     /// <returns>The raw graph explorer CSS.</returns>
-    public static string BuildFragmentStyle() => HtmlGraphExplorerAssets.Style;
+    public static string StyleSheet => HtmlGraphExplorerAssets.Style;
 
     /// <summary>
     /// Gets the raw dependency-free graph explorer browser runtime.
     /// </summary>
     /// <returns>The raw JavaScript graph explorer runtime.</returns>
-    public static string BuildInteractionScript() => HtmlGraphExplorerAssets.Script;
+    public static string Script => HtmlGraphExplorerAssets.Script;
 
     private static HtmlGraphExplorerOptions BuildOptions(Action<HtmlGraphExplorerOptions>? configure) {
         var options = new HtmlGraphExplorerOptions();
@@ -113,7 +113,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
         Attribute(writer, "data-cfx-graph-renderer", Backend(options.RenderBackend));
         Attribute(writer, "data-cfx-graph-canvas-fallback", options.AllowCanvasFallback ? "true" : "false");
-        Attribute(writer, "data-cfx-graph-theme", Theme(options.Theme));
+        Attribute(writer, "data-cfx-graph-theme", Theme(options.ThemeMode));
         Attribute(writer, "data-cfx-graph-theme-persist", options.PersistThemePreference ? "true" : "false");
         Attribute(writer, "data-cfx-graph-state-persist", options.PersistInteractionState ? "true" : "false");
         Attribute(writer, "data-cfx-graph-state-key", string.IsNullOrWhiteSpace(options.InteractionStateStorageKey) ? "cfx-graph-state:" + scene.Id : options.InteractionStateStorageKey!.Trim());
@@ -614,13 +614,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {
         writer.Append("<script");
-        if (!string.IsNullOrWhiteSpace(options.ScriptNonce)) Attribute(writer, "nonce", options.ScriptNonce);
+        if (Nonce(options) is { } nonce) Attribute(writer, "nonce", nonce);
         writer.Append('>');
         writer.Append(WrappedInteractionScript());
         writer.Append("</script>");
     }
 
-    internal static string WrappedInteractionScript() => "(() => {\n" + BuildInteractionScript() + "})();";
+    internal static string WrappedInteractionScript() => "(() => {\n" + Script + "})();";
 
     private static string ExternalAssetMarkup(Action<ChartForgeX.Html.HtmlMarkupWriter> write) {
         var markup = new ChartForgeX.Html.HtmlMarkupWriter();

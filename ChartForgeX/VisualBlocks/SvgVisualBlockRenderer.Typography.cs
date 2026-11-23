@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void WriteFittedBodyText(SvgMarkupWriter writer, string text, double x, double baseline, double width, double height,
         TextAlignment alignment, ChartColor color, ResolvedVisualTheme theme, double defaultSize, int weight, string role = "visual-text") {
         var style = VisualBlockRendering.FitBodyTextStyle(theme, text, defaultSize, width, height, weight);

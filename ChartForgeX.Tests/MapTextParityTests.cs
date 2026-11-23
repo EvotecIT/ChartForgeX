@@ -22,5 +22,5 @@ public sealed class MapTextParityTests {
         .Theme(VisualTheme.Graphite().WithFontFamily(family)).Legend(false).DataLabels()
         .Map(m => m.Viewport(ChartMapViewport.Europe()))
         .AddDottedMap("Places", new[] { new ChartMapPoint("Madrid", -3.7, 40.4), new ChartMapPoint("Warsaw", 21, 52.2) })
-        .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
+        .AddMapConnectorBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
 }

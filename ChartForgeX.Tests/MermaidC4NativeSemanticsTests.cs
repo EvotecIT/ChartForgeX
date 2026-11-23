@@ -21,12 +21,12 @@ public sealed class MermaidC4NativeSemanticsTests {
         Assert.Equal("company", chart.Groups.Single(group => group.Id == "shop").ParentGroupId);
         Assert.Equal("shop", chart.Nodes.Single(node => node.Id == "web").GroupId);
         var web = chart.Nodes.Single(node => node.Id == "web");
-        Assert.Equal("#123456", web.BackgroundColor); Assert.Equal("#ffffff", web.LabelColor); Assert.Equal("#ef6543", web.Color);
+        Assert.Equal(ChartColor.FromHex("#123456"), web.BackgroundColor); Assert.Equal(ChartColor.FromHex("#ffffff"), web.LabelColor); Assert.Equal(ChartColor.FromHex("#ef6543"), web.Color);
         Assert.Equal("https://example.test/web", web.Href);
         Assert.Equal("99", document.Relationships[0].AuthoredIndex);
         Assert.Equal("1: Checkout", chart.Edges[0].Label); Assert.Equal("2: Writes", chart.Edges[1].Label);
         Assert.Equal(TopologyEdgePort.Bottom, chart.Edges[1].SourcePort); Assert.Equal(TopologyEdgePort.Top, chart.Edges[1].TargetPort);
-        Assert.Equal("#aabbcc", chart.Edges[1].Color); Assert.Equal("#ccbb99", chart.Edges[1].LabelColor);
+        Assert.Equal(ChartColor.FromHex("#aabbcc"), chart.Edges[1].Color); Assert.Equal(ChartColor.FromHex("#ccbb99"), chart.Edges[1].LabelColor);
         Assert.Equal(6, chart.Edges[1].LabelOffsetX); Assert.Equal(-4, chart.Edges[1].LabelOffsetY);
         var facts = chart.Prepare().ToInterchangeEnvelope();
         var company = facts.Groups.Single(group => group.Id == "company"); var shop = facts.Groups.Single(group => group.Id == "shop");

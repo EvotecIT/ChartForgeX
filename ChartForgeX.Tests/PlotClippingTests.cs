@@ -12,13 +12,13 @@ public sealed class PlotClippingTests {
     [InlineData(true)]
     public void OutOfDomainSeriesInkStaysInThePlot(bool svg) {
         var chart = CreateChart().AddArea("outside", new[] { new ChartPoint(-5, -5), new ChartPoint(5, 15), new ChartPoint(15, -5) }, ChartColors.Red);
-        var image = svg ? SvgRasterizer.ToImage(chart.ToSvg()) : chart.ToRgbaImage();
+        var image = svg ? SvgRasterizer.ToRgbaImage(chart.ToSvg()) : chart.ToRgbaImage();
         for (var y = 0; y < image.Height; y++) for (var x = 0; x < image.Width; x++) {
             if (x >= 40 && x < 200 && y >= 40 && y < 160) continue;
             Assert.Equal(0, image.Pixels[(y * image.Width + x) * 4 + 3]);
         }
         chart.ClipMarksToPlot(false);
-        image = svg ? SvgRasterizer.ToImage(chart.ToSvg()) : chart.ToRgbaImage();
+        image = svg ? SvgRasterizer.ToRgbaImage(chart.ToSvg()) : chart.ToRgbaImage();
         Assert.Contains(Enumerable.Range(0, 30), y => image.Pixels[(y * image.Width + 120) * 4 + 3] > 0);
     }
 
@@ -28,7 +28,7 @@ public sealed class PlotClippingTests {
     public void EdgeMarkersSurviveButOutsideCentersAreDropped(bool svg) {
         var chart = CreateChart().AddScatter("edge", new[] { new ChartPoint(0, 5), new ChartPoint(-1, 5) }, ChartColors.Red);
         chart.Series[0].Markers(markers => markers.Radius = 3);
-        var image = svg ? SvgRasterizer.ToImage(chart.ToSvg()) : chart.ToRgbaImage();
+        var image = svg ? SvgRasterizer.ToRgbaImage(chart.ToSvg()) : chart.ToRgbaImage();
         Assert.True(image.Pixels[(100 * image.Width + 38) * 4 + 3] > 0);
         Assert.Equal(0, image.Pixels[(100 * image.Width + 24) * 4 + 3]);
         var document = XDocument.Parse(chart.ToSvg());

@@ -24,8 +24,8 @@ public static class PlaygroundAnnotations {
 
     /// <summary>Returns the runtime, stylesheet and feature bundles matching the sections this engine prepares: <c>{ ok, css, script }</c>.</summary>
     public static string RuntimeJson() => Guard(() => new PlaygroundJson().BeginObject().Property("ok", true)
-        .Property("css", HtmlInteractiveChartRenderer.BuildFragmentStyle())
-        .Property("script", HtmlInteractiveChartRenderer.BuildFeatureScript() + ";\n" + HtmlInteractiveChartRenderer.BuildInteractionScript())
+        .Property("css", HtmlInteractiveChartRenderer.StyleSheet)
+        .Property("script", HtmlInteractiveChartRenderer.FeatureScript + ";\n" + HtmlInteractiveChartRenderer.Script)
         .EndObject().ToString());
 
     /// <summary>Prepares the starting scene, or an existing scene in another theme: <c>{ ok, html, basis }</c>.</summary>

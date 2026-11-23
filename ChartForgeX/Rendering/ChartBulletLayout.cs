@@ -29,7 +29,7 @@ internal readonly struct ChartBulletLayout {
                 : series.DataLabelStyle.HasOverrides ? series.DataLabelStyle : chart.Options.DataLabelStyle;
             double Width(string text, double size, int weight) {
                 var resolved = ChartLabelScene.ResolveTextStyle(size, style.WithDefaultFontFamily(chart.Options.ResolvedTheme.FontFamily), weight);
-                resolved.Font.FilePath = chart.Options.Png.FontPath; resolved.Font.CollectionIndex = chart.Options.Png.FontCollectionIndex; resolved.Font.FaceName = chart.Options.Png.FontFaceName;
+                resolved.Font.FilePath = chart.Options.Raster.FontPath; resolved.Font.CollectionIndex = chart.Options.Raster.FontCollectionIndex; resolved.Font.FaceName = chart.Options.Raster.FontFaceName;
                 return ChartLabelScene.MeasureText(style.TransformText(text, System.Globalization.CultureInfo.InvariantCulture), resolved).Width;
             }
             widestLabel = Math.Max(widestLabel, Width(series.Name, style.FontSize ?? chart.Options.ResolvedTheme.LegendFontSize, 700));

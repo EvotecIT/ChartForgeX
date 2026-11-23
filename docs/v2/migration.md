@@ -25,7 +25,7 @@ ChartForgeX 5.0 generates its fluent methods from the model properties, the way 
 | `chart.WithPlainLineStyle()` | `chart.Lines(l => l.PlainStyle())` |
 | `chart.WithTheme(theme, ThemeMode.Dark)` | `chart.Theme(theme).ThemeMode(ThemeMode.Dark)` |
 | `chart.ConfigureTheme(builder => ...)` | `chart.Theme(builder => ...)` |
-| `chart.WithPngOutputScale(2)` | `chart.Png(p => p.OutputScale(2))` |
+| `chart.WithPngOutputScale(2)` | `chart.Raster(p => p.OutputScale(2))` |
 | `chart.WithHeatmapCellGap(2)` | `chart.Heatmap(h => h.CellGap(2))` |
 | `chart.WithValueFormatter(f)` | `chart.FormatValuesBy(f)` |
 | `series.WithColor(color).WithSmooth()` | `series.Color(color).Smooth()` |
@@ -51,6 +51,56 @@ What behaves differently:
 
 The [fluent API map](fluent-api-map.md) lists every renamed method and moved property.
 
+## One name for each thing
+
+5.0 also settles names and removes duplicate routes, so each task has one spelling. Rename as follows; the compiler finds every call.
+
+| Old | New |
+| --- | --- |
+| `ScriptNonce`, `StyleNonce` on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions`, `HtmlResponsiveChartRenderer` and `HtmlChartRenderer` | `Nonce`, which marks script elements and moves inline styles into one nonce'd stylesheet |
+| `HtmlInteractiveChartRenderer.BuildFragmentStyle()`, `BuildInteractionScript()`, `BuildFeatureScript()` | `HtmlInteractiveChartRenderer.StyleSheet`, `Script`, `FeatureScript` |
+| `HtmlGraphExplorerRenderer.BuildFragmentStyle()`, `BuildInteractionScript()` | `HtmlGraphExplorerRenderer.StyleSheet`, `Script` |
+| `HtmlInteractiveTopologyRenderer.BuildInteractionScript(options)` | `HtmlInteractiveTopologyRenderer.Script(options)` |
+| `TopologyHtmlRenderer.BuildFragmentStyle(...)`, `BuildAutoThemeStyle(...)` | `TopologyHtmlRenderer.StyleSheet(...)`, `AutoThemeStyleSheet(...)` |
+| `HtmlResponsiveChartRenderer.InitializationScript`, `Stylesheet`, `AutoThemeStylesheet(chart)` | `HtmlResponsiveChartRenderer.Script`, `StyleSheet`, `AutoThemeStyleSheet(chart)` |
+| `HtmlEnhanceAssets.Style`, `StyleFile` | `HtmlEnhanceAssets.StyleSheet`, `StyleSheetFile` |
+| `flow.ToInteractiveHtmlPage(context, configureLocalization)` (and fragments, and sequences) | `flow.ToInteractiveHtmlPage(context, o => o.Localization...)` with `HtmlInteractiveDiagramOptions`, which also has `Nonce` |
+| `HtmlGraphExplorerTheme` and `options.Theme` on `HtmlGraphExplorerOptions` and `GraphSceneStaticRenderOptions` | `ThemeMode` and `options.ThemeMode`; `System` is `ThemeMode.Auto` |
+| `TerminalTextTone` | `Tone`: `Default` is `Tone.None`, `Accent` is `Tone.Info`, `Error` is `Tone.Danger` |
+| `TerminalTabIcon` | `Icon` keys from `TerminalTabIcons`; `TerminalTabIcon.None` is `Icon.None` |
+| `VisualCanvasInfoTileIconKind`, `VisualCanvasInfoTileLayer.IconKind` | `Icon` keys from `VisualCanvasIcons` on `VisualCanvasInfoTileLayer.Icon`; the tile's text badge is `IconText`, and `AddInfoTile` takes `iconText` and `icon` |
+| `AddInfoTileWithTextOptions(...)` | `AddInfoTile(..., textOptions: ...)` |
+| `Accent` with `AccentOverride` on info tiles and hero badges | one nullable `Accent`; null uses the theme accent |
+| `TreeViewIcon` | `Icon?` on `TreeViewItem.Icon`: null follows the item kind, `Icon.None` paints nothing, `TreeViewIcons.File` and `TreeViewIcons.Folder` draw the outlines, other keys draw a question mark |
+| `ChartForgeX.VisualBlocks.Icons` | `MetricCardIcons` |
+| `Status` (a `Tone`) on metric cards, card details, list items, table cells, strip items, timeline events, workload rows, segmented items, flow steps, lanes and connectors and table rows and cells; `ChartTableCell.BadgeStatus` | `Tone`, `BadgeTone`; the `status` parameters are now `tone` |
+| `TopologyEdge.LabelAnchorX`, `LabelAnchorY`, `HasLabelAnchorOverride`; `EdgeLabelAnchor`, `EdgeLabelAnchorNode`, `ClearEdgeLabelAnchor`, `EdgeLabelAnnotationOffset` | `TopologyEdge.LabelAnchor` (a `ChartPoint?`) and `LabelAnchorNodeId`, set through `UpdateEdge(id, e => e.LabelAnchor(point))` |
+| `EdgeRouteLane(id, lane)` | `UpdateEdge(id, e => e.RouteLane(lane))`; setting `RouteLane` now always fixes the lane, including zero |
+| `HtmlScenarioControls`, `HtmlScenarioControlMode`, `HtmlScenarioPanel`, `HtmlScenarioSequence`, `HtmlSelectionPanel`, `HtmlFullscreenControl`, `HtmlScenarioUrlState`, `HtmlForceGraphControls`, `HtmlFindControls` on `TopologyRenderOptions` | `.Html(h => h.ScenarioPanel())` and so on; turning a panel or control on also turns on the interactions it needs |
+| `SelectNode`, `SelectEdge`, `SelectGroup` | `SelectedNodeId`, `SelectedEdgeId`, `SelectedGroupId` |
+| `topology.Theme(theme, mode)` | `topology.Theme(theme).ThemeMode(mode)` |
+| `AddMapRoute`, `AddMapRouteBetweenPoints` | `AddMapConnector`, `AddMapConnectorBetweenPoints` |
+| `AddRadarArea` | `AddRadar` |
+| `AddColumnLineCombo`, `AddColumnAreaCombo` | `AddBarLineCombo`, `AddBarAreaCombo` |
+| `AddTimelineRange(name, start, end)` | `AddTimelineItem(name, start, end)` |
+| `Palette(params string[])`, `PointColor(index, "#hex")`, `PointColorRange(start, count, "#hex")` | the `ChartColor` overloads, with `ChartColor.FromHex("#hex")` |
+| `ChartPictorialOptions.PngFallbackShape` and the shape argument of `SvgPath` | removed; SVG and native PNG both draw the custom path |
+| `TextStyleOverride.FontWeight` as a string (`"700"`, `"bold"`) | an `int?` from 1 to 1000 (`700`) |
+| `VisualArtifactSize` | `VisualSize` |
+| `PreparedVisual.ToRgba`, `SvgRasterizer.ToImage`, `CapturedVisualLayer.ToImage`, `VisualMask.ToImage`, `ImageComposition.ToImage` | `ToRgbaImage` |
+| `PreparedVisual.ToSvg(idPrefix)`, `VisualSvgOptions.IdPrefix` | `ToSvg(idScope)`, `VisualSvgOptions.IdScope` |
+| `string` colours on topology nodes, groups, edges, details, stripes, legend items, hierarchy items and icons (`Color`, `BackgroundColor`, `BorderColor`, `LabelColor`, `LabelBackgroundColor`), on flow steps, lanes and connectors and artifact legend items, `TopologyIconSvgPackImportOptions.DefaultColor`, and the `color`/`backgroundColor` parameters of `AddNode`, `AddGroup`, `AddEdge`, `AddEdgeStripe`, `AddNodeDetail`, `AddLane`, `AddConnector`, `TopologyLegend.Add*` and `TopologyIconPack.AddIcon` | `ChartColor?` (`ChartColor` for stripes): `ChartColor.FromHex("#2563EB")`, `ChartColor.Transparent` for `none`, and `ChartColor.FromHex("#2563EB").WithCssVariable("--brand")` for `var(--brand, #2563EB)`. A CSS variable now always carries its fallback colour |
+| `ChartColor` equality through `ValueType.Equals` | `ChartColor` implements `IEquatable<ChartColor>`, `==`, `!=` and `ToString()` (its CSS form) |
+| `ChartPngOptions`, `chart.Png(p => ...)`, `ChartOptions.Png`, `ChartPngOutputScale` | `ChartRasterOptions`, `chart.Raster(p => ...)`, `ChartOptions.Raster`, `ChartRasterScale`; the settings apply to every raster format |
+| `PngOutputScale`, `PngSupersamplingScale`, `PngTextHinting` on grids, blocks, canvases, stories and topology options | `RasterScale`, `RasterSupersampling`, `RasterTextHinting` |
+| `GetPngFontInfo`, `PngFontInfo`, `PngFontSource` | `GetRasterFontInfo`, `RasterFontInfo`, `RasterFontSource` |
+| `AddStateTimelineLane(name, segments, summary, group)`, `ChartSeries.CreateStateTimelineLane(id, name, segments, summary, group)` | `(…, group, summary)`, the same order as the Gantt lane methods |
+| `WardleyMapBlock.SetStages(...)` | `Stages(...)` |
+| `VisualStoryStyleOptions.MacOS(bool light)`, `Windows(bool light)`, `Linux(bool light)` | `MacOS(ThemeMode mode)` and so on |
+| `ChartForgeXMarkdown.ExtractTopologyBlocks(...)` | `VisualMarkupScanner.ExtractBlocks(...)` filtered to `VisualMarkupKind.Topology` |
+| `ChartAxis.Culture(Action<CultureInfo>)`, `ChartSeries.TrendLineConfiguration(Action)`, `HighlightStatuse(...)`, `HealthStatuse(...)` | `ChartAxis.Culture(culture)`, `ChartSeries.TrendLine(...)`, `HighlightStatus(...)`, `HealthStatus(...)` |
+| `SvgVisualBlockRenderer`, `PngVisualBlockRenderer`, `HtmlVisualBlockRenderer` and the grid, canvas, story, terminal and fact-block renderer classes | the `ToSvg`, `ToPng`, `ToRgbaImage`, `ToHtmlFragment` and `ToHtmlPage` extensions |
+
 ## Shared theme mode, tone and icon types
 
 ChartForgeX now uses the `ThemeMode`, `Tone` and `Icon` types that every Evotec rendering engine shares. They live in the `ChartForgeX` namespace, so code in a `ChartForgeX.*` namespace needs no new `using`; other code adds `using ChartForgeX;`. Rename the old types and values:
@@ -64,7 +114,7 @@ ChartForgeX now uses the `ThemeMode`, `Tone` and `Icon` types that every Evotec 
 | `TopologyTone.Good`, `Warn`, `Bad` | `Tone.Success`, `Tone.Warning`, `Tone.Danger` |
 | `TopologyTone.Info`, `TopologyTone.Neutral` | `Tone.Info`, `Tone.Neutral` |
 | `VisualIcon.None` | `Icon.None` |
-| `VisualIcon.ForkKnife`, `Flame`, `Lightning`, `Droplet`, `Runner`, `Bicycle`, `Person` | `Icons.ForkKnife`, `Icons.Flame`, `Icons.Lightning`, `Icons.Droplet`, `Icons.Runner`, `Icons.Bicycle`, `Icons.Person` |
+| `VisualIcon.ForkKnife`, `Flame`, `Lightning`, `Droplet`, `Runner`, `Bicycle`, `Person` | `MetricCardIcons.ForkKnife`, `MetricCardIcons.Flame`, `MetricCardIcons.Lightning`, `MetricCardIcons.Droplet`, `MetricCardIcons.Runner`, `MetricCardIcons.Bicycle`, `MetricCardIcons.Person` |
 
 What behaves differently:
 
@@ -72,7 +122,7 @@ What behaves differently:
 - `Tone` and `Icon` are value types, so `switch` statements over them become comparisons or a `switch` on `Tone.Name` and `Icon.Key`. A tone property is never null; `Tone.None` means unset.
 - Visual blocks paint `Tone.Muted` with the muted text colour. A named tone such as `Tone.Named("accent")` or `Tone.Named("maintenance")` uses the theme colour role of that name (`VisualThemeColorToken`); a name the theme does not define paints as neutral. Topology rings, relationships and edge chips follow the same rules and keep their `tone-good`, `tone-warn` and `tone-bad` classes.
 - `AddEdgeChip(edgeId, text, tone, iconId)` takes a `Tone?`; leaving it out still gives a neutral chip.
-- Metric and radial metric cards draw the keys listed in `Icons.All`. Any other key, such as `Icon.Named("tabler:server")`, draws a small default ring instead of the lightning bolt the old enum fell back to.
+- Metric and radial metric cards draw the keys listed in `MetricCardIcons.All`. Any other key, such as `Icon.Named("tabler:server")`, draws a small default ring instead of the lightning bolt the old enum fell back to.
 - Interchange documents and topology metadata store tones by their lowercase name: table rows and cells, flow steps, lanes and connectors write `success` and `danger` where they wrote `Positive` and `Negative`, and `chartforgex.region.tone` holds `success`, `warning` or `danger` where it held `Good`, `Warn` or `Bad`. Documents written by earlier versions keep the old spellings: flow documents with them are rejected, and table statuses and topology tones read them as unknown named tones that paint neutral. Regenerate such documents from the model. Theme modes keep their enum names (`Light`, `Dark`) and accept `Auto`.
 - The markup language accepts `auto` for `theme` and `themeMode`, and `danger` and `muted` as table and flow statuses.
 
@@ -631,7 +681,7 @@ Package separation was introduced in `2.0.0`; the unified authoring contracts us
 | `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.AddWatermarks(...)` decorator; semantic `Model` remains available |
 | `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
 | Timed RGBA animation frames | In 3.1, use core `RasterAnimationEncoder`, `RasterAnimationSource`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; the `ChartForgeX.Raster` namespace is unchanged. Rebuild consumers against 3.1.0; source calls still compile through Stories' dependency on core |
-| `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
+| `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToRgbaImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
 | `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
 | `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |
 | Decorative static menus, selection controls, navigation arrows and action buttons | Remove their configuration; preserve dates, trend text and status as ordinary content |
@@ -671,7 +721,7 @@ byte[] apng = presentation.ToApng();
 string animatedHtml = presentation.ToHtmlPage();
 ```
 
-The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToImage().ToGif()`.
+The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToRgbaImage().ToGif()`.
 
 For animated SVG with marks, use `VisualWatermarkDecoration.ApplyToSvg(presentation.ToSvg(), marks)`. Animated HTML accepts the same optional SVG transformation through `presentation.ToHtmlPage(svg => VisualWatermarkDecoration.ApplyToSvg(svg, marks))`. The decorator retains script-free SVG animation. A presentation's common static-source contract exports its configured progress sample; use its explicit animation exports when motion is required.
 
@@ -687,7 +737,7 @@ The HTML interaction adapter accepts a trusted SVG factory through `topology.ToI
 
 Prepared chart-grid children use the shared `data-cfx-role="panel"` group and a scoped `data-cfx-source-id="panel-N"` identity. Update selectors that used the legacy `grid-panel` role. Semantic panel regions retain the same source index and contain the translated child regions.
 
-Hosts embedding a detached artifact can request the same policy explicitly: `prepared.ToSvg(new VisualSvgOptions(idPrefix: "capacity-left", colorVariables: hostVariables, responsive: true))`. Supply the host namespace and colour mapping when replacing an export policy. Standalone `prepared.ToSvg()` retains exact viewport sizing.
+Hosts embedding a detached artifact can request the same policy explicitly: `prepared.ToSvg(new VisualSvgOptions(idScope: "capacity-left", colorVariables: hostVariables, responsive: true))`. Supply the host namespace and colour mapping when replacing an export policy. Standalone `prepared.ToSvg()` retains exact viewport sizing.
 
 Topology convenience SVG exports retain `TopologyRenderOptions.UseResponsiveSvg`, which defaults to true. Turning it off preserves the fixed logical viewport. Neither mode changes the prepared diagram layout.
 

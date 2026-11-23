@@ -18,8 +18,8 @@ public sealed class RetainedSurfaceShadowBrowserTests {
         var model = RetainedSurfaceFixture.Model(width, dark);
         var prepared = model.Prepare(RetainedSurfaceFixture.Context(model));
         foreach (var profile in new[] { VisualSvgEffectProfile.Baked, VisualSvgEffectProfile.NativeFilters }) {
-            var svg = prepared.ToSvg(new VisualSvgOptions(idPrefix: "surface-browser", effectProfile: profile, responsive: true));
-            var plate = RetainedSurfaceFixture.Plate(25, true).ToSvg(new VisualSvgOptions(idPrefix: "plate-browser", effectProfile: profile));
+            var svg = prepared.ToSvg(new VisualSvgOptions(idScope: "surface-browser", effectProfile: profile, responsive: true));
+            var plate = RetainedSurfaceFixture.Plate(25, true).ToSvg(new VisualSvgOptions(idScope: "plate-browser", effectProfile: profile));
             var html = "<style>body{margin:0}#scene{width:100%}</style><main id='scene'>" + svg +
                 "</main><div id='plate'>" + plate + "</div><canvas id='sample' width='32' height='32'></canvas>";
             await using var session = await BrowserProofFonts.OpenAsync(html, width, 1100);

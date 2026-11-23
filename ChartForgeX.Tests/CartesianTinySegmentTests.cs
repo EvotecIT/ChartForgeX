@@ -30,7 +30,7 @@ public sealed class CartesianTinySegmentTests {
         Assert.Equal(sign.ToString(CultureInfo.InvariantCulture), (string?)source.Attribute("data-cfx-y"));
         var cap = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role + "-cap");
         Assert.Equal(1, cap.StrokeWidth);
-        Assert.True(BluePixels(prepared.ToRgba().Pixels) >= 10, "The tiny source value must leave visible colored native pixels at ordinary output density.");
+        Assert.True(BluePixels(prepared.ToRgbaImage().Pixels) >= 10, "The tiny source value must leave visible colored native pixels at ordinary output density.");
         Assert.True(prepared.ToPng().Length > 64);
 
         var zero = Tiny(horizontal, 0);
@@ -38,7 +38,7 @@ public sealed class CartesianTinySegmentTests {
         var zeroMark = Assert.Single(empty.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == role);
         Assert.Equal(0, horizontal ? zeroMark.Bounds.Width : zeroMark.Bounds.Height);
         Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role == role + "-cap");
-        Assert.Equal(0, BluePixels(empty.ToRgba().Pixels));
+        Assert.Equal(0, BluePixels(empty.ToRgbaImage().Pixels));
     }
 
     private static Chart Tiny(bool horizontal, int value) {

@@ -16,20 +16,6 @@ namespace ChartForgeX.Topology;
 public static partial class TopologyChartExtensions {
 
     /// <summary>
-    /// Sets the topology theme.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="theme">The theme to use.</param>
-    /// <returns>The current topology chart.</returns>
-    /// <param name="mode">An explicit mode, or null to retain the current mode.</param>
-    public static TopologyChart Theme(this TopologyChart chart, VisualTheme theme, ThemeMode? mode = null) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue) chart.ThemeMode = mode.Value;
-        return chart;
-    }
-
-    /// <summary>
     /// Adds an auto-placed group to the topology chart. Deterministic layout modes assign the coordinates and size.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -44,7 +30,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="color">The optional group accent color, independent from health status.</param>
     /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddAutoGroup(this TopologyChart chart, string id, string label, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null, string? iconId = null) {
+    public static TopologyChart AddAutoGroup(this TopologyChart chart, string id, string label, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, ChartColor? color = null, string? iconId = null) {
         return AddGroup(chart, id, label, 0, 0, 0, 0, status, subtitle, href, tooltip, cssClass, symbol, color, iconId);
     }
 
@@ -67,7 +53,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="color">The optional group accent color, independent from health status.</param>
     /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddGroup(this TopologyChart chart, string id, string label, double x, double y, double width, double height, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, string? color = null, string? iconId = null) {
+    public static TopologyChart AddGroup(this TopologyChart chart, string id, string label, double x, double y, double width, double height, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? subtitle = null, string? href = null, string? tooltip = null, string? cssClass = null, string? symbol = null, ChartColor? color = null, string? iconId = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var groupId = RequiredText(id, nameof(id), "Topology group ids");
         var groupLabel = RequiredText(label, nameof(label), "Topology group labels");
@@ -99,7 +85,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="color">The optional node accent color, independent from health status.</param>
     /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddAutoNode(this TopologyChart chart, string id, string label, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null) {
+    public static TopologyChart AddAutoNode(this TopologyChart chart, string id, string label, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, ChartColor? color = null, string? iconId = null) {
         return AddNodeCore(chart, id, label, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, iconId, backgroundColor: null, hasPositionOverride: false);
     }
 
@@ -125,11 +111,11 @@ public static partial class TopologyChartExtensions {
     /// <param name="iconId">The optional reusable icon id from a topology icon catalog.</param>
     /// <param name="backgroundColor">The optional node surface fill color.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? iconId = null, string? backgroundColor = null) {
+    public static TopologyChart AddNode(this TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, ChartColor? color = null, string? iconId = null, ChartColor? backgroundColor = null) {
         return AddNodeCore(chart, id, label, x, y, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, iconId, backgroundColor, hasPositionOverride: true);
     }
 
-    private static TopologyChart AddNodeCore(TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind, TopologyHealthStatus status, string? groupId, string? subtitle, string? href, string? tooltip, double width, double height, string? symbol, string? cssClass, string? color, string? iconId, string? backgroundColor, bool hasPositionOverride) {
+    private static TopologyChart AddNodeCore(TopologyChart chart, string id, string label, double x, double y, TopologyNodeKind kind, TopologyHealthStatus status, string? groupId, string? subtitle, string? href, string? tooltip, double width, double height, string? symbol, string? cssClass, ChartColor? color, string? iconId, ChartColor? backgroundColor, bool hasPositionOverride) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var nodeId = RequiredText(id, nameof(id), "Topology node ids");
         var nodeLabel = RequiredText(label, nameof(label), "Topology node labels");
@@ -163,7 +149,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="tertiaryLabel">The optional tertiary label.</param>
     /// <param name="color">The optional edge color independent from health status.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, VisualLinkDirection direction = VisualLinkDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null, string? color = null) {
+    public static TopologyChart AddEdge(this TopologyChart chart, string id, string sourceNodeId, string targetNodeId, string? label = null, TopologyEdgeKind kind = TopologyEdgeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, VisualLinkDirection direction = VisualLinkDirection.None, TopologyEdgeRouting routing = TopologyEdgeRouting.Orthogonal, string? secondaryLabel = null, string? href = null, string? tooltip = null, string? cssClass = null, string? tertiaryLabel = null, ChartColor? color = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var edgeId = RequiredText(id, nameof(id), "Topology edge ids");
         var sourceId = RequiredText(sourceNodeId, nameof(sourceNodeId), "Topology edge source node ids");
@@ -197,27 +183,6 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
-    /// Sets a deterministic orthogonal route lane offset for an edge.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="routeLane">The route lane offset in pixels.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart EdgeRouteLane(this TopologyChart chart, string edgeId, double routeLane) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        ValidateFinite(routeLane, nameof(routeLane), "Topology edge route lanes");
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.RouteLane = routeLane;
-            edge.HasRouteLaneOverride = true;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
     /// Assigns centered orthogonal route lanes to a related set of edges.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -233,7 +198,7 @@ public static partial class TopologyChartExtensions {
         if (edgeIds == null || edgeIds.Length == 0) throw new ArgumentException("Topology edge route bundles require at least one edge id.", nameof(edgeIds));
         for (var i = 0; i < edgeIds.Length; i++) {
             var lane = centerLane + (i - (edgeIds.Length - 1) / 2.0) * spacing;
-            chart.EdgeRouteLane(edgeIds[i], lane);
+            chart.UpdateEdge(edgeIds[i], edge => edge.RouteLane = lane);
         }
 
         return chart;
@@ -262,7 +227,6 @@ public static partial class TopologyChartExtensions {
             if (edges.Count < 2) continue;
             for (var i = 0; i < edges.Count; i++) {
                 edges[i].RouteLane = (i - (edges.Count - 1) / 2.0) * spacing;
-                edges[i].HasRouteLaneOverride = true;
             }
         }
 

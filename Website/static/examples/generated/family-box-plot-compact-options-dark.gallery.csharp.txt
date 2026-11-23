@@ -78,7 +78,7 @@ public static class BoxPlotRecipe {
                 }
                 options.MinimumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f"));
                 options.MaximumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000"));
-                options.MedianLabel.Style.FontSize(12).FontWeight("700");
+                options.MedianLabel.Style.FontSize(12).FontWeight(700);
             }).DataLabels();
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(0, 60);
         return horizontal ? chart.XAxis(x => x.Title("Delivery time (minutes)")).YAxis(y => y.Title("Service")) : chart.YAxis(y => y.Title("Delivery time (minutes)"));

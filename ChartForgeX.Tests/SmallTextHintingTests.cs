@@ -59,9 +59,9 @@ public sealed class SmallTextHintingTests {
     [Fact]
     public void TextStyleHintingReachesCompositionText() {
         var style = new TextStyle { FontSize = 11, Color = ChartColor.Black };
-        var hinted = ImageComposition.CreateTransparent(200, 30).DrawText(4, 5.3, 190, "Hamburgefonstiv", style).ToImage().Pixels;
+        var hinted = ImageComposition.CreateTransparent(200, 30).DrawText(4, 5.3, 190, "Hamburgefonstiv", style).ToRgbaImage().Pixels;
         style.Hinting = TextHinting.None;
-        var exact = ImageComposition.CreateTransparent(200, 30).DrawText(4, 5.3, 190, "Hamburgefonstiv", style).ToImage().Pixels;
+        var exact = ImageComposition.CreateTransparent(200, 30).DrawText(4, 5.3, 190, "Hamburgefonstiv", style).ToRgbaImage().Pixels;
         if (TrueTypeFont.TryLoadDefault() != null) Assert.NotEqual(exact, hinted);
         Assert.Equal(TextHinting.None, style.Clone().Hinting);
         Assert.Throws<ArgumentOutOfRangeException>(() => style.Hinting = (TextHinting)7);

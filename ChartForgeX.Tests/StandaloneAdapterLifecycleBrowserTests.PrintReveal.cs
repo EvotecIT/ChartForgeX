@@ -18,7 +18,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         if (!Enabled) return;
         var graph = GraphPrintRevealFixture(backend);
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = ThemeMode.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
         })), 980, 720);
         var page = session.Page;
@@ -132,7 +132,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         if (!Enabled) return;
         var graph = GraphPrintRevealFixture(backend);
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = ThemeMode.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
         })), 980, 720);
         var page = session.Page;

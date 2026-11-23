@@ -133,9 +133,9 @@ internal static partial class SmokeTests {
         Assert(topology.Contains("data-cfx-role=\"topology-edge-line-halo\"", StringComparison.Ordinal), "Topology routes should use the shared premium route halo layer.");
         Assert(topology.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal), "Topology routes should use the shared premium route highlight layer.");
         Assert(TopologyEdgeLine(topology, "amer-emea").RenderedColor("stroke").A > 0, "Premium topology routes should retain a visible base stroke beneath the shared halo and highlight layers.");
-        var cssColorTopology = CreateSampleTopologyChart().UpdateEdge("amer-emea", e => e.Color("var(--directory-edge)")).ToSvg();
+        var cssColorTopology = CreateSampleTopologyChart().UpdateEdge("amer-emea", e => e.Color(ChartColorText.Parse("var(--directory-edge)"))).ToSvg();
         Assert(TopologyEdgeLine(cssColorTopology, "amer-emea").Attribute("stroke")!.Value.StartsWith("var(--directory-edge, ", StringComparison.Ordinal), "Topology SVG routes should preserve caller-supplied CSS edge colors with a concrete static fallback.");
-        var cssColorLayeredTopology = CreateSampleTopologyChart().UpdateEdge("amer-emea", e => e.Color("var(--directory-edge)")).ToSvg(new TopologyRenderOptions().LuminousEdges());
+        var cssColorLayeredTopology = CreateSampleTopologyChart().UpdateEdge("amer-emea", e => e.Color(ChartColorText.Parse("var(--directory-edge)"))).ToSvg(new TopologyRenderOptions().LuminousEdges());
         Assert(cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-line-halo\"", StringComparison.Ordinal) && cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal) && TopologyEdgeLine(cssColorLayeredTopology, "amer-emea").Attribute("stroke")!.Value.StartsWith("var(--directory-edge, ", StringComparison.Ordinal), "Topology SVG routes should keep configured premium layers when caller edge colors use CSS syntax.");
         var plainEdgeTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions().EdgeVisualStyle(ChartLineVisualStyle.Plain()));
         Assert(!plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-line-halo\"", StringComparison.Ordinal) && !plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal) && CountOccurrences(plainEdgeTopology, "data-cfx-role=\"topology-edge-line\"") == 2, "Topology edge polish should be configurable down to crisp single-stroke route lines.");
@@ -162,7 +162,7 @@ internal static partial class SmokeTests {
     private static void MetricStatusBarsRespectRoundedCards() {
         var metric = MetricCard.Create()
             .Metric("Monthly Recurring Revenue", "$120,400")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .Theme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .Size(420, 190);
         var svg = metric.ToSvg("rounded-status-bar");
@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
 
         var transparentMetric = MetricCard.Create()
             .Metric("Monthly Recurring Revenue", "$120,400")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .TransparentBackground()
             .Theme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .Size(420, 190);
@@ -198,7 +198,7 @@ internal static partial class SmokeTests {
 
         var noCard = MetricCard.Create()
             .Metric("Monthly Recurring Revenue", "$120,400")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .ShowCard(false)
             .Theme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .Size(420, 190);
@@ -236,8 +236,8 @@ internal static partial class SmokeTests {
         Assert(transparentCardMetric.ToPng().Length > 64, "Transparent visual block cards should still render PNG output.");
 
         var transparentGrid = VisualGrid.CreateMetricStrip("Transparent", new[] {
-                MetricCard.Create().Metric("Patch Rate", "94%").Status(Tone.Success).Theme(transparentCardTheme),
-                MetricCard.Create().Metric("Warnings", "18").Status(Tone.Warning).Theme(transparentCardTheme)
+                MetricCard.Create().Metric("Patch Rate", "94%").Tone(Tone.Success).Theme(transparentCardTheme),
+                MetricCard.Create().Metric("Warnings", "18").Tone(Tone.Warning).Theme(transparentCardTheme)
             }, columns: 2)
             .Theme(transparentCardTheme);
         var transparentGridSvg = transparentGrid.ToSvg("transparent-grid");

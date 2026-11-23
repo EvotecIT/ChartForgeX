@@ -18,13 +18,13 @@ public sealed class NativeLayerBlendTests {
         builder.Rect(new ChartRect(0, 0, 8, 6), ChartColor.FromRgba(255, 0, 0, 128));
         var source = new PreparedVisual(builder.Build());
         var layer = source.CaptureLayer(new VisualLayerBlur(0), MaskBlendFixture.Options);
-        var original = layer.ToImage().Pixels;
+        var original = layer.ToRgbaImage().Pixels;
         var composition = ImageComposition.Create(12, 10, ChartColor.FromRgba(0, 0, 255, 128));
-        composition.DrawLayer(layer, 2, 2, mode, orderedDither: false); var actual = composition.ToImage();
+        composition.DrawLayer(layer, 2, 2, mode, orderedDither: false); var actual = composition.ToRgbaImage();
         MaskBlendFixture.CaptureImage("native-blend-half-alpha-" + mode, actual);
         Assert.Equal(new byte[] { (byte)r, (byte)g, (byte)b, (byte)a }, MaskBlendFixture.Pixel(actual, 4, 4));
         Assert.Equal(new byte[] { 0, 0, 255, 128 }, MaskBlendFixture.Pixel(actual, 0, 0));
-        Assert.Equal(original, layer.ToImage().Pixels);
+        Assert.Equal(original, layer.ToRgbaImage().Pixels);
     }
     [Fact]
     public void PlusLighterSaturatesAlphaAndChannelsWithoutSourceOverDarkening() {
@@ -39,7 +39,7 @@ public sealed class NativeLayerBlendTests {
     public void ClippedTranslatedSourceAndTransparentBackdropKeepPlacementAndOneSource() {
         var source = MaskBlendFixture.Source(255); var layer = source.CaptureLayer(new VisualLayerBlur(0), MaskBlendFixture.Options);
         var composition = ImageComposition.CreateTransparent(6, 6).DrawLayer(layer, -4, 2, VisualBlendMode.Screen, orderedDither: false);
-        var actual = composition.ToImage(); MaskBlendFixture.CaptureImage("native-blend-clipped", actual);
+        var actual = composition.ToRgbaImage(); MaskBlendFixture.CaptureImage("native-blend-clipped", actual);
         Assert.Equal(new byte[4], MaskBlendFixture.Pixel(actual, 0, 1));
         Assert.Equal(new byte[] { 37, 123, 219, 255 }, MaskBlendFixture.Pixel(actual, 0, 2));
         Assert.Equal(new byte[4], MaskBlendFixture.Pixel(actual, 4, 2));
@@ -47,15 +47,15 @@ public sealed class NativeLayerBlendTests {
     [Fact]
     public void OldThreeArgumentDrawRetainsItsSelectedArithmeticAndFailuresAreAtomic() {
         var source = MaskBlendFixture.Source(128); var layer = source.CaptureLayer(new VisualLayerBlur(0), MaskBlendFixture.Options);
-        var composition = ImageComposition.Create(16, 12, ChartColor.FromRgba(0, 0, 255, 128)); var before = (byte[])composition.ToImage().Pixels.Clone();
+        var composition = ImageComposition.Create(16, 12, ChartColor.FromRgba(0, 0, 255, 128)); var before = (byte[])composition.ToRgbaImage().Pixels.Clone();
         Assert.Throws<OperationCanceledException>(() => composition.DrawLayer(layer, 0, 0, VisualBlendMode.Screen,
             cancellationToken: new CancellationToken(true)));
         Assert.Throws<ArgumentOutOfRangeException>(() => composition.DrawLayer(layer, .25, 0, VisualBlendMode.Normal));
         Assert.Throws<ArgumentOutOfRangeException>(() => composition.DrawLayer(layer, 0, 0, (VisualBlendMode)99));
         var dense = source.CaptureLayer(new VisualLayerBlur(0), new VisualRenderOptions(scale: 2, supersampling: 1));
-        Assert.Throws<ArgumentException>(() => composition.DrawLayer(dense, 0, 0, VisualBlendMode.Normal)); Assert.Equal(before, composition.ToImage().Pixels);
-        var old = composition.DrawLayer(layer, 2, 2).ToImage();
-        var expected = ImageComposition.FromImage(new RgbaImage(16, 12, before)).DrawImage(layer.ToImage(), 2, 2, 8, 6).ToImage();
+        Assert.Throws<ArgumentException>(() => composition.DrawLayer(dense, 0, 0, VisualBlendMode.Normal)); Assert.Equal(before, composition.ToRgbaImage().Pixels);
+        var old = composition.DrawLayer(layer, 2, 2).ToRgbaImage();
+        var expected = ImageComposition.FromImage(new RgbaImage(16, 12, before)).DrawImage(layer.ToRgbaImage(), 2, 2, 8, 6).ToRgbaImage();
         MaskBlendFixture.CaptureImage("native-blend-legacy-control", old); Assert.Equal(expected.Pixels, old.Pixels);
     }
 }

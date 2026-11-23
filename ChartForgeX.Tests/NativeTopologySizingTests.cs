@@ -76,7 +76,7 @@ public sealed class NativeTopologySizingTests {
         var inset = Math.Min(4, length / 3);
         var x = (int)Math.Round(endpoint.X - dx / length * inset);
         var y = (int)Math.Round(endpoint.Y - dy / length * inset);
-        var image = prepared.Visual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.Visual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.InRange(x, 0, image.Width - 1); Assert.InRange(y, 0, image.Height - 1);
         var offset = (y * image.Width + x) * 4;
         Assert.True(image.Pixels[offset] > 200 && image.Pixels[offset + 1] < 80 && image.Pixels[offset + 2] < 80,
@@ -88,7 +88,7 @@ public sealed class NativeTopologySizingTests {
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 24, Y = 64, Width = 120, Height = 64, PreserveDisplayModeSize = true });
         chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = targetX, Y = 64, Width = 120, Height = 64, PreserveDisplayModeSize = true });
         chart.Edges.Add(new TopologyEdge { Id = "route", SourceNodeId = "source", TargetNodeId = "target", Routing = TopologyEdgeRouting.Straight,
-            Color = "#ff0000", StrokeWidth = 4, SourceMarker = TopologyMarkerKind.None, TargetMarker = TopologyMarkerKind.None });
+            Color = ChartColor.FromHex("#ff0000"), StrokeWidth = 4, SourceMarker = TopologyMarkerKind.None, TargetMarker = TopologyMarkerKind.None });
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeNodeLabels = false, IncludeStatusBadges = false });
         return chart;
     }

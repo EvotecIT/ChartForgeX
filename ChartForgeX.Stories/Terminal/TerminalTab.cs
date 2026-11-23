@@ -3,24 +3,21 @@ using System;
 
 namespace ChartForgeX.Terminal;
 
-/// <summary>
-/// Specifies the semantic icon shown for a terminal tab.
-/// </summary>
-public enum TerminalTabIcon {
-    /// <summary>Generic terminal icon.</summary>
-    Terminal,
-    /// <summary>Modern PowerShell icon.</summary>
-    PowerShell,
-    /// <summary>Windows PowerShell icon.</summary>
-    WindowsPowerShell,
-    /// <summary>POSIX shell icon.</summary>
-    Bash,
-    /// <summary>Ubuntu icon.</summary>
-    Ubuntu,
-    /// <summary>Windows command prompt icon.</summary>
-    CommandPrompt,
-    /// <summary>No icon.</summary>
-    None
+/// <summary>The icon keys a terminal tab draws. <c>ubuntu</c> draws the Ubuntu mark, <see cref="Icon.None"/> draws
+/// nothing, and every other key draws the terminal prompt mark.</summary>
+public static class TerminalTabIcons {
+    /// <summary>Generic terminal: <c>terminal</c>.</summary>
+    public static Icon Terminal { get; } = Icon.Named("terminal");
+    /// <summary>PowerShell: <c>powershell</c>.</summary>
+    public static Icon PowerShell { get; } = Icon.Named("powershell");
+    /// <summary>Windows PowerShell: <c>windows-powershell</c>.</summary>
+    public static Icon WindowsPowerShell { get; } = Icon.Named("windows-powershell");
+    /// <summary>POSIX shell: <c>bash</c>.</summary>
+    public static Icon Bash { get; } = Icon.Named("bash");
+    /// <summary>Ubuntu: <c>ubuntu</c>.</summary>
+    public static Icon Ubuntu { get; } = Icon.Named("ubuntu");
+    /// <summary>Windows command prompt: <c>command-prompt</c>.</summary>
+    public static Icon CommandPrompt { get; } = Icon.Named("command-prompt");
 }
 
 /// <summary>
@@ -34,7 +31,7 @@ public sealed class TerminalTab {
         string workingDirectory,
         string customPrompt,
         VisualTheme theme,
-        TerminalTabIcon icon, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
+        Icon icon, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         Id = id;
         Title = title;
         Dialect = dialect;
@@ -70,7 +67,7 @@ public sealed class TerminalTab {
     internal ResolvedTerminalStyle ResolvedStyle => TerminalThemeProjection.Resolve(Theme, ThemeMode, Style);
 
     /// <summary>Gets the semantic icon shown in tab-aware window chrome.</summary>
-    public TerminalTabIcon Icon { get; internal set; }
+    public Icon Icon { get; internal set; }
 
     internal string Prompt() {
         switch (Dialect) {

@@ -8,7 +8,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderDateStrip(SvgMarkupWriter writer, DateStripBlock block) {
         var options = block.Options;
         var theme = options.ResolvedTheme;
@@ -87,11 +87,11 @@ public sealed partial class SvgFactBlockRenderer {
             var item = block.Items[i];
             var x = startX + i * cellWidth;
             var centerX = x + cellWidth / 2;
-            var color = item.Color ?? (item.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
+            var color = item.Color ?? (item.Tone == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Tone));
             writer.StartElement("g").Attribute("data-cfx-role", "entity-strip-item").Attribute("data-cfx-label", item.Label).EndStartElement().Line();
             writer.StartElement("circle").Attribute("data-cfx-role", "entity-strip-avatar").Attribute("cx", centerX).Attribute("cy", y + 28).Attribute("r", avatarRadius).Attribute("fill", color.WithAlpha(45).ToCss()).Attribute("stroke", color.WithAlpha(115).ToCss()).EndEmptyElement().Line();
             if (item.AvatarText.Length > 0) WriteText(writer, item.AvatarText, centerX - avatarRadius, y + 33, avatarRadius * 2, TextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 2), "850");
-            else WriteIcon(writer, Icons.Person, centerX, y + 28, avatarRadius * 0.56, color);
+            else WriteIcon(writer, MetricCardIcons.Person, centerX, y + 28, avatarRadius * 0.56, color);
             WriteText(writer, item.Label, x, y + stripHeight - 11, cellWidth, TextAlignment.Center, theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "500");
             writer.EndElement().Line();
         }

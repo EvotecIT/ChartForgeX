@@ -79,7 +79,7 @@ public static partial class TopologyChartExtensions {
             if (!string.Equals(group.Id, groupId, StringComparison.Ordinal)) continue;
             group.IconId = icon.QualifiedId;
             group.Symbol = string.IsNullOrWhiteSpace(group.Symbol) ? icon.Symbol : group.Symbol;
-            group.Color = string.IsNullOrWhiteSpace(group.Color) ? icon.Color : group.Color;
+            group.Color = group.Color == null ? icon.Color : group.Color;
             return chart;
         }
 

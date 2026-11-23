@@ -36,7 +36,7 @@ New-BenchmarkSuite 'chartforgex-charts' {
                 Add-BenchmarkOperation $format {
                     param($case, $run)
                     $before = [GC]::GetAllocatedBytesForCurrentThread()
-                    $run.Result = switch ($case.Operation) { 'Svg' { $run.Lane.Svg() } 'Png' { $run.Lane.Png() } default { $run.Lane.Responsive() } }
+                    $run.Result = switch ($case.Operation) { 'Svg' { $run.Lane.Svg() } 'Png' { $run.Lane.Raster() } default { $run.Lane.Responsive() } }
                     $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
                 }
             }

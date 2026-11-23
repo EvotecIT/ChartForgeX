@@ -26,7 +26,7 @@ internal static partial class SmokeTests {
             .Blank()
             .Command(@".\Invoke-EnvironmentAudit.ps1")
             .Progress("Validation complete", 1)
-            .Output("0 critical findings", TerminalTextTone.Success);
+            .Output("0 critical findings", Tone.Success);
 
         var svg = story.ToSvg("profile");
         var id = SvgDocument.Parse(svg).Root.GetAttribute("id")!;
@@ -65,11 +65,11 @@ internal static partial class SmokeTests {
 
         var animatedStory = TerminalStory.Create()
             .Width(480)
-            .PngOutputScale(1)
+            .RasterScale(1)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Command("dotnet run", 0.05)
-            .Output("Chart saved", TerminalTextTone.Success);
+            .Output("Chart saved", Tone.Success);
         var animationOptions = TerminalStoryAnimationOptions.Create()
             .FramesPerSecond(4)
             .EndHoldSeconds(0.1)
@@ -180,7 +180,7 @@ internal static partial class SmokeTests {
             .WindowStyle(TerminalWindowStyle.WindowsTerminal)
             .Title("Administrator: PowerShell")
             .Command("Get-Process")
-            .Output("ready", TerminalTextTone.Success);
+            .Output("ready", Tone.Success);
         var windowsSvg = windowsStory.ToSvg();
         Assert(windowsSvg.Contains("data-cfx-window-style=\"WindowsTerminal\"", StringComparison.Ordinal) &&
                windowsSvg.Contains("data-cfx-role=\"terminal-tab\"", StringComparison.Ordinal) &&
@@ -203,12 +203,12 @@ internal static partial class SmokeTests {
             .Theme(TerminalThemes.Campbell())
             .WorkingDirectory(@"C:\Work")
             .Command("Get-ChildItem", 0.1)
-            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", windowsPowerShellTabTheme, TerminalTabIcon.WindowsPowerShell, transitionSeconds: 0.1)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", windowsPowerShellTabTheme, TerminalTabIcons.WindowsPowerShell, transitionSeconds: 0.1)
             .Command("$PSVersionTable.PSVersion", 0.1)
-            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", ubuntuTabTheme, TerminalTabIcon.Ubuntu, transitionSeconds: 0.1)
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", ubuntuTabTheme, TerminalTabIcons.Ubuntu, transitionSeconds: 0.1)
             .Command("dotnet test", 0.1)
             .SelectTab("main", 0.1)
-            .Output("Back in PowerShell", TerminalTextTone.Success);
+            .Output("Back in PowerShell", Tone.Success);
         var tabbedLayout = TerminalStoryLayout.Build(tabbedStory);
         var tabbedSvg = tabbedStory.ToSvg("tabs");
         Assert(tabbedStory.Tabs.Count == 3 && tabbedStory.ActiveTabId == "main" &&
@@ -259,9 +259,9 @@ internal static partial class SmokeTests {
             .Width(480)
             .Typography(24, 30)
             .ShowFinalPrompt(false)
-            .InitialTab("proportional", "Proportional", TerminalDialect.Custom, "/src", proportionalTheme, TerminalTabIcon.None, "> ")
+            .InitialTab("proportional", "Proportional", TerminalDialect.Custom, "/src", proportionalTheme, Icon.None, "> ")
             .Command(new string('x', 25), 0.1)
-            .OpenTab("mono", "Mono", TerminalDialect.Custom, "/src", ubuntuTabTheme, TerminalTabIcon.None, "> ", transitionSeconds: 0.1)
+            .OpenTab("mono", "Mono", TerminalDialect.Custom, "/src", ubuntuTabTheme, Icon.None, "> ", transitionSeconds: 0.1)
             .Command(new string('x', 25), 0.1);
         var perTabWrappingLayout = TerminalStoryLayout.Build(perTabWrappingStory);
         Assert(perTabWrappingLayout.Tabs[0].Lines.Count == 2 && perTabWrappingLayout.Tabs[1].Lines.Count == 1,
@@ -278,12 +278,12 @@ internal static partial class SmokeTests {
             "Persistent tab stories should render through completed and animated raster paths.");
 
         var pacedTabStory = TerminalStory.Create()
-            .InitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalThemes.Campbell(), TerminalTabIcon.PowerShell)
+            .InitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalThemes.Campbell(), TerminalTabIcons.PowerShell)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .TabHoldSeconds(1.5)
             .Command("dotnet build", 0.1)
-            .OpenTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalThemes.Ubuntu(), TerminalTabIcon.Ubuntu, transitionSeconds: 0.2)
-            .Output("ready", TerminalTextTone.Success);
+            .OpenTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalThemes.Ubuntu(), TerminalTabIcons.Ubuntu, transitionSeconds: 0.2)
+            .Output("ready", Tone.Success);
         var pacedTabLayout = TerminalStoryLayout.Build(pacedTabStory);
         Assert(pacedTabStory.Tabs[0].Id == "PowerShell" && pacedTabStory.ActiveTabId == "Ubuntu",
             "Callers should be able to name and style the initial persistent terminal tab.");
@@ -303,11 +303,11 @@ internal static partial class SmokeTests {
             "Playback speed presets should adjust typing and tab reading time in the expected direction.");
 
         var declaredTabStory = TerminalStory.Create()
-            .InitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalThemes.Campbell(), TerminalTabIcon.PowerShell)
+            .InitialTab("PowerShell", "PowerShell", TerminalDialect.PowerShell, @"C:\Work", TerminalThemes.Campbell(), TerminalTabIcons.PowerShell)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .TabHoldSeconds(1)
             .Command("ready", 0.1)
-            .DeclareTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalThemes.Ubuntu(), TerminalTabIcon.Ubuntu)
+            .DeclareTab("Ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalThemes.Ubuntu(), TerminalTabIcons.Ubuntu)
             .SelectTab("Ubuntu", 0.2)
             .SelectTab("PowerShell", 0.2);
         var declaredTabLayout = TerminalStoryLayout.Build(declaredTabStory);
@@ -685,7 +685,6 @@ internal static partial class SmokeTests {
                 .ToSvg(),
             "Windows Terminal stories should reject tab strips that cannot preserve a readable minimum tab width.");
         AssertThrows<InvalidOperationException>(() => TerminalStory.Create().Output("ready").Title("Too late"), "Initial tab configuration should be frozen after timeline authoring starts.");
-        AssertThrows<ArgumentOutOfRangeException>(() => TerminalStory.Create().Transcript(Array.Empty<string>(), (TerminalTextTone)99), "Empty transcripts should still validate their semantic tone.");
         var throwingTranscriptStory = TerminalStory.Create().Output("existing");
         AssertThrows<InvalidOperationException>(() => throwingTranscriptStory.Transcript(ThrowingTranscript()), "Transcript enumeration failures should reject the complete batch.");
         Assert(throwingTranscriptStory.Steps.Count == 1 && throwingTranscriptStory.Steps[0].Text == "existing", "A failed transcript enumeration should leave the story unchanged.");

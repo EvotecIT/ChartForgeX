@@ -13,13 +13,13 @@ public sealed class NativeMaskLayerTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void AlphaMaskChangesOnlyAlphaAndDetachesBothInputAndGetter(bool dither) {
-        var source = MaskBlendFixture.Source(); var original = source.ToRgba(MaskBlendFixture.Options);
+        var source = MaskBlendFixture.Source(); var original = source.ToRgbaImage(MaskBlendFixture.Options);
         var input = MaskBlendFixture.Solid(8, 6, new byte[] { 3, 179, 231, 64 });
-        var mask = new VisualMask(input, orderedDither: dither); var stable = mask.ToImage().Pixels;
-        Array.Clear(input.Pixels, 0, input.Pixels.Length); var getter = mask.ToImage(); Array.Clear(getter.Pixels, 0, getter.Pixels.Length);
-        var layer = source.CaptureLayer(mask, MaskBlendFixture.Options); var actual = layer.ToImage();
+        var mask = new VisualMask(input, orderedDither: dither); var stable = mask.ToRgbaImage().Pixels;
+        Array.Clear(input.Pixels, 0, input.Pixels.Length); var getter = mask.ToRgbaImage(); Array.Clear(getter.Pixels, 0, getter.Pixels.Length);
+        var layer = source.CaptureLayer(mask, MaskBlendFixture.Options); var actual = layer.ToRgbaImage();
         MaskBlendFixture.Capture("native-mask-alpha-rgb-" + dither, layer);
-        Assert.Equal(stable, mask.ToImage().Pixels); Assert.Equal(new ChartRect(0, 0, 8, 6), mask.Bounds);
+        Assert.Equal(stable, mask.ToRgbaImage().Pixels); Assert.Equal(new ChartRect(0, 0, 8, 6), mask.Bounds);
         var seen = 0;
         for (var at = 0; at < actual.Pixels.Length; at += 4) {
             if (actual.Pixels[at + 3] == 0) continue;
@@ -27,7 +27,7 @@ public sealed class NativeMaskLayerTests {
             Assert.InRange(actual.Pixels[at + 3], 42, 44);
         }
         Assert.True(seen > 0); Assert.Same(source, layer.Source);
-        Assert.Equal(original.Pixels, source.ToRgba(MaskBlendFixture.Options).Pixels);
+        Assert.Equal(original.Pixels, source.ToRgbaImage(MaskBlendFixture.Options).Pixels);
     }
     [Theory]
     [InlineData(VisualMaskMode.Alpha, 255, 64, 64)] [InlineData(VisualMaskMode.Luminance, 255, 64, 14)]
@@ -42,14 +42,14 @@ public sealed class NativeMaskLayerTests {
     }
     [Fact]
     public void FullCoverageIsExactAndUncoveredPixelsAreTransparentWithoutShrinkingBounds() {
-        var source = MaskBlendFixture.Source(); var raw = source.ToRgba(MaskBlendFixture.Options);
+        var source = MaskBlendFixture.Source(); var raw = source.ToRgbaImage(MaskBlendFixture.Options);
         var full = source.CaptureLayer(new VisualMask(MaskBlendFixture.Solid(8, 6, new byte[] { 0, 0, 0, 255 })), MaskBlendFixture.Options);
         var part = full.WithMask(new VisualMask(MaskBlendFixture.Solid(2, 2, new byte[] { 255, 0, 0, 255 }), new ChartPoint(3, 2), orderedDither: false));
         MaskBlendFixture.Capture("native-mask-full", full); MaskBlendFixture.Capture("native-mask-partial", part);
-        Assert.Equal(raw.Pixels, full.ToImage().Pixels); Assert.Equal(full.Bounds, part.Bounds); Assert.Equal(full.SourceBounds, part.SourceBounds);
-        Assert.Equal(new byte[4], MaskBlendFixture.Pixel(part.ToImage(), 2, 2));
-        Assert.Equal(MaskBlendFixture.Pixel(raw, 3, 2), MaskBlendFixture.Pixel(part.ToImage(), 3, 2));
-        Assert.Equal(new byte[4], MaskBlendFixture.Pixel(part.ToImage(), 5, 2)); Assert.Same(source, part.Source);
+        Assert.Equal(raw.Pixels, full.ToRgbaImage().Pixels); Assert.Equal(full.Bounds, part.Bounds); Assert.Equal(full.SourceBounds, part.SourceBounds);
+        Assert.Equal(new byte[4], MaskBlendFixture.Pixel(part.ToRgbaImage(), 2, 2));
+        Assert.Equal(MaskBlendFixture.Pixel(raw, 3, 2), MaskBlendFixture.Pixel(part.ToRgbaImage(), 3, 2));
+        Assert.Equal(new byte[4], MaskBlendFixture.Pixel(part.ToRgbaImage(), 5, 2)); Assert.Same(source, part.Source);
     }
     [Fact]
     public void MaskAfterShadowRetainsOverflowSourceFactsAndExactEmbeddedSnapshot() {
@@ -61,21 +61,21 @@ public sealed class NativeMaskLayerTests {
         Assert.Equal(source.Regions.Select(item => item.Id), layer.Visual.Regions.Select(item => item.Id)); Assert.Equal(before, source.ToSvg());
         var image = Assert.Single(XDocument.Parse(layer.Visual.ToSvg()).Descendants(), item => item.Name.LocalName == "image");
         var uri = image.Attribute("href")!.Value; var embedded = RasterImageDecoder.Decode(Convert.FromBase64String(uri.Substring(uri.IndexOf(',') + 1)));
-        Assert.Equal(layer.ToImage().Pixels, embedded.Pixels); Assert.Empty(SvgRasterizer.Rasterize(layer.Visual.ToSvg(), strict: true).Diagnostics);
+        Assert.Equal(layer.ToRgbaImage().Pixels, embedded.Pixels); Assert.Empty(SvgRasterizer.Rasterize(layer.Visual.ToSvg(), strict: true).Diagnostics);
         Assert.DoesNotContain(XDocument.Parse(layer.Visual.ToSvg()).Descendants(), item => item.Name.LocalName is "script" or "filter" or "mask");
     }
     [Fact]
     public void RejectedDensityGridAndCanceledRequestsDoNotMutateOriginalOrPublishPartialPixels() {
         var source = MaskBlendFixture.PublicSource(); var before = source.ToSvg();
         var mask = new VisualMask(MaskBlendFixture.Solid(160, 100, new byte[] { 0, 0, 0, 128 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new VisualMask(mask.ToImage(), new ChartPoint(.25, 0)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new VisualMask(mask.ToImage(), mode: (VisualMaskMode)99));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new VisualMask(mask.ToRgbaImage(), new ChartPoint(.25, 0)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new VisualMask(mask.ToRgbaImage(), mode: (VisualMaskMode)99));
         Assert.Throws<ArgumentException>(() => source.CaptureLayer(mask, new VisualRenderOptions(scale: 2)));
         Assert.Throws<OperationCanceledException>(() => source.CaptureLayer(mask, cancellationToken: new CancellationToken(true)));
-        var layer = source.CaptureLayer(mask, MaskBlendFixture.Options); var pixels = layer.ToImage().Pixels;
+        var layer = source.CaptureLayer(mask, MaskBlendFixture.Options); var pixels = layer.ToRgbaImage().Pixels;
         Assert.Throws<OperationCanceledException>(() => layer.WithMask(mask, new CancellationToken(true)));
-        Assert.Throws<ArgumentException>(() => layer.WithMask(new VisualMask(mask.ToImage(), pixelsPerUnit: 2)));
-        Assert.Equal(before, source.ToSvg()); Assert.Equal(pixels, layer.ToImage().Pixels);
+        Assert.Throws<ArgumentException>(() => layer.WithMask(new VisualMask(mask.ToRgbaImage(), pixelsPerUnit: 2)));
+        Assert.Equal(before, source.ToSvg()); Assert.Equal(pixels, layer.ToRgbaImage().Pixels);
     }
     [Fact]
     public void AlphaDitherChangesNoRgbAndKeepsOriginalChildDevicePhase() {
@@ -129,7 +129,7 @@ internal static class MaskBlendFixture {
         return new RgbaImage(width, height, bytes);
     }
     internal static byte[] Pixel(RgbaImage image, int x, int y) => image.Pixels.Skip((y * image.Width + x) * 4).Take(4).ToArray();
-    internal static void Capture(string stem, CapturedVisualLayer layer) => NativeEffectBeforeCapture.Write(stem, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
+    internal static void Capture(string stem, CapturedVisualLayer layer) => NativeEffectBeforeCapture.Write(stem, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToRgbaImage());
     internal static void CaptureImage(string stem, RgbaImage image) => NativeEffectBeforeCapture.Write(stem, null,
         ChartForgeX.Composition.ImageComposition.FromImage(image).ToPng(), image);
 }

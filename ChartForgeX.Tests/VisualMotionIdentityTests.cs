@@ -17,7 +17,7 @@ public sealed class VisualMotionIdentityTests {
     [Fact]
     public void CompletedTerminalArtifactsKeepAccessibleReferencesIsolatedBetweenExports() {
         var terminal = TerminalStory.Create().Title("Completed terminal").Width(480)
-            .PngOutputScale(1).ShowFinalPrompt(false).Command("status", .1).Output("Ready");
+            .RasterScale(1).ShowFinalPrompt(false).Command("status", .1).Output("Ready");
         var artifact = terminal.ToVisualArtifact();
         Assert.Same(terminal, artifact.Model);
         var source = Assert.IsAssignableFrom<IStaticVisualSource>(artifact.RenderSource);

@@ -113,7 +113,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
         var page = session.Page;
         Assert.Equal(2, await page.Locator("[data-cfx-interactive=true][data-cfx-runtime-bound=true]").CountAsync());
         for (var registration = 0; registration < 3; registration++)
-            await page.AddScriptTagAsync(new PageAddScriptTagOptions { Content = HtmlInteractiveTopologyRenderer.BuildInteractionScript(Options(first)) });
+            await page.AddScriptTagAsync(new PageAddScriptTagOptions { Content = HtmlInteractiveTopologyRenderer.Script(Options(first)) });
         await page.EvaluateAsync("()=>window.mixedTopologyEvents=[]");
         foreach (var prefix in new[] { first, last }) {
             var id = "late-" + prefix;
@@ -151,7 +151,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
             .AddEdge("ab", "a", "b", "Stores");
         graph.Options.Features = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Viewport;
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false;
         }), 960, 680);
         var page = session.Page;
@@ -215,7 +215,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
         graph.Options.Features = GraphSceneFeatures.Selection;
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
-            options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false;
         }), 960, 680);
         var page = session.Page;
@@ -259,7 +259,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
         "(root,request)=>root.dispatchEvent(new CustomEvent(request.name,{detail:request.detail||{}}))", new { name, detail });
 
     private static TopologyChart Topology(bool dark) => TopologyChart.Create().Id("linked-topology")
-        .Viewport(new TopologyViewport(1060, 372, 0)).Legend((TopologyLegend?)null).Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        .Viewport(new TopologyViewport(1060, 372, 0)).Legend((TopologyLegend?)null).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
         .AddNode("a", "API", 80, 120, width: 140, height: 80)
         .AddNode("b", "Database", 460, 120, width: 140, height: 80)
         .AddNode("c", "Queue", 840, 120, width: 140, height: 80)

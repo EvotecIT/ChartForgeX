@@ -21,7 +21,7 @@ public sealed class RetainedAppearanceReplayTests {
         var before = source.ToSvg();
         var root = RetainedAppearanceFixture.Wrap(source, kind);
         var expected = RetainedAppearanceFixture.Operation(kind).Capture(source, RetainedAppearanceFixture.Options, CancellationToken.None);
-        var image = expected.ToImage();
+        var image = expected.ToRgbaImage();
         var cropped = RasterEffects.Crop(new RasterEffectResult(image, new RasterEffectRegion(
             (int)expected.Bounds.X, (int)expected.Bounds.Y, image.Width, image.Height)),
             new RasterEffectRegion(0, 0, 8, 6), CancellationToken.None);
@@ -29,14 +29,14 @@ public sealed class RetainedAppearanceReplayTests {
         Assert.Equal(source.Size.Width, root.Size.Width);
         Assert.Equal(source.Size.Height, root.Size.Height);
         Assert.Equal(source.Regions.Select(row => row.Id), root.Regions.Select(row => row.Id));
-        Assert.Equal(cropped.Pixels, root.ToRgba(RetainedAppearanceFixture.Options).Pixels);
+        Assert.Equal(cropped.Pixels, root.ToRgbaImage(RetainedAppearanceFixture.Options).Pixels);
         Assert.Equal(before, source.ToSvg());
         var envelope = root.ToArtifact().ToInterchangeEnvelope();
         var step = Assert.Single(envelope.Presentation!.CapturedEffects);
         Assert.Null(step.CaptureFrame);
         Assert.Equal(2, envelope.Version);
-        Assert.Equal(root.ToRgba(RetainedAppearanceFixture.Options).Pixels,
-            envelope.ApplyCapturedEffects(source).ToRgba(RetainedAppearanceFixture.Options).Pixels);
+        Assert.Equal(root.ToRgbaImage(RetainedAppearanceFixture.Options).Pixels,
+            envelope.ApplyCapturedEffects(source).ToRgbaImage(RetainedAppearanceFixture.Options).Pixels);
     }
 
     [Fact]
@@ -55,8 +55,8 @@ public sealed class RetainedAppearanceReplayTests {
         var flood = Assert.Single(native.Descendants(), node => node.Name.LocalName == "feFlood");
         Assert.Equal(.06, double.Parse(flood.Attribute("flood-opacity")!.Value, System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal(.06, Assert.Single(loaded.Presentation!.CapturedEffects).DropShadow!.Opacity);
-        Assert.Equal(new byte[] { 255, 0, 0, 25 }, AppearanceFixture.Pixel(root.ToRgba(RetainedAppearanceFixture.Options), 5, 5));
-        Assert.Equal(new byte[] { 0, 0, 255, 2 }, AppearanceFixture.Pixel(root.ToRgba(RetainedAppearanceFixture.Options), 14, 5));
+        Assert.Equal(new byte[] { 255, 0, 0, 25 }, AppearanceFixture.Pixel(root.ToRgbaImage(RetainedAppearanceFixture.Options), 5, 5));
+        Assert.Equal(new byte[] { 0, 0, 255, 2 }, AppearanceFixture.Pixel(root.ToRgbaImage(RetainedAppearanceFixture.Options), 14, 5));
         Assert.Equal(root.ToPng(RetainedAppearanceFixture.Options), replay.ToPng(RetainedAppearanceFixture.Options));
         Assert.Equal(root.ToSvg(), replay.ToSvg());
     }
@@ -67,8 +67,8 @@ public sealed class RetainedAppearanceReplayTests {
         var root = source.WithDropShadow(new VisualDropShadow(ChartColor.FromRgba(0, 0, 255, 128), 0, 0, 0, orderedDither: false));
         RetainedAppearanceFixture.Save("retained-shadow-zero-is-not-identity", root);
         Assert.NotSame(source, root);
-        Assert.Equal(new byte[] { 204, 0, 51, 160 }, AppearanceFixture.Pixel(root.ToRgba(RetainedAppearanceFixture.Options), 3, 3));
-        Assert.Equal(128, AppearanceFixture.Pixel(source.ToRgba(RetainedAppearanceFixture.Options), 3, 3)[3]);
+        Assert.Equal(new byte[] { 204, 0, 51, 160 }, AppearanceFixture.Pixel(root.ToRgbaImage(RetainedAppearanceFixture.Options), 3, 3));
+        Assert.Equal(128, AppearanceFixture.Pixel(source.ToRgbaImage(RetainedAppearanceFixture.Options), 3, 3)[3]);
     }
 
     [Theory]
@@ -94,13 +94,13 @@ public sealed class RetainedAppearanceReplayTests {
         var second = source.WithMask(mask).WithOutline(outline);
         RetainedAppearanceFixture.Save("retained-order-outline-mask", first);
         RetainedAppearanceFixture.Save("retained-order-mask-outline", second);
-        Assert.Equal(new byte[4], AppearanceFixture.Pixel(first.ToRgba(RetainedAppearanceFixture.Options), 3, 3));
-        Assert.Equal(new byte[] { 0, 0, 255, 128 }, AppearanceFixture.Pixel(second.ToRgba(RetainedAppearanceFixture.Options), 3, 3));
+        Assert.Equal(new byte[4], AppearanceFixture.Pixel(first.ToRgbaImage(RetainedAppearanceFixture.Options), 3, 3));
+        Assert.Equal(new byte[] { 0, 0, 255, 128 }, AppearanceFixture.Pixel(second.ToRgbaImage(RetainedAppearanceFixture.Options), 3, 3));
         foreach (var root in new[] { first, second }) {
             var saved = root.ToArtifact().ToInterchangeJson(); var loaded = VisualArtifactInterchangeEnvelope.FromJson(saved);
             Assert.Equal(2, loaded.Presentation!.CapturedEffects.Count);
-            Assert.Equal(root.ToRgba(RetainedAppearanceFixture.Options).Pixels,
-                loaded.ApplyCapturedEffects(source).ToRgba(RetainedAppearanceFixture.Options).Pixels);
+            Assert.Equal(root.ToRgbaImage(RetainedAppearanceFixture.Options).Pixels,
+                loaded.ApplyCapturedEffects(source).ToRgbaImage(RetainedAppearanceFixture.Options).Pixels);
         }
     }
 
@@ -124,7 +124,7 @@ public sealed class RetainedAppearanceReplayTests {
         Assert.Equal(layer.Bounds.Height, natural.Height);
         Assert.Equal(layer.Bounds, envelope.Presentation!.CapturedEffects[1].CaptureFrame!.Bounds);
         Assert.Equal(3, envelope.Presentation.CapturedEffects.Count);
-        Assert.Equal(layer.ToImage().Pixels, replayed.ToImage().Pixels);
+        Assert.Equal(layer.ToRgbaImage().Pixels, replayed.ToRgbaImage().Pixels);
         Assert.Equal("fresh-source", Assert.Single(edited.Source.Regions).Id);
         Assert.DoesNotContain(edited.Source.Regions, row => row.Id == "source-mark");
         Assert.Null(layer.Visual.Scene.ValueCapture); Assert.Null(layer.Visual.Scene.VisibilityCapture);
@@ -148,7 +148,7 @@ public sealed class RetainedAppearanceReplayTests {
         Assert.True(actualChanged.Bounds.Width > layer.Bounds.Width);
         Assert.Equal(layer.Bounds, envelope.ApplyCapturedLayer(source).Bounds);
         Assert.Throws<InvalidOperationException>(() => envelope.ApplyCapturedLayer(bright));
-        Assert.Equal(bright.ToRgba(RetainedAppearanceFixture.Options).Pixels, bright.CaptureLayer(new VisualLayerBlur(0), RetainedAppearanceFixture.Options).ToImage().Pixels);
+        Assert.Equal(bright.ToRgbaImage(RetainedAppearanceFixture.Options).Pixels, bright.CaptureLayer(new VisualLayerBlur(0), RetainedAppearanceFixture.Options).ToRgbaImage().Pixels);
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public sealed class RetainedAppearanceReplayTests {
         Assert.Equal(20, exact.ConservativeLiveBytes);
         var shared = source.CaptureLayer(first, RetainedAppearanceFixture.Options).WithMask(first);
         Assert.Equal(16, shared.PrepareMask(first, maximumLiveBytes: 16).ConservativeLiveBytes);
-        Assert.Equal(output.Pixels, distinct.WithMask(first).ToImage().Pixels);
+        Assert.Equal(output.Pixels, distinct.WithMask(first).ToRgbaImage().Pixels);
     }
 }
 
@@ -201,9 +201,9 @@ internal static class RetainedAppearanceFixture {
         : VisualCapturedEffect.From(new VisualDropShadow(ChartColor.FromRgba(0, 0, 255, 128), 1, 1, 1, orderedDither: false));
     internal static PreparedVisual Wrap(PreparedVisual source, string kind) => source.WithRootEffect(Operation(kind));
     internal static void Save(string name, PreparedVisual source) =>
-        NativeEffectBeforeCapture.Write(name, source.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)), source.ToPng(Options), source.ToRgba(Options));
+        NativeEffectBeforeCapture.Write(name, source.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)), source.ToPng(Options), source.ToRgbaImage(Options));
     internal static void Save(string name, CapturedVisualLayer layer, string? json = null) {
-        NativeEffectBeforeCapture.Write(name, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
+        NativeEffectBeforeCapture.Write(name, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToRgbaImage());
         if (json != null) NativeEffectBeforeCapture.Json(name + "-interchange", new { json });
     }
 }

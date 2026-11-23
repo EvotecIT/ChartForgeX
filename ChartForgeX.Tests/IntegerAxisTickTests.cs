@@ -117,7 +117,7 @@ public sealed class IntegerAxisTickTests {
             var chart = Chart.Create().Size(640, 300).ShowHeader(false).Legend(false)
                 .Padding(20, 20, 20, 20)
                 .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-                .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+                .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
             ChartAxis axis;
             if (location == "horizontal-value") {
                 chart.AddHorizontalBar("Items", new[] { new ChartPoint(1, 1), new ChartPoint(2, maximum) }).XAxis(xAxis => xAxis.IntegerTicks());
@@ -144,7 +144,7 @@ public sealed class IntegerAxisTickTests {
             var track = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role.Replace("-label", ""));
             var facts = prepared.Regions.Where(region => region.Role == role).ToArray();
             Assert.Equal(captions.Length, facts.Length);
-            var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+            var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
             var without = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size,
                 prepared.Scene.Nodes.Where(node => node is not VisualSceneText text || text.Role != role).ToArray(),
                 prepared.Scene.Diagnostics, prepared.Scene.Regions), supersampling: 1);

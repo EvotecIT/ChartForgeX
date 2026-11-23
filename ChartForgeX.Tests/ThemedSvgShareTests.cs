@@ -230,8 +230,8 @@ public sealed class ThemedSvgShareTests {
         tokens.Warning = tokens.Palette[0];
         string color = tokens.Palette[0].ToHex();
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 400))
-            .AddAutoGroup("g", "Group", TopologyHealthStatus.Warning, color: color)
-            .AddAutoNode("n", "Node", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "g", subtitle: "Subtitle", color: color)
+            .AddAutoGroup("g", "Group", TopologyHealthStatus.Warning, color: ChartColorText.Parse(color))
+            .AddAutoNode("n", "Node", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "g", subtitle: "Subtitle", color: ChartColorText.Parse(color))
             .Theme(new VisualTheme(tokens, tokens));
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
             LegendMode = TopologyLegendMode.Auto, SvgColorVariables = tokens.ToSvgColorVariables()
@@ -428,7 +428,7 @@ public sealed class ThemedSvgShareTests {
         .AddAutoNode("dc4", "DC04", TopologyNodeKind.Server, TopologyHealthStatus.Unknown)
         .AddEdge("a", "dc1", "dc2", status: TopologyHealthStatus.Warning, direction: VisualLinkDirection.Forward)
         .AddEdge("b", "dc2", "dc3", status: TopologyHealthStatus.Critical, direction: VisualLinkDirection.Bidirectional)
-        .AddEdge("c", "dc3", "dc4", direction: VisualLinkDirection.Forward, color: "#9A5B13")
+        .AddEdge("c", "dc3", "dc4", direction: VisualLinkDirection.Forward, color: ChartColor.FromHex("#9A5B13"))
         .AddEdge("d", "dc1", "dc4", status: TopologyHealthStatus.Healthy, direction: VisualLinkDirection.Forward)
         .UpdateEdge("c", e => e.SourceMarker(TopologyMarkerKind.Circle).TargetMarker(TopologyMarkerKind.Arrow))
         .UpdateEdge("d", e => e.SourceMarker(null).TargetMarker(TopologyMarkerKind.Diamond))

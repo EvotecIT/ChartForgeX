@@ -7,9 +7,9 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
-    private const string AmerColor = "#16A34A";
-    private const string EmeaColor = "#2563EB";
-    private const string ApacColor = "#8B5CF6";
+    private static readonly ChartColor AmerColor = ChartColor.FromHex("#16A34A");
+    private static readonly ChartColor EmeaColor = ChartColor.FromHex("#2563EB");
+    private static readonly ChartColor ApacColor = ChartColor.FromHex("#8B5CF6");
 
     public static void Write(string target) {
         var artifacts = new List<VisualArtifact>();
@@ -20,7 +20,7 @@ internal static partial class TopologyVisualExamples {
         var meshOptions = new TopologyRenderOptions { IncludeIconLabels = true, LegendMode = TopologyLegendMode.Merge }
             .MonitoringDashboardStyle()
             .ActiveScenarioId("client-request-europe")
-            .HtmlScenarioUrlState();
+            .Html(html => html.ScenarioUrlState());
         meshOptions.Html.Interactions = true;
         var meshMotion = TopologyMotionOptions.RoutePulseForScenario("client-request-europe")
             .DurationSeconds(4)
@@ -37,27 +37,27 @@ internal static partial class TopologyVisualExamples {
             .FitContentToViewport();
         var forceGraphOptions = new TopologyRenderOptions { IncludeLegend = true }
             .ForceGraphStyle()
-            .HtmlForceGraphControls();
+            .Html(html => html.ForceGraphControls());
         var topologyExplorerOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
             .MonitoringDashboardStyle()
-            .SelectGroup("APAC")
-            .SelectNode("anz")
-            .SelectEdge("apac-anz")
-            .SelectEdge("bh-apac");
+            .SelectedGroupId("APAC")
+            .SelectedNodeId("anz")
+            .SelectedEdgeId("apac-anz")
+            .SelectedEdgeId("bh-apac");
         var relationshipOverviewOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
-            .SelectNode("domain")
-            .SelectEdge("domain-finding");
+            .SelectedNodeId("domain")
+            .SelectedEdgeId("domain-finding");
         var mindMapOptions = new TopologyRenderOptions()
             .MindMapStyle()
             .RequireResolvedIcons()
             .AllowMultilineNodeLabels(true).WrapNodeLabels().MaxNodeLabelLines(2).MaxNodeSubtitleLines(1);
         var miniRelationshipOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
-            .SelectNode("domain")
-            .SelectEdge("finding-domain");
+            .SelectedNodeId("domain")
+            .SelectedEdgeId("finding-domain");
         miniRelationshipOptions.ArrowMarkerStyle = TopologyArrowMarkerStyle.Diamond;
         var evidenceTimelineOptions = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
-            .SelectNode("entity")
-            .SelectEdge("finding-entity");
+            .SelectedNodeId("entity")
+            .SelectedEdgeId("finding-entity");
         evidenceTimelineOptions.ArrowMarkerStyle = TopologyArrowMarkerStyle.Circle;
         var secureAccessCatalog = BuildSecureAccessIconCatalog();
         var secureAccessOptions = new TopologyRenderOptions().RelationshipOverviewStyle();
@@ -76,8 +76,8 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-secure-access-arbitrary-icons", BuildSecureAccessArbitraryIconTopology(), "Secure Access Arbitrary Icons", "Screenshot-inspired access topology using catalog-supplied inline SVG artwork, custom icon nodes, gateway bars, dashed policy tunnels, and static SVG/HTML/PNG output.", secureAccessOptions);
         SaveTopology(target, artifacts, "visual-mini-correlation-map", BuildMiniCorrelationMap(), "Mini Correlation Map", "Compact selected-asset relationship map for dashboard cards and drilldown panels with panel background, icon cards, and multiple arrow marker choices.", miniRelationshipOptions);
         SaveTopology(target, artifacts, "visual-evidence-timeline-relationship", BuildEvidenceTimelineRelationship(), "Evidence Timeline Relationship", "Timeline-like evidence stream mapped to one selected entity using topology nodes, circular markers, typed links, and multiline event cards.", evidenceTimelineOptions);
-        SaveTopology(target, artifacts, "visual-impact-dependency-overview", BuildImpactDependencyOverview(), "Impact Dependency Overview", "Dependency and blast-radius topology with upstream services, owned applications, downstream consumers, risk links, and reusable relationship-label plates.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectNode("platform").SelectEdge("platform-finding"));
-        SaveTopology(target, artifacts, "visual-ownership-evidence-bundle", BuildOwnershipEvidenceBundle(), "Ownership Evidence Bundle", "Ownership and evidence topology for selected assets, showing owner teams, certificates, DNS, IP evidence, findings, and exported evidence bundles.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectNode("asset").SelectEdge("asset-finding"));
+        SaveTopology(target, artifacts, "visual-impact-dependency-overview", BuildImpactDependencyOverview(), "Impact Dependency Overview", "Dependency and blast-radius topology with upstream services, owned applications, downstream consumers, risk links, and reusable relationship-label plates.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectedNodeId("platform").SelectedEdgeId("platform-finding"));
+        SaveTopology(target, artifacts, "visual-ownership-evidence-bundle", BuildOwnershipEvidenceBundle(), "Ownership Evidence Bundle", "Ownership and evidence topology for selected assets, showing owner teams, certificates, DNS, IP evidence, findings, and exported evidence bundles.", TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectedNodeId("asset").SelectedEdgeId("asset-finding"));
         SaveTopology(target, artifacts, "visual-reusable-regional-topology", BuildReusableRegionalTopology(), "Reusable Regional Topology", "Coordinate-free regional topology built from generic groups, nodes, links, metrics, symbols, and layout policy.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-readable-dense-replication", BuildReadableDenseReplication(), "Readable Dense Replication", "Opt-in wrapped site rows, card-based medium-sized groups, and routes planned together: clear of cards, captions and group headers, on separate lanes where they share a corridor, with labels on their routes.", new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
         SaveTopology(target, artifacts, "visual-replication-mesh-explorer", BuildReplicationMeshExplorer(), "Replication Mesh Explorer", "Site-to-site replication mesh with icon nodes, bidirectional paths, explicit edge ports, route lanes, metric labels, scenario switching, and offender highlighting support.", meshOptions);
@@ -86,13 +86,13 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-force-busy-relationship-graph", BuildBusyForceRelationshipGraph(), "Busy Force Relationship Graph", "Busy force-directed relationship graph using degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", forceGraphOptions);
         var relationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9);
         relationshipRadialOptions.IncludeEdgeLabels = true;
         SaveTopology(target, artifacts, "visual-relationship-radial-ego-graph", BuildRelationshipRadialEgoGraph(), "Relationship Radial Ego Graph", "Selected application relationship graph with the root in the center, direct conversations around it, second-hop conversations farther out, and capped expansion for large networks.", relationshipRadialOptions);
         var largeRelationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40);
         SaveTopology(target, artifacts, "visual-relationship-radial-500-ego-graph", BuildLargeRelationshipRadialEgoGraph(), "Relationship Radial 500 Ego Graph", "Large 500-node relationship ego graph: all nodes remain present as dots, first-hop conversations spread around the root, second-hop conversations fan out farther, and HTML focus reveals labels on demand.", largeRelationshipRadialOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
@@ -107,7 +107,7 @@ internal static partial class TopologyVisualExamples {
         SaveTopology(target, artifacts, "visual-nested-user-hierarchy-left-right", BuildNestedUserHierarchy(TopologyLayoutDirection.LeftToRight), "Nested User Hierarchy Left-to-Right", "The same parent-child model rendered horizontally to validate alternate hierarchy flow and bus diagnostics.", denseHierarchyOptions);
         SaveTopology(target, artifacts, "visual-nested-user-hierarchy-bottom-top", BuildNestedUserHierarchy(TopologyLayoutDirection.BottomToTop), "Nested User Hierarchy Bottom-to-Top", "The same parent-child model mirrored vertically to validate upward hierarchy flow and bus diagnostics.", denseHierarchyOptions);
         SaveTopology(target, artifacts, "visual-nested-user-hierarchy-right-left", BuildNestedUserHierarchy(TopologyLayoutDirection.RightToLeft), "Nested User Hierarchy Right-to-Left", "The same parent-child model mirrored horizontally to validate reverse hierarchy flow and bus diagnostics.", denseHierarchyOptions);
-        SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, Geography = { IncludeCallouts = true, CalloutMaxItems = 3 }, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.MonitoringDashboardStyle().SelectGroup("APAC").SelectNode("apac-hub").SelectEdge("emea-apac"));
+        SaveTopology(target, artifacts, "visual-geographic-topology-map", BuildGeographicTopologyMap(), "Geographic Topology Map", "Topology-native geographic layout with typed coordinates, projected site markers, curved WAN route arcs, labels, regional callouts, and SVG/PNG metadata hooks.", new TopologyRenderOptions { IncludeGroups = false, Geography = { IncludeCallouts = true, CalloutMaxItems = 3 }, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }.MonitoringDashboardStyle().SelectedGroupId("APAC").SelectedNodeId("apac-hub").SelectedEdgeId("emea-apac"));
 
         SaveMap(target, artifacts, "visual-geographic-region-map", BuildGeographicRegionMap(), "Geographic Region Map", "Dotted-map chart with AMER, EMEA, and APAC hubs, weighted markers, and cross-region route overlays.");
         SaveMap(target, artifacts, "visual-site-distribution-map", BuildSiteDistributionMap(), "Site Distribution Map", "Dotted-map chart for site distribution, site health, and regional route overlays.");
@@ -186,11 +186,11 @@ internal static partial class TopologyVisualExamples {
             .UpdateEdge("amer-emea", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("emea-apac", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("apac-anz", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("apac-anz", 20)
+            .UpdateEdge("apac-anz", edge => edge.RouteLane(20))
             .UpdateEdge("amer-bh", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Left))
-            .EdgeRouteLane("amer-bh", 20)
+            .UpdateEdge("amer-bh", edge => edge.RouteLane(20))
             .UpdateEdge("bh-apac", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Bottom))
-            .EdgeRouteLane("bh-apac", -22)
+            .UpdateEdge("bh-apac", edge => edge.RouteLane(-22))
             .EdgeWaypoints("amer-bh", new ChartPoint(235, 500), new ChartPoint(338, 500), new ChartPoint(338, 587))
             .EdgeWaypoints("bh-apac", new ChartPoint(928, 587), new ChartPoint(928, 500), new ChartPoint(1045, 500))
             .UpdateEdge("amer-bh", e => e.LabelOffsetX(28).LabelOffsetY(8))
@@ -304,7 +304,7 @@ internal static partial class TopologyVisualExamples {
             .UpdateEdge("amer-emea", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("emea-apac", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("apac-anz", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("apac-anz", 18)
+            .UpdateEdge("apac-anz", edge => edge.RouteLane(18))
             .UpdateEdge("amer-bh", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
             .UpdateEdge("emea-bh", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
             .UpdateEdge("apac-bh", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
@@ -495,9 +495,9 @@ internal static partial class TopologyVisualExamples {
                 new ChartMapPoint("EMEA", 10.0, 50.0, 56, ChartColor.FromRgb(37, 99, 235)),
                 new ChartMapPoint("APAC", 103.8198, 1.3521, 39, ChartColor.FromRgb(124, 58, 237))
             })
-            .AddMapRouteBetweenPoints("AMER to EMEA 68 ms", "AMER", "EMEA", ChartColor.FromRgb(22, 163, 74))
-            .AddMapRouteBetweenPoints("EMEA to APAC 92 ms", "EMEA", "APAC", ChartColor.FromRgb(239, 68, 68))
-            .AddMapRouteBetweenPoints("AMER to APAC 142 ms", "AMER", "APAC", ChartColor.FromRgb(245, 158, 11));
+            .AddMapConnectorBetweenPoints("AMER to EMEA 68 ms", "AMER", "EMEA", ChartColor.FromRgb(22, 163, 74))
+            .AddMapConnectorBetweenPoints("EMEA to APAC 92 ms", "EMEA", "APAC", ChartColor.FromRgb(239, 68, 68))
+            .AddMapConnectorBetweenPoints("AMER to APAC 142 ms", "AMER", "APAC", ChartColor.FromRgb(245, 158, 11));
     }
 
     private static Chart BuildSiteDistributionMap() {
@@ -518,9 +518,9 @@ internal static partial class TopologyVisualExamples {
                 new ChartMapPoint("Singapore", 103.8198, 1.3521, 15, ChartColor.FromRgb(124, 58, 237)),
                 new ChartMapPoint("Sydney", 151.2093, -33.8688, 8, ChartColor.FromRgb(239, 68, 68))
             })
-            .AddMapRouteBetweenPoints("New York to London", "New York", "London", ChartColor.FromRgb(22, 163, 74))
-            .AddMapRouteBetweenPoints("London to Singapore", "London", "Singapore", ChartColor.FromRgb(245, 158, 11))
-            .AddMapRouteBetweenPoints("Singapore to Sydney", "Singapore", "Sydney", ChartColor.FromRgb(239, 68, 68));
+            .AddMapConnectorBetweenPoints("New York to London", "New York", "London", ChartColor.FromRgb(22, 163, 74))
+            .AddMapConnectorBetweenPoints("London to Singapore", "London", "Singapore", ChartColor.FromRgb(245, 158, 11))
+            .AddMapConnectorBetweenPoints("Singapore to Sydney", "Singapore", "Sydney", ChartColor.FromRgb(239, 68, 68));
     }
 
     private static Chart BuildWanLatencyMap() {
@@ -538,9 +538,9 @@ internal static partial class TopologyVisualExamples {
                 new ChartMapPoint("Singapore", 103.8198, 1.3521, ChartColor.FromRgb(124, 58, 237)),
                 new ChartMapPoint("Sydney", 151.2093, -33.8688, ChartColor.FromRgb(239, 68, 68))
             })
-            .AddMapRouteBetweenPoints("Dallas to Frankfurt 68 ms", "Dallas", "Frankfurt", ChartColor.FromRgb(22, 163, 74))
-            .AddMapRouteBetweenPoints("Frankfurt to Singapore 92 ms", "Frankfurt", "Singapore", ChartColor.FromRgb(239, 68, 68))
-            .AddMapRouteBetweenPoints("Singapore to Sydney 142 ms", "Singapore", "Sydney", ChartColor.FromRgb(245, 158, 11));
+            .AddMapConnectorBetweenPoints("Dallas to Frankfurt 68 ms", "Dallas", "Frankfurt", ChartColor.FromRgb(22, 163, 74))
+            .AddMapConnectorBetweenPoints("Frankfurt to Singapore 92 ms", "Frankfurt", "Singapore", ChartColor.FromRgb(239, 68, 68))
+            .AddMapConnectorBetweenPoints("Singapore to Sydney 142 ms", "Singapore", "Sydney", ChartColor.FromRgb(245, 158, 11));
     }
 
     private static void AddSiteDots(TopologyChart chart, string prefix, double x, double y, int count, TopologyHealthStatus status) {
@@ -594,7 +594,7 @@ internal static partial class TopologyVisualExamples {
     }
 
     private static void SaveMap(string target, List<VisualArtifact> artifacts, string name, Chart chart, string title, string notes) {
-        chart.Png(p => p.OutputScale((int)ChartPngOutputScale.Retina));
+        chart.Raster(p => p.OutputScale((int)ChartRasterScale.Retina));
         chart.SaveSvg(Path.Combine(target, name + ".svg"));
         chart.SaveHtml(Path.Combine(target, name + ".html"));
         chart.SavePng(Path.Combine(target, name + ".png"));

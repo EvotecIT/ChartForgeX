@@ -96,8 +96,8 @@ public sealed class NativeTopologyThemePaintTests {
         TopologyLegend Legend(bool variables) => TopologyLegend.Default()
             .AddNodeKind("Server", TopologyNodeKind.Server)
             .AddEdgeKind("Connection", TopologyEdgeKind.Generic)
-            .AddStatus("Override", TopologyHealthStatus.Healthy, variables ? "var(--override, #8833AA)" : "#8833AA")
-            .AddNodeKind("Override node", TopologyNodeKind.Database, variables ? "var(--override, #8833AA)" : "#8833AA", backgroundColor: variables ? "var(--override-card, #AABBCC)" : "#AABBCC");
+            .AddStatus("Override", TopologyHealthStatus.Healthy, variables ? ChartColorText.Parse("var(--override, #8833AA)") : ChartColor.FromHex("#8833AA"))
+            .AddNodeKind("Override node", TopologyNodeKind.Database, variables ? ChartColorText.Parse("var(--override, #8833AA)") : ChartColor.FromHex("#8833AA"), backgroundColor: variables ? ChartColorText.Parse("var(--override-card, #AABBCC)") : ChartColor.FromHex("#AABBCC"));
         var literal = Diagram(VisualTheme.Graphite()).Legend(Legend(false));
         var variable = Diagram(VisualTheme.Graphite()).Legend(Legend(true));
         var options = new TopologyRenderOptions { IncludeLegend = true, SvgColorVariables = Variables() };
@@ -143,7 +143,7 @@ public sealed class NativeTopologyThemePaintTests {
     [InlineData("#FF000000", 255, 212)]
     public void GroupVariableClearanceUsesTheAuthoredFallbackTintAndAlpha(string fallback, int expectedGreen, int expectedAlpha) {
         var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).Viewport(new TopologyViewport(600, 360, 20)).Legend((TopologyLegend?)null)
-            .AddGroup("services", "Services", 10, 10, 560, 320, color: "var(--group, " + fallback + ")")
+            .AddGroup("services", "Services", 10, 10, 560, 320, color: ChartColorText.Parse("var(--group, " + fallback + ")"))
             .AddNode("source", "Source", 70, 150, groupId: "services")
             .AddNode("target", "Target", 350, 150, groupId: "services")
             .AddEdge("connection", "source", "target", label: "Connection", routing: TopologyEdgeRouting.Straight);
@@ -154,7 +154,7 @@ public sealed class NativeTopologyThemePaintTests {
         Assert.Equal(expectedAlpha, clearance.Fill!.Value.A);
         var svgClearance = XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label-clearance");
         Assert.Contains("var(--group,", (string?)svgClearance.Attribute("fill"));
-        chart.Groups[0].Color = fallback;
+        chart.Groups[0].Color = ChartColorText.Parse(fallback);
         Assert.Equal(chart.ToPng(options), prepared.ToPng());
     }
 
@@ -175,7 +175,7 @@ public sealed class NativeTopologyThemePaintTests {
     }
 
     private static TopologyChart Diagram(VisualTheme theme, ThemeMode mode = ThemeMode.Light) {
-        var chart = TopologyChart.Create().Id("theme-paints").Theme(theme, mode).Title("Network").Subtitle("Host theme")
+        var chart = TopologyChart.Create().Id("theme-paints").Theme(theme).ThemeMode(mode).Title("Network").Subtitle("Host theme")
             .Viewport(new TopologyViewport(820, 240, 20)).Legend((TopologyLegend?)null);
         var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled };
         for (var i = 0; i < statuses.Length; i++) chart.AddNode("node-" + i, statuses[i].ToString(), 30 + i * 150, 60, kind: TopologyNodeKind.Server, status: statuses[i], subtitle: "Status", width: 120, height: 85);

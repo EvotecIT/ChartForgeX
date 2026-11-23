@@ -49,7 +49,7 @@ public sealed class V2PreparedVisualTests {
         var headings2 = second.Descendants().Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("frame-heading", StringComparison.Ordinal) == true).Select(element => element.ToString()).ToArray();
         Assert.Equal(headings1, headings2); Assert.NotEmpty(headings1);
         Assert.Equal("0 0 480 320", (string?)first.Root!.Attribute("viewBox"));
-        var image = donut.ToRgba(new VisualRenderOptions(scale: 2, supersampling: 1));
+        var image = donut.ToRgbaImage(new VisualRenderOptions(scale: 2, supersampling: 1));
         Assert.Equal(960, image.Width); Assert.Equal(640, image.Height);
     }
 
@@ -61,7 +61,7 @@ public sealed class V2PreparedVisualTests {
         var prepared = chart.Prepare(new VisualRenderContext(frame: new VisualFrame("", "", false, transparentBackground: true)));
         var svg = prepared.ToSvg();
         Assert.Contains(color.ToHex(), svg, StringComparison.OrdinalIgnoreCase);
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         Assert.Equal(0, image.Pixels[3]);
         Assert.Contains(image.Pixels.Where((_, index) => index % 4 == 3), alpha => alpha > 0);
     }

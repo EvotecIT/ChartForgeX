@@ -80,11 +80,11 @@ public sealed partial class VisualArtifactInterchangeWaterfallArtifact {
     /// <summary>Gets or sets native static localized readout and accessibility words; callback fields reject.</summary>
     public ChartLabels Labels { get; set; } = new();
     /// <summary>Gets or sets the output pixel multiplier, one through four.</summary>
-    public int PngOutputScale { get; set; } = 1;
+    public int RasterScale { get; set; } = 1;
     /// <summary>Gets or sets the native internal raster supersampling scale, one through four.</summary>
-    public int PngSupersamplingScale { get; set; } = 2;
+    public int RasterSupersampling { get; set; } = 2;
     /// <summary>Gets or sets the native raster text-hinting policy.</summary>
-    public TextHinting PngTextHinting { get; set; }
+    public TextHinting RasterTextHinting { get; set; }
     /// <summary>Gets or sets the shared native data-caption connector shape.</summary>
     public ChartDataLabelConnectorStyle DataLabelConnectorStyle { get; set; } = ChartDataLabelConnectorStyle.Elbow;
     /// <summary>Gets or sets data-caption connector opacity.</summary>
@@ -134,9 +134,9 @@ public sealed partial class VisualArtifactInterchangeWaterfallArtifact {
         copy.SecondaryXAxisTitle = source.SecondaryXAxisTitle;
         copy.SecondaryYAxisTitle = source.SecondaryYAxisTitle;
         copy.Labels = source.Labels.Capture();
-        copy.PngOutputScale = source.PngOutputScale;
-        copy.PngSupersamplingScale = source.PngSupersamplingScale;
-        copy.PngTextHinting = source.PngTextHinting;
+        copy.RasterScale = source.RasterScale;
+        copy.RasterSupersampling = source.RasterSupersampling;
+        copy.RasterTextHinting = source.RasterTextHinting;
         copy.DataLabelConnectorStyle = source.DataLabelConnectorStyle;
         copy.DataLabelConnectorOpacity = source.DataLabelConnectorOpacity;
         copy.DataLabelConnectorStrokeWidth = source.DataLabelConnectorStrokeWidth;

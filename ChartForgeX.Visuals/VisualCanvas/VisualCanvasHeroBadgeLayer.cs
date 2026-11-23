@@ -22,10 +22,8 @@ public sealed class VisualCanvasHeroBadgeLayer : VisualCanvasLayer {
 
     /// <summary>Gets or sets the badge symbol.</summary>
     public string Symbol { get => _symbol; set => _symbol = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Gets or sets the badge accent color.</summary>
-    public ChartColor Accent { get => AccentOverride ?? ChartColor.FromHex("#22A7FF"); set => AccentOverride = value; }
-    /// <summary>Gets or sets an explicit badge accent color. When empty, renderers use the current theme secondary accent.</summary>
-    public ChartColor? AccentOverride { get; set; }
+    /// <summary>Gets or sets the accent color. Null uses the theme's secondary accent.</summary>
+    public ChartColor? Accent { get; set; }
     /// <summary>Gets or sets an SVG-compatible image reference for the badge logo. Renderers never fetch it for PNG output.</summary>
     public string ImageHref { get => _imageHref; set => _imageHref = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets borrowed source RGBA pixels. SVG embeds them as PNG when ImageHref is empty.</summary>

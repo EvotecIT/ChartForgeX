@@ -13,7 +13,7 @@ internal static class AppearanceSnippetProof {
                     var id = "native-appearance-" + effect + "-" + variant + "-" + mode;
                     try {
                         var layer = NativeAppearanceExample.Create(effect, variant, mode);
-                        var image = layer.ToImage();
+                        var image = layer.ToRgbaImage();
                         File.WriteAllText(Path.Combine(output, id + ".svg"), layer.Visual.ToSvg());
                         File.WriteAllBytes(Path.Combine(output, id + ".png"), layer.Visual.ToPng());
                         File.WriteAllText(Path.Combine(output, id + ".csharp.txt"), ExampleRecipeSource.EmitNativeAppearance(effect, variant, mode));

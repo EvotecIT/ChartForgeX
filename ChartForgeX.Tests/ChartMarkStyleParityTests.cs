@@ -39,7 +39,7 @@ public sealed class ChartMarkStyleParityTests {
         var canvas = new RgbaCanvas(20, 20, 2, null, density);
         var color = ChartColor.FromRgba(30, 80, 170, (byte)alpha);
         canvas.FillAndStrokeRoundedRect(4, 4, 10, 10, 0, color, color, 4, 0.22);
-        var image = canvas.ToImage();
+        var image = canvas.ToRgbaImage();
         var single = (int)Math.Round(alpha * 0.22);
         var overlap = (int)Math.Round((alpha + alpha * (1 - alpha / 255d)) * 0.22);
         Assert.InRange(Alpha(image, 3 * density, 8 * density), single - 1, single + 1);
@@ -53,7 +53,7 @@ public sealed class ChartMarkStyleParityTests {
         var canvas = new RgbaCanvas(10, 10, 2);
         var color = ChartColor.FromRgba(30, 80, 170, 128);
         canvas.FillAndStrokeRoundedRect(-4, -4, 12, 12, 0, color, color, 4, 0.22);
-        var image = canvas.ToImage();
+        var image = canvas.ToRgbaImage();
         Assert.InRange(Alpha(image, 0, 0), 27, 29);
         Assert.InRange(Alpha(image, 7, 4), 41, 43);
         Assert.InRange(Alpha(image, 8, 4), 27, 29);

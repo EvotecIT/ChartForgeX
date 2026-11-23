@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -47,9 +48,9 @@ internal sealed partial class VisualTopologyCompiler {
             data["data-node-icon-artwork"] = ArtworkKind(artwork);
             data["data-node-artwork-source"] = ResolveNodeArtworkSource(node, _options) ?? string.Empty;
         }
-        if (!string.IsNullOrWhiteSpace(node.Color)) data["data-node-color"] = node.Color!;
+        if (node.Color != null) data["data-node-color"] = node.Color.ToText()!;
         if (node.PaletteIndex.HasValue) data["data-node-palette-index"] = node.PaletteIndex.Value.ToString(CultureInfo.InvariantCulture);
-        if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) data["data-node-background-color"] = node.BackgroundColor!;
+        if (node.BackgroundColor != null) data["data-node-background-color"] = node.BackgroundColor.ToText()!;
         SiblingCardMetadata(data, node);
         return data;
     }
@@ -57,7 +58,7 @@ internal sealed partial class VisualTopologyCompiler {
     private Dictionary<string, string> GroupMetadata(TopologyGroup group) {
         var data = CommonMetadata(group.Id, "group", group.Status, null, group.Metadata, null);
         data["class"] = CssPrefix + "__group" + CustomCssClasses(group.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsGroupHighlighted(group));
-        data["data-group-label"] = group.Label; data["data-group-color"] = group.Color ?? string.Empty;
+        data["data-group-label"] = group.Label; data["data-group-color"] = group.Color.ToText() ?? string.Empty;
         data["data-parent-group-id"] = group.ParentGroupId ?? string.Empty;
         if (!group.ShowLabel) data["data-group-show-label"] = "false";
         if (group.Presentation != TopologyGroupPresentation.Container)
@@ -87,7 +88,7 @@ internal sealed partial class VisualTopologyCompiler {
         data["data-edge-layout-inference"] = edge.LayoutInference == TopologyEdgeLayoutInference.None ? "none"
             : string.Join(" ", new[] { (TopologyEdgeLayoutInference.SourcePort, "source-port"), (TopologyEdgeLayoutInference.TargetPort, "target-port"), (TopologyEdgeLayoutInference.RouteLane, "route-lane") }
                 .Where(entry => (edge.LayoutInference & entry.Item1) != 0).Select(entry => entry.Item2));
-        data["data-edge-color"] = edge.Color ?? string.Empty;
+        data["data-edge-color"] = edge.Color.ToText() ?? string.Empty;
         if (edge.PaletteIndex.HasValue) data["data-edge-palette-index"] = edge.PaletteIndex.Value.ToString(CultureInfo.InvariantCulture);
         if (edge.StrokeWidth.HasValue) data["data-edge-stroke-width"] = Number(edge.StrokeWidth.Value * _scale);
         if (edge.Opacity.HasValue) data["data-edge-opacity"] = Number(edge.Opacity.Value);

@@ -25,7 +25,7 @@ public static partial class VisualArtifactInterchangeMapping {
         var source = envelope.TreeView!;
         var block = TreeViewBlock.Create().Title(envelope.Title).Subtitle(envelope.Subtitle)
             .Theme(source.Theme).ThemeMode(source.ThemeMode).TransparentBackground(source.TransparentBackground)
-            .ShowCard(source.ShowCard).PngOutputScale(source.PngOutputScale);
+            .ShowCard(source.ShowCard).RasterScale(source.RasterScale);
         block.Options.Padding = source.Padding; block.Options.HostOwnsFrame = source.HostOwnsFrame;
         block.ShowIcons = source.ShowIcons; block.RowIndent = source.RowIndent; block.RowPadding = source.RowPadding;
         block.Options.Accessibility.Name = envelope.AccessibleName;
@@ -44,7 +44,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.TreeView = new VisualArtifactInterchangeTreeViewArtifact {
             Theme = source.Theme, ThemeMode = source.ThemeMode, Padding = source.ConfiguredPadding,
             TransparentBackground = source.TransparentBackground, ShowCard = source.ShowCard,
-            HostOwnsFrame = source.HostOwnsFrame, PngOutputScale = source.PngOutputScale,
+            HostOwnsFrame = source.HostOwnsFrame, RasterScale = source.RasterScale,
             ShowIcons = block.ShowIcons, RowIndent = block.RowIndent, RowPadding = block.RowPadding
         };
         envelope.TreeView.Items.AddRange(block.Items);

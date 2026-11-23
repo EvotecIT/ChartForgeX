@@ -74,7 +74,7 @@ public sealed class TextLanguageTests {
         try {
             var style = new TextStyle { Font = FontSpec.FromFile(path), FontSize = 100, OpenTypeLanguageTag = "SRB", Hinting = TextHinting.None };
             Assert.Equal(132, TextLayoutEngine.Measure("бб", style).Width, 6);
-            var actual = ImageComposition.Create(200, 130, ChartColor.Transparent).DrawText(0, 0, 200, "бб", style, TextWrapMode.NoWrap).ToImage();
+            var actual = ImageComposition.Create(200, 130, ChartColor.Transparent).DrawText(0, 0, 200, "бб", style, TextWrapMode.NoWrap).ToRgbaImage();
             var face = Font().WithLanguage("SRB ");
             var expected = new RgbaCanvas(200, 130, 1, face, 1, useDefaultOutlineFont: false);
             face.Draw(expected, 0, 0, "бб", ChartColor.Black, 100);
@@ -116,7 +116,7 @@ public sealed class TextLanguageTests {
             FontRegistry.Register("CFX Language Fitting", path);
             const string sourceLabel = "бббббб";
             var chart = Chart.Create().Size(360, 600).XLabels(sourceLabel).XAxis(x => x.LabelAngle(0))
-                .TickLabelStyle(s => s.FontFamily("CFX Language Fitting").FontSize(100).FontWeight("400"))
+                .TickLabelStyle(s => s.FontFamily("CFX Language Fitting").FontSize(100).FontWeight(400))
                 .AddBar("Value", new[] { new ChartPoint(1, 1) });
             chart.Options.YAxis.Visible = false;
             chart.Options.TickLabelStyle.OpenTypeLanguageTag("BGR");
@@ -161,7 +161,7 @@ public sealed class TextLanguageTests {
         try {
             FontRegistry.Register("CFX Language Grid", path);
             var grid = new ChartGrid { Title = "бббббб" }; grid.Add(Chart.Create().Size(400, 300));
-            grid.TitleStyle.FontFamily("CFX Language Grid").FontSize(100).FontWeight("400").OpenTypeLanguageTag("BGR");
+            grid.TitleStyle.FontFamily("CFX Language Grid").FontSize(100).FontWeight(400).OpenTypeLanguageTag("BGR");
             var doc = XDocument.Parse(grid.ToSvg());
             var header = doc.Descendants().First(e => (string?)e.Attribute("data-cfx-role") == "frame-heading");
             var width = double.Parse(doc.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture) - grid.Padding * 2;
@@ -181,18 +181,18 @@ public sealed class TextLanguageTests {
             FontRegistry.Register("CFX Language Radial", path);
             var chart = Chart.Create().AddProgressRing("бб", new[] { new ChartPoint(0, 40) });
             chart.Options.Progress.ShowRingCenterLabel = true;
-            var style = new TextStyleOverride().FontFamily("CFX Language Radial").FontWeight("400").OpenTypeLanguageTag("BGR");
+            var style = new TextStyleOverride().FontFamily("CFX Language Radial").FontWeight(400).OpenTypeLanguageTag("BGR");
             var radius = ProgressRingLayout.RequestedCenterRadius(chart, chart.Series[0], 300, "бб", 100, 1, style);
             Assert.True(radius * 2 >= Font().WithLanguage("BGR ").Measure("бб", 100) + 20, "The ring must reserve localized text and horizontal padding.");
         } finally { FontRegistry.Clear(); File.Delete(path); }
     }
 
     [Theory]
-    [InlineData("650", "SRB")]
-    [InlineData("850", "SRB")]
-    [InlineData("1000", "SRB")]
-    [InlineData("650", "normal")]
-    public void NumericRoleWeightsRemainSupportedWhenLanguageIsExplicit(string weight, string language) {
+    [InlineData(650, "SRB")]
+    [InlineData(850, "SRB")]
+    [InlineData(1000, "SRB")]
+    [InlineData(650, "normal")]
+    public void NumericRoleWeightsRemainSupportedWhenLanguageIsExplicit(int weight, string language) {
         var grid = new ChartGrid { Title = "Language", Subtitle = "Forms" }; grid.Add(Chart.Create());
         grid.TitleStyle.FontWeight(weight).OpenTypeLanguageTag(language);
         grid.SubtitleStyle.FontWeight(weight).OpenTypeLanguageTag(language);

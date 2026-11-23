@@ -119,7 +119,7 @@ internal static class TopologyGeographicCallouts {
                 group,
                 label,
                 subtitle,
-                string.IsNullOrWhiteSpace(group.Color) ? theme.StatusColor(group.Status) : group.Color!.Trim(),
+                group.Color == null ? theme.StatusColor(group.Status) : group.Color.ToText()!,
                 placement.X,
                 placement.Y,
                 width,

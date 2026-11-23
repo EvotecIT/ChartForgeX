@@ -103,8 +103,8 @@ internal static class PngTerminalStoryChromeRenderer {
     }
 
     private static void DrawTabIcon(RgbaCanvas canvas, TerminalTab tab, double x, double y) {
-        if (tab.Icon == TerminalTabIcon.None) return;
-        if (tab.Icon == TerminalTabIcon.Ubuntu) {
+        if (tab.Icon.IsEmpty) return;
+        if (tab.Icon.Equals(TerminalTabIcons.Ubuntu)) {
             canvas.DrawCircle(x + 9, y + 9, 9, tab.ResolvedStyle.Accent);
             canvas.DrawCircle(x + 9, y + 9, 3, tab.ResolvedStyle.Background);
             return;

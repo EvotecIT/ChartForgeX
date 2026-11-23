@@ -41,8 +41,8 @@ public sealed class MermaidFlowchartCaptionLayoutTests {
         var expectedShapes = new[] { TopologyNodeShape.Rectangle, TopologyNodeShape.Diamond, TopologyNodeShape.Circle,
             TopologyNodeShape.Cylinder, TopologyNodeShape.DoubleCircle, TopologyNodeShape.Parallelogram };
         Assert.Equal(expectedShapes, chart.Nodes.Select(node => node.Shape!.Value));
-        Assert.Equal(dark ? "#25354a" : "#d6e7fa", chart.Nodes.Single(node => node.Id == "approved").BackgroundColor);
-        Assert.Equal("#3d68a0", chart.Edges[0].Color);
+        Assert.Equal(dark ? ChartColor.FromHex("#25354a") : ChartColor.FromHex("#d6e7fa"), chart.Nodes.Single(node => node.Id == "approved").BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#3d68a0"), chart.Edges[0].Color);
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         Assert.Equal(chart.Nodes.Select(node => node.Id), envelope.Nodes.Select(node => node.Id));
         Assert.Equal(chart.Nodes.Select(node => node.Label), envelope.Nodes.Select(node => node.Label));

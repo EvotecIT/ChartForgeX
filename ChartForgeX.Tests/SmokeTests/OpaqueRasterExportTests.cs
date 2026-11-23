@@ -27,7 +27,7 @@ internal static partial class SmokeTests {
         var styledChart = Chart.Create()
             .Size(320, 200)
             .Title("styled raster family")
-            .TitleStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).FontWeight("bold").Italic().UnderlineStyle(TextDecorationStyle.Wavy).StrikethroughStyle(TextDecorationStyle.Double).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase))
+            .TitleStyle(style => style.Color(ChartColor.FromHex("#7c3aed")).FontWeight(700).Italic().UnderlineStyle(TextDecorationStyle.Wavy).StrikethroughStyle(TextDecorationStyle.Double).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase))
             .AddBar("Values", Points(1, 3, 2));
         foreach (var format in supportedFormats) {
             var decoded = RasterImageDecoder.Decode(styledChart.ToRasterImage(format));

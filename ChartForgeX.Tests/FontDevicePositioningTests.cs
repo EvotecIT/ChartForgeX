@@ -106,7 +106,7 @@ public sealed class FontDevicePositioningTests {
         try {
             var face = Face(); var style = new TextStyle { Font = FontSpec.FromFile(path), FontSize = 12, Color = ChartColor.Black, Hinting = TextHinting.None };
             Assert.Equal(19.12, TextLayoutEngine.Measure("HH", style).Width, 6);
-            var composed = ImageComposition.Create(100, 100, ChartColor.Transparent).DrawText(0, 0, 100, "H\u0301\u0300", style, TextWrapMode.NoWrap).ToImage();
+            var composed = ImageComposition.Create(100, 100, ChartColor.Transparent).DrawText(0, 0, 100, "H\u0301\u0300", style, TextWrapMode.NoWrap).ToRgbaImage();
             var direct = new RgbaCanvas(100, 100, 1, face, 1, useDefaultOutlineFont: false) { TextHinting = TextHinting.None };
             face.Draw(direct, 0, 0, "H\u0301\u0300", ChartColor.Black, 12);
             Assert.Equal(direct.ToOutputPixels(), composed.Pixels);

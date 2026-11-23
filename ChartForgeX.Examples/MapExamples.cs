@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class MapExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale, bool includeExternalCatalogMaps = false) {
+    public static void Write(string output, ChartRasterScale pngOutputScale, bool includeExternalCatalogMaps = false) {
         Save(CreateCalendarHeatmap(), output, "developer-consistency-calendar-light", pngOutputScale);
         Save(TravelDottedMapRecipe.Create(), output, "travel-dotted-map-dark", pngOutputScale);
         Save(CreateSeaRouteMap(), output, "sea-route-suez-cape-map-light", pngOutputScale);
@@ -61,7 +61,7 @@ internal static class MapExamples {
                 new ChartMapPoint("Rotterdam", 4.4792, 51.9244, ChartColor.FromRgb(37, 99, 235)),
                 new ChartMapPoint("Singapore", 103.8198, 1.3521, ChartColor.FromRgb(14, 165, 233))
             })
-            .AddMapRoute("Via Suez Canal", new[] {
+            .AddMapConnector("Via Suez Canal", new[] {
                 new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
                 new ChartMapPoint("English Channel", -1.2, 50.0),
                 new ChartMapPoint("Gibraltar", -5.6, 35.9),
@@ -72,7 +72,7 @@ internal static class MapExamples {
                 new ChartMapPoint("Malacca Strait", 98.0, 5.6),
                 new ChartMapPoint("Singapore", 103.8198, 1.3521)
             }, ChartColor.FromRgb(37, 99, 235))
-            .AddMapRoute("Via Cape of Good Hope", new[] {
+            .AddMapConnector("Via Cape of Good Hope", new[] {
                 new ChartMapPoint("Rotterdam", 4.4792, 51.9244),
                 new ChartMapPoint("English Channel", -1.2, 50.0),
                 new ChartMapPoint("Gibraltar", -5.6, 35.9),
@@ -197,7 +197,7 @@ internal static class MapExamples {
             .Map(m => m.Viewport(viewport))
             .DataLabels()
             .AddDottedMap("Cities", points, ChartColor.FromRgb(37, 99, 235))
-            .AddMapRouteBetweenPoints(route.Label, route.FromPointLabel, route.ToPointLabel, ChartColor.FromRgb(37, 99, 235));
+            .AddMapConnectorBetweenPoints(route.Label, route.FromPointLabel, route.ToPointLabel, ChartColor.FromRgb(37, 99, 235));
     }
 
     private static Chart CreateEuropeRevenueDottedMap() {
@@ -218,8 +218,8 @@ internal static class MapExamples {
                 new ChartMapPoint("Germany", 10.4515, 51.1657, 214, ChartColor.FromRgb(34, 197, 94)),
                 new ChartMapPoint("Norway", 8.4689, 60.4720, 74, ChartColor.FromRgb(14, 165, 233))
             }, ChartColor.FromRgb(37, 99, 235))
-            .AddMapRouteBetweenPoints("United Kingdom to Poland", "United Kingdom", "Poland", ChartColor.FromRgb(37, 99, 235))
-            .AddMapRouteBetweenPoints("Spain to Germany", "Spain", "Germany", ChartColor.FromRgb(34, 197, 94));
+            .AddMapConnectorBetweenPoints("United Kingdom to Poland", "United Kingdom", "Poland", ChartColor.FromRgb(37, 99, 235))
+            .AddMapConnectorBetweenPoints("Spain to Germany", "Spain", "Germany", ChartColor.FromRgb(34, 197, 94));
     }
 
     private static Chart CreateTileMap() {
@@ -338,7 +338,7 @@ internal static class MapExamples {
         }
     }
 
-    private static void SaveOptionalCatalogRegionMapExamples(string output, ChartPngOutputScale pngOutputScale) {
+    private static void SaveOptionalCatalogRegionMapExamples(string output, ChartRasterScale pngOutputScale) {
         var assets = FindCatalogAssetDirectory();
         if (assets == null) return;
         Save(CreateNuts3EuropeIndustrialBirthsMap(assets), output, "eu-industrial-births-nuts3-light", pngOutputScale);
@@ -450,15 +450,15 @@ internal static class MapExamples {
         return null;
     }
 
-    private static void Save(Chart chart, string output, string name, ChartPngOutputScale pngOutputScale) {
-        chart.Png(p => p.OutputScale((int)pngOutputScale));
+    private static void Save(Chart chart, string output, string name, ChartRasterScale pngOutputScale) {
+        chart.Raster(p => p.OutputScale((int)pngOutputScale));
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
         chart.SaveHtml(Path.Combine(output, name + ".html"));
         chart.SavePng(Path.Combine(output, name + ".png"));
     }
 
-    private static void SaveGrid(ChartGrid grid, string output, string name, ChartPngOutputScale pngOutputScale) {
-        grid.PngOutputScale((int)pngOutputScale);
+    private static void SaveGrid(ChartGrid grid, string output, string name, ChartRasterScale pngOutputScale) {
+        grid.RasterScale((int)pngOutputScale);
         grid.SaveSvg(Path.Combine(output, name + ".svg"));
         grid.SaveHtml(Path.Combine(output, name + ".html"));
         grid.SavePng(Path.Combine(output, name + ".png"));

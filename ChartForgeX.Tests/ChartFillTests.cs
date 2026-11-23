@@ -325,7 +325,7 @@ public sealed class ChartFillTests {
             "bar" => chart.AddBar("Values", points), "horizontal-bar" => chart.AddHorizontalBar("Values", points),
             "area" => chart.AddArea("Values", points), "scatter" => chart.AddScatter("Values", points),
             "pie" => chart.AddPie("Values", points), "donut" => chart.AddDonut("Values", points),
-            "radar" => chart.AddRadarArea("Values", points), "heatmap" => chart.AddHeatmapRow("Values", points),
+            "radar" => chart.AddRadar("Values", points), "heatmap" => chart.AddHeatmapRow("Values", points),
             "treemap" => chart.AddTreemap("Values", new[] { new ChartHierarchyItem("a", "A", value: 4), new ChartHierarchyItem("b", "B", value: 8) }),
             "funnel" => chart.AddFunnel("Values", points), "circle" => chart.AddCircle("Values", 65),
             "progress-ring" => chart.AddProgressRing("Values", new[] { new ChartPoint(0, 65), new ChartPoint(1, 40) }),

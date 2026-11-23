@@ -627,7 +627,7 @@ internal static partial class SmokeTests {
             string.Join(" / ", Enumerable.Repeat("Extremely long certificate transparency drift monitor", 3)),
             string.Join(" / ", Enumerable.Repeat("Extremely long DNSSEC posture remediation backlog", 3))
         };
-        var longLegend = Chart.Create().Theme(VisualTheme.Graphite()).Size(320, 220).Png(p => p.FontPath(font))
+        var longLegend = Chart.Create().Theme(VisualTheme.Graphite()).Size(320, 220).Raster(p => p.FontPath(font))
             .AddLine(longNames[0], Points(1, 2, 3)).AddLine(longNames[1], Points(2, 3, 4));
         var longSvg = longLegend.ToSvg();
         Assert(longSvg.Contains("…</text>", StringComparison.Ordinal), "SVG legends should shorten series names that exceed the bounded legend lane.");

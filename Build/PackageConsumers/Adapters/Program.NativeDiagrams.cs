@@ -24,7 +24,7 @@ internal static partial class Program {
         var stateArtifact = PackedNativeDiagram("state-regions", state);
         var stateModel = (TopologyChart)stateArtifact.Model!;
         PackageAssertions.Require(stateModel.Groups.Count(group => group.Presentation == TopologyGroupPresentation.Compartment) == 2
-            && stateModel.Nodes.Single(node => node.Id == "A").BackgroundColor == "#fef9c3"
+            && stateModel.Nodes.Single(node => node.Id == "A").BackgroundColor == ChartColor.FromHex("#fef9c3")
             && stateModel.Nodes.Count(node => node.Metadata.TryGetValue("mermaid.kind", out var kind) && (kind == "start" || kind == "end")) == 4,
             "Packed State lost independent regional controls or shared safe class paints.");
         var stateJson = VisualArtifactInterchangeEnvelope.FromJson(stateArtifact.ToInterchangeJson());
@@ -39,7 +39,7 @@ internal static partial class Program {
         const string entities = "erDiagram\nclassDef marked fill:#fef9c3,color:#7c2d12\nC[\"Customer account\"]:::marked {\nstring id PK, FK \"External key\"\nstring? display_name\n}\nO[Orders] {\nstring id PK\n}\nC ||--o{ O : places";
         var entityModel = (TopologyChart)PackedNativeDiagram("er-fields", entities).Model!;
         var customer = entityModel.Nodes.Single(node => node.Id == "C");
-        PackageAssertions.Require(customer.Label == "Customer account" && customer.BackgroundColor == "#fef9c3"
+        PackageAssertions.Require(customer.Label == "Customer account" && customer.BackgroundColor == ChartColor.FromHex("#fef9c3")
             && customer.TableContent is { } attributes
             && attributes.Columns.Take(3).Select(column => column.Id).SequenceEqual(new[] { "type", "name", "key" })
             && attributes.Rows.Any(row => row.Cells.Count >= 3 && row.Cells[0].DisplayText == "string"
@@ -79,8 +79,8 @@ internal static partial class Program {
         var c4Model = (TopologyChart)PackedNativeDiagram("c4", c4, strict: false).Model!;
         PackageAssertions.Require(c4Model.Groups.Single(group => group.Id == "shop").ParentGroupId == "company"
             && c4Model.Nodes.Single(node => node.Id == "web").GroupId == "shop"
-            && c4Model.Nodes.Single(node => node.Id == "web").BackgroundColor == "#123456"
-            && c4Model.Edges.Single().Label == "1: Writes" && c4Model.Edges[0].LabelColor == "#ccbb99",
+            && c4Model.Nodes.Single(node => node.Id == "web").BackgroundColor == ChartColor.FromHex("#123456")
+            && c4Model.Edges.Single().Label == "1: Writes" && c4Model.Edges[0].LabelColor == ChartColor.FromHex("#ccbb99"),
             "Packed C4 lost real nested shells, dynamic ordering or native relationship text paint.");
         Console.WriteLine("Packed native State/Class/ER/theme/Agentflow/ZenUML/Timeline/Venn/C4 public contracts passed.");
     }

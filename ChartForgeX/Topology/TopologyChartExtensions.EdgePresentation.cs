@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 
 namespace ChartForgeX.Topology;
@@ -5,9 +6,9 @@ namespace ChartForgeX.Topology;
 public static partial class TopologyChartExtensions {
 
     /// <summary>Adds one colour band to a striped edge. Two or more stripes replace the single edge colour; labelled stripes get a legend entry.</summary>
-    public static TopologyChart AddEdgeStripe(this TopologyChart chart, string edgeId, string color, string? label = null) {
+    public static TopologyChart AddEdgeStripe(this TopologyChart chart, string edgeId, ChartColor color, string? label = null) {
         var edge = RequiredEdge(chart, edgeId);
-        edge.Stripes.Add(new TopologyEdgeStripe { Color = RequiredText(color, nameof(color), "Topology edge stripe colours"), Label = string.IsNullOrWhiteSpace(label) ? null : label!.Trim() });
+        edge.Stripes.Add(new TopologyEdgeStripe { Color = color, Label = string.IsNullOrWhiteSpace(label) ? null : label!.Trim() });
         return chart;
     }
 

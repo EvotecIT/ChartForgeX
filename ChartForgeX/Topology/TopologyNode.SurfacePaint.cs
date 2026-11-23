@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System.Collections.Generic;
 
 namespace ChartForgeX.Topology;
@@ -5,7 +6,7 @@ namespace ChartForgeX.Topology;
 public sealed partial class TopologyNode {
     /// <summary>Gets or sets the color of this node's own contour strokes. Null retains the incumbent Color accent policy.</summary>
     /// <remarks>Glyphs, accent fills, captions, badges, selection overlays and descendants keep their independent paint owners.</remarks>
-    public string? BorderColor { get; set; }
+    public ChartColor? BorderColor { get; set; }
     private double? _strokeWidth,_opacity,_surfaceOpacity;
     /// <summary>Gets or sets the contour stroke width in model units; null inherits native theme and selection width.</summary>
     public double? StrokeWidth { get=>_strokeWidth;set{if(value.HasValue)TopologyModelGuards.PositiveFinite(value.Value,nameof(value));_strokeWidth=value;} }

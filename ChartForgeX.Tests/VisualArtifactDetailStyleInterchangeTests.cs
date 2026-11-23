@@ -40,7 +40,7 @@ public sealed class VisualArtifactDetailStyleInterchangeTests {
     [InlineData((byte)255)]
     public void NativeDetailTypographyRetainsVariationPaletteColorAndDecorationFacts(byte alpha) {
         var style = new TextStyleOverride().Italic().UnderlineStyle(TextDecorationStyle.Double)
-            .FontWeight("600").FontSize(15).Color(ChartColor.FromRgba(20, 40, 60, alpha))
+            .FontWeight(600).FontSize(15).Color(ChartColor.FromRgba(20, 40, 60, alpha))
             .Variation("wght", 630).ColorPaletteIndex(0).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase);
         style.OpenTypeLanguageTag = "normal";
         var envelope = Diagram(style).ToVisualArtifact().ToInterchangeEnvelope();

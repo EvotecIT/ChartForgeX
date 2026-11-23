@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.Composition;
@@ -14,7 +15,7 @@ public static class VisualCanvasArtifactRendering {
             VisualArtifactKind.VisualCanvas, canvas);
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = canvas.Title;
-        artifact.NaturalSize = new VisualArtifactSize(canvas.Width, canvas.Height);
+        artifact.NaturalSize = new VisualSize(canvas.Width, canvas.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png |
             VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
         artifact.Accessibility.Name = canvas.Accessibility.Name;

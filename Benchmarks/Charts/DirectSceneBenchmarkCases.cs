@@ -42,7 +42,7 @@ public static class DirectSceneBenchmarkCases {
         var prepared = model as PreparedVisual ?? (PreparedVisual)Prepare(model);
         return operation switch {
             "Svg" or "PreparedSvg" => prepared.ToSvg(),
-            "Rgba" or "PreparedRgba" => prepared.ToRgba(RasterOptions),
+            "Rgba" or "PreparedRgba" => prepared.ToRgbaImage(RasterOptions),
             "Png" or "PreparedPng" => prepared.ToPng(RasterOptions),
             _ => throw new ArgumentOutOfRangeException(nameof(operation))
         };

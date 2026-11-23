@@ -189,10 +189,10 @@ public sealed class LabelPlacementServiceTests {
         var scene = ChartLabelScene.Create(svg, Style.Font);
         var canvas = new Raster.RgbaCanvas(120, 60, supersampling, null, outputScale);
         scene.Paint(canvas);
-        var expected = SvgRaster.SvgRasterizer.ToImage(scene.ToSvg(), canvas.DeviceWidth, canvas.DeviceHeight);
+        var expected = SvgRaster.SvgRasterizer.ToRgbaImage(scene.ToSvg(), canvas.DeviceWidth, canvas.DeviceHeight);
         var expectedCanvas = new Raster.RgbaCanvas(120, 60, supersampling, null, outputScale);
         expectedCanvas.DrawImage(0, 0, expected.Width, expected.Height, expected.Pixels);
-        Assert.Equal(expectedCanvas.ToImage().Pixels, canvas.ToImage().Pixels);
+        Assert.Equal(expectedCanvas.ToRgbaImage().Pixels, canvas.ToRgbaImage().Pixels);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public sealed class LabelPlacementServiceTests {
             + "<text x='20' y='50' fill='black' font-family='Arial' font-size='24'>Nested caption</text></svg></svg>";
         var scene = ChartLabelScene.Create(svg, Style.Font);
         var canvas = new RgbaCanvas(200, 100, 1, null, density); scene.Paint(canvas);
-        var expected = SvgRaster.SvgRasterizer.ToImage(scene.ToSvg(), canvas.DeviceWidth, canvas.DeviceHeight);
+        var expected = SvgRaster.SvgRasterizer.ToRgbaImage(scene.ToSvg(), canvas.DeviceWidth, canvas.DeviceHeight);
         Assert.Equal(expected.Pixels, canvas.Pixels);
     }
 

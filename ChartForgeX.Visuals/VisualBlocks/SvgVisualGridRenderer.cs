@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// Renders visual grids to self-contained SVG.
 /// </summary>
-public sealed class SvgVisualGridRenderer {
+internal sealed class SvgVisualGridRenderer {
     private readonly SvgVisualBlockRenderer _blockRenderer = new();
 
     /// <summary>Renders a visual grid to SVG markup.</summary>

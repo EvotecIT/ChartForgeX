@@ -41,7 +41,7 @@ public sealed class CanonicalBarAutomaticBoundsTests {
             Directory.CreateDirectory(capture);
             File.WriteAllBytes(Path.Combine(capture, $"automatic-category-{horizontal}-{stacked}-{upper}-{secondary}.native.png"), prepared.ToPng());
         }
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var point in points) {
             var bounds = point.Bounds;
             Assert.True(horizontal ? bounds.Top >= plot.Top && bounds.Bottom <= plot.Bottom
@@ -97,7 +97,7 @@ public sealed class CanonicalBarAutomaticBoundsTests {
             Directory.CreateDirectory(capture);
             File.WriteAllBytes(Path.Combine(capture, $"mixed-category-{interval}-{equivalent}.native.png"), prepared.ToPng());
         }
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var bar in bars) {
             Assert.True(bar.Bounds.Left >= plot.Left && bar.Bounds.Right <= plot.Right);
             foreach (var fraction in new[] { .1, .9 }) {

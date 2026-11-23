@@ -15,7 +15,7 @@ public sealed class MermaidWatermarkPolicyCompositionTests {
     [InlineData("packet-beta\n0-7: \"Header\"")]
     public void NativeMermaidWatermarksKeepMeasuredPixelsPoliciesAndSemanticEnvelopes(string source) {
         var original = MermaidRenderer.Render(source).Artifact!;
-        var options = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { PngOutputScale = 2 } };
+        var options = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { RasterScale = 2 } };
         var originalJson = original.ToInterchangeJson();
         var expectedSize = original.MeasureRasterSize(options);
         var marked = original.ToWatermarkedArtifact(options, VisualWatermark.FromText("REVIEW"));
@@ -32,7 +32,7 @@ public sealed class MermaidWatermarkPolicyCompositionTests {
         expectedEnvelope.Extensions["presentation.watermarks"] = "1";
         Assert.Equal(expectedEnvelope.ToJson(), marked.ToInterchangeJson());
         Assert.Equal(originalJson, original.ToInterchangeJson());
-        options.Topology.PngOutputScale = 1;
+        options.Topology.RasterScale = 1;
         Assert.Equal(expectedSize, marked.Clone().MeasureRasterSize());
         var nested = marked.ToWatermarkedArtifact(VisualWatermark.FromText("COPY")).Clone();
         Assert.Equal(expectedSize, nested.MeasureRasterSize());

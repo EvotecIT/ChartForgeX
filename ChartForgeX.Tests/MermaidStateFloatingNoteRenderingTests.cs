@@ -25,8 +25,8 @@ public sealed class MermaidStateFloatingNoteRenderingTests {
         Assert.Equal("Independent state notes", document.Accessibility.Name);
         Assert.Equal(document.Transitions.Select(edge => (edge.SourceId, edge.TargetId)), chart.Edges.Select(edge => (edge.SourceNodeId, edge.TargetNodeId)));
         Assert.Equal(2, chart.Groups.Count(group => group.Presentation == TopologyGroupPresentation.Compartment));
-        Assert.All(new[] { "Ready", "Waiting" }, id => Assert.Equal("#dcfce7", chart.Nodes.Single(node => node.Id == id).BackgroundColor));
-        Assert.Equal("#fef3c7", chart.Groups.Single(group => group.Id == "Active").BackgroundColor);
+        Assert.All(new[] { "Ready", "Waiting" }, id => Assert.Equal(ChartColor.FromHex("#dcfce7"), chart.Nodes.Single(node => node.Id == id).BackgroundColor));
+        Assert.Equal(ChartColor.FromHex("#fef3c7"), chart.Groups.Single(group => group.Id == "Active").BackgroundColor);
         var svg = artifact.ToSvg(); var png = artifact.ToPng();
         var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
         Assert.Empty(fence.Diagnostics); var fenced = Assert.Single(fence.Artifacts);

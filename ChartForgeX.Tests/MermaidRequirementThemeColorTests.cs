@@ -21,7 +21,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
         var node = chart.Nodes.Single(item => item.Id == "R"); var edge = Assert.Single(chart.Edges);
         var paint = key switch { "requirementBackground" => node.BackgroundColor, "requirementBorderColor" => node.Color,
             "requirementTextColor" => node.LabelColor, "relationColor" => edge.Color, _ => edge.LabelColor };
-        Assert.Equal("#B71D62", paint);
+        Assert.Equal(ChartColor.FromHex("#B71D62"), paint);
     }
     [Theory]
     [InlineData(390, false)] [InlineData(390, true)] [InlineData(1100, false)] [InlineData(1100, true)]

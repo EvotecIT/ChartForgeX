@@ -17,8 +17,8 @@ public sealed class ChartThemeFontTests {
         var segoe = BarChart("Segoe UI, sans-serif");
         var arial = BarChart("Arial, sans-serif");
         Assert.NotEqual(segoe.ToPng(), arial.ToPng());
-        var info = segoe.GetPngFontInfo();
-        Assert.Equal(PngFontSource.Automatic, info.Source);
+        var info = segoe.GetRasterFontInfo();
+        Assert.Equal(RasterFontSource.Automatic, info.Source);
         Assert.Equal(InstalledFontCatalog.Find("Segoe UI", 400, false)!.Path, info.ResolvedPath);
     }
 

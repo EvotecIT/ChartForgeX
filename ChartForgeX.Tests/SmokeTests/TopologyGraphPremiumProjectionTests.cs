@@ -12,7 +12,7 @@ internal static partial class SmokeTests {
         var pack = new TopologyIconPack("custom", "Custom")
             .AddIcon(new TopologyIconDefinition("custom", "identity", "Identity", TopologyNodeKind.Service, TopologyIconShape.Service) {
                 Symbol = "ID",
-                Color = "#7C3AED",
+                Color = ChartColor.FromHex("#7C3AED"),
                 Artwork = TopologyIconArtwork.InlineSvg("<circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"#7C3AED\"/><path d=\"M8 12h8\" stroke=\"white\" stroke-width=\"2\"/>")
             });
         var catalog = new TopologyIconCatalog().AddPack(pack);

@@ -223,8 +223,8 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
             var chart = Model();
             _snapshots.Add("initial", new Snapshot(_renderer.PrepareSection(chart, configure: ConfigureForHost), chart.Annotations.ToArray()));
         }
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + _snapshots["initial"].Section.Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + _snapshots["initial"].Section.Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal HtmlChartSection Section(string basis) { lock (_snapshots) return _snapshots[basis].Section; }
         internal void ReplaceProducerOffset(double offset) { lock (_snapshots) _producerOffset = offset; }
         internal object External() {
@@ -276,7 +276,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         private Chart Model() {
             var chart = Chart.Create().Size(_width, 480).Theme(VisualTheme.Graphite()).ThemeMode(_mode)
                 .FontFamily(BrowserProofFonts.Family)
-                .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+                .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
                 .Title("Native host edits").Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100));
             var source = _typed
                 ? ChartSeries.CreateRangeBar(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11)

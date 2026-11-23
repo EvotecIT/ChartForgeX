@@ -24,8 +24,8 @@ public sealed class LocalizedHeatmapTooltipBrowserTests {
             options.IdScope = "localized-level";
             options.Interaction.Enable(ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.KeyboardNavigation);
         });
-        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body>" + fragment + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
+            + "</style></head><body>" + fragment + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 540);
         var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

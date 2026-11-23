@@ -192,7 +192,7 @@ internal static partial class Program {
     private static void PolarPaint() {
         var red = ChartColor.FromHex("#DC2626");
         var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(true)
-            .AddRadarArea("Signal", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 30) });
+            .AddRadar("Signal", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 30) });
         chart.Options.Polar.AxisStroke = new ChartStrokeStyle(width: 3);
         chart.Options.Polar.GridStroke = new ChartStrokeStyle(width: 0);
         chart.Options.Polar.GridFill = ChartColor.FromHex("#64748B");

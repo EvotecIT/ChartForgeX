@@ -66,7 +66,7 @@ public sealed class WallpaperOwnerTests {
     [Fact]
     public void TransparentTopologyOverlayPreservesAlphaAndJpegFlattensAgainstTheChosenBackground() {
         var topology = WallpaperOwnerExamples.CreateTopology();
-        var image = topology.ToRgbaImage(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = true, PngSupersamplingScale = 1 });
+        var image = topology.ToRgbaImage(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = true, RasterSupersampling = 1 });
         Assert.Equal(560, image.Width); Assert.Equal(310, image.Height);
         Assert.Equal(0, image.Pixels[3]);
         Assert.Contains(image.Pixels.Where((_, index) => index % 4 == 3), alpha => alpha > 0);

@@ -16,7 +16,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         if (!Enabled) return;
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(path), "The existing Carlito fixture must be available.");
-        var chart = Chart.Create().Size(width, height).Png(p => p.FontPath(path))
+        var chart = Chart.Create().Size(width, height).Raster(p => p.FontPath(path))
             .Theme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito")).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Title("Readiness needle").Subtitle("Explicit target and bands")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) })))

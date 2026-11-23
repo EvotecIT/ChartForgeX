@@ -3,7 +3,7 @@ using ChartForgeX.Data;
 using ChartForgeX.Themes;
 
 internal static class PagedFacetExamples {
-    internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void Write(string output, ChartRasterScale pngOutputScale) {
         var samples = ChartDataset<Sample>.From(Enumerable.Range(1, 13).SelectMany(site =>
             Enumerable.Range(0, 24).Select(hour => new Sample(site, hour,
                 25 + site * 2 + Math.Sin(hour * 0.4 + site) * 12))));

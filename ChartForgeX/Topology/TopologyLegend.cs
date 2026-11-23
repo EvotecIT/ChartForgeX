@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +59,7 @@ public sealed class TopologyLegend {
     /// <param name="label">The item label.</param>
     /// <param name="color">The represented colour.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddEdgeColor(string label, string color) {
+    public TopologyLegend AddEdgeColor(string label, ChartColor color) {
         Items.Add(new TopologyLegendItem { Label = label, Kind = TopologyLegendItemKind.Edge, Color = color, LineStyle = TopologyEdgeLineStyle.Solid });
         return this;
     }
@@ -85,7 +86,7 @@ public sealed class TopologyLegend {
         if (stripes.Length == 0 && !assumed) return legend;
         var copy = ReferenceEquals(legend, chart.Legend) ? Clone(legend) : legend;
         foreach (var stripe in stripes) {
-            if (copy.Items.Any(item => item.Kind == TopologyLegendItemKind.Edge && item.EdgeKind == null && string.Equals(item.Color, stripe.Color, StringComparison.OrdinalIgnoreCase))) continue;
+            if (copy.Items.Any(item => item.Kind == TopologyLegendItemKind.Edge && item.EdgeKind == null && Equals(item.Color, (ChartColor?)stripe.Color))) continue;
             copy.AddEdgeColor(stripe.Label!, stripe.Color);
         }
         if (confirmed && !copy.Items.Any(item => item.Evidence == TopologyEdgeEvidence.Confirmed)) copy.AddEvidence("Confirmed link", TopologyEdgeEvidence.Confirmed);
@@ -126,7 +127,7 @@ public sealed class TopologyLegend {
     /// <param name="status">The represented status.</param>
     /// <param name="color">An optional color override.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddStatus(string label, TopologyHealthStatus status, string? color = null) {
+    public TopologyLegend AddStatus(string label, TopologyHealthStatus status, ChartColor? color = null) {
         Items.Add(new TopologyLegendItem { Label = label, Status = status, Kind = TopologyLegendItemKind.Status, Color = color });
         return this;
     }
@@ -141,7 +142,7 @@ public sealed class TopologyLegend {
     /// <param name="backgroundColor">An optional node marker background color override.</param>
     /// <param name="iconId">An optional topology icon id for the legend marker.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddNodeKind(string label, TopologyNodeKind nodeKind, string? color = null, string? symbol = null, string? backgroundColor = null, string? iconId = null) {
+    public TopologyLegend AddNodeKind(string label, TopologyNodeKind nodeKind, ChartColor? color = null, string? symbol = null, ChartColor? backgroundColor = null, string? iconId = null) {
         Items.Add(new TopologyLegendItem { Label = label, NodeKind = nodeKind, Kind = TopologyLegendItemKind.Node, Color = color, Symbol = symbol, BackgroundColor = backgroundColor, IconId = iconId });
         return this;
     }
@@ -154,7 +155,7 @@ public sealed class TopologyLegend {
     /// <param name="color">An optional color override.</param>
     /// <param name="lineStyle">An optional edge line style override.</param>
     /// <returns>The current legend.</returns>
-    public TopologyLegend AddEdgeKind(string label, TopologyEdgeKind edgeKind, string? color = null, TopologyEdgeLineStyle lineStyle = TopologyEdgeLineStyle.Auto) {
+    public TopologyLegend AddEdgeKind(string label, TopologyEdgeKind edgeKind, ChartColor? color = null, TopologyEdgeLineStyle lineStyle = TopologyEdgeLineStyle.Auto) {
         Items.Add(new TopologyLegendItem { Label = label, EdgeKind = edgeKind, Kind = TopologyLegendItemKind.Edge, Color = color, LineStyle = lineStyle });
         return this;
     }
@@ -221,8 +222,8 @@ public sealed class TopologyLegend {
     private static void FillMissingDetails(TopologyLegendItem target, TopologyLegendItem source) {
         if (string.IsNullOrWhiteSpace(target.Symbol)) target.Symbol = source.Symbol;
         if (string.IsNullOrWhiteSpace(target.IconId)) target.IconId = source.IconId;
-        if (string.IsNullOrWhiteSpace(target.Color)) target.Color = source.Color;
-        if (string.IsNullOrWhiteSpace(target.BackgroundColor)) target.BackgroundColor = source.BackgroundColor;
+        if (target.Color == null) target.Color = source.Color;
+        if (target.BackgroundColor == null) target.BackgroundColor = source.BackgroundColor;
         if (target.LineStyle == TopologyEdgeLineStyle.Auto && source.LineStyle != TopologyEdgeLineStyle.Auto) target.LineStyle = source.LineStyle;
     }
 
@@ -240,58 +241,34 @@ public sealed class TopologyLegend {
         return string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
     }
 
-    private static string? SharedEdgeColor(IEnumerable<TopologyEdge> edges) {
-        string? color = null;
-        var hasColor = false;
+    private static ChartColor? SharedEdgeColor(IEnumerable<TopologyEdge> edges) {
+        ChartColor? color = null;
         foreach (var edge in edges) {
-            if (string.IsNullOrWhiteSpace(edge.Color)) return null;
-            var candidate = edge.Color!.Trim();
-            if (!hasColor) {
-                color = candidate;
-                hasColor = true;
-                continue;
-            }
-
-            if (!string.Equals(color, candidate, StringComparison.OrdinalIgnoreCase)) return null;
+            if (edge.Color == null) return null;
+            if (color == null) color = edge.Color;
+            else if (!Equals(color, edge.Color)) return null;
         }
-
-        return hasColor ? color : null;
+        return color;
     }
 
-    private static string? SharedNodeColor(IEnumerable<TopologyNode> nodes) {
-        string? color = null;
-        var hasColor = false;
+    private static ChartColor? SharedNodeColor(IEnumerable<TopologyNode> nodes) {
+        ChartColor? color = null;
         foreach (var node in nodes) {
-            if (string.IsNullOrWhiteSpace(node.Color)) return null;
-            var candidate = node.Color!.Trim();
-            if (!hasColor) {
-                color = candidate;
-                hasColor = true;
-                continue;
-            }
-
-            if (!string.Equals(color, candidate, StringComparison.OrdinalIgnoreCase)) return null;
+            if (node.Color == null) return null;
+            if (color == null) color = node.Color;
+            else if (!Equals(color, node.Color)) return null;
         }
-
-        return hasColor ? color : null;
+        return color;
     }
 
-    private static string? SharedNodeBackgroundColor(IEnumerable<TopologyNode> nodes) {
-        string? color = null;
-        var hasColor = false;
+    private static ChartColor? SharedNodeBackgroundColor(IEnumerable<TopologyNode> nodes) {
+        ChartColor? color = null;
         foreach (var node in nodes) {
-            if (string.IsNullOrWhiteSpace(node.BackgroundColor)) return null;
-            var candidate = node.BackgroundColor!.Trim();
-            if (!hasColor) {
-                color = candidate;
-                hasColor = true;
-                continue;
-            }
-
-            if (!string.Equals(color, candidate, StringComparison.OrdinalIgnoreCase)) return null;
+            if (node.BackgroundColor == null) return null;
+            if (color == null) color = node.BackgroundColor;
+            else if (!Equals(color, node.BackgroundColor)) return null;
         }
-
-        return hasColor ? color : null;
+        return color;
     }
 
     private static TopologyEdgeLineStyle SharedEdgeLineStyle(IEnumerable<TopologyEdge> edges) {
@@ -336,10 +313,10 @@ public sealed class TopologyLegendItem {
     public string? IconId { get; set; }
 
     /// <summary>Gets or sets the optional color override.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets the optional node marker background color override.</summary>
-    public string? BackgroundColor { get; set; }
+    public ChartColor? BackgroundColor { get; set; }
 
     /// <summary>Gets or sets the optional line style used when rendering edge legend items.</summary>
     public TopologyEdgeLineStyle LineStyle { get; set; } = TopologyEdgeLineStyle.Auto;

@@ -4,7 +4,7 @@ using System.Text;
 namespace ChartForgeX.Stories;
 
 /// <summary>Produces a portable text transcript for a visual story.</summary>
-public sealed class VisualStoryTranscriptRenderer {
+internal sealed class VisualStoryTranscriptRenderer {
     internal const long MaximumTranscriptCharacters = 16L * 1024 * 1024;
 
     /// <summary>Renders the complete story as plain text.</summary>

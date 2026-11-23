@@ -13,7 +13,7 @@ public sealed class TopologyPlainActorBeforeControlsTests {
     [InlineData(390, false)] [InlineData(900, false)] [InlineData(390, true)] [InlineData(900, true)]
     public void OrdinaryActorKeepsItsNativeFigureCaptionRouteIdentityAndStaticExports(int width, bool dark) {
         var chart = TopologyChart.Create().Id("plain-actor-before").Title("An ordinary external actor")
-            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Viewport(new TopologyViewport(width, 420, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("operator", "External operator", 50, 50, width: 180, height: 120)
             .AddNode("submit", "Submit request", 320, 65, width: 190, height: 90)

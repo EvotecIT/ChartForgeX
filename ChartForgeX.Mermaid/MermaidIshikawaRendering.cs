@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.VisualArtifacts;
@@ -43,7 +44,7 @@ public static class MermaidIshikawaRendering {
         artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
         artifact.Title = block.Title;
         artifact.Subtitle = block.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
+        artifact.NaturalSize = new VisualSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
         var useMaxWidth = document.Configuration.Ishikawa?.UseMaxWidth;
         if (useMaxWidth.HasValue || block.UsesNaturalLayout) artifact.HtmlSizing = useMaxWidth == true

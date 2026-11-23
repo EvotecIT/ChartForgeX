@@ -208,9 +208,9 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         internal double FullMaximum { get; }
         internal string FullSvg { get; }
         internal HtmlChartSection Last { get; private set; }
-        internal string Page => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+        internal string Page => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
             + "</style></head><body style='margin:12px'>" + Last.Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         internal object Prepare(JsonElement request) {
             lock (_sections) {
                 var basis = _sections[request.GetProperty("basis").GetString()!].PreparedVisual;

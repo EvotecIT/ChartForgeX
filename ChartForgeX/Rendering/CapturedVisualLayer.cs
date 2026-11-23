@@ -46,7 +46,7 @@ public sealed partial class CapturedVisualLayer {
     public PreparedVisual Visual { get; }
     /// <summary>Returns an independent mutable copy of the exact captured device pixels.</summary>
     /// <remarks>The caller owns this new copy; repeated copies and encoders are outside the capture operation's pixel budget.</remarks>
-    public RgbaImage ToImage() => new(_pixels.Image.Width, _pixels.Image.Height, (byte[])_pixels.Image.Pixels.Clone());
+    public RgbaImage ToRgbaImage() => new(_pixels.Image.Width, _pixels.Image.Height, (byte[])_pixels.Image.Pixels.Clone());
     internal RgbaImage Image => _pixels.Image;
     internal VisualSceneLayerCapturePlan Plan { get; }
     internal IReadOnlyList<ChartForgeX.Effects.VisualMask> PostCaptureMasks => _postCaptureMasks;

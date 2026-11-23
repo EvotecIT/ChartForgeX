@@ -46,7 +46,7 @@ static class RangeBarRecipe {
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
                     options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f")).FontSize(10);
-                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000")).FontSize(12).FontWeight("700");
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000")).FontSize(12).FontWeight(700);
                     options.StartLabel.Placement = ChartDataLabelPlacement.Above;
                     options.EndLabel.Placement = ChartDataLabelPlacement.Below;
             }).Bars(b => b.Style(ChartBarStyle.Flat)).DataLabels();

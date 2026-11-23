@@ -38,7 +38,7 @@ public sealed class TopologyNestedHeaderSurfaceTests {
         Capture(prepared, "nested-header-surface-" + dark + "-" + translucent);
         AssertPaintGeometry(prepared);
         var savedSvg = prepared.ToSvg(); var savedPng = prepared.ToPng();
-        chart.Groups[1].LabelColor = "#7C3AED";
+        chart.Groups[1].LabelColor = ChartColor.FromHex("#7C3AED");
         Assert.All(Captions(chart.Prepare(options)).Where(text => Text(text) is "Order" or "records" or "All facts" or "retained"),
             text => Assert.Equal(ChartColor.Parse("#7C3AED"), text.Color));
         Assert.Equal(savedSvg, prepared.ToSvg()); Assert.Equal(savedPng, prepared.ToPng());
@@ -74,7 +74,7 @@ public sealed class TopologyNestedHeaderSurfaceTests {
     [InlineData(true)]
     public void UnauthoredSingleLineGroupsRetainTheirIncumbentCoordinatesAndThemeInk(bool dark) {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 300, 16)).Legend((TopologyLegend?)null)
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("plain", "Plain", 32, 40, 300, 180, subtitle: "Description");
         var prepared = chart.Prepare(Options()); var captions = Captions(prepared);
         Assert.Equal(2, captions.Length);
@@ -139,13 +139,13 @@ public sealed class TopologyNestedHeaderSurfaceTests {
 
     internal static TopologyChart Fixture(bool dark, bool translucent) {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(660, 530, 16)).Legend((TopologyLegend?)null)
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("domain", "Domain", 24, 30, 600, 440)
             .AddGroup("orders", "Order\nrecords", 60, 125, 500, 320, subtitle: "All facts\nretained")
             .AddNode("member", "Member", 100, 136, TopologyNodeKind.Generic, groupId: "orders", width: 80, height: 40)
             .AddNode("outside", "Outside", 570, 490, width: 40, height: 20)
             .AddEdge("relation", "member", "outside", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        chart.Groups[0].BackgroundColor = translucent ? "#DCFCE7C0" : "#DCFCE7"; chart.Groups[0].LabelColor = "#14532D";
+        chart.Groups[0].BackgroundColor = (translucent ? ChartColor.FromHex("#DCFCE7C0") : ChartColor.FromHex("#DCFCE7")); chart.Groups[0].LabelColor = ChartColor.FromHex("#14532D");
         chart.Groups[1].ParentGroupId = "domain";
         return chart;
     }

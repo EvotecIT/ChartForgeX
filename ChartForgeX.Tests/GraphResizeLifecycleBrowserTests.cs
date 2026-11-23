@@ -170,7 +170,7 @@ public sealed class GraphResizeLifecycleBrowserTests {
             .AddEdge("connection", "a", "b");
         graph.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Selection | GraphSceneFeatures.Search;
         return graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light; options.PersistThemePreference = false;
+            options.RenderBackend = backend; options.ThemeMode = ThemeMode.Light; options.PersistThemePreference = false;
         });
     }
 

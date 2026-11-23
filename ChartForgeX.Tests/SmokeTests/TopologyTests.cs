@@ -251,7 +251,7 @@ internal static partial class SmokeTests {
             .AddNode("bottom-hub", "Bottom Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "bottom", width: 72, height: 42)
             .AddEdge("explicit", "top-hub", "bottom-hub", "manual", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
             .UpdateEdge("explicit", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("explicit", 42);
+            .UpdateEdge("explicit", edge => edge.RouteLane(42));
         var explicitSvg = explicitChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
         Assert(explicitSvg.Contains("data-edge-layout-inference=\"none\"", StringComparison.Ordinal), "Dense grouped layout should not mark caller supplied ports or route lanes as inferred.");
         Assert(SvgHasAttributes(explicitSvg, "data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"42\""), "Dense grouped layout should preserve caller supplied inter-group edge ports and lanes.");
@@ -285,8 +285,8 @@ internal static partial class SmokeTests {
             .AddNode("sql", "SQL", 270, 130, TopologyNodeKind.Database, TopologyHealthStatus.Warning, "tier")
             .AddEdge("api-sql", "api", "sql", "42 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, cssClass: "critical:path odd$class", tertiaryLabel: "p95")
             .UpdateGroup("tier", g => g.Symbol("region"))
-            .UpdateGroup("tier", g => g.Color("#7C3AED"))
-            .UpdateNode("sql", n => n.Color("#2563EB"))
+            .UpdateGroup("tier", g => g.Color(ChartColor.FromHex("#7C3AED")))
+            .UpdateNode("sql", n => n.Color(ChartColor.FromHex("#2563EB")))
             .UpdateEdge("api-sql", e => e.LineStyle(TopologyEdgeLineStyle.Dotted))
             .UpdateEdge("api-sql", e => e.Muted());
 
@@ -387,7 +387,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => chart.UpdateNode("a", n => n.DisplayMode((TopologyNodeDisplayMode)999).Badge(null)), "Topology node display APIs should reject undefined display modes close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.UpdateGroup("g", g => g.LayoutPolicy((TopologyGroupLayoutPolicy)999)), "Topology group layout APIs should reject undefined policies close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.UpdateEdge("a-b", e => e.SourcePort((TopologyEdgePort)999).TargetPort(TopologyEdgePort.Auto)), "Topology edge port APIs should reject undefined ports close to the caller.");
-        AssertThrows<ArgumentOutOfRangeException>(() => chart.EdgeRouteLane("a-b", double.NaN), "Topology edge route lane APIs should reject non-finite values close to the caller.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.UpdateEdge("a-b", edge => edge.RouteLane(double.NaN)), "Topology edge route lane APIs should reject non-finite values close to the caller.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.UpdateEdge("a-b", e => e.LineStyle((TopologyEdgeLineStyle)999)), "Topology edge line style APIs should reject undefined values close to the caller.");
     }
 
@@ -549,7 +549,7 @@ internal static partial class SmokeTests {
             .AddNode("target", "Target", 320, 240, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
             .AddEdge("source-target", "source", "target", "lane", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .UpdateEdge("source-target", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("source-target", 24);
+            .UpdateEdge("source-target", edge => edge.RouteLane(24));
         var laneSvg = lane.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(SvgHasAttributes(laneSvg, "data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"24\""), "Topology SVG should expose non-zero route lanes.");
         Assert(laneSvg.Contains("d=\"M 140 144 L 140 216 L 380 216 L 380 240\"", StringComparison.Ordinal), "Orthogonal topology edges should use requested ports and deterministic route lanes.");
@@ -612,8 +612,8 @@ internal static partial class SmokeTests {
             HighlightStatuses = { TopologyHealthStatus.Critical }
         }
         .IncludeEdgeLabels().EdgeLabelMetricKey("queue").EdgeSecondaryLabelMetricKey(null).EdgeTertiaryLabelMetricKey("transport")
-        .SelectNode("tr-branch")
-        .SelectEdge("emea-tr");
+        .SelectedNodeId("tr-branch")
+        .SelectedEdgeId("emea-tr");
 
         var svg = chart.ToSvg(options);
 

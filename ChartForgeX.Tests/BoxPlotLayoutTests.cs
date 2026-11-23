@@ -146,7 +146,7 @@ public sealed class BoxPlotLayoutTests {
             .AddBoxPlot("Summary", new[] { new ChartBoxPlot(1, 1, 2, 3, 4, 5), new ChartBoxPlot(2, 2, 3, 4, 5, 6) });
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "First")); var calls = 0;
         chart.Options.YAxis.LabelBy(value => { calls++; return "Category " + value; });
-        chart.Series[0].PointLabel(1, "Custom median").PointColor(1, "#123456").PointFillPattern(1, ChartFillPattern.DiagonalForward);
+        chart.Series[0].PointLabel(1, "Custom median").PointColor(1, ChartColor.FromHex("#123456")).PointFillPattern(1, ChartFillPattern.DiagonalForward);
         var request = VisualExportRequest.ForChart(chart); Assert.Equal(0, calls);
         var prepared = chart.Prepare(request.Context); Assert.Equal(1, calls);
         var points = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "point").ToArray();
@@ -167,7 +167,7 @@ public sealed class BoxPlotLayoutTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, variant, mode);
         chart.Size(variant.StartsWith("compact", StringComparison.Ordinal) ? 360 : 800, 440)
             .Title("Delivery time by service").Subtitle("Expected and observed five-number summaries")
-            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .FontFamily("Carlito").Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         // Wide layouts keep every median caption; the 360px compact layout may move one that has no clear lane to the tooltip.

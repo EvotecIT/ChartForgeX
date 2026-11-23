@@ -22,7 +22,7 @@ internal static partial class VisualArtifactInterchangeJson {
         Number(writer, "paddingLeft", railroad.Padding.Left); Number(writer, "paddingTop", railroad.Padding.Top);
         Number(writer, "paddingRight", railroad.Padding.Right); Number(writer, "paddingBottom", railroad.Padding.Bottom);
         Boolean(writer, "transparentBackground", railroad.TransparentBackground); Boolean(writer, "showCard", railroad.ShowCard);
-        Boolean(writer, "hostOwnsFrame", railroad.HostOwnsFrame); Number(writer, "pngOutputScale", railroad.PngOutputScale);
+        Boolean(writer, "hostOwnsFrame", railroad.HostOwnsFrame); Number(writer, "pngOutputScale", railroad.RasterScale);
         writer.Property("railroadRules"); writer.StartArray();
         for (var index = 0; index < railroad.Rules.Count; index++) {
             var rule = railroad.Rules[index]; writer.StartObject();
@@ -61,7 +61,7 @@ internal static partial class VisualArtifactInterchangeJson {
                 OptionalNumber(item, "paddingRight") ?? 18, OptionalNumber(item, "paddingBottom") ?? 12),
             TransparentBackground = OptionalBool(item, "transparentBackground") ?? false,
             ShowCard = OptionalBool(item, "showCard") ?? true, HostOwnsFrame = OptionalBool(item, "hostOwnsFrame") ?? false,
-            PngOutputScale = OptionalInt(item, "pngOutputScale") ?? 1
+            RasterScale = OptionalInt(item, "pngOutputScale") ?? 1
         };
         var theme = OptionalString(item, "themeJson"); if (theme != null) railroad.Theme = VisualTheme.FromJson(theme);
         var records = OptionalArray(item, "railroadExpressions");

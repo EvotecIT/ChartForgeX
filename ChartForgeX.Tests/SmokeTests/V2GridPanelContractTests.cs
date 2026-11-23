@@ -13,14 +13,14 @@ public sealed class V2GridPanelContractTests {
     public void DefaultGridExportsRetainDetachedHostColorVariablesWithoutChangingNativePixels() {
         var grid = ChartGrid.Create().Add(Sample("Colors"));
         var request = VisualExportRequest.ForGrid(grid);
-        var before = grid.Prepare(request.Context).ToRgba().Pixels;
+        var before = grid.Prepare(request.Context).ToRgbaImage().Pixels;
         var background = request.Context.Theme.Resolve(request.Context.ThemeMode).Background;
         grid.SvgColorVariables(new SvgColorVariables().Add("--report-background", background, SvgColorRole.Surface));
         var prepared = grid.Prepare(request.Context);
         Assert.Contains("var(--report-background", prepared.ToSvg());
         Assert.Contains("var(--report-background", grid.ToSvg());
         Assert.Contains("var(--report-background", new ChartForgeX.Html.HtmlChartGridRenderer().RenderFragment(grid));
-        Assert.Equal(before, prepared.ToRgba().Pixels);
+        Assert.Equal(before, prepared.ToRgbaImage().Pixels);
         grid.SvgColorVariables((SvgColorVariables?)null);
         Assert.Contains("var(--report-background", prepared.ToSvg());
     }
@@ -87,7 +87,7 @@ public sealed class V2GridPanelContractTests {
             frame: new VisualFrame(showLegend: false, transparentBackground: true, showCard: false), font: chartRequest.Context.Font);
         var prepared = grid.Prepare(context);
         var raster = new VisualRenderOptions(scale, chartRequest.RasterOptions.Supersampling, textHinting: chartRequest.RasterOptions.TextHinting);
-        Assert.Equal(isolated.ToRgba(raster).Pixels, prepared.ToRgba(raster).Pixels);
+        Assert.Equal(isolated.ToRgbaImage(raster).Pixels, prepared.ToRgbaImage(raster).Pixels);
         Assert.Equal(360 * scale, prepared.Size.Width * scale);
     }
 

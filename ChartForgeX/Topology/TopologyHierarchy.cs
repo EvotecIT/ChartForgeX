@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -64,10 +65,10 @@ public sealed class TopologyHierarchyItem {
     public string? GroupId { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets an optional node background color.</summary>
-    public string? BackgroundColor { get; set; }
+    public ChartColor? BackgroundColor { get; set; }
 
     /// <summary>Gets or sets the preferred node width.</summary>
     public double? Width { get; set; }

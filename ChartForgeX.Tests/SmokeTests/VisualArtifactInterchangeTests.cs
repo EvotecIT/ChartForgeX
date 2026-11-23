@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using System;
 using System.Linq;
@@ -41,7 +42,7 @@ internal static partial class SmokeTests {
         topology.EdgeStroke("replication", 2.5, 0.4, 6, 2);
         topology.EdgeWaypoints("replication", new ChartPoint(180, 120), new ChartPoint(220, 120));
         topology.UpdateEdge("replication", e => e.PreferredLength(260).MinimumRankSpan(2).RoutingPriority(0));
-        topology.EdgeRouteLane("replication", 0);
+        topology.UpdateEdge("replication", edge => edge.RouteLane(0));
         var scenario = new TopologyScenario {
             Id = "replication-review", Label = "Replication review", Description = "Inspect the primary route", Color = "#336699",
             PlaybackDelayMilliseconds = 1200, LoopPlayback = true, Spotlight = true
@@ -59,8 +60,8 @@ internal static partial class SmokeTests {
         topology.Groups[0].LayoutPolicy = TopologyGroupLayoutPolicy.PairRows;
         source.Artwork = TopologyIconArtwork.InlineSvg("<path d=\"M0 0h24v24H0z\"/>");
         topology.Legend = TopologyLegend.Create("Directory key")
-            .AddNodeKind("Domain controller", TopologyNodeKind.Server, "#336699", "DC", "#ffffff", "microsoft-ad:server")
-            .AddEdgeKind("Replication", TopologyEdgeKind.Replication, "#8844aa", TopologyEdgeLineStyle.Dashed);
+            .AddNodeKind("Domain controller", TopologyNodeKind.Server, ChartColor.FromHex("#336699"), "DC", ChartColor.FromHex("#ffffff"), "microsoft-ad:server")
+            .AddEdgeKind("Replication", TopologyEdgeKind.Replication, ChartColor.FromHex("#8844aa"), TopologyEdgeLineStyle.Dashed);
 
         var artifact = topology.ToVisualArtifact();
         artifact.Metadata["owner"] = "directory-team";
@@ -222,7 +223,7 @@ internal static partial class SmokeTests {
         Assert(groupFilteredEnvelope.Nodes.Count == 2 && groupFilteredEnvelope.Edges.Count == 1,
             "Interchange topology views should expose prepared entity collections directly instead of redundant count metadata.");
 
-        artifact.NaturalSize = new VisualArtifactSize(1777, 1333);
+        artifact.NaturalSize = new VisualSize(1777, 1333);
         artifact.PreserveNaturalSize = true;
         var naturalEnvelope = artifact.ToInterchangeEnvelope();
         Assert(naturalEnvelope.Width == 1777 && naturalEnvelope.Height == 1333,
@@ -501,7 +502,7 @@ internal static partial class SmokeTests {
 
         var wideSequence = SequenceArtifact.Create("wide").Title("Initial").Width(320).Height(240).AddParticipant("participant-0", "Participant 0");
         var wideArtifact = wideSequence.ToVisualArtifact();
-        VisualArtifactSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
+        VisualSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
         var initialPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
         wideSequence.Id = "wide-current";
         wideSequence.Title = "Current";
@@ -509,7 +510,7 @@ internal static partial class SmokeTests {
         wideSequence.AddNote(SequenceArtifactNotePlacement.RightOf, new[] { "participant-0" }, "Late note");
         wideSequence.Notes[0].StepIndex = 20;
         var wideEnvelope = wideArtifact.ToInterchangeEnvelope();
-        VisualArtifactSize currentNaturalSize = wideSequence.ToVisualArtifact().NaturalSize.GetValueOrDefault();
+        VisualSize currentNaturalSize = wideSequence.ToVisualArtifact().NaturalSize.GetValueOrDefault();
         var currentPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
         Assert(currentPreparedSize.Width > initialPreparedSize.Width && currentPreparedSize.Height > initialPreparedSize.Height,
             "Native default sequence preparation should grow in both dimensions when participants and late annotations are added.");

@@ -72,9 +72,9 @@ AssertPng(grid.ToPng(), "Grid PNG render failed.");
 
 var metric = MetricCard.Create()
     .Metric("Coverage", 0.982, "P1")
-    .Icon(Icons.Lightning)
+    .Icon(MetricCardIcons.Lightning)
     .Trend("+2.4 pp")
-    .Status(Tone.Success)
+    .Tone(Tone.Success)
     .Theme(VisualTheme.Graphite())
     .Size(320, 170);
 AssertContains(metric.ToSvg("aot-metric"), "data-cfx-role=\"metric-label\"", "Metric card SVG render failed.");

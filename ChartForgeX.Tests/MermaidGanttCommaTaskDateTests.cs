@@ -192,8 +192,8 @@ public sealed class MermaidGanttCommaTaskDateTests {
     [Theory]
     [InlineData("task,", "task")]
     [InlineData("", null)]
-    public void ConfiguredTimestampsKeepEveryCommaBeforeTheDuration(string idPrefix, string? expectedId) {
-        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat MMM D[,] YYYY[,] HH:mm\nTask :" + idPrefix + "Jan 2, 2026, 12:00,1d");
+    public void ConfiguredTimestampsKeepEveryCommaBeforeTheDuration(string idScope, string? expectedId) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat MMM D[,] YYYY[,] HH:mm\nTask :" + idScope + "Jan 2, 2026, 12:00,1d");
         Assert.Empty(parsed.Diagnostics);
         var task = Assert.Single(parsed.Document!.Tasks);
         Assert.Equal(expectedId, task.Id);

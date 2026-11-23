@@ -67,7 +67,7 @@ public static class TopologyInterchangeRecipe {
         var compact = variant == "compact";
         var chart = TopologyChart.Create().Id("saved-request-route").Title("An editable saved route")
             .Subtitle("The loaded graph owns independent native data")
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 520 : 400));
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 520 : 400));
         chart.Nodes.Add(new TopologyNode { Id = "request", Label = "Request", X = 40, Y = 75, Width = 210, Height = 110,
             Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = "State", Value = "Queued" });

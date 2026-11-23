@@ -166,7 +166,7 @@ public sealed class V2GaugeScaleFormattingTests {
         if (fixtureFont) {
             var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
             Assert.True(File.Exists(path), "The existing Carlito fixture must reproduce the compact summary's resolved row height.");
-            chart.Png(p => p.FontPath(path));
+            chart.Raster(p => p.FontPath(path));
         }
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label");

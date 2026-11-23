@@ -3,7 +3,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Describes the font source selected for PNG text rendering.
 /// </summary>
-public enum PngFontSource {
+public enum RasterFontSource {
     /// <summary>
     /// The configured PNG font path was loaded.
     /// </summary>

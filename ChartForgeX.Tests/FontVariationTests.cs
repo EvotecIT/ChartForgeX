@@ -226,12 +226,12 @@ public sealed class FontVariationTests {
         WithRegisteredFont(path => {
             var style = new TextStyle { Font = FontSpec.FromFile(path).Variation("wght", 650), FontSize = 40, Color = ChartColor.Black, Hinting = TextHinting.None };
             Assert.Equal(54, TextLayoutEngine.Measure("HH", style).Width);
-            var direct = ImageComposition.Create(180, 100, ChartColor.Transparent).DrawText(10, 0, 160, "HH", style, TextWrapMode.NoWrap).ToImage();
+            var direct = ImageComposition.Create(180, 100, ChartColor.Transparent).DrawText(10, 0, 160, "HH", style, TextWrapMode.NoWrap).ToRgbaImage();
             var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='100'><g font-family='CFX Variation' font-size='40' style=\"font-variation-settings:'wght' 650\"><text x='10' y='33.5'>HH</text></g></svg>";
-            var image = SvgRasterizer.ToImage(svg);
+            var image = SvgRasterizer.ToRgbaImage(svg);
             Assert.Equal(direct.Pixels, image.Pixels);
             var nested = svg.Replace("HH</text>", "H<tspan style='font-variation-settings:normal'>H</tspan></text>");
-            Assert.NotEqual(image.Pixels, SvgRasterizer.ToImage(nested).Pixels);
+            Assert.NotEqual(image.Pixels, SvgRasterizer.ToRgbaImage(nested).Pixels);
             Assert.True(TypographyCss.TryVariations("'wght' 650, \"wdth\" 80", out var settings)); Assert.Equal(80, settings!["wdth"]);
             Assert.False(TypographyCss.TryVariations("'wght' NaN", out _));
         });

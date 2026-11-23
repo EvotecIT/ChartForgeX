@@ -25,7 +25,7 @@ public sealed class TopologyShapeContentTests {
         chart.Nodes.Add(new TopologyNode { Id = "review", Label = "Approved?", Subtitle = "Human gate", Badge = "?",
             X = 40, Y = 40, Width = 130, Height = 68, Shape = shape, Status = TopologyHealthStatus.Warning,
             FitLabelToContent = true, PreserveDisplayModeSize = true });
-        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = "Owner", Value = "Platform", Color = "var(--detail, #2A4470)", Status = TopologyHealthStatus.Warning });
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = "Owner", Value = "Platform", Color = ChartColorText.Parse("var(--detail, #2A4470)"), Status = TopologyHealthStatus.Warning });
         var prepared = chart.Prepare(Context(), new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true });
         Assert.Contains(Text(prepared, "topology-node-label"), value => value == "Approved?");
         Assert.Contains("Human gate", Text(prepared, "topology-node-subtitle"));
@@ -71,7 +71,7 @@ public sealed class TopologyShapeContentTests {
         var result = new MarkupFlowParser().Parse("steps:\n| id | label | kind | subtitle | badge | width | height | fitLabelToContent |\n| fixed | Approved? | decision | Human gate | ? | 130 | 68 | false |");
         Assert.False(result.HasErrors);
         var flow = result.Document!;
-        flow.UpdateStep("fixed", step => step.Color = "#355AAA");
+        flow.UpdateStep("fixed", step => step.Color = ChartColor.FromHex("#355AAA"));
         Assert.False(Assert.Single(flow.Steps).FitLabelToContent);
         var prepared = flow.Prepare(Context());
         var semantic = Assert.Single(prepared.SemanticInterchange!.Nodes);

@@ -319,7 +319,7 @@ internal static partial class SmokeTests {
             .Title("Microsoft Entra Mind Map")
             .Viewport(new TopologyViewport(980, 560, 28))
             .AddMindMap(new[] {
-                new TopologyHierarchyItem("entra", "Microsoft Entra") { IconId = "cloud:cloud", Kind = TopologyNodeKind.Cloud, Status = TopologyHealthStatus.Healthy, Color = "#34489A" },
+                new TopologyHierarchyItem("entra", "Microsoft Entra") { IconId = "cloud:cloud", Kind = TopologyNodeKind.Cloud, Status = TopologyHealthStatus.Healthy, Color = ChartColor.FromHex("#34489A") },
                 new TopologyHierarchyItem("users", "Users", "entra") { IconId = "people:person", Kind = TopologyNodeKind.Person, Status = TopologyHealthStatus.Healthy }.Metadata("mindmap.side", "right").Metadata("mindmap.order", "10"),
                 new TopologyHierarchyItem("groups", "Groups", "entra") { IconId = "people:team", Kind = TopologyNodeKind.Team, Status = TopologyHealthStatus.Healthy }.Metadata("mindmap.side", "right").Metadata("mindmap.order", "20"),
                 new TopologyHierarchyItem("protection", "ID Protection", "users") { IconId = "common:certificate", Kind = TopologyNodeKind.Certificate, Status = TopologyHealthStatus.Warning },

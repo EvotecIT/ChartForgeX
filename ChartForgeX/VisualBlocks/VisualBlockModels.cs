@@ -77,7 +77,7 @@ public sealed class VisualBlockOptions {
     public bool HostOwnsFrame { get; set; }
 
     /// <summary>Gets or sets the output pixel multiplier used by PNG exports.</summary>
-    public int PngOutputScale {
+    public int RasterScale {
         get => _pngOutputScale;
         set {
             if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four.");

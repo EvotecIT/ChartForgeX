@@ -244,7 +244,7 @@ public sealed class TableArtifactColumn {
 /// </summary>
 public sealed class TableArtifactRow {
     private string _key;
-    private Tone _status;
+    private Tone _tone;
 
     /// <summary>Initializes a table artifact row.</summary>
     public TableArtifactRow(string key) => _key = key ?? throw new ArgumentNullException(nameof(key));
@@ -256,13 +256,13 @@ public sealed class TableArtifactRow {
     public List<TableArtifactCell> Cells { get; } = new();
 
     /// <summary>Gets or sets the row status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     /// <summary>Gets or sets whether this row can be selected by a host.</summary>
     public bool Selectable { get; set; } = true;
 
     internal TableArtifactRow Clone() {
-        var copy = new TableArtifactRow(Key) { Status = Status, Selectable = Selectable };
+        var copy = new TableArtifactRow(Key) { Tone = Tone, Selectable = Selectable };
         foreach (var cell in Cells) copy.Cells.Add(cell.Clone());
         foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
         return copy;
@@ -278,7 +278,7 @@ public sealed class TableArtifactRow {
 public sealed class TableArtifactCell {
     private string _displayText;
     private ChartForgeX.Typography.TextContent? _content;
-    private Tone _status;
+    private Tone _tone;
 
     /// <summary>Initializes a table artifact cell.</summary>
     public TableArtifactCell(string displayText) => _displayText = displayText ?? throw new ArgumentNullException(nameof(displayText));
@@ -302,11 +302,11 @@ public sealed class TableArtifactCell {
     public string? ExportText { get; set; }
 
     /// <summary>Gets or sets the cell status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     internal TableArtifactCell Clone() {
         var copy = new TableArtifactCell(DisplayText) {
-            SearchText = SearchText, SortText = SortText, CopyText = CopyText, ExportText = ExportText, Status = Status, Content = Content
+            SearchText = SearchText, SortText = SortText, CopyText = CopyText, ExportText = ExportText, Tone = Tone, Content = Content
         };
         foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
         return copy;

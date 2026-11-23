@@ -32,7 +32,7 @@ public static partial class MermaidFlowchartRendering {
                 target.Kind = icon.NodeKind;
                 target.Symbol = icon.Symbol;
                 target.Artwork = icon.Artwork;
-                if (string.IsNullOrWhiteSpace(target.Color)) target.Color = icon.Color;
+                if (target.Color == null) target.Color = icon.Color;
             }
         } else target.Shape = type == "awesome" ? TopologyNodeShape.ActorSilhouette
             : type == "hollow" ? business ? TopologyNodeShape.ActorBusinessHollow : TopologyNodeShape.ActorHollow

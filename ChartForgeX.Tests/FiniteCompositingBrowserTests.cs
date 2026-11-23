@@ -34,7 +34,7 @@ public sealed class FiniteCompositingBrowserTests {
         html += "<section id='nested-opacity'>" + opacitySource + "</section><img id='nested-native' alt='Completed group opacity' src='data:image/png;base64,"
             + Convert.ToBase64String(opacityResult.Image.ToPng()) + "'>";
         var composition = NativeCompositeCompositionExample.Create(variant, mode, VisualCompositeOperator.SourceIn);
-        var image = composition.ToImage();
+        var image = composition.ToRgbaImage();
         var canvas = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .Title("Explicit native stencil").AddImage(image, 0, 0, image.Width, image.Height);
         var stencil = canvas.ToSvg();

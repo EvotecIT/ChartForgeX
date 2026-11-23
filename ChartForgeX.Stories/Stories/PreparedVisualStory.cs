@@ -49,7 +49,7 @@ public sealed partial class PreparedVisualStory {
 
     /// <summary>Renders an independently owned RGBA frame at a timestamp within one play.</summary>
     public RgbaImage RenderAt(TimeSpan timestamp, int outputScale = 1) {
-        return PrepareFrame(timestamp, outputScale).ToRgba(new VisualRenderOptions(outputScale, supersampling: 1));
+        return PrepareFrame(timestamp, outputScale).ToRgbaImage(new VisualRenderOptions(outputScale, supersampling: 1));
     }
 
     /// <summary>Prepares a timestamp as native geometry shared by SVG and PNG backends.</summary>
@@ -72,7 +72,7 @@ public sealed partial class PreparedVisualStory {
         if (index + 1 < _story.Scenes.Count && transition > 0 && remaining < transition) {
             var next = NativeVisualStoryRenderer.Prepare(_story, index + 1, 0, outputScale, _transcript);
             var renderOptions = new VisualRenderOptions(outputScale, supersampling: 1);
-            var pixels = VisualStoryAnimatedRasterRenderer.CrossFade(current.ToRgba(renderOptions), next.ToRgba(renderOptions), 1 - remaining / transition);
+            var pixels = VisualStoryAnimatedRasterRenderer.CrossFade(current.ToRgbaImage(renderOptions), next.ToRgbaImage(renderOptions), 1 - remaining / transition);
             var builder = new VisualSceneBuilder(current.Size, ChartForgeX.Typography.FontSpec.FromFamily(_story.Theme.Typography.Family));
             builder.Image(pixels, new ChartForgeX.Primitives.ChartRect(0, 0, Width, Height), role: "story-transition");
             return new PreparedVisual(builder.Build(), current.Accessibility);

@@ -213,7 +213,7 @@ public sealed class MarkupFlowParser {
             var row = Row(headers, cells);
             if (section == "lanes") {
                 var id = Required(row, "id");
-                flow.AddLane(id, Value(row, "label", id), ParseStatus(Value(row, "status", string.Empty)), ValidatedColorOrNull(row, "Flow lane color"));
+                flow.AddLane(id, Value(row, "label", id), ParseStatus(Value(row, "status", string.Empty)), ChartColorText.Parse(ValidatedColorOrNull(row, "Flow lane color")));
                 return headers;
             }
 
@@ -244,7 +244,7 @@ public sealed class MarkupFlowParser {
         var label = tokens.Count > 2 && !IsAttribute(tokens[2]) ? tokens[2] : id;
         var attributeStart = label == id ? 2 : 3;
         var attributes = Attributes(tokens, attributeStart);
-        flow.AddLane(id, label, ParseStatus(Value(attributes, "status", string.Empty)), ValidatedColorOrNull(attributes, "Flow lane color"));
+        flow.AddLane(id, label, ParseStatus(Value(attributes, "status", string.Empty)), ChartColorText.Parse(ValidatedColorOrNull(attributes, "Flow lane color")));
     }
 
     private static void ParseStep(FlowArtifact flow, List<string> tokens, FlowArtifactStepKind defaultKind) {
@@ -264,7 +264,7 @@ public sealed class MarkupFlowParser {
         if (attributes.TryGetValue("symbol", out var symbol)) step.Symbol = symbol;
         if (attributes.TryGetValue("color", out var color)) {
             ValidateColor(color, "Flow step color");
-            step.Color = color;
+            step.Color = ChartColorText.Parse(color);
         }
         if (attributes.TryGetValue("badge", out var badge)) step.Badge = badge;
         if (attributes.TryGetValue("width", out var width)) step.Width = ParsePositiveFiniteDouble(width, "width");
@@ -288,7 +288,7 @@ public sealed class MarkupFlowParser {
         var kind = attributes.TryGetValue("kind", out var kindValue) || attributes.TryGetValue("type", out kindValue) ? ParseConnectorKind(kindValue) : FlowArtifactConnectorKind.Flow;
         var direction = attributes.TryGetValue("direction", out var directionValue) ? ParseConnectorDirection(directionValue) : VisualLinkDirection.Forward;
         var status = ParseStatus(Value(attributes, "status", string.Empty));
-        flow.AddConnector(source, target, label, kind, direction, status, ValidatedColorOrNull(attributes, "Flow connector color"));
+        flow.AddConnector(source, target, label, kind, direction, status, ChartColorText.Parse(ValidatedColorOrNull(attributes, "Flow connector color")));
     }
 
     private static void ParseViewport(FlowArtifact flow, List<string> tokens) {

@@ -23,11 +23,11 @@ internal static class NativePreparationBackpressureExamples {
             File.WriteAllBytes(Path.Combine(output, name + ".png"), sections["0"].PreparedVisual.ToPng());
             File.WriteAllText(Path.Combine(output, name + ".sections.json"), catalog);
             File.WriteAllText(Path.Combine(output, name + ".interactive.html"), "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-                + ExampleTypography.EmbeddedStyle + "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+                + ExampleTypography.EmbeddedStyle + "<style>" + HtmlInteractiveChartRenderer.StyleSheet
                 + "body{margin:16px;font:14px " + ExampleTypography.FontFamily + "}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;padding:8px 12px}output{display:block;margin:12px 0}</style></head><body>"
                 + "<p>This transport demo uses four native sections prepared by this program. Release finishes one host callback; an aborted callback deliberately waits for release.</p>"
                 + "<div class=\"controls\"><button id=\"request\">Request view</button><button id=\"burst\">Queue 1000 windows</button><button id=\"release\" disabled>Release callback</button></div><output id=\"status\"></output>"
-                + sections["0"].Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>const nativeSections=" + catalog + ";" + Script + "</script></body></html>");
+                + sections["0"].Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script><script>const nativeSections=" + catalog + ";" + Script + "</script></body></html>");
         }
     }
 

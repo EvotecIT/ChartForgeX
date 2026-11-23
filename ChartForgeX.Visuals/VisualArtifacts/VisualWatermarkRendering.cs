@@ -47,7 +47,7 @@ internal static class VisualWatermarkRendering {
         canvas.DrawImage(0, 0, source.Width, source.Height, source.Pixels);
         canvas.SetClipBounds(frame.X, frame.Y, frame.Width, frame.Height);
         for (var i = 0; i < watermarks.Count; i++) DrawRasterWatermark(canvas, watermarks[i], frame);
-        return canvas.ToImage();
+        return canvas.ToRgbaImage();
     }
 
     private static Dictionary<int, SvgImageWatermarkDefinition> AppendRepeatedSvgImageDefinitions(StringBuilder output, string svg, IReadOnlyList<VisualWatermark> watermarks) {
@@ -232,7 +232,7 @@ internal static class VisualWatermarkRendering {
             source.Width,
             source.Height,
             source.Pixels);
-        var scaled = scaledCanvas.ToImage();
+        var scaled = scaledCanvas.ToRgbaImage();
         if (!hasRotation) return WithOpacity(scaled, opacity);
 
         var radians = degrees * Math.PI / 180.0;
@@ -350,7 +350,7 @@ internal static class VisualWatermarkRendering {
 
     private static bool IsPositiveFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value) && value > 0;
 
-    private static VisualArtifactSize ResolveSvgSize(string svg, VisualArtifact artifact, out (double X, double Y) origin) {
+    private static VisualSize ResolveSvgSize(string svg, VisualArtifact artifact, out (double X, double Y) origin) {
         origin = (0, 0);
         var attributes = ReadSvgRootAttributes(svg);
         if (attributes.TryGetValue("viewBox", out var viewBox)) {
@@ -360,10 +360,10 @@ internal static class VisualWatermarkRendering {
                 TryNumber(parts[2], out var viewWidth) && TryNumber(parts[3], out var viewHeight) &&
                 IsPositiveFinite(viewWidth) && IsPositiveFinite(viewHeight)) {
                 origin = (x, y);
-                return new VisualArtifactSize(viewWidth, viewHeight);
+                return new VisualSize(viewWidth, viewHeight);
             }
         }
-        if (attributes.TryGetValue("width", out var width) && attributes.TryGetValue("height", out var height) && TryNumber(TrimPixelSuffix(width), out var parsedWidth) && TryNumber(TrimPixelSuffix(height), out var parsedHeight)) return new VisualArtifactSize(parsedWidth, parsedHeight);
+        if (attributes.TryGetValue("width", out var width) && attributes.TryGetValue("height", out var height) && TryNumber(TrimPixelSuffix(width), out var parsedWidth) && TryNumber(TrimPixelSuffix(height), out var parsedHeight)) return new VisualSize(parsedWidth, parsedHeight);
         if (artifact.NaturalSize.HasValue) return artifact.NaturalSize.Value;
         throw new InvalidOperationException("Rendered artifact SVG does not expose a usable viewBox or numeric width and height.");
     }

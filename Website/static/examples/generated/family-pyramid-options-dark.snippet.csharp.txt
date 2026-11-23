@@ -21,7 +21,7 @@ var theme = VisualTheme.Graphite();
 var chart = Chart.Create().DataLabels();
 var allocation = new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, new[] {
     new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0)
-}).PointColor(0, "#2F78C4").PointColor(1, "#E2A644").PointColor(2, "#34957A")
+}).PointColor(0, ChartColor.FromHex("#2F78C4")).PointColor(1, ChartColor.FromHex("#E2A644")).PointColor(2, ChartColor.FromHex("#34957A"))
     .PointFillPattern(1, ChartFillPattern.DiagonalForward);
 chart.XLabels("Services", "Platform", "Support", "Unassigned").AddSeries(allocation)
     .Pyramid(options => {

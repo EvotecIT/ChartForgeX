@@ -23,7 +23,7 @@ internal static class RetainedAppearanceSnippetProof {
                     File.WriteAllText(Path.Combine(output, id + ".json"), json);
                     File.WriteAllText(Path.Combine(output, id + ".capture.json"), saved);
                     File.WriteAllText(Path.Combine(output, id + ".csharp.txt"), ExampleRecipeSource.EmitNativeRetainedAppearance(variant, mode));
-                    if (!root.ToPng().SequenceEqual(replayed.ToPng()) || !layer.ToImage().Pixels.SequenceEqual(restored.ToImage().Pixels))
+                    if (!root.ToPng().SequenceEqual(replayed.ToPng()) || !layer.ToRgbaImage().Pixels.SequenceEqual(restored.ToRgbaImage().Pixels))
                         throw new InvalidOperationException("Explicit retained/terminal replay changed native pixels.");
                     results.Add(new(id, nameof(NativeRetainedAppearanceExample), variant, mode.ToString(),
                         (int)root.Size.Width, (int)root.Size.Height, true, root.Regions.Count, Array.Empty<RecipeSeries>(), null));

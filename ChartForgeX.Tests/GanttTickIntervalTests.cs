@@ -211,7 +211,7 @@ public sealed class GanttTickIntervalTests {
                 .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100)))
                 .XAxis(x => x.LabelBy(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture)));
         chart.GridLineStyle(style => style.ShowVerticalLines = true);
-        if (fontSize > 0) chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+        if (fontSize > 0) chart.Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .TickLabelStyle(style => style.FontSize(fontSize));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-dense-authored-clock-{mermaid}-{fontSize}");

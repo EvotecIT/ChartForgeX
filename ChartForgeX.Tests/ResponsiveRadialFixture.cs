@@ -38,7 +38,7 @@ internal static class ResponsiveRadialFixture {
             var start = shell.IndexOf("<svg", stage, StringComparison.Ordinal);
             var end = shell.IndexOf("</svg>", start, StringComparison.Ordinal) + "</svg>".Length;
             return shell.Substring(0, start) + responsive + shell.Substring(end)
-                + "<style>" + HtmlResponsiveChartRenderer.Stylesheet + "</style><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>";
+                + "<style>" + HtmlResponsiveChartRenderer.StyleSheet + "</style><script>" + HtmlResponsiveChartRenderer.Script + "</script>";
         } finally { chart.Size(size.Width, size.Height); }
     }
 

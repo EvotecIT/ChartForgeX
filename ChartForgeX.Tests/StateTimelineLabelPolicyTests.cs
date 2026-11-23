@@ -66,8 +66,8 @@ public sealed class StateTimelineLabelPolicyTests {
     [InlineData("Arial")]
     [InlineData("ChartForgeX Missing Test Face")]
     public void ToSvg_OversizedTickFont_StillDrawsTheLaneLabelWithInstalledOrFallbackMetrics(string font) {
-        var chart = Chart.Create().Size(360, 360).Png(p => p.FontPath(font)).Legend(false)
-            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "99%", "Services");
+        var chart = Chart.Create().Size(360, 360).Raster(p => p.FontPath(font)).Legend(false)
+            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "Services", "99%");
         chart.Options.TickLabelStyle.FontSize = 256;
         var labels = Texts(XDocument.Parse(chart.ToSvg()), ChartDomRoles.ScheduleRowLabel);
         Assert.Equal("API", Assert.Single(labels).Value);
@@ -93,7 +93,7 @@ public sealed class StateTimelineLabelPolicyTests {
     public void ToSvg_DenseTimelineRanges_KeepEveryLaneNameWhenTheRowPitchFitsTheText() {
         // Range bars are thinner than their row; the label may use the row pitch, so a thin bar doesn't hide its name.
         var chart = Chart.Create().Size(720, 420).Legend(false);
-        for (var lane = 0; lane < 20; lane++) chart.AddTimelineRange("Window " + lane, lane, lane + 3);
+        for (var lane = 0; lane < 20; lane++) chart.AddTimelineItem("Window " + lane, lane, lane + 3);
 
         var labels = Texts(XDocument.Parse(chart.ToSvg()), ChartDomRoles.ScheduleRowLabel);
 

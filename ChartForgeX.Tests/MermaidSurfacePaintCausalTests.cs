@@ -34,7 +34,7 @@ public sealed class MermaidSurfacePaintCausalTests {
         var document=Assert.IsType<MermaidFlowchartDocument>(rendered.Document);Assert.Equal(new[]{"a","b"},document.Nodes.Select(node=>node.Id));Assert.Equal("review",Assert.Single(document.Subgraphs).Id);Assert.Single(document.Edges);
         foreach(var shape in new[]{TopologyNodeShape.Rectangle,TopologyNodeShape.DoubleCircle}) {
             var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(300, 250, 0)).Legend((TopologyLegend?)null);
-            chart.Nodes.Add(new TopologyNode{Id="node",Label="Node",X=60,Y=60,Width=100,Height=80,Shape=shape,BackgroundColor="#ff0000",Color="#ff0000",ShowStatusBadge=false,PreserveDisplayModeSize=true});
+            chart.Nodes.Add(new TopologyNode{Id="node",Label="Node",X=60,Y=60,Width=100,Height=80,Shape=shape,BackgroundColor=ChartColor.FromHex("#ff0000"),Color=ChartColor.FromHex("#ff0000"),ShowStatusBadge=false,PreserveDisplayModeSize=true});
             CaptureArtifact(chart.ToVisualArtifact(),"ordinary-native-paint-"+shape);
         }
     }

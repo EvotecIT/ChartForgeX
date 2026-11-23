@@ -18,13 +18,13 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         foreach (var row in source.Rows) {
             if (row == null || row.Cells.Count != source.Columns.Count) throw new ArgumentException("Embedded table rows must contain exactly one cell for every column.", nameof(source));
-            var item = new VisualArtifactInterchangeTableRow { Key = row.Key, Status = row.Status, Selectable = row.Selectable };
+            var item = new VisualArtifactInterchangeTableRow { Key = row.Key, Status = row.Tone, Selectable = row.Selectable };
             CopyTableBag(row.Metadata, item.Extensions);
             for (var i = 0; i < row.Cells.Count; i++) {
                 var cell = row.Cells[i] ?? throw new ArgumentException("Embedded table cells must not be null.", nameof(source));
                 var copy = new VisualArtifactInterchangeTableCell { ColumnId = source.Columns[i].Id, DisplayText = cell.DisplayText,
                     Content = cell.Content?.IsStructured == true ? cell.Content : null,
-                    SearchText = cell.SearchText, SortText = cell.SortText, CopyText = cell.CopyText, ExportText = cell.ExportText, Status = cell.Status };
+                    SearchText = cell.SearchText, SortText = cell.SortText, CopyText = cell.CopyText, ExportText = cell.ExportText, Status = cell.Tone };
                 CopyTableBag(cell.Metadata, copy.Extensions); item.Cells.Add(copy);
             }
             target.Rows.Add(item);
@@ -47,12 +47,12 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         foreach (var row in source.Rows) {
             var values = new object?[row.Cells.Count]; for (var i = 0; i < values.Length; i++) values[i] = row.Cells[i].DisplayText;
-            target.AddRow(row.Key, values); var item = target.Rows[target.Rows.Count - 1]; item.Status = row.Status; item.Selectable = row.Selectable;
+            target.AddRow(row.Key, values); var item = target.Rows[target.Rows.Count - 1]; item.Tone = row.Status; item.Selectable = row.Selectable;
             CopyTableBag(row.Extensions, item.Metadata);
             for (var i = 0; i < row.Cells.Count; i++) {
                 var cell = row.Cells[i]; var copy = item.Cells[i]; copy.SearchText = cell.SearchText; copy.SortText = cell.SortText;
                 copy.Content = cell.Content;
-                copy.CopyText = cell.CopyText; copy.ExportText = cell.ExportText; copy.Status = cell.Status;
+                copy.CopyText = cell.CopyText; copy.ExportText = cell.ExportText; copy.Tone = cell.Status;
                 CopyTableBag(cell.Extensions, copy.Metadata);
             }
         }

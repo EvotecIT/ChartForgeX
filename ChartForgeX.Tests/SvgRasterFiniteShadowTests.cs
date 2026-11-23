@@ -20,7 +20,7 @@ public sealed class SvgRasterFiniteShadowTests {
         var layer = ShadowFilterFixture.Source().CaptureLayer(new VisualDropShadow(ChartColor.FromRgba(0, 0, 255, 128), 4, 2, value,
             spread: 1, orderedDither: false), ShadowFilterFixture.Options);
         NativeEffectBeforeCapture.Write("finite-shadow-native-equivalent-" + sigma, svg, ImageComposition.FromImage(result.Image).ToPng(), result.Image);
-        var image = layer.ToImage();
+        var image = layer.ToRgbaImage();
         for (var y = 0; y < 48; y++) for (var x = 0; x < 64; x++) {
             var expected = image.Pixels.Skip(((y - (int)layer.Bounds.Y) * image.Width + x - (int)layer.Bounds.X) * 4).Take(4);
             Assert.Equal(expected, result.Image.Pixels.Skip((y * 64 + x) * 4).Take(4));

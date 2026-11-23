@@ -115,7 +115,7 @@ public sealed partial class HtmlInteractiveTopologyRenderer {
     }
 
     /// <summary>Builds the raw JavaScript runtime for host-level asset registration.</summary>
-    public static string BuildInteractionScript(TopologyRenderOptions? options = null) {
+    public static string Script(TopologyRenderOptions? options = null) {
         options ??= new TopologyRenderOptions();
         var cssPrefix = TopologyHtmlRenderer.GetCssClassPrefix(options);
         return HtmlTopologyAssets.InteractionScript
@@ -135,6 +135,6 @@ public sealed partial class HtmlInteractiveTopologyRenderer {
 
     private static string InteractionScriptTag(TopologyRenderOptions options) {
         var nonce = TopologyHtmlRenderer.Nonce(options);
-        return (nonce == null ? "<script>\n" : "<script nonce=\"" + System.Net.WebUtility.HtmlEncode(nonce) + "\">\n") + BuildInteractionScript(options) + "\n</script>";
+        return (nonce == null ? "<script>\n" : "<script nonce=\"" + System.Net.WebUtility.HtmlEncode(nonce) + "\">\n") + Script(options) + "\n</script>";
     }
 }

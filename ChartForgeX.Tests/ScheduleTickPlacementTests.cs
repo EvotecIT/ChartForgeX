@@ -52,7 +52,7 @@ public sealed class ScheduleTickPlacementTests {
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         AssertOwnTicks(prepared, expected);
         Assert.Equal(fontSize, chart.Options.TickLabelStyle.FontSize);
-        Assert.Equal("700", chart.Options.TickLabelStyle.FontWeight);
+        Assert.Equal(700, chart.Options.TickLabelStyle.FontWeight);
         Assert.Equal(TickColor, chart.Options.TickLabelStyle.Color);
         Assert.NotEmpty(prepared.ToPng());
     }
@@ -182,7 +182,7 @@ public sealed class ScheduleTickPlacementTests {
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         Assert.Equal(45, chart.Options.XAxis.LabelAngle);
         Assert.Equal(12, chart.Options.TickLabelStyle.FontSize);
-        Assert.Equal(120, prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Height);
+        Assert.Equal(120, prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Height);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public sealed class ScheduleTickPlacementTests {
 
     [Fact]
     public void OverBudgetFixedIntervalsUseMeasuredAutomaticTicksWithoutChangingTheConfiguredInterval() {
-        var chart = Chart.Create().Size(240, 360).Legend(false).ShowHeader(false).Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+        var chart = Chart.Create().Size(240, 360).Legend(false).ShowHeader(false).Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddGanttTask("Window", Start, Start.AddDays(7))
             .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100)));
@@ -246,9 +246,9 @@ public sealed class ScheduleTickPlacementTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The licensed Carlito fixture must be available for repeatable edge-label measurements.");
         var end = Start.AddHours(12);
-        var chart = Chart.Create().Size(360, 360).Theme(VisualTheme.Graphite()).Png(p => p.FontPath(font))
+        var chart = Chart.Create().Size(360, 360).Theme(VisualTheme.Graphite()).Raster(p => p.FontPath(font))
             .Legend(false).XAxis(x => x.TimeScale()).GridLineStyle(style => style.ShowVerticalLines = true)
-            .TickLabelStyle(style => style.FontSize(fontSize).FontWeight("700").Color(TickColor));
+            .TickLabelStyle(style => style.FontSize(fontSize).FontWeight(700).Color(TickColor));
         switch (kind) {
             case ChartSeriesKind.StateTimeline: chart.AddStateTimelineLane("Primary", new[] { new ChartStateTimelineSegment(Start, end, "up") }); break;
             case ChartSeriesKind.GanttLane: chart.AddGanttLane("Primary", new[] { new ChartGanttLaneItem(Start, end, "up") }); break;

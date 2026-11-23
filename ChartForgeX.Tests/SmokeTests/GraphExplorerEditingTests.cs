@@ -36,7 +36,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("const optionalGraphCoordinate", StringComparison.Ordinal) && html.Contains("x: x ?? existing?.x ?? Number(root.dataset.cfxGraphLastPointerX", StringComparison.Ordinal) && html.Contains("y: y ?? existing?.y ?? Number(root.dataset.cfxGraphLastPointerY", StringComparison.Ordinal), "Blank editor coordinates should preserve an edited node's current position, use the pointer or scene-center fallback for additions, and preserve an explicit zero.");
         Assert(html.Contains("change: (target, patch", StringComparison.Ordinal) && html.Contains("captureState:", StringComparison.Ordinal) && html.Contains("applyState:", StringComparison.Ordinal) && html.Contains("undo: target", StringComparison.Ordinal) && html.Contains("redo: target", StringComparison.Ordinal), "The dependency-free host API should expose safe mutation, state, and history operations.");
         Assert(html.Contains("Move cluster", StringComparison.Ordinal) && html.Contains("graphCapability(root, 'dragGroups')", StringComparison.Ordinal), "Collapsed clusters should support capability-gated group movement.");
-        var style = HtmlGraphExplorerRenderer.BuildFragmentStyle();
+        var style = HtmlGraphExplorerRenderer.StyleSheet;
         Assert(style.Contains(".cfx-graph-editor", StringComparison.Ordinal) && style.Contains(".cfx-graph-selection-box", StringComparison.Ordinal), "Graph editing and box selection should share the premium self-contained visual system.");
 
         var invalid = SampleGraphScene();

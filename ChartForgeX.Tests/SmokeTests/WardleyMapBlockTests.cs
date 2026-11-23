@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
         var map = WardleyMapBlock.Create()
             .Title("Platform Map")
             .Size(900, 560);
-        map.SetStages(new[] { "Genesis", "Custom", "Product", "Commodity" });
+        map.Stages(new[] { "Genesis", "Custom", "Product", "Commodity" });
         map.AddNode("User", "User", 0.95, 0.05, WardleyMapNodeKind.Anchor);
         map.AddNode("Portal", "Portal", 0.80, 0.35).Inertia = true;
         map.AddNode("API", "API", 0.70, 0.45).Strategy = "build";

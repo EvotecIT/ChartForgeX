@@ -30,8 +30,8 @@ var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-int
     ? "chart.presentInitial(" + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});"
     : "{chart.update(forward?" + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?" + JsonSerializer.Serialize(payload) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}});forward=!forward;}");
 var css = "@font-face{font-family:'Example Native';src:url(data:font/" + (extension.Equals(".otf", StringComparison.OrdinalIgnoreCase) ? "otf" : "ttf") + ";base64," + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ") format('opentype')}";
-var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + css + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-    + "</style></head><body><button id='play' type='button'>Present native hierarchy frames</button>" + (initial ? to.Html : from.Html) + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + action + "</script></body></html>";
+var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + css + HtmlInteractiveChartRenderer.StyleSheet
+    + "</style></head><body><button id='play' type='button'>Present native hierarchy frames</button>" + (initial ? to.Html : from.Html) + "<script>" + HtmlInteractiveChartRenderer.Script + "</script><script>" + action + "</script></body></html>";
 Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html", html); File.WriteAllText("output/visual.transition.json", payload);
 File.WriteAllText("output/visual.svg", to.PreparedVisual.ToSvg()); File.WriteAllBytes("output/visual.png", to.PreparedVisual.ToPng());
 

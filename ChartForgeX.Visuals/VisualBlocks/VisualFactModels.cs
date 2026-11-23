@@ -22,7 +22,7 @@ public enum VisualListMarker {
     /// <summary>Render check or empty markers.</summary>
     Check,
     /// <summary>Render status-colored markers.</summary>
-    Status
+    Tone
 }
 
 /// <summary>
@@ -202,7 +202,7 @@ public sealed class ChartTableRow {
 public sealed partial class ChartTableCell {
     private string _text;
     private TextAlignment? _alignment;
-    private Tone _status;
+    private Tone _tone;
 
     /// <summary>Initializes a table cell.</summary>
     public ChartTableCell(string text) => _text = text ?? throw new ArgumentNullException(nameof(text));
@@ -229,7 +229,7 @@ public sealed partial class ChartTableCell {
     public ChartColor? Background { get; set; }
 
     /// <summary>Gets or sets an optional explicit status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     /// <summary>Creates a cell from any value.</summary>
     public static ChartTableCell FromValue(object? value, string? format = null) {
@@ -272,8 +272,8 @@ public sealed class ChartList : FactualVisualBlock<ChartList> {
     }
 
     /// <summary>Adds a status-colored list item.</summary>
-    public ChartList AddStatusItem(string text, Tone status, string? value = null) {
-        _items.Add(new ChartListItem(text, value) { Status = status });
+    public ChartList AddStatusItem(string text, Tone tone, string? value = null) {
+        _items.Add(new ChartListItem(text, value) { Tone = tone });
         return this;
     }
 
@@ -290,7 +290,7 @@ public sealed class ChartList : FactualVisualBlock<ChartList> {
 /// </summary>
 public sealed class ChartListItem {
     private string _text;
-    private Tone _status;
+    private Tone _tone;
 
     /// <summary>Initializes a list item.</summary>
     public ChartListItem(string text, string? value = null) {
@@ -308,7 +308,7 @@ public sealed class ChartListItem {
     public string? Value { get; set; }
 
     /// <summary>Gets or sets an optional status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     /// <summary>Gets or sets an optional checklist state.</summary>
     public bool? IsChecked { get; set; }
@@ -333,7 +333,7 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     /// <summary>Gets or sets the center value.</summary>
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets an optional icon rendered above the center metric. <see cref="Icons"/> lists the keys drawn; another key draws the default mark.</summary>
+    /// <summary>Gets or sets an optional icon rendered above the center metric. <see cref="MetricCardIcons"/> lists the keys drawn; another key draws the default mark.</summary>
     public Icon Icon { get => _icon; set => _icon = value; }
 
     /// <summary>Gets a concise accessibility label.</summary>
@@ -414,7 +414,7 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     public int Padding { get => _padding; set { if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Visual grid padding must be non-negative."); _padding = value; } }
 
     /// <summary>Gets or sets the PNG output pixel multiplier.</summary>
-    public int PngOutputScale { get => _pngOutputScale; set { if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four."); _pngOutputScale = value; } }
+    public int RasterScale { get => _pngOutputScale; set { if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four."); _pngOutputScale = value; } }
 
     /// <summary>Gets or sets a value indicating whether the grid should render a subtle outer frame.</summary>
     public bool FrameVisible { get => _frameVisible; set => _frameVisible = value; }

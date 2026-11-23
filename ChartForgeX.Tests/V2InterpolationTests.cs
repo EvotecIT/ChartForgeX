@@ -86,7 +86,7 @@ public sealed class V2InterpolationTests {
         var prepared = chart.Prepare(Context());
         var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
         var first = path.Commands[0]; var last = path.Commands[^1];
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         bool RedAt(double x, double y) {
             var px = (int)Math.Round(x); var py = (int)Math.Round(y);
             for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {

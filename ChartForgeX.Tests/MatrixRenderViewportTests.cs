@@ -52,7 +52,7 @@ public sealed class MatrixRenderViewportTests {
         Assert.Equal(expected.ToSvg(), actual.ToSvg());
         Assert.Equal(expected.ToPng(new VisualRenderOptions(supersampling: 1)), actual.ToPng(new VisualRenderOptions(supersampling: 1)));
 
-        var image = actual.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = actual.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var (text, corners) in Geometry(actual)) {
             Assert.All(corners, point => {
                 Assert.InRange(point.X, 31 - .001, width - 43 + .001);

@@ -27,28 +27,28 @@ public sealed class NativeEffectExtensionBeforeControlsTests {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 260), 24), theme, mode,
             new VisualFrame(showLegend: false, transparentBackground: true));
         var source = chart.Prepare(context); var options = new VisualRenderOptions(scale: density, supersampling: 1);
-        var ordinarySvg = source.ToSvg(); var ordinaryPng = source.ToPng(options); var pixels = source.ToRgba(options);
+        var ordinarySvg = source.ToSvg(); var ordinaryPng = source.ToPng(options); var pixels = source.ToRgbaImage(options);
         var zero = source.CaptureLayer(new VisualLayerBlur(0), options);
         var blur = source.CaptureLayer(new VisualLayerBlur(1.5, .75, orderedDither: false), options);
         var shadow = ImageComposition.FromImage(pixels).DrawShadow(ChartColor.FromRgba(0, 0, 0, 112), 2, 3, 1.5, .75);
         var stem = "native-effect-before-" + width + "-" + mode + "-density-" + density;
         // All retained exports precede assertions so a changed default still leaves its actual artifacts.
         NativeEffectBeforeCapture.Write(stem + "-source", ordinarySvg, ordinaryPng, pixels);
-        NativeEffectBeforeCapture.Write(stem + "-zero", zero.Visual.ToSvg(), zero.Visual.ToPng(options), zero.ToImage());
-        NativeEffectBeforeCapture.Write(stem + "-blur", blur.Visual.ToSvg(), blur.Visual.ToPng(options), blur.ToImage());
-        NativeEffectBeforeCapture.Write(stem + "-composition-shadow", null, shadow.ToPng(), shadow.ToImage());
+        NativeEffectBeforeCapture.Write(stem + "-zero", zero.Visual.ToSvg(), zero.Visual.ToPng(options), zero.ToRgbaImage());
+        NativeEffectBeforeCapture.Write(stem + "-blur", blur.Visual.ToSvg(), blur.Visual.ToPng(options), blur.ToRgbaImage());
+        NativeEffectBeforeCapture.Write(stem + "-composition-shadow", null, shadow.ToPng(), shadow.ToRgbaImage());
         NativeEffectBeforeCapture.Json(stem + "-facts", new {
             width, height = 260, density, source = SourceRegions(source), zero = Layer(zero), blur = Layer(blur),
             sourcePoints = series.Points.Select(point => new { point.X, point.Y }),
             ids = series.ObservationIds.Select(item => new { sourceIndex = item.Key, id = item.Value.Value })
         });
         Assert.Equal(width * density, pixels.Width); Assert.Equal(260 * density, pixels.Height);
-        Assert.Equal(pixels.Pixels, zero.ToImage().Pixels); Assert.Equal(new ChartRect(0, 0, width, 260), zero.Bounds);
+        Assert.Equal(pixels.Pixels, zero.ToRgbaImage().Pixels); Assert.Equal(new ChartRect(0, 0, width, 260), zero.Bounds);
         Assert.Same(source, zero.Source); Assert.Same(source, blur.Source);
         Assert.True(blur.Bounds.X < 0 && blur.Bounds.Y < 0 && blur.Bounds.Width > width && blur.Bounds.Height > 260);
         var embedded = Assert.Single(XDocument.Parse(blur.Visual.ToSvg()).Descendants(), node => node.Name.LocalName == "image");
         var href = embedded.Attribute("href")!.Value; Assert.StartsWith("data:image/png;base64,", href);
-        Assert.Equal(blur.ToImage().Pixels, RasterImageDecoder.Decode(Convert.FromBase64String(href[(href.IndexOf(',') + 1)..])).Pixels);
+        Assert.Equal(blur.ToRgbaImage().Pixels, RasterImageDecoder.Decode(Convert.FromBase64String(href[(href.IndexOf(',') + 1)..])).Pixels);
         Assert.Equal(ordinarySvg, source.ToSvg()); Assert.Equal(ordinaryPng, source.ToPng(options));
         Assert.Equal("cycle-2", series.ObservationIds[1].Value);
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();

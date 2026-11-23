@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Linq;
 using System.Xml.Linq;
@@ -24,7 +25,7 @@ internal static partial class Program {
         const string grammar = "flowchart LR\nlinkStyle default interpolate natural\nA --> B\nB --> C\nlinkStyle 1 interpolate stepBefore,stroke:#123456";
         var styled = (TopologyChart)PackedNativeDiagram("curve-source-order", grammar).Model!;
         PackageAssertions.Require(styled.Edges[0].Interpolation == TopologyEdgeInterpolation.Natural
-            && styled.Edges[1].Interpolation == TopologyEdgeInterpolation.StepBefore && styled.Edges[1].Color == "#123456", "Packed source-order curve grammar changed its finite native choices.");
+            && styled.Edges[1].Interpolation == TopologyEdgeInterpolation.StepBefore && styled.Edges[1].Color == ChartColor.FromHex("#123456"), "Packed source-order curve grammar changed its finite native choices.");
     }
 
     private static string[] EdgeCurveInk(string svg) => XDocument.Parse(svg).Descendants()

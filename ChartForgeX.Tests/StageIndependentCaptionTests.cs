@@ -19,7 +19,7 @@ public sealed class StageIndependentCaptionTests {
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 480)),
             VisualTheme.Graphite(), mode, new VisualFrame("From visitor to renewed subscription",
                 "Each stage narrows the cone by the customers it keeps"),
-            ChartForgeX.Typography.FontSpec.FromFile(chart.Options.Png.FontPath!)));
+            ChartForgeX.Typography.FontSpec.FromFile(chart.Options.Raster.FontPath!)));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role?.StartsWith("funnel-", StringComparison.Ordinal) == true && node.Role.EndsWith("-label", StringComparison.Ordinal)).ToArray();
         // The vertical cone rail reads as two lines per stage: name and value, then both ratios.

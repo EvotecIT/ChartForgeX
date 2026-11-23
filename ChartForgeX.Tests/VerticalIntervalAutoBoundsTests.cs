@@ -78,7 +78,7 @@ public sealed class VerticalIntervalAutoBoundsTests {
     private static Chart Create(bool boxPlot, ChartBarStyle style, ChartScaleKind scale, bool reversed, bool secondary = false) {
         var chart = Chart.Create().Size(480, 320).ShowHeader(false).Legend(false).DataLabels(false)
             .Bars(b => b.Style(style)).Theme(VisualTheme.Graphite()).FontFamily("Carlito")
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         if (secondary) {
             chart.AddLine("Primary", new[] { new ChartPoint(1, 1.25), new ChartPoint(2, 1.75) });
             chart.Series[0].Markers.Enabled = false; chart.Options.YAxis.Bounds(1, 2);

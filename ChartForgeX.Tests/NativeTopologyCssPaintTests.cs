@@ -18,7 +18,7 @@ public sealed class NativeTopologyCssPaintTests {
             .AddNode("source", "Source", 40, 90, width: 80, height: 50)
             .AddNode("target", "Target", 340, 90, width: 80, height: 50)
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)
-            .UpdateEdge("route", e => e.Color("var(--relationship, " + fallback + ")"))
+            .UpdateEdge("route", e => e.Color(ChartColorText.Parse("var(--relationship, " + fallback + ")")))
             .EdgeStroke("route", opacity: opacity);
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false }.EdgeVisualStyle(ChartLineVisualStyle.Plain()));
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -35,7 +35,7 @@ public sealed class NativeTopologyCssPaintTests {
             .AddNode("source", "Source", 40, 90, width: 80, height: 50)
             .AddNode("target", "Target", 340, 90, width: 80, height: 50)
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)
-            .UpdateEdge("route", e => e.Color("var(--relationship, #CC224480)"))
+            .UpdateEdge("route", e => e.Color(ChartColorText.Parse("var(--relationship, #CC224480)")))
             .EdgeStroke("route", opacity: .5)
             .UpdateEdge("route", e => e.SourceMarker(TopologyMarkerKind.Circle).TargetMarker(TopologyMarkerKind.Diamond));
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false }.EdgeVisualStyle(ChartLineVisualStyle.Plain());
@@ -47,7 +47,7 @@ public sealed class NativeTopologyCssPaintTests {
         var markers = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").ToArray();
         Assert.Equal(2, markers.Length);
         Assert.All(markers, marker => Assert.Equal((string?)route.Attribute("stroke"), (string?)marker.Attribute("stroke")));
-        chart.UpdateEdge("route", e => e.Color("#CC224480"));
+        chart.UpdateEdge("route", e => e.Color(ChartColor.FromHex("#CC224480")));
         Assert.Equal(chart.ToPng(options), prepared.ToPng());
         Assert.Contains("var(--relationship,", prepared.ToSvg());
         Assert.Equal("var(--relationship, #CC224480)", prepared.ToInterchangeEnvelope().Edges.Single().Color);

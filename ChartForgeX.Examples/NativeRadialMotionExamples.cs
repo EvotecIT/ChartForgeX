@@ -15,9 +15,9 @@ internal static class NativeRadialMotionExamples {
             var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>" + (kind == "initial"
                 ? "chart.presentInitial(" + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});"
                 : "{chart.update(forward?" + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?" + JsonSerializer.Serialize(payload) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}});forward=!forward;}");
-            var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+            var html = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>" + HtmlInteractiveChartRenderer.StyleSheet
                 + "</style></head><body><button id='play' type='button'>Present native frame capture</button>" + (kind == "initial" ? to.Html : from.Html)
-                + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + action + "</script></body></html>";
+                + "<script>" + HtmlInteractiveChartRenderer.Script + "</script><script>" + action + "</script></body></html>";
             var prefix = Path.Combine(output, "native-radial-" + (donut ? "donut" : "pie") + "-" + kind + "-" + width + "-" + mode);
             File.WriteAllText(prefix + ".html", html); File.WriteAllText(prefix + ".transition.json", payload);
             File.WriteAllText(prefix + ".from.svg", from.PreparedVisual.ToSvg()); File.WriteAllBytes(prefix + ".from.png", from.PreparedVisual.ToPng());

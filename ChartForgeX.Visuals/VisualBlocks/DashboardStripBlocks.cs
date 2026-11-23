@@ -81,8 +81,8 @@ public sealed class EntityStripBlock : FactualVisualBlock<EntityStripBlock> {
     public static EntityStripBlock Create() => new();
 
     /// <summary>Adds one entity item.</summary>
-    public EntityStripBlock AddItem(string label, string? avatarText = null, ChartColor? color = null, Tone status = default) {
-        _items.Add(new EntityStripItem(label, avatarText) { Color = color, Status = status });
+    public EntityStripBlock AddItem(string label, string? avatarText = null, ChartColor? color = null, Tone tone = default) {
+        _items.Add(new EntityStripItem(label, avatarText) { Color = color, Tone = tone });
         return this;
     }
 
@@ -94,7 +94,7 @@ public sealed class EntityStripBlock : FactualVisualBlock<EntityStripBlock> {
 public sealed class EntityStripItem {
     private string _label;
     private string _avatarText;
-    private Tone _status;
+    private Tone _tone;
 
     /// <summary>Initializes an entity strip item.</summary>
     public EntityStripItem(string label, string? avatarText = null) {
@@ -112,7 +112,7 @@ public sealed class EntityStripItem {
     public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets an optional semantic status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 }
 
 /// <summary>

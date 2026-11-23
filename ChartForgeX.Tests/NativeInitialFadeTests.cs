@@ -44,7 +44,7 @@ public sealed class NativeInitialFadeTests {
     public void WholeVisualOverlapUsesOneNativeAlphaAndDoesNotReinvokeCustomFormattingOrFontResolution() {
         var builder = new VisualSceneBuilder(new VisualSize(32, 24), FontSpec.SystemSans()); var red = ChartColor.FromHex("#CC2030");
         builder.Rect(new ChartRect(2, 2, 16, 16), red); builder.Rect(new ChartRect(8, 4, 16, 16), red);
-        var final = new PreparedVisual(builder.Build()); var frame = VisualValueCapture.OpacityFrame(final, .5); var rgba = frame.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var final = new PreparedVisual(builder.Build()); var frame = VisualValueCapture.OpacityFrame(final, .5); var rgba = frame.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); File.WriteAllText(Path.Combine(output, "initial-fade-overlap.svg"), frame.ToSvg()); File.WriteAllBytes(Path.Combine(output, "initial-fade-overlap.png"), frame.ToPng());
         }

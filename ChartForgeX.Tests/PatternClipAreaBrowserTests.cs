@@ -125,7 +125,7 @@ public sealed class PatternClipAreaBrowserTests {
         chart.Series[0].FillPattern(ChartFillPattern.None).Markers(markers => markers.Radius = 6);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), ellipse => ellipse.Rx == 6 && ellipse.Stroke?.A > 0);
-        var rgba = prepared.ToRgba();
+        var rgba = prepared.ToRgbaImage();
         Assert.Contains(Enumerable.Range(0, rgba.Width * rgba.Height), pixel => rgba.Pixels[pixel * 4 + 3] != 0);
         if (!Enabled) return;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);

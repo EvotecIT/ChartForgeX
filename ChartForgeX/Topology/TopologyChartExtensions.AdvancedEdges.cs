@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Linq;
 
@@ -14,7 +15,7 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>Adds a typed detail row to a card-like topology node.</summary>
-    public static TopologyChart AddNodeDetail(this TopologyChart chart, string nodeId, string label, string value, TopologyHealthStatus? status = null, string? color = null, string? iconId = null) {
+    public static TopologyChart AddNodeDetail(this TopologyChart chart, string nodeId, string label, string value, TopologyHealthStatus? status = null, ChartColor? color = null, string? iconId = null) {
         var node = RequiredNode(chart, nodeId);
         label = RequiredText(label, nameof(label), "Topology node detail labels");
         value = RequiredText(value, nameof(value), "Topology node detail values");

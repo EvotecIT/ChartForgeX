@@ -29,7 +29,7 @@ public sealed partial class VisualCanvas {
     /// <remarks>The canvas copies the source pixels during this call and uses that snapshot for both SVG and PNG output.</remarks>
     public VisualCanvas AddHeroBadge(RgbaImage image, double x, double y, double width, double height, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1) {
         ValidateEnum(fit, nameof(fit));
-        var layer = new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) { AccentOverride = accent, ImageFit = fit, ImagePadding = padding, ImageOpacity = opacity };
+        var layer = new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) { Accent = accent, ImageFit = fit, ImagePadding = padding, ImageOpacity = opacity };
         var snapshot = VisualCanvasImagePixels.Snapshot(image);
         layer.ImageRgba = snapshot.Pixels;
         layer.ImageSourceWidth = snapshot.Width;

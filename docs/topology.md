@@ -52,7 +52,7 @@ var theme = VisualTheme.Graphite();
 var mode = ThemeMode.Dark;
 var trend = Chart.Create().Theme(theme).ThemeMode(mode)
     .AddLine("Requests", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
-var topology = TopologyChart.Create().Theme(theme, mode)
+var topology = TopologyChart.Create().Theme(theme).ThemeMode(mode)
     .AddNode("api", "API", 100, 100, status: TopologyHealthStatus.Healthy);
 
 var variables = new SvgColorVariables()
@@ -74,7 +74,7 @@ var topologyPng = topology.ToPng();
 
 Topology layout defaults to `TextMeasurementMode.PortableEstimate`, which preserves the portable width estimate and does not inspect installed fonts. This keeps geometry reproducible across hosts, but the estimate cannot guarantee that every custom font fits. Set `TopologyRenderOptions.TextMeasurementMode = TextMeasurementMode.InstalledFonts` (from `ChartForgeX.Typography`) to measure the host font resolved from `VisualTheme.Typography.Family`; this opt-in can change wrapping and geometry between machines. Node wrapping, edge-label backplates and routing clearance share that measurement. Subtitle chips and badges use the same geometry in SVG and PNG; long center-banner titles are shortened to the available width. Trimming respects text-element boundaries rather than cutting UTF-16 code units.
 
-Use `chart.GetPngFontInfo()` to inspect the PNG face and fallback; installed-font layout uses the same resolver. This diagnostic does not change the portable layout policy. Measurements are cached within each render with a bounded cache; changing a source theme takes effect on the next render.
+Use `chart.GetRasterFontInfo()` to inspect the PNG face and fallback; installed-font layout uses the same resolver. This diagnostic does not change the portable layout policy. Measurements are cached within each render with a bounded cache; changing a source theme takes effect on the next render.
 
 In installed-font mode, for Arial and recognized DejaVu or Liberation bold companions, layout reserves the larger of native bold advances and the raster renderer's synthetic bold advances. Other faces retain the resolved regular-face measurement with synthetic bold spacing. SVG keeps the theme's font-family stack. A browser or document viewer may resolve it differently from the generating machine, so matching layout does not guarantee identical glyphs across hosts. Fonts are not embedded, and this measurement path does not add complex-script shaping or per-glyph fallback.
 
@@ -90,7 +90,7 @@ Set `node.ShowHealthRing = true` or call `chart.UpdateNode(id, n => n.ShowHealth
 
 ```csharp
 var hierarchy = TopologyChart.Create().Viewport(new TopologyViewport(800, 520))
-    .Theme(VisualTheme.Graphite(), ThemeMode.Light)
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
     .AddHierarchy(new[] {
         new TopologyHierarchyItem("reference", "Reference clock") {
             Status = TopologyHealthStatus.Healthy, Badge = "REF"
@@ -129,7 +129,7 @@ Group titles and subtitles retain authored line breaks when `AllowMultilineNodeL
 
 Default group caption ink accounts for the group fill composed over its ancestor fills. Explicit `LabelColor` always wins. The SVG keeps the fill's validated CSS-variable bindings; `SvgColorVariables.GetVariablesForSvg(svg)` evaluates the same preferred-ink/contrast choice for each supplied theme, including alpha. The existing derived-ink wire limits remain in force (1024 encoded source characters, 1400 variable-identity characters), with at most 32 surface layers and 16 nested operand levels; larger expressions keep the exact native ink as a literal fallback. Transparent standalone output uses the theme background as its contrast fallback; hosts placing it on a different surface should supply an appropriate theme or explicit ink. No CSS expression or remote asset is evaluated by the native renderer.
 
-Groups, nodes, and edges can carry `Href`, `Tooltip`, `CssClass`, `Metrics`, and `Metadata`. Edges can also carry explicit `Waypoints` for deterministic manual route bends around dense content. Set `SourcePort` and `TargetPort`, for example with `.UpdateEdge(id, e => e.SourcePort(...).TargetPort(...))`, when a route should attach to a specific node side such as hub-to-hub site links, vertical replication paths, or selected-object connectivity spokes. Use `RouteLane` or `.EdgeRouteLane(...)` to shift the generated orthogonal lane while keeping the endpoints anchored to their ports. Use `.UpdateEdge(id, e => e.LabelOffsetX(x).LabelOffsetY(y))` when a dense monitoring layout needs a latency or transport label nudged away from a nearby site title without changing the route itself. Set `TopologyEdgeRouting.ObstacleAvoidingOrthogonal` when a route should score deterministic Manhattan lanes and prefer paths that avoid nearby node cards, group headers, labels, and already-routed edges. Nodes have an optional `Symbol` for short visual glyphs such as `SQL`, `API`, `DC`, `GC`, initials, or role abbreviations without baking those product roles into ChartForgeX enums. A node can override the chart-wide display mode with `DisplayMode` and can expose a short `Badge`, which is useful for collapsed clusters, counts, roles, or small site markers. The SVG renderer escapes text safely, emits native SVG `<title>` tooltips, emits stable `data-*` attributes including source/target group ids on grouped edges, and wraps linked elements in SVG anchors. Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
+Groups, nodes, and edges can carry `Href`, `Tooltip`, `CssClass`, `Metrics`, and `Metadata`. Edges can also carry explicit `Waypoints` for deterministic manual route bends around dense content. Set `SourcePort` and `TargetPort`, for example with `.UpdateEdge(id, e => e.SourcePort(...).TargetPort(...))`, when a route should attach to a specific node side such as hub-to-hub site links, vertical replication paths, or selected-object connectivity spokes. Use `.UpdateEdge(id, e => e.RouteLane(offset))` to shift the generated orthogonal lane while keeping the endpoints anchored to their ports. Use `.UpdateEdge(id, e => e.LabelOffsetX(x).LabelOffsetY(y))` when a dense monitoring layout needs a latency or transport label nudged away from a nearby site title without changing the route itself. Set `TopologyEdgeRouting.ObstacleAvoidingOrthogonal` when a route should score deterministic Manhattan lanes and prefer paths that avoid nearby node cards, group headers, labels, and already-routed edges. Nodes have an optional `Symbol` for short visual glyphs such as `SQL`, `API`, `DC`, `GC`, initials, or role abbreviations without baking those product roles into ChartForgeX enums. A node can override the chart-wide display mode with `DisplayMode` and can expose a short `Badge`, which is useful for collapsed clusters, counts, roles, or small site markers. The SVG renderer escapes text safely, emits native SVG `<title>` tooltips, emits stable `data-*` attributes including source/target group ids on grouped edges, and wraps linked elements in SVG anchors. Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 
 For Visio-style diagram building, nodes and groups can also reference reusable icon ids through `IconId` or the `.AddIconNode(...)`, `.AddAutoIconNode(...)`, `.NodeIcon(...)`, `.NodesOfKindIcon(...)`, and `.GroupIcon(...)` helpers. `TopologyIconCatalog.Default()` includes product-neutral packs for common infrastructure, network devices, Microsoft Active Directory, cloud elements, and people/teams. Hosts can register vendor packs with `new TopologyIconPack("veeam", "Veeam").AddIcon(...)` or import a portable JSON manifest with `TopologyIconPackJson.FromJson(...)` / `TopologyIconCatalog.AddJsonPack(...)`, then pass the catalog through `TopologyRenderOptions.IconCatalog`. Vendor packs can add pre-built `TopologyIconDefinition` instances, and both packs and icons support `.Metadata(...)` for adapter data such as product family, documentation URL, SKU, or source pack metadata. They also support `.AddTags(...)`, and packs can use `.AddIconTags(...)`, so picker search can handle aliases such as `loadbalancer`, `repo`, `dc`, or vendor vocabulary without changing display labels. Icons map to a generic `TopologyNodeKind`, a renderer-owned `TopologyIconShape`, a fallback symbol, optional color, category, and optional display-mode default. SVG and PNG render explicit glyphs for core stencil shapes such as server, storage, database, application, service, endpoint, certificate, network, switch, router, firewall, load balancer, forest, domain, site, people, and team. SVG, HTML, and PNG can also use `TopologyIconArtwork` for safe inline SVG fragments; SVG and HTML can embed host-managed image hrefs directly, while PNG falls back to the shape/symbol language for image hrefs that do not have dependency-free raster support. One-off diagram artwork can live directly on a node through `TopologyNode.Artwork`, `.AddArtworkNode(...)`, `.AddAutoArtworkNode(...)`, or `.NodeArtwork(...)`, so a large cloud, vendor SVG, or custom symbol does not need a catalog pack when it is not reusable. Group headers that carry an `IconId` use the same glyph language, while explicit `region` / `globe` symbols keep the map-style header mark. `catalog.Search(new TopologyIconCatalogQuery { ... })` gives host pickers a product-neutral way to filter by search text, pack id, vendor, category, tags, and built-in/custom pack source. `catalog.GetPackIds(...)`, `catalog.GetVendors(...)`, `catalog.GetCategories(...)`, and `catalog.GetTags(...)` expose picker facets without forcing a UI into ChartForgeX. `catalog.ToPaletteChart(...)` uses the same filter model through `TopologyIconPaletteOptions`, so hosts can offer built-in and vendor packs from one reusable model. SVG and HTML selection payloads expose icon id, pack, label, shape, artwork type, artwork source, metadata, and tags so a dashboard palette or inspector can work from stable catalog metadata instead of parsing labels.
 
@@ -148,8 +148,8 @@ Edge labels are planned deterministically from the edge midpoint plus any caller
 `TopologyEdge.LabelColor` controls relationship and endpoint text. `LabelBackgroundColor` independently controls their backplates; `IncludeEdgeLabelBackplates` still controls whether those surfaces are visible. A null fill uses the current native theme. Both paints survive portable version-2 restoration without recoloring the relationship line.
 
 ```csharp
-chart.Edges[0].LabelColor = "#F3FAFF";
-chart.Edges[0].LabelBackgroundColor = "#193857";
+chart.Edges[0].LabelColor = ChartColor.FromHex("#F3FAFF");
+chart.Edges[0].LabelBackgroundColor = ChartColor.FromHex("#193857");
 ```
 
 Use `TopologyView` to render a focused perspective from the same source model. A view can select groups, nodes, or edges, override title/subtitle text, and keep connected edges between visible nodes. This is intended for dashboard cards such as "selected region", "critical paths", or "affected links" without duplicating topology data.
@@ -162,7 +162,7 @@ Use `TopologyScenario` when the full architecture should remain visible but a us
 using ChartForgeX.Interactivity.Html;
 
 chart.AddScenario("client-request-europe", "Europe request", scenario => scenario
-    .Color("#2563EB")
+    .Color(ChartColor.FromHex("#2563EB"))
     .Metadata("request.type", "client")
     .AddNodeStep("fra-dc1", "Origin")
     .AddEdgeStep("fra-lon", "Route", configure: step => step.Metadata("transport", "WAN"))
@@ -172,8 +172,8 @@ chart.AddScenario("client-request-europe", "Europe request", scenario => scenari
 
 var options = new TopologyRenderOptions()
     .ActiveScenarioId("client-request-europe")
-    .HtmlScenarioControls()
-    .HtmlScenarioUrlState();
+    .Html(html => html.ScenarioControls())
+    .Html(html => html.ScenarioUrlState());
 
 var html = chart.ToInteractiveHtmlPage(options);
 ```
@@ -270,7 +270,7 @@ chart
     .UpdateEdge("emea-apac", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
     .AddEdge("fra-sin", "fra-dc2", "sin-dc1", "238 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
     .UpdateEdge("fra-sin", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-    .EdgeRouteLane("fra-sin", 24);
+    .UpdateEdge("fra-sin", edge => edge.RouteLane(24));
 ```
 
 Use `.EdgeRouteBundle(centerLane, spacing, "edge-a", "edge-b", ...)` when several reciprocal or related paths should share a planned corridor. The helper assigns centered `RouteLane` values in the order provided, so host code can express "these routes belong together" without hand-calculating every lane offset. Use `.ReciprocalEdgeRouteBundles(spacing)` when the model has simple reciprocal pairs and the renderer should infer centered lanes for edges that do not already have explicit route lanes.
@@ -346,10 +346,10 @@ var vendorCatalog = TopologyIconCatalog.Default()
     .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam")
         .Metadata("website", "https://www.veeam.com")
         .AddTags("backup", "vendor")
-        .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", "#00B336", "Backup")
+        .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", ChartColor.FromHex("#00B336"), "Backup")
         .AddIcon(new TopologyIconDefinition("veeam", "repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
             Symbol = "REPO",
-            Color = "#007A5A",
+            Color = ChartColor.FromHex("#007A5A"),
             Category = "Backup"
         }
         .Artwork(TopologyIconArtwork.InlineSvg("<rect x=\"8\" y=\"8\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/><rect x=\"8\" y=\"20\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#00B336\"/><rect x=\"8\" y=\"32\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/>", "0 0 44 48"))
@@ -358,8 +358,8 @@ var vendorCatalog = TopologyIconCatalog.Default()
 
 var manifestJson = new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet")
     .AddTags("network", "security", "vendor")
-    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security")
-    .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", "#DA291C", "Network")
+    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", ChartColor.FromHex("#DA291C"), "Security")
+    .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", ChartColor.FromHex("#DA291C"), "Network")
     .ToJsonManifest();
 
 var manifestCatalog = TopologyIconCatalog.Default().AddJsonPack(manifestJson);
@@ -502,7 +502,7 @@ The report also measures route quality on the geometry both renderers draw:
 - `TopologyLayoutEdgeDiagnostic.SourceAttached` and `TargetAttached` are false when a horizontal or vertical route end stops beside its node and runs along the side instead of pointing at it. Diagonal and curved ends count as attached when they stop within 14 px of the node.
 - `EdgeLabels` gives each placed edge label's bounds and its distance from the route it names.
 
-Interactive topology HTML is owned by `ChartForgeX.Interactivity.Html`. Add that package and call `ToInteractiveHtmlFragment`, `ToInteractiveHtmlPage`, or `SaveInteractiveHtml`; `HtmlInteractiveTopologyRenderer.BuildInteractionScript(...)` provides raw JavaScript for hosts that register assets once. Calling the core HTML API with `Html.Interactions = true` fails with a migration message instead of silently pulling browser behavior into the base package.
+Interactive topology HTML is owned by `ChartForgeX.Interactivity.Html`. Add that package and call `ToInteractiveHtmlFragment`, `ToInteractiveHtmlPage`, or `SaveInteractiveHtml`; `HtmlInteractiveTopologyRenderer.Script(...)` provides raw JavaScript for hosts that register assets once. Calling the core HTML API with `Html.Interactions = true` fails with a migration message instead of silently pulling browser behavior into the base package.
 
 The adapter runtime marks clicked groups, nodes, or edges and dispatches `cfx-topology-select` / `cfx-topology-clear` events. Selection details include the selected id, kind, status, metadata, metrics, group/node/edge context, callout counts, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so a host can populate inspector panels without reparsing SVG markup. Selectable topology elements are keyboard focusable, Enter/Space activates selection, Escape clears selection, pointer/focus hover highlights related elements and dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`, and arrow keys cycle related topology elements. Set `TopologyRenderOptions.Html.ViewportControls = true` for zoom, pan, fit, and reset; `Html.ExportControls = true` for SVG/PNG export; or `Html.SynchronizedState = true` with `Html.SyncGroupName` to mirror selection and viewport state across same-page topology wrappers.
 
@@ -531,16 +531,16 @@ With viewport controls on, a topology whose node captions would render below 10 
 
 The viewport is a keyboard target: `+` and `-` zoom, `0` fits, and the arrow keys pan (Shift pans further). Arrow keys on a focused node still move between related elements.
 
-`.HtmlFindControls()` adds a find row inside the diagram card, above the plot, for layouts without force graph controls (which already carry their own search). It matches node labels, ids, kinds and group names as you type, narrows by group and by node kind (named as the legend's node-kind entries name them, otherwise by the kind value), highlights the matches with the edges between them while the rest dims, and moves the viewport to them without dropping below the readable zoom. Enter selects and focuses the first match; Escape clears the find. Hosts can drive it with `cfx-topology-set-find` (`query`, `group`, `kind`, optional `reveal: false`) and listen for `cfx-topology-find`. The gallery's `visual-dense-service-estate-navigator.html` shows twelve sites and 93 services this way.
+`.Html(html => html.FindControls())` adds a find row inside the diagram card, above the plot, for layouts without force graph controls (which already carry their own search). It matches node labels, ids, kinds and group names as you type, narrows by group and by node kind (named as the legend's node-kind entries name them, otherwise by the kind value), highlights the matches with the edges between them while the rest dims, and moves the viewport to them without dropping below the readable zoom. Enter selects and focuses the first match; Escape clears the find. Hosts can drive it with `cfx-topology-set-find` (`query`, `group`, `kind`, optional `reveal: false`) and listen for `cfx-topology-find`. The gallery's `visual-dense-service-estate-navigator.html` shows twelve sites and 93 services this way.
 
 ```csharp
 var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-    .HtmlFindControls();
+    .Html(html => html.FindControls());
 chart.SaveInteractiveHtml("estate.html", options);
 ```
 
 Static SVG and PNG output is unchanged. For print or email, split a dense topology into readable pages with `PrepareReport` (see [Split dense topologies into report pages](#split-dense-topologies-into-report-pages)); collapsed and expanded hierarchy views use `TopologyHierarchyView` (see [Organization hierarchy views](#organization-hierarchy-views)).
-A chart can carry the options it was designed for: `.DefaultRenderOptions(options)` stores a copy in `TopologyChart.DefaultRenderOptions` (setting the property directly stores the instance you pass). `ToSvg`, `ToPng`, the static and interactive HTML renderers, `Prepare`, `TopologyLayoutDiagnostics.Analyze`, animated exports, and visual-artifact rendering and interchange use them when the call passes no options. Options passed to a call replace the stored ones as a whole. A builder can therefore return one chart and every host draws the same layout. Helpers that take no chart (`TopologyHtmlRenderer.BuildFragmentStyle`, `HtmlInteractiveTopologyRenderer.BuildInteractionScript`, `HtmlInteractiveAssetFiles.TopologyScript`) still need the options passed in, for example when a stored `CssClassPrefix` must match host-registered assets. Report pagination (`PrepareReport`) and the graph explorer (`ToGraphScene`) choose their own layout options and do not read the stored ones.
+A chart can carry the options it was designed for: `.DefaultRenderOptions(options)` stores a copy in `TopologyChart.DefaultRenderOptions` (setting the property directly stores the instance you pass). `ToSvg`, `ToPng`, the static and interactive HTML renderers, `Prepare`, `TopologyLayoutDiagnostics.Analyze`, animated exports, and visual-artifact rendering and interchange use them when the call passes no options. Options passed to a call replace the stored ones as a whole. A builder can therefore return one chart and every host draws the same layout. Helpers that take no chart (`TopologyHtmlRenderer.StyleSheet`, `HtmlInteractiveTopologyRenderer.Script`, `HtmlInteractiveAssetFiles.TopologyScript`) still need the options passed in, for example when a stored `CssClassPrefix` must match host-registered assets. Report pagination (`PrepareReport`) and the graph explorer (`ToGraphScene`) choose their own layout options and do not read the stored ones.
 
 `TopologyRenderOptions` also supports reusable render presets and node display modes:
 
@@ -567,18 +567,18 @@ A chart can carry the options it was designed for: `.DefaultRenderOptions(option
 - When monitoring-style edge label backplates are enabled, they render as lightweight visible plates in SVG and PNG. Multi-line monitoring labels reserve extra no-plate clearance from their own route and draw a subtle route mask behind stacked text. Masks are surface-aware, so a label inside a tinted group panel uses that group fill instead of painting a white patch over the panel. Label placement is priority-aware so selected/critical labels reserve readable lanes before subtle context labels.
 - Monitoring edge labels use wider fallback candidates and a larger reserved gap around labels already placed. This keeps dense replication metrics from stacking into unreadable clusters when several routes share the same natural midpoint.
 - Groups can carry a short `Symbol`; the built-in `region` / `globe` symbol renders a small geographic mark in the group header.
-- Groups can set `.UpdateGroup("group-id", g => g.Color("#8B5CF6"))` to keep region or product identity color independent from health status; the health remains in `data-cfx-status`.
-- Nodes can set `.UpdateNode("node-id", n => n.Color("#2563EB"))` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes.
-- Render options can set `.SelectGroup("region-id")`, `.SelectNode("node-id")`, and `.SelectEdge("edge-id")` when a static export should show the currently selected site, region, or path without filtering or dimming other elements. SVG emits `data-cfx-selected` and selected classes; PNG renders matching selected outlines.
+- Groups can set `.UpdateGroup("group-id", g => g.Color(ChartColor.FromHex("#8B5CF6")))` to keep region or product identity color independent from health status; the health remains in `data-cfx-status`.
+- Nodes can set `.UpdateNode("node-id", n => n.Color(ChartColor.FromHex("#2563EB")))` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes.
+- Render options can set `.SelectedGroupId("region-id")`, `.SelectedNodeId("node-id")`, and `.SelectedEdgeId("edge-id")` when a static export should show the currently selected site, region, or path without filtering or dimming other elements. SVG emits `data-cfx-selected` and selected classes; PNG renders matching selected outlines.
 - `NodeSurfaceStyle` can render neutral cards, subtle tinted cards, or accent-band cards. Nodes can also set `BackgroundColor`, for example with `.UpdateNode(id, n => n.BackgroundColor(...))`, when a host needs a particular relationship card fill while keeping icons, labels, and exports deterministic.
-- Node kinds can be styled in one reusable pass with `.UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"))`. Use `.NodesOfKindStyle(..., color: "#2563EB", backgroundColor: "#EFF6FF", iconId: "common:certificate")` when a host wants accent, fill, and icon assignment to be applied together without caring about helper call order. This is useful for relationship cards where certificates, owners, endpoints, services, organizations, or other host-mapped concepts need stable visual identity across several topology diagrams.
+- Node kinds can be styled in one reusable pass with `.UpdateNodes(TopologyNodeKind.Certificate, n => n.Color(ChartColor.FromHex("#2563EB")).BackgroundColor(ChartColor.FromHex("#EFF6FF")))`. Use `.NodesOfKindStyle(..., color: ChartColor.FromHex("#2563EB"), backgroundColor: ChartColor.FromHex("#EFF6FF"), iconId: "common:certificate")` when a host wants accent, fill, and icon assignment to be applied together without caring about helper call order. This is useful for relationship cards where certificates, owners, endpoints, services, organizations, or other host-mapped concepts need stable visual identity across several topology diagrams.
 - Edges can set `.UpdateEdge("edge-id", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))` or `Dotted` when relationship type should control line style separately from health status. Use `.UpdateEdge(id, e => e.Color(...))` or the `color` argument on `AddEdge(...)` when relationship type should control route color independently from health status.
-- Legend node entries can use `AddNodeKind(..., symbol: "TLS", backgroundColor: "#EFF6FF", iconId: "common:certificate")`, and legend edge entries can use `AddEdgeKind(..., lineStyle: TopologyEdgeLineStyle.Dotted)`, so "verified", "observed", and "inferred" legend keys match the actual markers and route styles instead of always showing generic symbols. An edge entry without a line style follows the edges of its kind: dashed or dotted when every edge of that kind is drawn that way, solid otherwise (including when the edges differ, for example by status).
+- Legend node entries can use `AddNodeKind(..., symbol: "TLS", backgroundColor: ChartColor.FromHex("#EFF6FF"), iconId: "common:certificate")`, and legend edge entries can use `AddEdgeKind(..., lineStyle: TopologyEdgeLineStyle.Dotted)`, so "verified", "observed", and "inferred" legend keys match the actual markers and route styles instead of always showing generic symbols. An edge entry without a line style follows the edges of its kind: dashed or dotted when every edge of that kind is drawn that way, solid otherwise (including when the edges differ, for example by status).
 - Auto, enriched, and merged legends infer shared node-kind accent/background colors, icon ids, edge-kind colors, and edge-kind line styles when every item in that inferred legend bucket uses the same explicit styling. Enrich mode preserves explicit legend labels/order and fills missing marker details from inferred data without adding unrelated inferred rows; merge mode also appends missing inferred rows. Reusable calls such as `.UpdateNodes(kind, ...)`, `.NodesOfKindIcon(...)`, `.NodesOfKindStyle(...)`, and `.UpdateEdges(kind, ...)` keep the legend aligned without hand-building per-chart legend entries.
 - `ArrowMarkerStyle` supports triangle, chevron, diamond, and circular endpoint markers for static SVG/PNG relationship maps where different arrow treatments better match a compact dashboard or evidence-flow view.
 - `EdgeCornerStyle = TopologyEdgeCornerStyle.Rounded` renders orthogonal routes with rounded bends in SVG and PNG while keeping the same deterministic edge points, route diagnostics, labels, and hit metadata.
 - Edges can set `.UpdateEdge("edge-id", e => e.Emphasis(TopologyEdgeEmphasis.Subtle))` when they should preserve health color but recede behind primary paths in SVG and PNG output, such as replication fan fabric or backup route context. Use `.UpdateEdge("edge-id", e => e.Muted())` for quiet internal structure that should become neutral/gray, such as hub-to-branch hierarchy lines.
-- Edge kinds can be styled in one reusable pass with `.UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color("#64748B"))`, which is useful for map spokes, dependency fabric, ownership routes, risk links, or any relationship class that should stay visually consistent across projects.
+- Edge kinds can be styled in one reusable pass with `.UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color(ChartColor.FromHex("#64748B")))`, which is useful for map spokes, dependency fabric, ownership routes, risk links, or any relationship class that should stay visually consistent across projects.
 - Edges can set `.UpdateEdge("edge-id", e => e.LabelOffsetX(x).LabelOffsetY(y))` to tune label placement in dense panel-like diagrams while preserving route geometry and SVG/PNG parity.
 - SVG and PNG render routes by visual priority instead of declaration order: subtle dependency fabric draws first, critical/strong routes draw later, and selected routes draw last. SVG emits `data-edge-render-order` so hosts can validate layering deterministically.
 - `EdgeLabelMetricKey`, `EdgeSecondaryLabelMetricKey`, and `EdgeTertiaryLabelMetricKey` allow hosts to switch route labels from default edge text to metrics such as `transport`, `cost`, `lag`, `queue`, `owner`, or `lastSuccess`; `.IncludeEdgeLabels().EdgeLabelMetricKey("lag").EdgeSecondaryLabelMetricKey("queue").EdgeTertiaryLabelMetricKey("transport")` sets the stacked metric label keys.

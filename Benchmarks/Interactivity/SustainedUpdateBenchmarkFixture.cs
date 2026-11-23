@@ -70,11 +70,11 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
         _last = null; _lastBrowserSvg = null; _committed = 0; _validated = false;
         var source = Chart.Create().Size(900, 500).ShowHeader(false).Legend(false).DataLabels(false)
             .Padding(24, 24, 24, 24).Theme(_theme).ThemeMode(ThemeMode.Light).YAxis(y => y.Bounds(0, 60));
-        _source = source; source.Options.Png.FontPath = _font;
+        _source = source; source.Options.Raster.FontPath = _font;
         _series = Enumerable.Range(0, _secondary ? 2 : 1).Select(series => {
             var data = ChartSeries.CreateLine(new ChartSeriesId(Key(series)), series == 0 ? "Measurements" : "Companion",
                 Enumerable.Range(0, _count).Select(index => Point(index, series)))
-                .ObservationIds(Enumerable.Range(0, _count).Select(Id)).PointColor(_count / 2, "#7c3aed");
+                .ObservationIds(Enumerable.Range(0, _count).Select(Id)).PointColor(_count / 2, ChartColor.FromHex("#7c3aed"));
             data.Markers(markers => { markers.Enabled = true; markers.Radius = _count == 32 ? 3 : 2; });
             if (series > 0) data.SecondaryAxis();
             source.AddSeries(data); return data;
@@ -91,9 +91,9 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
                 Browser = HtmlBrowserEngine.Chromium, Headless = true, Timeout = 30000, ViewportWidth = 980, ViewportHeight = 760
             }).GetAwaiter().GetResult();
             _session = opened; opened.Page.PageError += (_, error) => _pageErrors.Add(error);
-            var page = "<!doctype html><html><head><style>" + _fontCss + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+            var page = "<!doctype html><html><head><style>" + _fontCss + HtmlInteractiveChartRenderer.StyleSheet
                 + "</style></head><body style='margin:12px'>" + initial.Html + "<script>"
-                + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+                + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
             try {
                 opened.Page.SetContentAsync(page).GetAwaiter().GetResult();
                 opened.Page.EvaluateAsync("""

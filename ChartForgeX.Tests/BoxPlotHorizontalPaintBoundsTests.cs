@@ -69,7 +69,7 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
             ? new ChartBoxPlot(2, 100, 100, 100, 100, 100) : new ChartBoxPlot(2, 20, 25, 40, 60, 80) };
         var chart = Chart.Create().Size(width, 440).ShowHeader(false).Legend(false).DataLabels(false)
             .Theme(VisualTheme.Graphite()).ThemeMode(width == 360 ? ThemeMode.Dark : ThemeMode.Light)
-            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .FontFamily("Carlito").Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .BoxPlot(options => options.Orientation = ChartOrientation.Horizontal).AddBoxPlot("Summary", summaries);
         if (strokeWidth >= 0) chart.Series[0].StrokeWidth(strokeWidth);
         return chart;

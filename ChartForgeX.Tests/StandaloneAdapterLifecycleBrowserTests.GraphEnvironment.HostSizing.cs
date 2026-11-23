@@ -13,7 +13,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             var graph = GraphEnvironmentFixture(backend);
             void Configure(HtmlGraphExplorerOptions options) {
                 options.RenderBackend = backend;
-                options.Theme = HtmlGraphExplorerTheme.Light;
+                options.ThemeMode = ThemeMode.Light;
                 options.PersistThemePreference = false;
                 options.FillAvailableHeight = host == "fill-available";
             }

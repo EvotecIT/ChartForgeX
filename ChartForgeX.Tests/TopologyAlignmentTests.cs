@@ -105,7 +105,7 @@ public sealed class TopologyAlignmentTests {
         var chart = Chart(); chart.Alignments.Add(new TopologyAlignment("row", TopologyAlignmentKind.Row, new[] { "first", "second" }));
         chart.AddEdge("path", "first", "second"); var edge = chart.Edges[0];
         edge.Routing = TopologyEdgeRouting.Straight; edge.SourcePort = TopologyEdgePort.Bottom; edge.TargetPort = TopologyEdgePort.Top;
-        edge.Waypoints.Add(new ChartPoint(200, 400)); edge.Waypoints.Add(new ChartPoint(500, 400)); edge.LabelAnchorX = 350; edge.LabelAnchorY = 400; edge.HasLabelAnchorOverride = true;
+        edge.Waypoints.Add(new ChartPoint(200, 400)); edge.Waypoints.Add(new ChartPoint(500, 400)); edge.LabelAnchor = new ChartPoint(350, 400);
         var prepared = chart.Prepare(); Capture(prepared, "native-alignments-authored-path"); var saved = prepared.ToInterchangeEnvelope();
         var facts = saved.Edges[0].Topology!; Assert.Equal(TopologyEdgeRouting.Straight, facts.Routing); Assert.Equal(TopologyEdgePort.Bottom, facts.SourcePort); Assert.Equal(TopologyEdgePort.Top, facts.TargetPort);
         var restored = saved.ToTopologyChart(); Assert.Equal(facts.Waypoints.Select(point => (point.X, point.Y)), restored.Edges[0].Waypoints.Select(point => (point.X, point.Y)));

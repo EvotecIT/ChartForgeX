@@ -36,7 +36,7 @@ public static class ResponsiveRadialExamples {
             var start = host.IndexOf("<svg", stage, StringComparison.Ordinal);
             var end = host.IndexOf("</svg>", start, StringComparison.Ordinal) + "</svg>".Length;
             return host.Substring(0, start) + drawing + host.Substring(end)
-                + "<style>" + HtmlResponsiveChartRenderer.Stylesheet + "</style><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>";
+                + "<style>" + HtmlResponsiveChartRenderer.StyleSheet + "</style><script>" + HtmlResponsiveChartRenderer.Script + "</script>";
         } finally { chart.Size(size.Width, size.Height); }
     }
 

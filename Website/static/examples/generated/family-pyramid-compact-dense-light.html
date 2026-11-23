@@ -123,7 +123,7 @@ public static class PyramidRecipe {
         else if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
             var allocation = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid, new[] {
                 new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0)
-            }).PointColor(0, &quot;#2F78C4&quot;).PointColor(1, &quot;#E2A644&quot;).PointColor(2, &quot;#34957A&quot;)
+            }).PointColor(0, ChartColor.FromHex(&quot;#2F78C4&quot;)).PointColor(1, ChartColor.FromHex(&quot;#E2A644&quot;)).PointColor(2, ChartColor.FromHex(&quot;#34957A&quot;))
                 .PointFillPattern(1, ChartFillPattern.DiagonalForward);
             chart.XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).AddSeries(allocation)
                 .Pyramid(options =&gt; {
@@ -184,7 +184,7 @@ public static class PyramidRecipe {
         else if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
             var allocation = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid, new[] {
                 new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0)
-            }).PointColor(0, &quot;#2F78C4&quot;).PointColor(1, &quot;#E2A644&quot;).PointColor(2, &quot;#34957A&quot;)
+            }).PointColor(0, ChartColor.FromHex(&quot;#2F78C4&quot;)).PointColor(1, ChartColor.FromHex(&quot;#E2A644&quot;)).PointColor(2, ChartColor.FromHex(&quot;#34957A&quot;))
                 .PointFillPattern(1, ChartFillPattern.DiagonalForward);
             chart.XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).AddSeries(allocation)
                 .Pyramid(options =&gt; {

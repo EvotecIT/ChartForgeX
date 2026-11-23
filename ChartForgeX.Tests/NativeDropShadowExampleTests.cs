@@ -10,7 +10,7 @@ public sealed class NativeDropShadowExampleTests {
     [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
     public void CompleteSharedProgramUsesTheSameNativeSourceAndExplicitFiniteImport(string variant, ThemeMode mode) {
         var layer = NativeDropShadowExample.Create(variant, mode);
-        NativeEffectBeforeCapture.Write("native-shadow-example-" + variant + "-" + mode, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
+        NativeEffectBeforeCapture.Write("native-shadow-example-" + variant + "-" + mode, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToRgbaImage());
         var program = ExampleRecipeSource.EmitNativeDropShadow(variant, mode);
         Assert.DoesNotContain("{{", program); Assert.DoesNotContain("ChartForgeX.Examples", program); Assert.DoesNotContain("ChartForgeX.Composition", program);
         Assert.Contains("public static class NativeDropShadowExample", program); Assert.Contains("new ChartForgeX.Effects.VisualDropShadow", program);

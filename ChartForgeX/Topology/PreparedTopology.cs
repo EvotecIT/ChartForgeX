@@ -99,7 +99,7 @@ public sealed class PreparedTopology {
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);
 
     internal PreparedVisual Visual => _visual;
-    internal RgbaImage ToRgba() => _visual.ToRgba(_rasterOptions);
+    internal RgbaImage ToRgbaImage() => _visual.ToRgbaImage(_rasterOptions);
 
     /// <summary>Returns a detached semantic envelope with the positions used by the renderers.</summary>
     public VisualArtifactInterchangeEnvelope ToInterchangeEnvelope() => _visual.SemanticInterchange!;

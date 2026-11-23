@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 
 var chart = TopologyChart.Create().Id("native-usecase-advanced-actors").Title("Participants in a request")
     .Subtitle("Plain, hollow, business, silhouette and finite native icon actors")
-    .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(390, 1160, 28))
+    .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(390, 1160, 28))
     .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight);
 chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
     WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };
@@ -39,7 +39,7 @@ chart.Nodes[5].IconId = "network:router";
 chart.Nodes[5].IconShape = TopologyIconShape.Router;
 chart.Nodes[5].Kind = TopologyNodeKind.Gateway;
 chart.Nodes[5].Symbol = "RTR";
-chart.Nodes[5].Color = "#2563EB";
+chart.Nodes[5].Color = ChartColor.FromHex("#2563EB");
 chart.AddAutoNode("Submit", "Submit request", width: 190, height: 100);
 chart.Nodes[6].Shape = TopologyNodeShape.BusinessEllipse;
 chart.Nodes[6].Kind = TopologyNodeKind.Generic;
@@ -53,7 +53,7 @@ chart.Accessibility.Name = "Finite native use case actor forms";
 
 #region Output
 if ((object)chart is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.Title("Finite native actor forms").Subtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").Theme(theme, mode).ToVisualArtifact();
+    var natural = topology.Title("Finite native actor forms").Subtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").Theme(theme).ThemeMode(mode).ToVisualArtifact();
     natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

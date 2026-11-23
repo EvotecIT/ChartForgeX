@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -68,7 +69,7 @@ internal static partial class Program {
                     CategoryPrefix = folderName,
                     Recursive = true,
                     StripDoctypeDeclarations = true,
-                    DefaultColor = ColorFor(folderName)
+                    DefaultColor = ChartColor.FromHex(ColorFor(folderName))
                 });
                 import.Pack.Metadata.Remove("import.sourceDirectory");
                 import.Pack.Metadata("source.folder", folderName);

@@ -92,7 +92,7 @@ public sealed class NativeTopologyArtworkTests {
     public void HighlightDimsResolvedArtworkAndCardGlyphPixelsWhileSelectionKeepsItsNativeOutline() {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 180, 10)).Legend((TopologyLegend?)null)
             .AddArtworkNode("active", "Active", Bitmap(), 20, 40, width: 60, height: 60)
-            .AddArtworkNode("dim", "Dim", Bitmap(), 130, 40, width: 60, height: 60, color: "var(--selection, #22AA44)")
+            .AddArtworkNode("dim", "Dim", Bitmap(), 130, 40, width: 60, height: 60, color: ChartColorText.Parse("var(--selection, #22AA44)"))
             .AddArtworkNode("card", "Card", Bitmap(), 240, 40, width: 120, height: 64, displayMode: TopologyNodeDisplayMode.Card);
         var options = Options(); options.HighlightNodeIds.Add("active"); options.SelectedNodeIds.Add("dim"); options.DimmedOpacity = .25;
         var prepared = chart.Prepare(options);

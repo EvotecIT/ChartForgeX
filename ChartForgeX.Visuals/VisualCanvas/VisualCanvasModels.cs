@@ -150,10 +150,44 @@ public enum VisualCanvasInfoTileSurfaceStyle {
     Raised
 }
 
-/// <summary>
-/// Built-in icon treatment for visual canvas information tiles.
-/// </summary>
-public enum VisualCanvasInfoTileIconKind {
+/// <summary>The icon keys an information tile draws as a vector glyph. With any other icon, or none, the tile shows its
+/// <see cref="VisualCanvasInfoTileLayer.IconText"/>.</summary>
+public static class VisualCanvasIcons {
+    /// <summary>Computer monitor: <c>computer</c>.</summary>
+    public static Icon Computer { get; } = Icon.Named("computer");
+    /// <summary>Network or globe: <c>network</c>.</summary>
+    public static Icon Network { get; } = Icon.Named("network");
+    /// <summary>Operating system window: <c>operating-system</c>.</summary>
+    public static Icon OperatingSystem { get; } = Icon.Named("operating-system");
+    /// <summary>Processor: <c>cpu</c>.</summary>
+    public static Icon Cpu { get; } = Icon.Named("cpu");
+    /// <summary>Memory module: <c>memory</c>.</summary>
+    public static Icon Memory { get; } = Icon.Named("memory");
+    /// <summary>User: <c>user</c>.</summary>
+    public static Icon User { get; } = Icon.Named("user");
+    /// <summary>Domain or building: <c>domain</c>.</summary>
+    public static Icon Domain { get; } = Icon.Named("domain");
+    /// <summary>Terminal prompt: <c>terminal</c>.</summary>
+    public static Icon Terminal { get; } = Icon.Named("terminal");
+    /// <summary>Storage cylinder: <c>storage</c>.</summary>
+    public static Icon Storage { get; } = Icon.Named("storage");
+    /// <summary>Shield: <c>shield</c>.</summary>
+    public static Icon Shield { get; } = Icon.Named("shield");
+
+    internal static VisualCanvasInfoTileIconKind Glyph(Icon icon) {
+        foreach (var (key, kind) in Glyphs) if (icon.Equals(key)) return kind;
+        return VisualCanvasInfoTileIconKind.Text;
+    }
+
+    private static readonly (Icon Key, VisualCanvasInfoTileIconKind Kind)[] Glyphs = {
+        (Computer, VisualCanvasInfoTileIconKind.Computer), (Network, VisualCanvasInfoTileIconKind.Network),
+        (OperatingSystem, VisualCanvasInfoTileIconKind.OperatingSystem), (Cpu, VisualCanvasInfoTileIconKind.Cpu),
+        (Memory, VisualCanvasInfoTileIconKind.Memory), (User, VisualCanvasInfoTileIconKind.User), (Domain, VisualCanvasInfoTileIconKind.Domain),
+        (Terminal, VisualCanvasInfoTileIconKind.Terminal), (Storage, VisualCanvasInfoTileIconKind.Storage), (Shield, VisualCanvasInfoTileIconKind.Shield)
+    };
+}
+
+internal enum VisualCanvasInfoTileIconKind {
     /// <summary>Render the tile icon as text.</summary>
     Text,
     /// <summary>Render a computer monitor icon.</summary>
@@ -248,7 +282,7 @@ public sealed partial class VisualCanvas {
     public VisualTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the PNG output pixel multiplier.</summary>
-    public int PngOutputScale {
+    public int RasterScale {
         get => _pngOutputScale;
         set {
             if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four.");
@@ -349,32 +383,22 @@ public sealed partial class VisualCanvas {
     }
 
     /// <summary>Adds a reusable information tile.</summary>
-    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) =>
-        AddInfoTileLayer(x, y, width, height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy, null);
-
-    /// <summary>Adds an information tile with explicit text sizing options.</summary>
-    public VisualCanvas AddInfoTileWithTextOptions(double x, double y, double width, double height, string icon, string label, string value, VisualCanvasInfoTileTextOptions textOptions, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) =>
-        AddInfoTileLayer(x, y, width, height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy, textOptions);
+    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string iconText, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, Icon? icon = null, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto, VisualCanvasInfoTileTextOptions? textOptions = null) =>
+        AddInfoTileLayer(x, y, width, height, iconText, label, value, detail, accent, progress, surfaceStyle, icon, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy, textOptions);
 
     /// <summary>Adds a reusable information tile using anchor-based placement.</summary>
-    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) {
+    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string iconText, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, Icon? icon = null, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto, VisualCanvasInfoTileTextOptions? textOptions = null) {
         var bounds = ResolvePlacement(placement, width, height);
-        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy);
+        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, iconText, label, value, detail, accent, progress, surfaceStyle, icon, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy, textOptions);
     }
 
-    /// <summary>Adds an anchor-placed information tile with text sizing options.</summary>
-    public VisualCanvas AddInfoTileWithTextOptions(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, VisualCanvasInfoTileTextOptions textOptions, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) {
-        var bounds = ResolvePlacement(placement, width, height);
-        return AddInfoTileWithTextOptions(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, textOptions, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy);
-    }
-
-    private VisualCanvas AddInfoTileLayer(double x, double y, double width, double height, string icon, string label, string value, string? detail, ChartColor? accent, double? progress, VisualCanvasInfoTileSurfaceStyle surfaceStyle, VisualCanvasInfoTileIconKind iconKind, VisualCanvasInfoTileMiniChartKind miniChartKind, IEnumerable<double>? miniChartValues, double? miniChartMaximum, VisualCanvasTextFitPolicy textFitPolicy, VisualCanvasInfoTileTextOptions? textOptions) {
-        return AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) {
+    private VisualCanvas AddInfoTileLayer(double x, double y, double width, double height, string iconText, string label, string value, string? detail, ChartColor? accent, double? progress, VisualCanvasInfoTileSurfaceStyle surfaceStyle, Icon? icon, VisualCanvasInfoTileMiniChartKind miniChartKind, IEnumerable<double>? miniChartValues, double? miniChartMaximum, VisualCanvasTextFitPolicy textFitPolicy, VisualCanvasInfoTileTextOptions? textOptions) {
+        return AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, iconText, label, value) {
             Detail = detail ?? string.Empty,
-            AccentOverride = accent,
+            Accent = accent,
             Progress = progress,
             SurfaceStyle = surfaceStyle,
-            IconKind = iconKind,
+            Icon = icon ?? Icon.None,
             TextFitPolicy = textFitPolicy,
             TextScale = textOptions?.TextScale,
             LabelFontSize = textOptions?.LabelFontSize,
@@ -393,7 +417,7 @@ public sealed partial class VisualCanvas {
         ValidateEnum(imageFit, nameof(imageFit));
         if (imageRgba != null && (imageSourceWidth <= 0 || imageSourceHeight <= 0)) throw new ArgumentOutOfRangeException(nameof(imageSourceWidth), "Hero badge image layers require positive imageSourceWidth and imageSourceHeight.");
         return AddLayer(new VisualCanvasHeroBadgeLayer(x, y, width, height, symbol) {
-            AccentOverride = accent,
+            Accent = accent,
             ImageHref = imageHref ?? string.Empty,
             ImageRgba = imageRgba,
             ImageSourceWidth = imageSourceWidth,
@@ -567,7 +591,7 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
 [Fluent]
 public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     private readonly List<double> _miniChartValues = new();
-    private string _icon;
+    private string _iconText;
     private string _label;
     private string _value;
     private string _detail = string.Empty;
@@ -579,31 +603,31 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     /// <param name="y">The tile Y coordinate.</param>
     /// <param name="width">The tile width.</param>
     /// <param name="height">The tile height.</param>
-    /// <param name="icon">The compact icon or symbol.</param>
+    /// <param name="iconText">The compact text or symbol shown when <see cref="Icon"/> draws no glyph.</param>
     /// <param name="label">The tile label.</param>
     /// <param name="value">The primary tile value.</param>
-    public VisualCanvasInfoTileLayer(double x, double y, double width, double height, string icon, string label, string value) : base(x, y, width, height) {
-        _icon = icon ?? throw new ArgumentNullException(nameof(icon));
+    public VisualCanvasInfoTileLayer(double x, double y, double width, double height, string iconText, string label, string value) : base(x, y, width, height) {
+        _iconText = iconText ?? throw new ArgumentNullException(nameof(iconText));
         _label = label ?? throw new ArgumentNullException(nameof(label));
         _value = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <summary>Gets or sets the compact icon or symbol.</summary>
-    public string Icon { get => _icon; set => _icon = value ?? throw new ArgumentNullException(nameof(value)); }
+    /// <summary>Gets or sets the compact text or symbol shown when <see cref="Icon"/> draws no glyph.</summary>
+    public string IconText { get => _iconText; set => _iconText = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets the tile label.</summary>
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets the primary value.</summary>
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Gets or sets optional detail text.</summary>
     public string Detail { get => _detail; set => _detail = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Gets or sets the accent color.</summary>
-    public ChartColor Accent { get => AccentOverride ?? ChartColor.FromHex("#2F80FF"); set => AccentOverride = value; }
-    /// <summary>Gets or sets an explicit accent color. When empty, renderers use the current theme accent.</summary>
-    public ChartColor? AccentOverride { get; set; }
+    /// <summary>Gets or sets the accent color. Null uses the theme accent.</summary>
+    public ChartColor? Accent { get; set; }
     /// <summary>Gets or sets the tile surface treatment.</summary>
     public VisualCanvasInfoTileSurfaceStyle SurfaceStyle { get; set; }
-    /// <summary>Gets or sets the tile icon treatment.</summary>
-    public VisualCanvasInfoTileIconKind IconKind { get; set; }
+    /// <summary>Gets or sets the glyph drawn in the icon box. Keys from <see cref="VisualCanvasIcons"/> draw a vector glyph;
+    /// any other icon, including <see cref="Icon.None"/>, shows <see cref="IconText"/>.</summary>
+    public Icon Icon { get; set; }
+    internal VisualCanvasInfoTileIconKind Glyph => VisualCanvasIcons.Glyph(Icon);
     /// <summary>Gets or sets the compact chart kind rendered inside the tile.</summary>
     public VisualCanvasInfoTileMiniChartKind MiniChartKind { get; set; }
     /// <summary>Gets or sets how label, value, and detail text should be fitted inside this tile.</summary>

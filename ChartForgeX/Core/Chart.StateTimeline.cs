@@ -44,9 +44,9 @@ public sealed partial class Chart {
     /// hidden with the y-axis.</param>
     /// <param name="id">Optional stable series identity. When omitted, the chart assigns a local ID.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null, ChartSeriesId? id = null) {
-        AppendSeries(id.HasValue ? ChartSeries.CreateStateTimelineLane(id.Value, name, segments, summary, group)
-            : ChartSeries.CreateStateTimelineLane(name, segments, summary, group));
+    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? group = null, string? summary = null, ChartSeriesId? id = null) {
+        AppendSeries(id.HasValue ? ChartSeries.CreateStateTimelineLane(id.Value, name, segments, group, summary)
+            : ChartSeries.CreateStateTimelineLane(name, segments, group, summary));
         return this;
     }
 }

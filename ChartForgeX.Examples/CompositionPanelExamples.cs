@@ -28,7 +28,7 @@ internal static class CompositionPanelExamples {
                     .DrawText(20, top + 50, bodyWidth, "72%", 38, foreground, emphasized: true)
                     .DrawProgressRing(panel.Width - 62, panel.Height - 62, 30, 6, .72,
                         accent.WithAlpha(40), accent);
-                image.DrawImage(panel.ToImage(), 24, 24, panel.Width, panel.Height);
+                image.DrawImage(panel.ToRgbaImage(), 24, 24, panel.Width, panel.Height);
                 var name = "composition-panels-" + (dark ? "dark-" : "light-") + width;
                 image.Save(Path.Combine(output, name + ".png"));
             }

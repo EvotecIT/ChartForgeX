@@ -212,7 +212,7 @@ participant P10";
         MermaidSequenceDocument wideDocument = new MermaidParser().ParseSequence(wideSource).Document
             ?? throw new InvalidOperationException("Wide Mermaid sequence should parse.");
         VisualArtifact wideArtifact = wideDocument.ToVisualArtifact(new MermaidSequenceRenderOptions { Width = 320, Height = 240 });
-        VisualArtifactSize wideNaturalSize = wideArtifact.NaturalSize
+        VisualSize wideNaturalSize = wideArtifact.NaturalSize
             ?? throw new InvalidOperationException("Wide Mermaid sequence should expose calculated natural size.");
         VisualArtifactInterchangeEnvelope wideEnvelope = wideArtifact.ToInterchangeEnvelope();
         Assert(wideNaturalSize.Width == 320 && wideEnvelope.Width == wideNaturalSize.Width && wideEnvelope.Height == wideNaturalSize.Height,

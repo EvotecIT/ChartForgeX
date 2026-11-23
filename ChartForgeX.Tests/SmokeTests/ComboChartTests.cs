@@ -10,13 +10,7 @@ internal static partial class SmokeTests {
         var areaCombo = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(640, 360)
             .XLabels("Q1", "Q2", "Q3")
-            .AddColumnAreaCombo(
-                "Actual",
-                Points(42, 64, 58),
-                "Projected",
-                Points(46, 68, 62),
-                ChartColor.FromRgb(14, 165, 233),
-                ChartColor.FromRgb(37, 99, 235));
+            .AddBarAreaCombo("Actual", Points(42, 64, 58), "Projected", Points(46, 68, 62), ChartColor.FromRgb(14, 165, 233), ChartColor.FromRgb(37, 99, 235));
 
         var areaSvg = areaCombo.ToSvg();
         Assert(areaCombo.Series.Count == 2, "Column-area combos should add exactly two series.");

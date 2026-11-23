@@ -47,7 +47,7 @@ public sealed class PolarViewportAnnularClippingTests {
         var chart = Bare(new[] { new ChartPoint(0, 0), new ChartPoint(0, 100) }); chart.Options.YAxis.Reversed = reversed;
         var prepared = PolarViewportContractTests.Prepare(chart, new ChartPolarViewport(radius: new ChartAxisWindow(40, 80)));
         Assert.All(PolarViewportContractTests.Sources(prepared), group => Assert.Equal("false", group.Metadata["data-cfx-visible"]));
-        var projection = prepared.PolarProjection!; var pixels = prepared.ToRgba();
+        var projection = prepared.PolarProjection!; var pixels = prepared.ToRgbaImage();
         Assert.Equal(0, Alpha(pixels, projection.Center));
         Assert.True(AlphaNear(pixels, projection.Project(0, 60)) > 0);
         Assert.Equal(0, Alpha(pixels, new ChartPoint(projection.Center.X - projection.OuterRadius * .7, projection.Center.Y)));
@@ -70,7 +70,7 @@ public sealed class PolarViewportAnnularClippingTests {
         var original = Assert.Single(full.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-area");
         Assert.Equal(new ChartPath(original.Commands).UniformScale(projection.Center, 1.25).Commands, actual.Commands);
         Assert.All(PolarViewportContractTests.Sources(prepared), source => Assert.Equal("false", source.Metadata["data-cfx-visible"]));
-        var pixels = prepared.ToRgba(); var insideHole = new ChartPoint(projection.Center.X + projection.OuterRadius * .25, projection.Center.Y);
+        var pixels = prepared.ToRgbaImage(); var insideHole = new ChartPoint(projection.Center.X + projection.OuterRadius * .25, projection.Center.Y);
         var band = new ChartPoint(projection.Center.X + projection.OuterRadius * .7, projection.Center.Y);
         var outside = new ChartPoint(projection.Center.X + projection.OuterRadius * 1.1, projection.Center.Y);
         Assert.Equal(0, Alpha(pixels, projection.Center)); Assert.Equal(0, Alpha(pixels, insideHole)); Assert.True(Alpha(pixels, band) > 0); Assert.Equal(0, Alpha(pixels, outside));
@@ -97,7 +97,7 @@ public sealed class PolarViewportAnnularClippingTests {
             Assert.Equal(tangentY, command.Y, 8);
             if (command.Kind == ChartPathCommandKind.CubicTo) { Assert.Equal(tangentY, command.Control1Y, 8); Assert.Equal(tangentY, command.Control2Y, 8); }
         }
-        var pixels = prepared.ToRgba(); Assert.Equal(0, Alpha(pixels, projection.Center));
+        var pixels = prepared.ToRgbaImage(); Assert.Equal(0, Alpha(pixels, projection.Center));
         Assert.True(AlphaNear(pixels, new ChartPoint(projection.Center.X, tangentY)) > 0);
         PolarViewportContractTests.Capture("polar-annular-tangent-" + reversed, prepared.ToSvg(), prepared.ToPng());
     }
@@ -120,7 +120,7 @@ public sealed class PolarViewportAnnularClippingTests {
         Assert.Contains(.25, fractions); Assert.Contains(.625, fractions); Assert.Contains(1, fractions);
         Assert.All(fractions, radius => Assert.InRange(radius, .25, 1));
         Assert.Contains(prepared.Regions, region => region.Role == "polar-radius-label" && region.Label == "Middle");
-        Assert.Equal(0, Alpha(prepared.ToRgba(), projection.Center));
+        Assert.Equal(0, Alpha(prepared.ToRgbaImage(), projection.Center));
         PolarViewportContractTests.Capture("polar-annular-guides-" + reversed, prepared.ToSvg(), prepared.ToPng());
     }
 

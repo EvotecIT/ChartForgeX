@@ -152,7 +152,7 @@ internal static partial class DocVisuals {
             .ThemeMode(mode)
             .WorkingDirectory(@"C:\Reports")
             .Command("dotnet run")
-            .Output("Wrote sign-ins.svg", TerminalTextTone.Success);
+            .Output("Wrote sign-ins.svg", Tone.Success);
         var chart = Chart.Create().ThemeMode(mode).Title("Sign-ins by method").Size(800, 520)
             .XLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddStackedArea("Passkey", Points(800, 1700, 3000, 4700, 6400, 8100))

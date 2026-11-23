@@ -24,7 +24,7 @@ public sealed class V2LegendTitleTests {
         var root = XDocument.Parse(prepared.ToSvg());
         Assert.Equal("Legend heading", Assert.Single(root.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-title").Value);
         Assert.Equal(frame.LegendTitle, frame.WithHeadings("Changed heading", null).LegendTitle);
-        Assert.Equal(480, prepared.ToRgba().Width);
+        Assert.Equal(480, prepared.ToRgbaImage().Width);
     }
 
     [Fact]

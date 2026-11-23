@@ -13,15 +13,15 @@ public static class NativeVectorGlassExample {
         for (var x = -400; x < width; x += 28)
             backdrop.DrawLine(x, 0, x + 400, 400, accent.WithAlpha(96), 6);
         var coverage = ChartForgeX.Composition.ImageComposition.CreateTransparent(width, 400)
-            .FillRoundedRectangle(24, 24, width - 48, 352, 18, ChartColor.White).ToImage();
+            .FillRoundedRectangle(24, 24, width - 48, 352, 18, ChartColor.White).ToRgbaImage();
         backdrop.BlurRegion(new ChartForgeX.Effects.VisualMask(coverage), new ChartForgeX.Effects.VisualLayerBlur(6));
         backdrop.FillRoundedRectangle(24, 24, width - 48, 352, 18,
                 ChartColor.FromHex(dark ? "#102338" : "#FFFFFF").WithAlpha(144))
             .StrokeRoundedRectangle(24, 24, width - 48, 352, 18, accent.WithAlpha(200));
         // Only the explicitly authored backdrop is a bitmap. Foreground captions use the incumbent native text owner.
         return ChartForgeX.Composition.VisualCanvas.Create(width, 400)
-            .PngOutputScale(1).BackdropStyle(ChartForgeX.Composition.VisualCanvasBackdropStyle.Transparent)
-            .Theme(VisualTheme.Graphite()).ThemeMode(mode).AddImage(backdrop.ToImage(), 0, 0, width, 400)
+            .RasterScale(1).BackdropStyle(ChartForgeX.Composition.VisualCanvasBackdropStyle.Transparent)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).AddImage(backdrop.ToRgbaImage(), 0, 0, width, 400)
             .AddText(44, 52, width - 88, "Service window", 24, ink, emphasized: true)
             .AddText(44, 106, width - 88, "Explicit local backdrop", 16, ink)
             .AddText(44, 176, width - 88, "34 ready", 40, accent, emphasized: true)

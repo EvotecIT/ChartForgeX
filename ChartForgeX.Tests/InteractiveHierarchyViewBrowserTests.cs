@@ -285,8 +285,8 @@ public sealed class InteractiveHierarchyViewBrowserTests {
             var basis = "hierarchy-" + (++_sequence); _bases.Add(basis);
             return new { html = Last.Html, basis };
         }
-        internal string Page() => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body style='margin:12px'>" + Last.Html + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>"
-            + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        internal string Page() => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
+            + "</style></head><body style='margin:12px'>" + Last.Html + "<script>" + HtmlInteractiveChartRenderer.FeatureScript + "</script><script>"
+            + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
     }
 }

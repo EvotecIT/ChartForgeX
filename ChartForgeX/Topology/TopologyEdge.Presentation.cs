@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 
@@ -25,10 +26,8 @@ public enum TopologyEdgeEnd {
 
 /// <summary>One colour band of a striped edge, such as a VLAN or a transport on a site link.</summary>
 public sealed class TopologyEdgeStripe {
-    private string _color = string.Empty;
-
     /// <summary>Gets or sets the stripe colour.</summary>
-    public string Color { get => _color; set => _color = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Stripe colours are required.", nameof(value)) : value.Trim(); }
+    public ChartColor Color { get; set; }
 
     /// <summary>Gets or sets the legend label for this colour. Unlabelled stripes are drawn but not listed.</summary>
     public string? Label { get; set; }

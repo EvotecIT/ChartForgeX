@@ -22,7 +22,7 @@ public static class WallpaperOwnerExamples {
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline, miniChartValues: new[] { 18d, 28d, 24d, 42d }, miniChartMaximum: 100);
         } else if (layout == "ContrastBox") {
             var panel = ImageComposition.Create(620, 320, ChartColor.Transparent)
-                .FillRoundedRectangle(0, 0, 620, 320, 18, ChartColor.FromRgba(0, 0, 0, 220)).ToImage();
+                .FillRoundedRectangle(0, 0, 620, 320, 18, ChartColor.FromRgba(0, 0, 0, 220)).ToRgbaImage();
             var bounds = canvas.ResolvePlacement(VisualCanvasPlacement.At(VisualCanvasAnchor.MiddleRight, 34, -60), 620, 320);
             canvas.AddRasterImage(bounds.X, bounds.Y, 620, 320, panel);
             canvas.AddInfoTile(bounds.X + 24, bounds.Y + 24, 572, 120, "IP", "NETWORK", "10.0.0.42", "192.168.1.42", accent,
@@ -39,12 +39,12 @@ public static class WallpaperOwnerExamples {
                 "RAM", "MEMORY", "32 GB", accent: accent, surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised);
         } else throw new ArgumentException("Unknown example layout.", nameof(layout));
         return canvas.AddTopology(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 34, 34), 560, 310,
-            CreateTopology(), new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = true, PngSupersamplingScale = 1 }, VisualCanvasImageFit.Contain);
+            CreateTopology(), new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = true, RasterSupersampling = 1 }, VisualCanvasImageFit.Contain);
     }
 
     /// <summary>Creates a transparent fixed-viewport topology suitable for a wallpaper overlay.</summary>
     public static TopologyChart CreateTopology() => TopologyChart.Create().Id("wallpaper-topology").Viewport(new TopologyViewport(560, 310, 20))
-        .Legend((TopologyLegend?)null).Theme(OverlayTheme(), ThemeMode.Dark)
+        .Legend((TopologyLegend?)null).Theme(OverlayTheme()).ThemeMode(ThemeMode.Dark)
         .AddNode("workstation", "Workstation", 34, 110, width: 140, height: 70)
         .AddNode("gateway", "Gateway", 330, 110, TopologyNodeKind.Gateway, width: 140, height: 70)
         .AddEdge("network", "workstation", "gateway", "Network", routing: TopologyEdgeRouting.Straight);

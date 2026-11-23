@@ -19,7 +19,7 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `Add*` | Add model data or a semantic child and return the builder. Do not silently replace configuration. | `chart.AddLine("Used", points)` |
 | `Update*`, `Apply*Changes` | Edit existing observations by index, ID or a bounded keyed transaction while retaining surviving observations' presentation. | `series.ApplyPointChanges(changes, maximumObservations: 500)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
-| `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
+| `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgbaImage()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are not part of the prepared contract. |
 | `With*` on an immutable value | Return a new value with one change; the original is unchanged. Only immutable types use it. | `color.WithAlpha(128)`, `theme.WithPalette(colors)` |
 | Constructors and named factories | Create immutable requests, snapshots or presets. They are deliberate exceptions to builder prefixes. | `new VisualFrame(...)`, `VisualTheme.Graphite()`, `VisualTheme.FromJson(json)` |
@@ -409,7 +409,7 @@ Set `legendTitle` in the `VisualFrame` constructor to give categorical legend en
 
 ## Prepare once, export several ways
 
-Visuals-owned mixed grids expose `grid.ToVisualArtifact(id)` through the same artifact vocabulary as chart grids, canvases and factual blocks. Natural size comes from the grid's logical layout and remains independent of `PngOutputScale`. Artifact creation does not render children. The envelope borrows the grid model; recreate it after changing layout or headings, then use the shared SVG, PNG, HTML or Office handoff.
+Visuals-owned mixed grids expose `grid.ToVisualArtifact(id)` through the same artifact vocabulary as chart grids, canvases and factual blocks. Natural size comes from the grid's logical layout and remains independent of `RasterScale`. Artifact creation does not render children. The envelope borrows the grid model; recreate it after changing layout or headings, then use the shared SVG, PNG, HTML or Office handoff.
 
 ```csharp
 using ChartForgeX.Core;
@@ -548,7 +548,7 @@ var waterfall = Chart.Create().XLabels("Opening", "Costs", "Stage", "Adjustment"
         ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
         ChartWaterfallItem.Delta(4, 10), ChartWaterfallItem.Total(5)
     }).DataLabels(d => d.Visible(true));
-waterfall.Series[0].PointColor(2, "#A5358A");
+waterfall.Series[0].PointColor(2, ChartColor.FromHex("#A5358A"));
 ```
 
 Typed input lives in the immutable `ChartSeries.WaterfallItems` snapshot; `Points` is empty and cannot be mixed into that series. `Value` holds an authored opening balance or delta and is null on calculated checkpoints. `SourcePointCount` counts the opening balance and deltas, while point colors, labels, fill patterns, data-label styles and point legends index all authored items. Invalid item order is rejected before the series is added. Existing axis labels and formatters own category captions; `ChartOptions.Labels.OpeningBalance`, `.Change`, `.Subtotal` and `.Total` localize the default readout and captions. Opening balances and checkpoints use neutral paint unless series or point paint overrides it. Bar paint and stroke use the shared series controls.
@@ -619,7 +619,7 @@ chart.RangeBar(options => {
     options.StartLabel.Placement = ChartDataLabelPlacement.Left;
     options.StartLabel.Style.Color(ChartColor.FromHex("#235b9f")).FontSize(10);
     options.EndLabel.Placement = ChartDataLabelPlacement.Right;
-    options.EndLabel.Style.Color(ChartColor.FromHex("#975000")).FontWeight("700");
+    options.EndLabel.Style.Color(ChartColor.FromHex("#975000")).FontWeight(700);
 });
 ```
 
@@ -675,7 +675,7 @@ chart.DataLabels(d => d.Visible(true)).BoxPlot(options => {
     options.LabelContent = ChartBoxPlotLabelContent.Statistics;
     options.MinimumLabel.Visible = false;
     options.MedianLabel.Placement = ChartDataLabelPlacement.Right;
-    options.MedianLabel.Style.FontWeight("700");
+    options.MedianLabel.Style.FontWeight(700);
     options.StatisticLabelFormatter = value => value.Statistic + ": " + value.FormattedValue;
 });
 ```
@@ -860,7 +860,7 @@ Scatter and Bubble series with a numeric color scale use the theme foreground fo
 
 `ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form`, `ChartSeries.Polar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; Radar and metric-card sparklines default to Area, while continuous Polar defaults to Line. Metric cards select the same form through `MiniSparklineStyle`.
 
-`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `Radar(r => ...)` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity.
+`AddRadar` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `Radar(r => ...)` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity.
 
 `Radar(radar => radar.MissingCategoryPolicy(ChartRadarMissingCategoryPolicy.Gap))` leaves unknown categories unpainted. `Zero`, the default, retains derived zero vertices with missing metadata and no authored source identity. `Gap` breaks the outline at missing categories, keeps observed runs across the category seam, and omits an incomplete area fill and its legend fill with a `radar.open-area` diagnostic. `Connect` joins the observed vertices across missing categories and closes an area only when at least three observed vertices remain. Gap and Connect add no missing point targets or captions. Authored zeros remain observations under every policy; the common category axis remains the union of the participating series.
 
@@ -1387,7 +1387,7 @@ A preset background used to derive roles does not itself request opaque chart-ca
 
 Use `prepared.CaptureLayer(new VisualDropShadow(color, offsetX, offsetY, sigmaX, sigmaY, spread, orderedDither), options, cancellationToken)` for a static shadow on one complete prepared child. The immutable request uses resolved literal color, integer logical offsets/spread and the same density-scaled Gaussian targets as `VisualLayerBlur`. Positive spread dilates alpha; negative spread erodes it. The source enters the final composite once. `CapturedVisualLayer.SourceBounds` retains the original viewport; `Bounds` retains the union of source and propagated shadow support, including negative coordinates. Place that original source origin through `ImageComposition.DrawLayer(layer, x, y)` when using optional Visuals composition.
 
-The source remains detached and unchanged. `layer.Visual` uses the explicit baked-image SVG/PNG route and descriptive regions; it adds no duplicate point targets, editable filter graph or native SVG-filter profile. `ToImage()` returns a caller-owned copy. Existing cumulative array/work limits reject before capture; cancellation is observed around synchronous native painting, within effect rows and before snapshot publication. Encoder/font/geometry allocations retain their existing owners. Null/ordinary exports and current fixed-frame imperative composition operations do not opt into this effect.
+The source remains detached and unchanged. `layer.Visual` uses the explicit baked-image SVG/PNG route and descriptive regions; it adds no duplicate point targets, editable filter graph or native SVG-filter profile. `ToRgbaImage()` returns a caller-owned copy. Existing cumulative array/work limits reject before capture; cancellation is observed around synchronous native painting, within effect rows and before snapshot publication. Encoder/font/geometry allocations retain their existing owners. Null/ordinary exports and current fixed-frame imperative composition operations do not opt into this effect.
 
 The SVG importer supports only the documented finite opt-in source chains through `SvgRasterFilterOptions`. Null options keep ordinary unsupported-filter behavior. A signed spread maps only to equal integer device radii in that source subset; other regions, inputs or primitive policies remain diagnosed. The normal compact/wide paired-theme effects example and its downloadable Core program retain the original chart independently of its captured appearance.
 

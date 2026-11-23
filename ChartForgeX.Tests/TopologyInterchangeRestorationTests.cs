@@ -34,7 +34,7 @@ public sealed class TopologyInterchangeRestorationTests {
         Assert.Equal(portable.Topology.Artwork!.SvgBody, node.Artwork!.SvgBody);
         Assert.Equal(portable.Ports.Single().Id, node.Ports.Single().Id); Assert.Equal("outbound", node.Ports[0].Metadata["meaning"]);
         Assert.Equal("queued", node.Metrics["phase"]); Assert.Equal("Complete <value>", node.Details[0].Value);
-        Assert.Equal("detail", node.Details[0].Metadata["kind"]); Assert.Equal("600", node.Details[0].TextStyle!.FontWeight);
+        Assert.Equal("detail", node.Details[0].Metadata["kind"]); Assert.Equal(600, node.Details[0].TextStyle!.FontWeight);
         var edge = imported.Edges.Single(); var portableEdge = envelope.Edges.Single();
         Assert.Equal(portableEdge.Topology!.Waypoints.Select(point => (point.X, point.Y)), edge.Waypoints.Select(point => (point.X, point.Y)));
         Assert.Equal(portableEdge.Topology.DashPattern, edge.DashPattern); Assert.Equal(0, edge.RouteLane);
@@ -58,7 +58,7 @@ public sealed class TopologyInterchangeRestorationTests {
 
         var before = imported.ToSvg(); var beforePng = imported.ToPng();
         node.Label = "Edited source"; node.Details[0].Value = "Delivered"; node.Metadata["changed"] = "local";
-        node.Ports[0].Metadata["meaning"] = "changed"; node.Details[0].TextStyle!.FontWeight = "400";
+        node.Ports[0].Metadata["meaning"] = "changed"; node.Details[0].TextStyle!.FontWeight = 400;
         node.Artwork!.SvgBody = "<circle cx=\"12\" cy=\"12\" r=\"6\"/>";
         // Artwork mode keeps its caption outside the artwork; explicitly choose a factual card for editable detail rows.
         node.DisplayMode = TopologyNodeDisplayMode.Card;
@@ -81,7 +81,7 @@ public sealed class TopologyInterchangeRestorationTests {
         var chart = envelope.ToTopologyChart();
         Assert.Equal(authoredWaypoints, chart.Edges[0].Waypoints.Select(point => (point.X, point.Y)));
         Assert.DoesNotContain(chart.Edges[0].Waypoints, point => point.X == -123456);
-        chart.EdgeRouteLane(chart.Edges[0].Id, 17);
+        chart.UpdateEdge(chart.Edges[0].Id, edge => edge.RouteLane(17));
         var edited = chart.ToVisualArtifact().ToInterchangeEnvelope();
         Assert.Equal(17, edited.Edges[0].Topology!.RouteLane); Assert.Equal(0, envelope.Edges[0].Topology!.RouteLane);
         Assert.Equal(-123456, envelope.Edges[0].ResolvedRoute[0].X);
@@ -108,7 +108,7 @@ public sealed class TopologyInterchangeRestorationTests {
         var source = TopologyChart.Create().Viewport(new TopologyViewport(1000, 500));
         source.Groups.Add(new TopologyGroup { Id = "outer", Label = "Transaction", X = 20, Y = 20, Width = 700, Height = 280 });
         source.Groups.Add(new TopologyGroup { Id = "before", Label = "Before", ParentGroupId = "outer", Presentation = TopologyGroupPresentation.Compartment,
-            LayoutDirection = TopologyLayoutDirection.LeftToRight, X = 25, Y = 60, Width = 340, Height = 230, BackgroundColor = "#EEF2FF", BorderColor = "#2563EB" });
+            LayoutDirection = TopologyLayoutDirection.LeftToRight, X = 25, Y = 60, Width = 340, Height = 230, BackgroundColor = ChartColor.FromHex("#EEF2FF"), BorderColor = ChartColor.FromHex("#2563EB") });
         source.Groups.Add(new TopologyGroup { Id = "after", Label = "After", ParentGroupId = "outer", Presentation = TopologyGroupPresentation.Compartment,
             X = 365, Y = 60, Width = 340, Height = 230 });
         source.Groups[1].Metadata["compartment"] = "raw value";
@@ -119,7 +119,7 @@ public sealed class TopologyInterchangeRestorationTests {
         Assert.Equal(3, imported.Groups.Count); Assert.Equal("outer", imported.Groups[1].ParentGroupId);
         Assert.Equal(TopologyGroupPresentation.Compartment, imported.Groups[1].Presentation);
         Assert.Equal(TopologyLayoutDirection.LeftToRight, imported.Groups[1].LayoutDirection);
-        Assert.Equal(envelope.Groups[1].BackgroundColor, imported.Groups[1].BackgroundColor);
+        Assert.Equal(ChartColorText.Parse(envelope.Groups[1].BackgroundColor), imported.Groups[1].BackgroundColor);
         Assert.Equal("raw value", imported.Groups[1].Metadata["compartment"]);
         Assert.Equal("before", imported.Edges[0].SourceNodeId); Assert.Equal("after", imported.Edges[0].TargetNodeId);
         imported.Groups[1].Metadata["compartment"] = "edited"; Assert.Equal("raw value", envelope.Groups[1].Extensions["compartment"]);
@@ -128,11 +128,11 @@ public sealed class TopologyInterchangeRestorationTests {
 
     internal static TopologyChart Source(bool dark, int width) {
         var chart = TopologyChart.Create().Id("portable-topology").Title("Editable request route")
-            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Viewport(new TopologyViewport(width, 520)).DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = true, WrapNodeLabels = true });
         chart.Accessibility.Name = "Imported request graph"; chart.Accessibility.Language = "en";
         chart.Groups.Add(new TopologyGroup { Id = "region", Label = "Service region", X = 24, Y = 30, Width = 640, Height = 240,
-            Color = "#2563EB", Status = TopologyHealthStatus.Healthy });
+            Color = ChartColor.FromHex("#2563EB"), Status = TopologyHealthStatus.Healthy });
         chart.Groups[0].Metadata["raw.group"] = "<opaque>";
         var node = new TopologyNode { Id = "source", Label = "Request source", Kind = TopologyNodeKind.Server,
             X = 48, Y = 85, Width = 210, Height = 110, GroupId = "region", Status = TopologyHealthStatus.Healthy,
@@ -142,15 +142,15 @@ public sealed class TopologyInterchangeRestorationTests {
         node.Ports.Add(new TopologyNodePort { Id = "send", Side = TopologyEdgePort.Right, Offset = .4, Label = "Send" });
         node.Ports[0].Metadata["meaning"] = "outbound";
         node.Details.Add(new TopologyNodeDetail { Label = "Payload", Value = "Complete <value>", Status = TopologyHealthStatus.Warning,
-            TextStyle = new TextStyleOverride { FontWeight = "600" } }); node.Details[0].Metadata["kind"] = "detail";
+            TextStyle = new TextStyleOverride { FontWeight = 600 } }); node.Details[0].Metadata["kind"] = "detail";
         chart.Nodes.Add(node); chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Worker", GroupId = "region", X = 410, Y = 85, Width = 190, Height = 110,
             ShowStatusBadge = false, Shape = TopologyNodeShape.Rounded });
         var edge = new TopologyEdge { Id = "request", SourceNodeId = "source", TargetNodeId = "target", SourcePortId = "send",
             Kind = TopologyEdgeKind.Generic, Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal,
             Label = "Dispatch", StrokeWidth = 2.5, Opacity = .8, SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Arrow,
-            LabelAnchorNodeId = "source", LabelAnchorX = 290, LabelAnchorY = 150, HasLabelAnchorOverride = true };
+            LabelAnchorNodeId = "source", LabelAnchor = new ChartPoint(290, 150) };
         edge.DashPattern.AddRange(new[] { 6d, 2d }); edge.Waypoints.Add(new ChartPoint(310, 125)); edge.Waypoints.Add(new ChartPoint(350, 125));
-        edge.Metadata["route.fact"] = "opaque"; edge.Metrics["latency"] = "41"; chart.Edges.Add(edge); chart.EdgeRouteLane("request", 0);
+        edge.Metadata["route.fact"] = "opaque"; edge.Metrics["latency"] = "41"; chart.Edges.Add(edge); chart.UpdateEdge("request", edge => edge.RouteLane(0));
         chart.Legend = TopologyLegend.Create("Route key").AddNodeKind("Service", TopologyNodeKind.Server).AddEdgeKind("Request", TopologyEdgeKind.Generic);
         var scenario = new TopologyScenario { Id = "delivery", Label = "Delivery path", LoopPlayback = true, AutoPlay = false, Spotlight = true };
         scenario.Metadata["kind"] = "path"; scenario.Steps.Add(new TopologyScenarioStep { Id = "source", Kind = TopologyScenarioStepKind.Node });

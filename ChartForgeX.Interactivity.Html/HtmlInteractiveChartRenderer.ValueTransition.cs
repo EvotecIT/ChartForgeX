@@ -26,7 +26,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (to == null) throw new ArgumentNullException(nameof(to));
         if ((from.NarrowPreparedVisual == null) != (to.NarrowPreparedVisual == null))
             throw new NotSupportedException("A native value transition cannot add or remove an adaptive drawing.");
-        if (from.SvgOptions.IdPrefix != to.SvgOptions.IdPrefix)
+        if (from.SvgOptions.IdScope != to.SvgOptions.IdScope)
             throw new NotSupportedException("Native value transitions retain the host's captured ID scope.");
         var wide = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, frameCount, cancellationToken);
         var first = from.PreparedVisual.Scene.ValueCapture!.Plan;
@@ -63,7 +63,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             for (var index = 0; index < frames.Count; index++) {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (index > 0) json.Append(',');
-                var svg = from.SvgOptions.WithIdPrefix((from.SvgOptions.IdPrefix ?? "cfx-native-value") + "-motion-" + drawing + "-" + index.ToString(CultureInfo.InvariantCulture));
+                var svg = from.SvgOptions.WithIdPrefix((from.SvgOptions.IdScope ?? "cfx-native-value") + "-motion-" + drawing + "-" + index.ToString(CultureInfo.InvariantCulture));
                 json.Append(HtmlJsonString.Encode(frames[index].ToSvg(svg)));
                 if (json.Length > 1024 * 1024) throw new InvalidOperationException("Native value transition presentation budget exceeded.");
             }

@@ -39,7 +39,7 @@ public sealed class AlphaGlowBeforeControls {
             spread: 1, orderedDither: false, opacity: .5), AlphaGlowFixture.Unit);
         AppearanceFixture.Capture("alpha-glow-before-half-alpha", glow);
         Assert.Equal(new byte[] { 204, 0, 51, 160 }, AppearanceFixture.WorldPixel(glow, 8, 8));
-        Assert.Equal(new byte[] { 255, 0, 0, 128 }, AppearanceFixture.Pixel(source.ToRgba(AlphaGlowFixture.Unit), 8, 8));
+        Assert.Equal(new byte[] { 255, 0, 0, 128 }, AppearanceFixture.Pixel(source.ToRgbaImage(AlphaGlowFixture.Unit), 8, 8));
         Assert.Equal(before, source.ToSvg());
         Assert.Equal("glow-source", Assert.Single(glow.Visual.Regions).Id);
     }
@@ -56,7 +56,7 @@ public sealed class AlphaGlowBeforeControls {
         AppearanceFixture.Capture("alpha-glow-before-byte-tint-control", quantizedTint);
         Assert.Equal(new byte[] { 11, 29, 248, 2 }, AppearanceFixture.WorldPixel(raw, 3, 8));
         Assert.Equal(1, AppearanceFixture.WorldPixel(quantizedTint, 3, 8)[3]);
-        Assert.NotEqual(raw.ToImage().Pixels, quantizedTint.ToImage().Pixels);
+        Assert.NotEqual(raw.ToRgbaImage().Pixels, quantizedTint.ToRgbaImage().Pixels);
     }
 
     [Fact]
@@ -73,8 +73,8 @@ public sealed class AlphaGlowBeforeControls {
         AppearanceFixture.Capture("alpha-glow-before-zero-opacity", noOpacity);
         AppearanceFixture.Capture("alpha-glow-before-zero-tint", noTint);
         AppearanceFixture.Capture("alpha-glow-before-zero-geometry", zeroGeometry);
-        Assert.Equal(ordinary.ToImage().Pixels, noOpacity.ToImage().Pixels);
-        Assert.Equal(ordinary.ToImage().Pixels, noTint.ToImage().Pixels);
+        Assert.Equal(ordinary.ToRgbaImage().Pixels, noOpacity.ToRgbaImage().Pixels);
+        Assert.Equal(ordinary.ToRgbaImage().Pixels, noTint.ToRgbaImage().Pixels);
         Assert.Equal(ordinary.Bounds, noOpacity.Bounds);
         Assert.Equal(ordinary.Bounds, noTint.Bounds);
         Assert.Equal(new byte[] { 170, 0, 85, 192 }, AppearanceFixture.WorldPixel(zeroGeometry, 8, 8));

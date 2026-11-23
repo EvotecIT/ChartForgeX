@@ -36,9 +36,9 @@ public static partial class VisualArtifactInterchangeMapping {
         // Native views (legend reflow, value replays) keep the authored unit and colour assignment.
         target.ValueUnit = source.ValueUnit;
         target.SeriesColorAssignment = source.SeriesColorAssignment;
-        target.PngOutputScale = source.Png.OutputScale;
-        target.PngSupersamplingScale = source.Png.SupersamplingScale;
-        target.PngTextHinting = source.Png.TextHinting;
+        target.RasterScale = source.Raster.OutputScale;
+        target.RasterSupersampling = source.Raster.SupersamplingScale;
+        target.RasterTextHinting = source.Raster.TextHinting;
         target.XAxis = source.XAxis.Clone();
         target.YAxis = source.YAxis.Clone();
         target.SecondaryXAxis = source.SecondaryXAxis.Clone();
@@ -82,9 +82,9 @@ public static partial class VisualArtifactInterchangeMapping {
         // Native views (legend reflow, value replays) keep the authored unit and colour assignment.
         target.ValueUnit = source.ValueUnit;
         target.SeriesColorAssignment = source.SeriesColorAssignment;
-        target.Png.OutputScale = source.PngOutputScale;
-        target.Png.SupersamplingScale = source.PngSupersamplingScale;
-        target.Png.TextHinting = source.PngTextHinting;
+        target.Raster.OutputScale = source.RasterScale;
+        target.Raster.SupersamplingScale = source.RasterSupersampling;
+        target.Raster.TextHinting = source.RasterTextHinting;
         target.XAxis = source.XAxis.Clone();
         target.YAxis = source.YAxis.Clone();
         target.SecondaryXAxis = source.SecondaryXAxis.Clone();
@@ -116,7 +116,7 @@ public static partial class VisualArtifactInterchangeMapping {
         var options = chart.Options;
         if (chart.Annotations.Count != 0 || chart.PlotRegions.Count != 0)
             throw new NotSupportedException("Waterfall interchange does not serialize annotations or plot regions; deliver them through a separately supported semantic family.");
-        if (options.XAxisLabelHighlights.Count != 0 || options.IsSparkline || options.IsPanel || options.Png.FontPath != null || options.Png.FontFaceName != null || options.Png.FontCollectionIndex != null || options.SvgColorVariables != null)
+        if (options.XAxisLabelHighlights.Count != 0 || options.IsSparkline || options.IsPanel || options.Raster.FontPath != null || options.Raster.FontFaceName != null || options.Raster.FontCollectionIndex != null || options.SvgColorVariables != null)
             throw new NotSupportedException("Waterfall interchange does not serialize compact host state, local font resources or SVG variable resolvers.");
         if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.Pie.SliceLabelFormatter != null
             || options.RangeBar.EndpointLabelFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.Sunburst.SecondaryLabelFormatter != null)

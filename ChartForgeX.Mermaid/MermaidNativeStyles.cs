@@ -18,10 +18,10 @@ internal static partial class MermaidNativeStyles {
     internal static void Node(TopologyNode target,IReadOnlyList<string> classes,Dictionary<string,string> styles) {
         Facts(target.Metadata,classes,styles);
         target.TextStyle=ApplyTextStyle(target.TextStyle,styles);
-        if(Paint(styles,"fill") is {} fill)target.BackgroundColor=fill;
-        if(Paint(styles,"stroke") is {} stroke)target.Color=stroke;
+        if(Paint(styles,"fill") is {} fill)target.BackgroundColor=ChartColorText.Parse(fill);
+        if(Paint(styles,"stroke") is {} stroke)target.Color=ChartColorText.Parse(stroke);
         if(Paint(styles,"color") is {} color) {
-            target.LabelColor=color;foreach(var detail in target.Details)detail.Color=color;
+            target.LabelColor=ChartColorText.Parse(color);foreach(var detail in target.Details)detail.Color=ChartColorText.Parse(color);
         }
         if(styles.TryGetValue("stroke-width",out var width)&&SupportsSurface("stroke-width",width)){MermaidStyleValues.TryPixels(width,out var value);target.StrokeWidth=value;}
         if(styles.TryGetValue("stroke-dasharray",out var dash)&&MermaidStyleValues.TryNativeDash(dash,out var pattern)){target.DashPattern.Clear();target.DashPattern.AddRange(pattern);}
@@ -29,17 +29,17 @@ internal static partial class MermaidNativeStyles {
     internal static void Group(TopologyGroup target,IReadOnlyList<string> classes,Dictionary<string,string> styles) {
         Facts(target.Metadata,classes,styles);
         target.TextStyle=ApplyTextStyle(target.TextStyle,styles);
-        if(Paint(styles,"fill") is {} fill)target.BackgroundColor=fill;
-        if(Paint(styles,"stroke") is {} stroke)target.BorderColor=stroke;
-        if(Paint(styles,"color") is {} color)target.LabelColor=color;
+        if(Paint(styles,"fill") is {} fill)target.BackgroundColor=ChartColorText.Parse(fill);
+        if(Paint(styles,"stroke") is {} stroke)target.BorderColor=ChartColorText.Parse(stroke);
+        if(Paint(styles,"color") is {} color)target.LabelColor=ChartColorText.Parse(color);
         if(styles.TryGetValue("stroke-width",out var width)&&SupportsSurface("stroke-width",width)){MermaidStyleValues.TryPixels(width,out var value);target.StrokeWidth=value;}
         if(styles.TryGetValue("stroke-dasharray",out var dash)&&MermaidStyleValues.TryNativeDash(dash,out var pattern)){target.DashPattern.Clear();target.DashPattern.AddRange(pattern);}
     }
     internal static void Edge(TopologyEdge target,IReadOnlyList<string> classes,Dictionary<string,string> styles) {
         Facts(target.Metadata,classes,styles);
         target.TextStyle=ApplyTextStyle(target.TextStyle,styles);
-        if(Paint(styles,"stroke") is {} stroke)target.Color=stroke;
-        if(Paint(styles,"color") is {} color)target.LabelColor=color;
+        if(Paint(styles,"stroke") is {} stroke)target.Color=ChartColorText.Parse(stroke);
+        if(Paint(styles,"color") is {} color)target.LabelColor=ChartColorText.Parse(color);
         if(styles.TryGetValue("stroke-width",out var width)&&SupportsEdge("stroke-width",width)) {
             MermaidStyleValues.TryPixels(width,out var parsed);target.StrokeWidth=parsed;
         }

@@ -103,7 +103,7 @@ public sealed class ArtifactHostHandoffTests {
         var source = ChartFixture().Prepare(VisualExportRequest.ForChart(ChartFixture()).Context).ToArtifact("original");
         source.Metadata["owner"] = "source";
         source.Regions[0].Metadata["detail"] = "source region";
-        source.Legend.Add(new VisualArtifactLegendItem { Id = "cpu", Label = "CPU", Color = "#0891b2" });
+        source.Legend.Add(new VisualArtifactLegendItem { Id = "cpu", Label = "CPU", Color = ChartColor.FromHex("#0891b2") });
         var svg = source.ToSvg();
         var png = source.ToPng();
         var copy = source.Clone();

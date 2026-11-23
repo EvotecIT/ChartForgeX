@@ -7,7 +7,7 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgFactBlockRenderer {
+internal sealed partial class SvgFactBlockRenderer {
     private static void RenderSegmentedMetricHeading(SvgMarkupWriter writer, SegmentedMetricBlock card, ref double y, double x, double width) {
         if (card.HeaderSymbol.Length > 0) RenderSegmentedMetricHeader(writer, card, ref y, x, width);
         else RenderBlockHeading(writer, card, ref y, x, width);

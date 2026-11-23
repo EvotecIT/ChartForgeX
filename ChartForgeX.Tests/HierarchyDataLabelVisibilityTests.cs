@@ -51,7 +51,7 @@ public sealed class HierarchyDataLabelVisibilityTests {
 
     private static int Labels(PreparedVisual prepared, string role) => XDocument.Parse(prepared.ToSvg()).Descendants()
         .Count(element => (string?)element.Attribute("data-cfx-role") == role);
-    private static byte[] Pixels(PreparedVisual prepared) => prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels;
+    private static byte[] Pixels(PreparedVisual prepared) => prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels;
     private static Chart Model(ChartSeriesKind kind) {
         if (kind == ChartSeriesKind.Treemap) return Chart.Create().AddTreemap("Allocation", new[] { new ChartHierarchyItem("alpha", "Alpha", value: 7), new ChartHierarchyItem("beta", "Beta", value: 3) });
         var nodes = new[] { new ChartNode("all", "All"), new ChartNode("alpha", "Alpha"), new ChartNode("beta", "Beta") };

@@ -24,7 +24,7 @@ public sealed class GaugeCircularScaleBrowserTests {
         var chart = (precisionFontSize > 0 ? GaugeCircularScaleTests.CreatePrecision(form, precisionFontSize)
                 : GaugeCircularScaleTests.Create(form, requested, width, height, longFormat, dark))
             .Theme(VisualTheme.Graphite().WithFontFamily("CFX Circular Carlito")).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-            .Png(p => p.FontPath(fontPath));
+            .Raster(p => p.FontPath(fontPath));
         if (precisionFontSize >= 60) chart.Size(520, 360); // Keep room for the registered face's authored 60 px captions.
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Circular Carlito';src:url(data:font/ttf;base64,"

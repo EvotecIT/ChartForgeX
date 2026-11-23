@@ -55,7 +55,7 @@ internal static class VisualCanvasStyledText {
         return builder.Build();
     }
     internal static void WriteSvg(SvgMarkupWriter writer, VisualScene scene, double x, double y, string prefix) {
-        var svg = VisualSceneSvgRenderer.Render(scene, decorative: true, idPrefix: prefix,
+        var svg = VisualSceneSvgRenderer.Render(scene, decorative: true, idScope: prefix,
             options: new VisualSvgOptions().WithTextPresentation(VisualSvgTextPresentation.Automatic));
         // This is the existing owner's generated root, not source markup or a second text serializer.
         writer.StartElement("g").Attribute("transform", "translate(" + x.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + " " + y.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + ")").EndStartElement();

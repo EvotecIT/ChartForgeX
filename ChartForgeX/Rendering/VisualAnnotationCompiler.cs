@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualAnnotationCompiler {
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
     // A caller that already describes its mark can reuse annotation painting without a nested interaction target.
-    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, ChartAnnotationKind>? kindSelector = null, Func<ChartAnnotation, bool>? isVisible = null, ChartRect? labelBounds = null, bool clipGeometry = false, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null) {
+    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idScope = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, ChartAnnotationKind>? kindSelector = null, Func<ChartAnnotation, bool>? isVisible = null, ChartRect? labelBounds = null, bool clipGeometry = false, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (annotation.HasSourceGeometry || annotation.IsBand != bands || (include != null && !include(annotation))) continue;
@@ -23,7 +23,7 @@ internal static partial class VisualAnnotationCompiler {
             var annotationColorRole = annotation.UsesThemeColor ? SvgColorRole.Text : colorRole;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
             var id = annotation.Id is ChartAnnotationId authoredId && describeAnnotations
-                ? VisualAnnotationIdentity.SourceIdFor(authoredId) : idPrefix + Number(index);
+                ? VisualAnnotationIdentity.SourceIdFor(authoredId) : idScope + Number(index);
             var description = kind + ": " + Number(annotation.Value)
                 + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
                 + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);

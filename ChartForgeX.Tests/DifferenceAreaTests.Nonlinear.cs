@@ -36,7 +36,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.True(Math.Abs(rawFraction - fraction) > .03, "The fixture must distinguish transformed-path crossing from raw-value interpolation.");
         foreach (var role in new[] { "difference-positive", "difference-negative" })
             Assert.Contains(Boundary(prepared, role).Commands, point => Math.Abs(point.X - x) < 1e-7 && Math.Abs(point.Y - y) < 1e-7);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, Sample(a, b, fraction / 2), pairs[0].First > pairs[0].Second ? Red : Blue, 128);
         AssertPaint(image, Sample(a, b, (1 + fraction) / 2), pairs[1].First > pairs[1].Second ? Red : Blue, 128);
         Assert.Equal(pairs[0].First.ToString("R", System.Globalization.CultureInfo.InvariantCulture), Group(prepared, "series-0-point-0")["data-cfx-first"]);
@@ -57,7 +57,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.DoesNotContain("NaN", prepared.ToSvg());
         var first = new ChartPath(Boundary(prepared, "difference-first").Commands).Flatten(12);
         var second = new ChartPath(Boundary(prepared, "difference-second").Commands).Flatten(12);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)); var probes = 0;
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)); var probes = 0;
         var jumps = second.Zip(second.Skip(1), (a, b) => (a, b)).Where(pair => pair.a.X == pair.b.X).Select(pair => pair.a.X).ToArray();
         for (var index = 1; index < 32; index++) {
             var x = first[0].X + (first[^1].X - first[0].X) * index / 32;

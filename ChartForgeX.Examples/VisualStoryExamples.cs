@@ -22,7 +22,7 @@ internal static class VisualStoryExamples {
             .Width(900)
             .ShowFinalPrompt(false)
             .Command("dotnet run")
-            .Output("Saved weekly-builds.png", TerminalTextTone.Success);
+            .Output("Saved weekly-builds.png", Tone.Success);
         var story = VisualStory.Create("Create a chart in five lines")
             .Description("Source, execution transcript, and the generated chart stay together.")
             .Size(800, 450);
@@ -60,13 +60,13 @@ internal static class VisualStoryExamples {
         var before = ImageComposition.Create(640, 360, ChartColor.FromHex("#253044"))
             .FillRoundedRectangle(60, 58, 520, 244, 26, ChartColor.FromHex("#42526B"))
             .DrawText(60, 150, 520, "before", 40, ChartColor.FromHex("#C7D1DE"), alignment: TextAlignment.Center, emphasized: true)
-            .ToImage();
+            .ToRgbaImage();
         var after = ImageComposition.Create(640, 360, ChartColor.FromHex("#071625"))
             .FillRoundedRectangle(60, 58, 520, 244, 26, ChartColor.FromHex("#0D3551"))
             .StrokeRoundedRectangle(60, 58, 520, 244, 26, ChartColor.FromHex("#5ED7F2"), 3)
             .DrawText(60, 132, 520, "after", 44, ChartColor.FromHex("#F1F5FB"), alignment: TextAlignment.Center, emphasized: true)
             .DrawText(60, 198, 520, "clean · sharp · ready", 20, ChartColor.FromHex("#55D6A9"), alignment: TextAlignment.Center)
-            .ToImage();
+            .ToRgbaImage();
         var story = VisualStory.Create("Show an image transformation")
             .Description("Generic media surfaces make before-and-after demos first-class.")
             .Size(800, 450);

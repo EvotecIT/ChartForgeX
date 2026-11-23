@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.Core;
@@ -47,7 +48,7 @@ public static class MermaidBlockRendering {
                 if (style.Key == "stroke-width" && MermaidBlockParser.BlockNumber(style.Value, out var width) && width >= 0 && width <= 1024) strokeWidth = width;
                 else if (style.Key == "stroke-dasharray" && MermaidBlockParser.BlockDash(style.Value, out var dash)) strokeDash = dash;
                 else if (style.Key == "font-size" && MermaidBlockParser.BlockNumber(style.Value, out var size) && size > 0) target.TextStyle.FontSize = size;
-                else if (style.Key == "font-weight" && MermaidBlockParser.BlockNativeStyle(style.Key, style.Value)) target.TextStyle.FontWeight = style.Value;
+                else if (style.Key == "font-weight" && MermaidBlockParser.BlockNativeStyle(style.Key, style.Value)) target.TextStyle.FontWeight = ChartForgeX.Typography.TextStyleOverride.ParseFontWeight(style.Value);
                 else if (style.Key == "font-style" && MermaidBlockParser.BlockNativeStyle(style.Key, style.Value)) target.TextStyle.Italic = style.Value == "italic";
             }
             if (strokeColor.HasValue || strokeWidth.HasValue || strokeDash != null) target.Stroke = new ChartStrokeStyle(strokeColor, strokeWidth, dash: strokeDash);
@@ -77,7 +78,7 @@ public static class MermaidBlockRendering {
         artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
         artifact.Title = block.Title;
         artifact.Subtitle = block.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
+        artifact.NaturalSize = new VisualSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;

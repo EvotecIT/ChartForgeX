@@ -362,6 +362,7 @@ public sealed class TopologyRenderOptions {
     public string? EdgeTertiaryLabelMetricKey { get; set; }
 
     /// <summary>Gets health statuses to highlight while dimming non-matching topology elements.</summary>
+    [Child("HighlightStatus")]
     public List<TopologyHealthStatus> HighlightStatuses { get; private set; } = new();
 
     /// <summary>Gets group ids to highlight while dimming non-matching topology elements.</summary>
@@ -389,10 +390,10 @@ public sealed class TopologyRenderOptions {
     public double DimmedOpacity { get; set; } = 0.28;
 
     /// <summary>Gets or sets the PNG supersampling scale used by the topology PNG renderer.</summary>
-    public int PngSupersamplingScale { get; set; } = 2;
+    public int RasterSupersampling { get; set; } = 2;
 
     /// <summary>Gets or sets the PNG output scale used by the topology PNG renderer.</summary>
-    public int PngOutputScale { get; set; } = 1;
+    public int RasterScale { get; set; } = 1;
 
     /// <summary>Creates an independent copy suitable for adapter-specific adjustments.</summary>
     public TopologyRenderOptions Clone() {

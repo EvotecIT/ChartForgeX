@@ -128,7 +128,7 @@ public sealed class RadialLabelTargetBrowserTests {
             .Theme(VisualTheme.Graphite()).ThemeMode(outside ? ThemeMode.Light : ThemeMode.Dark)
             .FontFamily("Carlito").Legend(false).XLabels("North", "South", "East")
             .DataLabels().DataLabels(d => d.Placement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside));
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         // A full column's radial end can leave no collision-free room for a centred Outside candidate.
         if (outside && kind == ChartSeriesKind.RadialColumn) chart.DataLabels(d => d.Placement(ChartDataLabelPlacement.Right));

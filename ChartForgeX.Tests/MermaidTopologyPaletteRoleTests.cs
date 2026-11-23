@@ -23,11 +23,11 @@ public sealed class MermaidTopologyPaletteRoleTests {
         Assert.False(result.HasErrors); Assert.Empty(result.Diagnostics); Assert.False(fenced.HasErrors); Assert.Empty(fenced.Diagnostics);
         var artifact = Assert.IsType<VisualArtifact>(result.Artifact); var chart = Assert.IsType<TopologyChart>(artifact.Model); var work = Assert.Single(chart.Nodes, node => node.Id == "work"); var group = Assert.Single(chart.Groups);
         var fill = directOverride ? "#102030" : "#eeeeff"; var border = directOverride ? "#203040" : "#123456"; var label = directOverride ? "#304050" : "#234567";
-        Assert.Equal(ChartColor.FromHex(fill), ChartColor.Parse(work.BackgroundColor!)); Assert.Equal(ChartColor.FromHex(border), ChartColor.Parse(work.BorderColor!)); Assert.Equal(ChartColor.FromHex(label), ChartColor.Parse(work.LabelColor!));
-        Assert.Equal(directOverride ? ChartColor.FromHex("#102030") : family == "agentflow" ? ChartColor.Transparent : ChartColor.FromHex("#ffeddd"), ChartColor.Parse(group.BackgroundColor!));
-        Assert.Equal(ChartColor.FromHex(directOverride ? "#203040" : "#876543"), ChartColor.Parse(group.BorderColor!));
-        Assert.Equal(ChartColor.FromHex(directOverride ? "#304050" : "#567890"), ChartColor.Parse(group.LabelColor!));
-        Assert.Equal(ChartColor.FromRgba(204, 221, 238, 255), ChartColor.Parse(Assert.Single(chart.Edges).LabelBackgroundColor!));
+        Assert.Equal(ChartColor.FromHex(fill), work.BackgroundColor!.Value); Assert.Equal(ChartColor.FromHex(border), work.BorderColor!.Value); Assert.Equal(ChartColor.FromHex(label), work.LabelColor!.Value);
+        Assert.Equal(directOverride ? ChartColor.FromHex("#102030") : family == "agentflow" ? ChartColor.Transparent : ChartColor.FromHex("#ffeddd"), group.BackgroundColor!.Value);
+        Assert.Equal((directOverride ? ChartColor.FromHex("#203040") : ChartColor.FromHex("#876543")), group.BorderColor!.Value);
+        Assert.Equal((directOverride ? ChartColor.FromHex("#304050") : ChartColor.FromHex("#567890")), group.LabelColor!.Value);
+        Assert.Equal(ChartColor.FromRgba(204, 221, 238, 255), Assert.Single(chart.Edges).LabelBackgroundColor!.Value);
         var setting = Assert.Single(result.Document!.Configuration.Settings, item => item.Path == "themeVariables.nodeBorder");
         Assert.True(setting.IsString); Assert.Equal("#123456", setting.Value); Assert.Equal(1, setting.Span.Line); Assert.True(setting.Span.Column > 0); Assert.True(setting.Span.Length > 0);
         var fence = Assert.Single(fenced.Artifacts); var facts = artifact.ToInterchangeEnvelope();
@@ -51,8 +51,8 @@ public sealed class MermaidTopologyPaletteRoleTests {
         const string source = "flowchart LR\nwork@{icon:'common:server',label:'Server'}\nstyle work fill:#ff0000,stroke:#0000ff";
         var result = MermaidRenderer.Render(source, Options()); Capture("unframed-icon", source, result); Assert.Empty(result.Diagnostics);
         var artifact = Assert.IsType<VisualArtifact>(result.Artifact); var node = Assert.Single(Assert.IsType<TopologyChart>(artifact.Model).Nodes);
-        Assert.Equal(0, node.SurfaceOpacity); Assert.Equal("#0000ff", node.Color); Assert.True(node.ShowLabel); Assert.Equal("Server", node.Label);
-        Assert.Equal("none", node.BackgroundColor); Assert.Equal("none", node.BorderColor);
+        Assert.Equal(0, node.SurfaceOpacity); Assert.Equal(ChartColor.FromHex("#0000ff"), node.Color); Assert.True(node.ShowLabel); Assert.Equal("Server", node.Label);
+        Assert.Equal(ChartColor.Transparent, node.BackgroundColor); Assert.Equal(ChartColor.Transparent, node.BorderColor);
         var restored = artifact.ToInterchangeEnvelope().ToTopologyChart().Prepare(); CaptureArtifact("unframed-icon-restored", restored.Visual.ToArtifact()); Assert.Equal(artifact.ToPng(), restored.ToPng());
     }
     [Theory]

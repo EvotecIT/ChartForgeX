@@ -117,14 +117,14 @@ public sealed partial class VisualArtifact {
     }
 
     /// <summary>Gets or sets the artifact's natural size in pixels when known.</summary>
-    public VisualArtifactSize? NaturalSize {
+    public VisualSize? NaturalSize {
         get => _naturalSize;
         set {
             _naturalSize = value;
             TopologyNaturalSizeSnapshot = null;
         }
     }
-    private VisualArtifactSize? _naturalSize;
+    private VisualSize? _naturalSize;
 
     /// <summary>
     /// Gets or sets a value indicating whether exporters must preserve <see cref="NaturalSize"/>
@@ -140,7 +140,7 @@ public sealed partial class VisualArtifact {
 
     internal VisualAccessibility ModelAccessibilitySnapshot { get; } = new();
     internal bool HasModelAccessibilitySnapshot { get; set; }
-    internal VisualArtifactSize? TopologyNaturalSizeSnapshot { get; set; }
+    internal VisualSize? TopologyNaturalSizeSnapshot { get; set; }
     internal System.Lazy<string>? PreparedInterchangeSnapshot { get; set; }
 
     /// <summary>Gets host-inspectable visual regions.</summary>
@@ -167,25 +167,6 @@ public sealed partial class VisualArtifact {
         return (format & VisualArtifactExportFormat.Json) == 0 || Model is not PreparedVisual && CapturedLayer == null
             || VisualArtifactRendering.PreparedJsonExportSupported(this);
     }
-}
-
-/// <summary>
-/// Describes an artifact size in pixels.
-/// </summary>
-public readonly struct VisualArtifactSize {
-    /// <summary>Initializes a new artifact size.</summary>
-    public VisualArtifactSize(double width, double height) {
-        if (double.IsNaN(width) || double.IsInfinity(width) || width <= 0) throw new ArgumentOutOfRangeException(nameof(width), width, "Artifact width must be finite and greater than zero.");
-        if (double.IsNaN(height) || double.IsInfinity(height) || height <= 0) throw new ArgumentOutOfRangeException(nameof(height), height, "Artifact height must be finite and greater than zero.");
-        Width = width;
-        Height = height;
-    }
-
-    /// <summary>Gets the width in pixels.</summary>
-    public double Width { get; }
-
-    /// <summary>Gets the height in pixels.</summary>
-    public double Height { get; }
 }
 
 /// <summary>
@@ -232,5 +213,5 @@ public sealed class VisualArtifactLegendItem {
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets an optional color token.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 }

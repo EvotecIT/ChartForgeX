@@ -12,17 +12,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class GraphIconContrastTests {
     [Theory]
-    [InlineData(true, "#ffffff", HtmlGraphExplorerTheme.Light)]
-    [InlineData(true, "#0f172a", HtmlGraphExplorerTheme.Light)]
-    [InlineData(false, "#ffffff", HtmlGraphExplorerTheme.Light)]
-    [InlineData(true, "#ffffff40", HtmlGraphExplorerTheme.Dark)]
-    public void NativeIconsLeaveContrastingInkOnTheirAuthoredMark(bool card, string fill, HtmlGraphExplorerTheme theme) {
+    [InlineData(true, "#ffffff", ThemeMode.Light)]
+    [InlineData(true, "#0f172a", ThemeMode.Light)]
+    [InlineData(false, "#ffffff", ThemeMode.Light)]
+    [InlineData(true, "#ffffff40", ThemeMode.Dark)]
+    public void NativeIconsLeaveContrastingInkOnTheirAuthoredMark(bool card, string fill, ThemeMode theme) {
         var graph = GraphScene.Create("icons", "Icons").AddNode("n", "Node", node => {
             node.X = 480; node.Y = 280; node.Fixed = true; node.Size = 60; node.IconText = "DOM";
             node.Style.BackgroundColor = fill;
             if (card) { node.Shape = GraphNodeShape.Box; node.Metadata["topology.card"] = "true"; }
         });
-        void Configure(GraphSceneStaticRenderOptions options) { options.Width = 960; options.Height = 560; options.Theme = theme; }
+        void Configure(GraphSceneStaticRenderOptions options) { options.Width = 960; options.Height = 560; options.ThemeMode = theme; }
         var svg = XDocument.Parse(graph.ToGraphSvg(configure: Configure));
         var image = RasterImageDecoder.Decode(graph.ToGraphPng(configure: Configure));
         graph.Nodes[0].IconText = null;

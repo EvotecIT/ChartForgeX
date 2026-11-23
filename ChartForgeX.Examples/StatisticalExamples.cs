@@ -4,7 +4,7 @@ using ChartForgeX.Themes;
 
 /// <summary>Generates statistical, interval and financial chart examples.</summary>
 internal static class StatisticalExamples {
-    internal static void Write(string output, ChartPngOutputScale outputScale) {
+    internal static void Write(string output, ChartRasterScale outputScale) {
         HorizontalStatisticalExamples.Write(output, outputScale);
         void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(chart, output, name, outputScale);
         var latencySpread = Chart.Create()

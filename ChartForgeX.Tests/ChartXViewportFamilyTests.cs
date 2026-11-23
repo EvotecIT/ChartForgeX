@@ -69,7 +69,7 @@ public sealed class ChartAxisWindowFamilyTests {
         Assert.All(XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point"),
             node => Assert.Equal("false", (string?)node.Attribute("data-cfx-visible")));
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "marker");
-        Assert.NotEmpty(prepared.ToRgba().Pixels);
+        Assert.NotEmpty(prepared.ToRgbaImage().Pixels);
     }
 
     private static string?[] AxisText(PreparedVisual prepared, string role) => prepared.Regions

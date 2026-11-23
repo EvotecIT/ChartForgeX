@@ -11,8 +11,8 @@ internal static class PolarViewportExamples {
             File.WriteAllText(Path.Combine(output, name + ".svg"), prepared.ToSvg()); File.WriteAllBytes(Path.Combine(output, name + ".png"), prepared.ToPng());
             var section = PolarViewportRecipe.PrepareSection(chart);
             File.WriteAllText(Path.Combine(output, name + ".interactive.html"), "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>"
-                + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body>" + section.Html + "<script>"
-                + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>");
+                + HtmlInteractiveChartRenderer.StyleSheet + "</style></head><body>" + section.Html + "<script>"
+                + HtmlInteractiveChartRenderer.Script + "</script></body></html>");
         }
     }
 }

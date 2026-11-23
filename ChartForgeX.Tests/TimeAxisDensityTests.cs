@@ -95,7 +95,7 @@ public sealed class TimeAxisDensityTests {
     }
 
     private static Chart Create(int width) => Chart.Create().Size(width, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
-        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(node => node.Role == "axis-x-label").ToArray();
@@ -123,7 +123,7 @@ public sealed class TimeAxisDensityTests {
             if (index > 0) Assert.True(caption.X >= captions[index - 1].X + captions[index - 1].Text.Metrics.Width);
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.axis-label-overflow");
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var scene = prepared.Scene;
         var without = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "axis-x-label").ToArray(),
             scene.Diagnostics, scene.Regions), supersampling: 1);

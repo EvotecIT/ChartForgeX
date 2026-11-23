@@ -7,7 +7,7 @@ public static class UseCaseAdvancedActorsRecipe {
         var compact = variant == "compact";
         var chart = TopologyChart.Create().Id("native-usecase-advanced-actors").Title("Participants in a request")
             .Subtitle("Plain, hollow, business, silhouette and finite native icon actors")
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
             WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };
@@ -23,7 +23,7 @@ public static class UseCaseAdvancedActorsRecipe {
         }
         // Retain finite native geometry independently of the optional catalog id, including after save/load.
         chart.Nodes[5].IconId = "network:router"; chart.Nodes[5].IconShape = TopologyIconShape.Router;
-        chart.Nodes[5].Kind = TopologyNodeKind.Gateway; chart.Nodes[5].Symbol = "RTR"; chart.Nodes[5].Color = "#2563EB";
+        chart.Nodes[5].Kind = TopologyNodeKind.Gateway; chart.Nodes[5].Symbol = "RTR"; chart.Nodes[5].Color = ChartColor.FromHex("#2563EB");
         chart.AddAutoNode("Submit", "Submit request", width: 190, height: 100);
         chart.Nodes[6].Shape = TopologyNodeShape.BusinessEllipse; chart.Nodes[6].Kind = TopologyNodeKind.Generic; chart.Nodes[6].Subtitle = "«business action»";
         foreach (var node in chart.Nodes) { node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; }

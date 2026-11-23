@@ -29,7 +29,7 @@ public sealed class SankeyLabelPlacementBrowserTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, width < 500 ? "compact-options" : "options")
             .Size(width, width < 500 ? 360 : 440).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Title("Requests across processing stages").Subtitle("Measured node captions")
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .Sankey(options => {
                 options.LabelPlacement = placement;
                 options.EdgeLabelPlacement = placement == ChartSankeyLabelPlacement.Left ? null

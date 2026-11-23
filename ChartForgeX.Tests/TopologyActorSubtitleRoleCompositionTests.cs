@@ -14,8 +14,8 @@ public sealed class TopologyActorSubtitleRoleCompositionTests {
             .AddNode("actor", "Coordinator", 200, 50, width: 220, height: 120);
         var node = chart.Nodes[0]; node.Shape = TopologyNodeShape.Actor; node.Subtitle = "Primary reviewer";
         node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true;
-        node.TextStyle = new TextStyleOverride { FontSize = 12, FontFamily = BrowserProofFonts.Family, FontWeight = "600" };
-        node.SubtitleTextStyle = new TextStyleOverride { FontSize = 18, FontFamily = BrowserProofFonts.Family, FontWeight = "500" };
+        node.TextStyle = new TextStyleOverride { FontSize = 12, FontFamily = BrowserProofFonts.Family, FontWeight = 600 };
+        node.SubtitleTextStyle = new TextStyleOverride { FontSize = 18, FontFamily = BrowserProofFonts.Family, FontWeight = 500 };
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, WrapNodeLabels = true });
         var groups = new Stack<VisualSceneGroup>(); var title = new List<VisualSceneText>(); var subtitle = new List<VisualSceneText>();
         foreach (var mark in prepared.Visual.Scene.Nodes) {
@@ -30,7 +30,7 @@ public sealed class TopologyActorSubtitleRoleCompositionTests {
         Assert.All(title, text => Assert.Equal(12, text.Text.Size));
         Assert.All(subtitle, text => { Assert.Equal(18, text.Text.Size); Assert.Equal(500, text.Text.Style.Font.Weight); Assert.Equal(BrowserProofFonts.Family, text.Text.Style.Font.Family); });
         var saved = VisualArtifactInterchangeEnvelope.FromJson(prepared.ToInterchangeEnvelope().ToJson());
-        Assert.Equal(18, saved.Nodes[0].Topology!.SubtitleTextStyle!.FontSize); Assert.Equal("500", saved.Nodes[0].Topology!.SubtitleTextStyle!.FontWeight);
+        Assert.Equal(18, saved.Nodes[0].Topology!.SubtitleTextStyle!.FontSize); Assert.Equal(500, saved.Nodes[0].Topology!.SubtitleTextStyle!.FontWeight);
         var loaded = saved.ToTopologyChart(); Assert.NotSame(node.SubtitleTextStyle, loaded.Nodes[0].SubtitleTextStyle);
         Assert.NotEmpty(prepared.ToPng()); Assert.Contains("Primary reviewer", string.Join(" ", subtitle.SelectMany(text => text.Text.Lines.Select(line => line.Text))));
     }

@@ -169,7 +169,7 @@ public sealed class AxisTickPolicyTests {
             node => Assert.Equal("4 3", (string?)node.Attribute("stroke-dasharray")));
 
         // Each band paints native pixels inside its own rectangle.
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var without = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size,
             prepared.Scene.Nodes.Where(node => node.Role != "grid-y-band").ToArray(), prepared.Scene.Diagnostics, prepared.Scene.Regions), supersampling: 1);
         foreach (var rectangle in bands) {

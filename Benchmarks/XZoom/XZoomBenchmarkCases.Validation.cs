@@ -76,7 +76,7 @@ public static partial class XZoomBenchmarkCases {
         Require(png.SequenceEqual(view.ToPng(options)), "Native PNG is not deterministic within the lane.");
         Require(png.Length >= 24 && png[0] == 137 && png[1] == 80, "PNG signature is absent.");
         Require(BigEndian(png, 16) == view.Size.Width && BigEndian(png, 20) == view.Size.Height, "PNG dimensions changed.");
-        var rgba = view.ToRgba(new VisualRenderOptions(scale: 1, supersampling: 1));
+        var rgba = view.ToRgbaImage(new VisualRenderOptions(scale: 1, supersampling: 1));
         var blue = 0;
         for (var index = 0; index < rgba.Pixels.Length; index += 4)
             if (rgba.Pixels[index + 2] > rgba.Pixels[index] + 50 && rgba.Pixels[index + 2] > rgba.Pixels[index + 1] + 20) blue++;

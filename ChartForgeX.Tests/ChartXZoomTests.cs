@@ -67,7 +67,7 @@ public sealed partial class ChartXZoomTests {
         chart.DataLabels();
         var disconnected = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2)).At(1, .5);
         Assert.Equal(2, disconnected.Scene.Nodes.OfType<VisualScenePath>().Single(path => path.Role == "line").Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
-        Assert.DoesNotContain(disconnected.ToRgba().Pixels.Chunk(4), pixel => pixel[2] > pixel[0] + 60 && pixel[2] > pixel[1] + 60);
+        Assert.DoesNotContain(disconnected.ToRgbaImage().Pixels.Chunk(4), pixel => pixel[2] > pixel[0] + 60 && pixel[2] > pixel[1] + 60);
         Assert.DoesNotContain(disconnected.Scene.Nodes, node => node.Role == "data-label");
         Assert.Equal(2, PointFacts(disconnected).Length);
     }
@@ -189,7 +189,7 @@ public sealed partial class ChartXZoomTests {
             Assert.Equal(bank.Bank[0].Layers.SelectMany(layer => layer.Scene.Nodes).OfType<VisualScenePath>().Single(node => node.Role == "annotation-line").Dash, guide.Dash);
         }
         var middle = bank.At(1, .5);
-        Assert.Contains(middle.ToRgba().Pixels.Chunk(4), pixel => pixel[1] > pixel[0] + 60 && pixel[1] > pixel[2] + 40);
+        Assert.Contains(middle.ToRgbaImage().Pixels.Chunk(4), pixel => pixel[1] > pixel[0] + 60 && pixel[1] > pixel[2] + 40);
     }
 
     [Fact]

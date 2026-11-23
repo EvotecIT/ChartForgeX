@@ -24,7 +24,7 @@ public sealed class PatternClipAreaTests {
         builder.Pattern(new ChartPath(commands), ChartFillPattern.Crosshatch, ChartColor.Black, role: "test-pattern");
         var prepared = new PreparedVisual(builder.Build());
         Assert.Equal(filled, prepared.Scene.Nodes.OfType<VisualSceneLine>().Any());
-        var rgba = prepared.ToRgba();
+        var rgba = prepared.ToRgbaImage();
         Assert.Equal(filled, Enumerable.Range(0, rgba.Width * rgba.Height).Any(pixel => rgba.Pixels[pixel * 4 + 3] != 0));
         if (shape == "hole") Assert.Equal(0, rgba.Pixels[(50 * rgba.Width + 50) * 4 + 3]);
     }

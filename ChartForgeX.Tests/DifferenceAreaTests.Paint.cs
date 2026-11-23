@@ -19,7 +19,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(64, positive.Fill!.Value.A);
         Assert.Equal(0, Boundary(plain, "difference-negative").Fill!.Value.A);
         var first = Boundary(plain, "difference-first"); var second = Boundary(plain, "difference-second");
-        var image = plain.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = plain.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, Sample(first, second, .25), Red, 64);
         var invisible = Sample(first, second, .85);
         Assert.Equal(0, Pixel(image, invisible.X, invisible.Y).A);
@@ -38,7 +38,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Contains(patterned.Scene.Nodes, node => node.Role == "legend-area-pattern");
         // Hatching must change actual native swatch pixels even though glyphs are disabled.
         var swatch = halves.Single(node => node.Role == "legend-difference-positive").Bounds;
-        var patternedImage = patterned.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var patternedImage = patterned.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Contains(Enumerable.Range((int)Math.Ceiling(swatch.Top), (int)swatch.Height), y =>
             Enumerable.Range((int)Math.Ceiling(swatch.Left), (int)swatch.Width).Any(x =>
                 !Pixel(image, x, y).Equals(Pixel(patternedImage, x, y))));

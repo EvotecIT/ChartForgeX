@@ -17,7 +17,7 @@ public sealed class TopologyExternalCaptionPolicyTests {
     public void LiteralCaptionRoleUsesItsMeasuredFontAndOccupiedBoundsAboveOrBelow(TopologyNodeDisplayMode mode, bool top) {
         var chart=Source(mode);var node=chart.Nodes[0];node.CaptionPlacement=top?TopologyCaptionPlacement.Top:TopologyCaptionPlacement.Bottom;
         node.CaptionGap=8;node.CaptionSurface=TopologyCaptionSurface.Plain;
-        node.CaptionTextStyle=new TextStyleOverride{FontFamily=BrowserProofFonts.Family,FontSize=14,FontWeight="400",Color=ChartColor.FromHex("#123456")};
+        node.CaptionTextStyle=new TextStyleOverride{FontFamily=BrowserProofFonts.Family,FontSize=14,FontWeight=400,Color=ChartColor.FromHex("#123456")};
         var prepared=chart.Prepare();var svg=prepared.ToSvg();var png=prepared.ToPng();var envelope=prepared.ToInterchangeEnvelope();var json=envelope.ToJson();
         Capture(mode+"-"+top,svg,png,json);
         var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();var after=restored.Prepare();Capture(mode+"-"+top+"-restored",after.ToSvg(),after.ToPng(),after.ToInterchangeEnvelope().ToJson());
@@ -66,7 +66,7 @@ public sealed class TopologyExternalCaptionPolicyTests {
         var chart=TopologyChart.Create().Id("external-caption-policy").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","Literal caption",210,150,width:180,height:90);
         var node=chart.Nodes[0];node.DisplayMode=mode;node.Shape=TopologyNodeShape.Rectangle;node.IconShape=TopologyIconShape.Router;
-        node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color="#2563EB";
+        node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color=ChartColor.FromHex("#2563EB");
         if(mode==TopologyNodeDisplayMode.Artwork)node.Artwork=TopologyIconArtwork.Portrait(new ChartForgeX.Raster.RgbaImage(2,1,new byte[]{255,0,0,255,0,255,0,128}));
         chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeIconLabels=true,FitContentToViewport=false,MaxNodeLabelLines=4,WrapNodeLabels=true});return chart;
     }

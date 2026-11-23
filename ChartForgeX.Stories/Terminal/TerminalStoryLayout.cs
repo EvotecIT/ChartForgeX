@@ -125,7 +125,7 @@ internal sealed class TerminalStoryLayout {
                     foreach (var wrappedCommandLine in wrapContent ? Wrap(commandText, maxColumnsByTab[tab.Id]) : new[] { commandText }) {
                         var promptLength = Math.Min(remainingPromptLength, wrappedCommandLine.Length);
                         var lineDuration = typingDuration * VisibleTextElementCount(wrappedCommandLine) / commandElements;
-                        AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
+                        AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedCommandLine, Tone.None, true, promptLength, clock, lineDuration));
                         activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + lineDuration);
                         remainingPromptLength -= promptLength;
                         clock += lineDuration + story.LineDelaySeconds;
@@ -142,7 +142,7 @@ internal sealed class TerminalStoryLayout {
                     }
                     break;
                 case TerminalStoryStepKind.Blank:
-                    AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, string.Empty, TerminalTextTone.Default, false, 0, clock, 0));
+                    AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, string.Empty, Tone.None, false, 0, clock, 0));
                     activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock);
                     break;
                 case TerminalStoryStepKind.Pause:
@@ -168,7 +168,7 @@ internal sealed class TerminalStoryLayout {
             var promptLines = wrapContent ? Wrap(promptText, maxColumnsByTab[finalTab.Id]).ToArray() : new[] { promptText };
             for (var index = 0; index < promptLines.Length; index++) {
                 var promptLine = promptLines[index];
-                AddLine(lines, finalTabLines, new TerminalRenderedLine(finalTab.Id, finalTabLines.Count, promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0, isFinalPrompt: index == promptLines.Length - 1));
+                AddLine(lines, finalTabLines, new TerminalRenderedLine(finalTab.Id, finalTabLines.Count, promptLine, Tone.None, true, promptLine.Length, clock + 0.08, 0, isFinalPrompt: index == promptLines.Length - 1));
             }
             clock += 0.08;
         }
@@ -286,10 +286,10 @@ internal sealed class TerminalStoryLayout {
         }
 
         var output = new List<TableRenderedLine> {
-            new(RenderRow(columns, widths, table.Alignments, separator), TerminalTextTone.Accent),
-            new(string.Join(divider, widths.Select(value => new string('-', value))), TerminalTextTone.Muted)
+            new(RenderRow(columns, widths, table.Alignments, separator), Tone.Info),
+            new(string.Join(divider, widths.Select(value => new string('-', value))), Tone.Muted)
         };
-        foreach (var row in rows) output.Add(new TableRenderedLine(RenderRow(row, widths, table.Alignments, separator), TerminalTextTone.Default));
+        foreach (var row in rows) output.Add(new TableRenderedLine(RenderRow(row, widths, table.Alignments, separator), Tone.None));
         return output;
     }
 
@@ -341,9 +341,9 @@ internal sealed class TerminalStoryLayout {
 
     private readonly struct TableRenderedLine {
         public readonly string Text;
-        public readonly TerminalTextTone Tone;
+        public readonly Tone Tone;
 
-        public TableRenderedLine(string text, TerminalTextTone tone) {
+        public TableRenderedLine(string text, Tone tone) {
             Text = text;
             Tone = tone;
         }
@@ -354,7 +354,7 @@ internal sealed class TerminalRenderedLine {
     public string TabId { get; }
     public int RowIndex { get; }
     public string Text { get; }
-    public TerminalTextTone Tone { get; }
+    public Tone Tone { get; }
     public bool IsCommand { get; }
     public int PromptLength { get; }
     public double StartSeconds { get; }
@@ -362,7 +362,7 @@ internal sealed class TerminalRenderedLine {
     public bool IsTable { get; }
     public bool IsFinalPrompt { get; }
 
-    public TerminalRenderedLine(string tabId, int rowIndex, string text, TerminalTextTone tone, bool isCommand, int promptLength, double startSeconds, double durationSeconds, bool isTable = false, bool isFinalPrompt = false) {
+    public TerminalRenderedLine(string tabId, int rowIndex, string text, Tone tone, bool isCommand, int promptLength, double startSeconds, double durationSeconds, bool isTable = false, bool isFinalPrompt = false) {
         TabId = tabId;
         RowIndex = rowIndex;
         Text = text;

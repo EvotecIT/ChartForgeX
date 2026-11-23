@@ -25,7 +25,7 @@ var point = new ChartPoint(1, 24).WithMarkOptions(new ChartMarkOptions(
 
 var chart = Chart.Create().AddBar("Updates", new[] { point });
 var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
-    new VisualSvgOptions(idPrefix: "activity-daily"));
+    new VisualSvgOptions(idScope: "activity-daily"));
 ```
 
 Use `linkTarget: VisualSvgLinkTarget.NewContext` for a publisher's page. New-context links receive `target="_blank"` and `rel="noopener noreferrer"`. Other authored links use the current context, independently of the render-wide default. Links receive a keyboard tab stop, `role="link"` and an accessible name. `Tooltip` becomes a plain-text SVG `<title>`; `AccessibleLabel` takes precedence over the generated name.
@@ -153,7 +153,7 @@ A model whose `ThemeMode` is `Auto` (the default for charts, chart grids, topolo
 
 Static images have no viewer: `ToSvg()`, `ToPng()`, `Save(...)` and raster output paint `Auto` as light. An explicit `ThemeMode.Light` or `Dark` writes the same literal HTML as before. Colour variables set on the model (`SvgColorVariables(...)`, `TopologyRenderOptions.SvgColorVariables`) take precedence, and no Auto stylesheet is written.
 
-Self-contained fragments and pages include the stylesheet in a plain `<style>` element. Asset-free output leaves it to the host, like its other assets: register `HtmlChartSection.AutoThemeStyleSheet` or `HtmlInteractiveChartRenderer.AutoThemeStyleSheet(chart)` for interactive sections, `TopologyHtmlRenderer.BuildAutoThemeStyle(chart, options)` for topology fragments without assets, and `HtmlResponsiveChartRenderer.AutoThemeStylesheet(chart)` for responsive fragments without assets. The scope is a hash of the stylesheet, so equal themes on one page share it and different themes never collide. Interactive SVG and PNG exports carry the colours the viewer currently sees.
+Self-contained fragments and pages include the stylesheet in a plain `<style>` element. Asset-free output leaves it to the host, like its other assets: register `HtmlChartSection.AutoThemeStyleSheet` or `HtmlInteractiveChartRenderer.AutoThemeStyleSheet(chart)` for interactive sections, `TopologyHtmlRenderer.AutoThemeStyleSheet(chart, options)` for topology fragments without assets, and `HtmlResponsiveChartRenderer.AutoThemeStyleSheet(chart)` for responsive fragments without assets. The scope is a hash of the stylesheet, so equal themes on one page share it and different themes never collide. Interactive SVG and PNG exports carry the colours the viewer currently sees.
 
 ## Time overlays and open support windows
 
@@ -198,19 +198,19 @@ A dashboard card that reflows from desktop to phone can carry one native drawing
 var html = new HtmlChartRenderer().RenderWidths(chart, "latency"); // 800, 600 and 390 pixels
 ```
 
-Each drawing is prepared at its own width, so ticks, captions and legends are laid out for it rather than scaled. A container query shows the widest drawing that fits the card; below the narrowest width that drawing scales down. It needs no script, works for every chart family and honours `StyleNonce`. Pass other widths as extra arguments. For Cartesian, matrix, radial and state-timeline charts, `HtmlResponsiveChartRenderer` lays out one drawing at any width in the browser instead; interactive charts use `HtmlChartResponsiveLayout.Adaptive`.
+Each drawing is prepared at its own width, so ticks, captions and legends are laid out for it rather than scaled. A container query shows the widest drawing that fits the card; below the narrowest width that drawing scales down. It needs no script, works for every chart family and honours `Nonce`. Pass other widths as extra arguments. For Cartesian, matrix, radial and state-timeline charts, `HtmlResponsiveChartRenderer` lays out one drawing at any width in the browser instead; interactive charts use `HtmlChartResponsiveLayout.Adaptive`.
 
 ## ID scopes, CSP and testing
 
-Pass a unique, stable `idPrefix` for every occurrence on a page, including repeated equal charts. An automatic content namespace is deterministic, so two identical occurrences otherwise reuse definition IDs. Use a route-safe prefix such as `release-4-track`; keep source record identifiers in validated host data attributes.
+Pass a unique, stable `idScope` for every occurrence on a page, including repeated equal charts. An automatic content namespace is deterministic, so two identical occurrences otherwise reuse definition IDs. Use a route-safe prefix such as `release-4-track`; keep source record identifiers in validated host data attributes.
 
-Static SVG, native links, fluid tracks and data tables need no inline script. By default the output includes `style` attributes and scoped `style` elements. For a page whose policy allows styles only from nonce'd elements (`style-src 'nonce-…'` without `'unsafe-inline'`), set a style nonce:
+Static SVG, native links, fluid tracks and data tables need no inline script. By default the output includes `style` attributes and scoped `style` elements. For a page whose policy allows styles only from nonce'd elements (`style-src 'nonce-…'` without `'unsafe-inline'`), set a nonce:
 
 ```csharp
-var html = new HtmlChartRenderer { StyleNonce = nonce }.RenderFragment(chart, "activity-daily");
+var html = new HtmlChartRenderer { Nonce = nonce }.RenderFragment(chart, "activity-daily");
 ```
 
-The output then has no `style` attributes. Each inline style becomes a generated `cfx-s-…` class, and its declarations, together with every `style` element, move into one `<style nonce="…">` element. The same option exists on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions` and `HtmlResponsiveChartRenderer` (`StyleNonce`, next to `ScriptNonce`), and on `TopologyRenderOptions` as `Html.Nonce`, which also marks topology script elements. Interactive runtimes move the generated classes back to inline styles through the CSS object model when they mount, which a strict policy allows, so tooltips, resizing and updates behave as before.
+The output then has no `style` attributes. Each inline style becomes a generated `cfx-s-…` class, and its declarations, together with every `style` element, move into one `<style nonce="…">` element. The same option exists on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions` and `HtmlResponsiveChartRenderer`, on `TopologyRenderOptions` as `Html.Nonce`, and on `HtmlInteractiveDiagramOptions` for interactive flow and sequence diagrams. Script elements carry the same nonce. Interactive runtimes move the generated classes back to inline styles through the CSS object model when they mount, which a strict policy allows, so tooltips, resizing and updates behave as before.
 
 Hosts that deliver styles themselves call `HtmlStrictStyles.Extract(html)` on any ChartForgeX output, including `HtmlChartSection.Html`. It returns the `Markup` without inline styles and the `StyleSheet` to register once in their own nonce'd element or stylesheet file. Equal declarations get the same class name in every fragment, so the stylesheets of several fragments can be concatenated. `controller.update(html)` accepts a strict section that starts with its own `style` element.
 

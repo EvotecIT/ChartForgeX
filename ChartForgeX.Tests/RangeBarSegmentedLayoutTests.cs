@@ -42,7 +42,7 @@ public sealed class RangeBarSegmentedLayoutTests {
             Assert.All(prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "range-bar-cap-highlight"),
                 line => Assert.True(line.End.Y > line.Start.Y));
         }
-        var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var raster = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var pixelDeltas = bodies.Select(body => {
             var x = (int)Math.Round(body.Bounds.Left + body.Bounds.Width / 2); var y = (int)Math.Round(body.Bounds.Top + body.Bounds.Height / 2);
             var inside = (y * raster.Width + x) * 4; var outside = (((int)Math.Floor(body.Bounds.Top) - 2) * raster.Width + x) * 4;

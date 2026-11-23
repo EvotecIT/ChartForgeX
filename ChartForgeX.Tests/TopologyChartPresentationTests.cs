@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System.Xml.Linq;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
@@ -33,7 +34,7 @@ public sealed class TopologyChartPresentationTests {
         stored.PreserveNaturalSize = true;
         // A discovered size preserves the prepared layout; replacing it requests a new viewport.
         // Give both artifacts the same actual replacement, distinct from either discovery snapshot.
-        var explicitSize = new VisualArtifactSize(stored.NaturalSize!.Value.Width + 20, stored.NaturalSize.Value.Height + 20);
+        var explicitSize = new VisualSize(stored.NaturalSize!.Value.Width + 20, stored.NaturalSize.Value.Height + 20);
         fitted.NaturalSize = explicitSize; stored.NaturalSize = explicitSize;
         Assert.Equal(fitted.ToSvg(new VisualArtifactRenderOptions { Topology = Tiles }), stored.ToSvg());
         Assert.Equal(Chart().ToVisualArtifact().ToInterchangeJson(new VisualArtifactRenderOptions { Topology = Tiles }), chart.ToVisualArtifact().ToInterchangeJson());

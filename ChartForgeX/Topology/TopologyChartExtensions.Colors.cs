@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 
 namespace ChartForgeX.Topology;
@@ -14,7 +15,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="iconId">The optional icon id, for example <c>common:certificate</c>.</param>
     /// <param name="catalog">Optional icon catalog. When omitted, built-in packs are used.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart NodesOfKindStyle(this TopologyChart chart, TopologyNodeKind kind, string? color = null, string? backgroundColor = null, string? iconId = null, TopologyIconCatalog? catalog = null) {
+    public static TopologyChart NodesOfKindStyle(this TopologyChart chart, TopologyNodeKind kind, ChartColor? color = null, ChartColor? backgroundColor = null, string? iconId = null, TopologyIconCatalog? catalog = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
         var icon = string.IsNullOrWhiteSpace(iconId) ? null : ResolveIcon(iconId!, catalog);

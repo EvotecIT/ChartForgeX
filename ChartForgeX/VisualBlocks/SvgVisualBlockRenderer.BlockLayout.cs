@@ -7,7 +7,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderBlockLayout(SvgMarkupWriter writer, BlockLayoutBlock block, string id) {
         var options = block.Options;
         var theme = options.ResolvedTheme;

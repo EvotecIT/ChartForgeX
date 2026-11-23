@@ -109,7 +109,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
     internal static void UseProofFonts(Chart chart) {
         _ = ProofFontCss.Value;
         chart.FontFamily(ProofFont);
-        chart.Options.Png.FontPath = null;
+        chart.Options.Raster.FontPath = null;
     }
 
     private static string CreateProofFontCss() {

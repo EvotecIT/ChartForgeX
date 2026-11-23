@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.VisualBlocks;
@@ -18,7 +19,7 @@ public static class VisualGridArtifactRendering {
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = grid.Title;
         artifact.Subtitle = grid.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(layout.Width, layout.Height);
+        artifact.NaturalSize = new VisualSize(layout.Width, layout.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png |
             VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
         artifact.Accessibility.Name = grid.ResolvedAccessibleName;

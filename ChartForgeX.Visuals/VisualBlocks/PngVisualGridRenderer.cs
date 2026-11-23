@@ -10,12 +10,12 @@ namespace ChartForgeX.VisualBlocks;
 /// <summary>
 /// Renders visual grids to dependency-free PNG images.
 /// </summary>
-public sealed class PngVisualGridRenderer {
+internal sealed class PngVisualGridRenderer {
 
     /// <summary>Renders a visual grid to PNG bytes.</summary>
     public byte[] Render(VisualGrid grid) => PngWriter.WriteRgba(RenderImage(grid));
 
-    internal RgbaImage RenderImage(VisualGrid grid) => RenderCanvas(grid).ToImage();
+    internal RgbaImage RenderImage(VisualGrid grid) => RenderCanvas(grid).ToRgbaImage();
 
     internal RgbaCanvas RenderCanvas(VisualGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
@@ -23,7 +23,7 @@ public sealed class PngVisualGridRenderer {
         var theme = grid.ResolvedTheme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
-        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
+        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.RasterScale);
         canvas.Clear(background);
 
         if (grid.FrameVisible) {
@@ -39,7 +39,7 @@ public sealed class PngVisualGridRenderer {
 
         foreach (var cell in layout.Cells) {
             var size = VisualGridLayout.ItemSize(cell.Item);
-            var density = ChartPanelDensity.OutputScale(size, cell.Width, cell.Height, grid.PngOutputScale);
+            var density = ChartPanelDensity.OutputScale(size, cell.Width, cell.Height, grid.RasterScale);
             var child = cell.Item.Chart != null ? VisualGridChartRendering.Image(cell.Item.Chart, density) : RenderChildBlock(cell.Item.Block!, density);
             canvas.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, child.Width, child.Height, child.Pixels);
         }
@@ -59,7 +59,7 @@ public sealed class PngVisualGridRenderer {
                     font.TileLabelSize, font.TileValueSize, font.TileDetailSize);
             });
             if (block is IFactualVisualPixels factual) return factual.RenderAtScale(density);
-            if (SvgVisualBlockRenderer.IsNativeBlock(block)) return new PngVisualBlockRenderer().RenderCanvas(block, density).ToImage();
+            if (SvgVisualBlockRenderer.IsNativeBlock(block)) return new PngVisualBlockRenderer().RenderCanvas(block, density).ToRgbaImage();
             return block.RenderRgba();
         }
         finally {

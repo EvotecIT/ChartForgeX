@@ -13,7 +13,7 @@ public static class FunnelPresentationRecipe {
         var series = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel,
             new[] { new ChartPoint(1, 120), new ChartPoint(2, 80), new ChartPoint(3, 40), new ChartPoint(4, 0) })
             .ObservationIds(new[] { new ChartObservationId("received"), new ChartObservationId("reviewed"), new ChartObservationId("qualified"), new ChartObservationId("completed") })
-            .PointColor(0, "#2978A5").PointColor(1, "#3C8D70").PointColor(2, "#BA7834")
+            .PointColor(0, ChartColor.FromHex("#2978A5")).PointColor(1, ChartColor.FromHex("#3C8D70")).PointColor(2, ChartColor.FromHex("#BA7834"))
             .PointFillPattern(1, ChartFillPattern.DiagonalForward)
             .PointStrokeColor(1, ChartColor.FromHex("#93455E"));
         chart.AddSeries(series).Funnel(options => {

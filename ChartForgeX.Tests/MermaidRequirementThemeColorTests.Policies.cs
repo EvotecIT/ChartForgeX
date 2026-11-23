@@ -16,9 +16,9 @@ public sealed partial class MermaidRequirementThemeColorTests {
         var mapped = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         Capture("requirement-explicit-role-host-" + dark, result);
         Assert.Equal(plain.Theme.ToJson(), mapped.Theme.ToJson());
-        Assert.All(mapped.Nodes, node => Assert.Equal(("#F5DBE4", "#B71D62", "#28132B"), (node.BackgroundColor, node.Color, node.LabelColor)));
+        Assert.All(mapped.Nodes, node => Assert.Equal((ChartColor.FromHex("#F5DBE4"), ChartColor.FromHex("#B71D62"), ChartColor.FromHex("#28132B")), (node.BackgroundColor, node.Color, node.LabelColor)));
         var edge = Assert.Single(mapped.Edges);
-        Assert.Equal(("#2F4B7C", "#0D5325"), (edge.Color, edge.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#2F4B7C"), ChartColor.FromHex("#0D5325")), (edge.Color, edge.LabelColor));
     }
     [Theory]
     [InlineData(false)] [InlineData(true)]
@@ -27,7 +27,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
         var result = MermaidRenderer.Render(ConfiguredSource + "\nstyle R fill:#3A8D6B,stroke:#224466,color:#112233", options);
         Assert.Empty(result.Diagnostics); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var node = chart.Nodes.Single(item => item.Id == "R");
-        Assert.Equal(("#3A8D6B", "#224466", "#112233"), (node.BackgroundColor, node.Color, node.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#3A8D6B"), ChartColor.FromHex("#224466"), ChartColor.FromHex("#112233")), (node.BackgroundColor, node.Color, node.LabelColor));
     }
     [Theory]
     [InlineData("{\"requirementBackground\":17}")]
@@ -48,7 +48,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(json); var imported = envelope.ToTopologyChart();
         Assert.Equal(chart.Nodes.Select(node => (node.BackgroundColor, node.Color, node.LabelColor)), imported.Nodes.Select(node => (node.BackgroundColor, node.Color, node.LabelColor)));
         Assert.Equal(chart.Edges.Select(edge => (edge.Color, edge.LabelColor)), imported.Edges.Select(edge => (edge.Color, edge.LabelColor)));
-        chart.Nodes[0].BackgroundColor = "#010203"; chart.Nodes[0].LabelColor = "#040506"; chart.Edges[0].Color = "#070809";
+        chart.Nodes[0].BackgroundColor = ChartColor.FromHex("#010203"); chart.Nodes[0].LabelColor = ChartColor.FromHex("#040506"); chart.Edges[0].Color = ChartColor.FromHex("#070809");
         envelope.Nodes.Clear(); envelope.Edges.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(json, prepared.ToInterchangeEnvelope().ToJson());
         Assert.NotEqual(chart.Nodes[0].BackgroundColor, imported.Nodes[0].BackgroundColor);

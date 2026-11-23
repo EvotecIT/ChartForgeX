@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
             .XAxis(x => x.Bounds(0, 10))
             .TickCount(6)
             .XAxis(x => x.LabelBy(value => "T" + value.ToString("0", CultureInfo.InvariantCulture)))
-            .AddTimelineRange("Rollout", 2, 4);
+            .AddTimelineItem("Rollout", 2, 4);
         var timelineSvg = timeline.ToSvg();
         Assert(timelineSvg.Contains(">T0</text>", System.StringComparison.Ordinal), "Timeline x-axis bounds should drive the first visible tick.");
         Assert(timelineSvg.Contains(">T10</text>", System.StringComparison.Ordinal), "Timeline x-axis bounds should drive the last visible tick.");

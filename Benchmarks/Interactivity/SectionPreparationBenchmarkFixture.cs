@@ -45,7 +45,7 @@ public class SectionPreparationBenchmarkFixture {
         series.Markers(markers => { markers.Enabled = true; markers.Radius = radius; });
         SourceChart = Chart.Create().Size(800, 440).Padding(24, 24, 24, 24).ShowHeader(false).Legend(false).DataLabels(false)
             .Theme(theme).ThemeMode(ThemeMode.Light).AddSeries(series);
-        SourceChart.Options.Png.FontPath = fontPath;
+        SourceChart.Options.Raster.FontPath = fontPath;
         if (parts[1] == "explicit") SourceChart.XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(0, 40));
         _authoredXMinimum = SourceChart.Options.XAxis.Min; _authoredXMaximum = SourceChart.Options.XAxis.Max;
         _authoredYMinimum = SourceChart.Options.YAxis.Min; _authoredYMaximum = SourceChart.Options.YAxis.Max;

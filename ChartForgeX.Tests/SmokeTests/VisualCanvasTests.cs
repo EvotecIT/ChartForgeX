@@ -94,7 +94,7 @@ internal static partial class SmokeTests {
 
         var resizedTileCanvas = VisualCanvas.Create(620, 220)
             .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
-            .AddInfoTile(24, 24, 520, 150, "OS", "OPERATING SYSTEM", "Windows 11 Enterprise Intune compliance", "cross-site policy drift", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, iconKind: VisualCanvasInfoTileIconKind.OperatingSystem);
+            .AddInfoTile(24, 24, 520, 150, "OS", "OPERATING SYSTEM", "Windows 11 Enterprise Intune compliance", "cross-site policy drift", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised, icon: VisualCanvasIcons.OperatingSystem);
         var resizedTileSvg = resizedTileCanvas.ToSvg("visual-canvas-resized-tile-text");
         Assert(resizedTileSvg.Contains("compliance", StringComparison.Ordinal), "Resized VisualCanvas info tiles should preserve long value text across wrapped lines.");
         Assert(resizedTileSvg.Contains("policy drift", StringComparison.Ordinal), "Resized VisualCanvas info tiles should preserve detail text when height is available.");
@@ -285,13 +285,13 @@ internal static partial class SmokeTests {
         var overlay = VisualCanvas.CreateDesktopWallpaper()
             .Title("Transparent overlay")
             .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
-            .AddInfoTile(80, 120, 360, 92, "PC", "HOSTNAME", "DEV-WKS-01", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline, iconKind: VisualCanvasInfoTileIconKind.Computer);
+            .AddInfoTile(80, 120, 360, 92, "PC", "HOSTNAME", "DEV-WKS-01", surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline, icon: VisualCanvasIcons.Computer);
         var overlaySvg = overlay.ToSvg("visual-canvas-overlay");
         Assert(!overlaySvg.Contains("data-cfx-role=\"visual-canvas-background\"", StringComparison.Ordinal), "Transparent VisualCanvas overlays should not render a full background rect.");
         Assert(overlay.ToPng().Length > 64, "Transparent VisualCanvas overlays should render PNG output.");
 
         AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvas.Create(0, 630), "VisualCanvas should reject invalid widths.");
-        AssertThrows<ArgumentOutOfRangeException>(() => canvas.PngOutputScale = 5, "VisualCanvas should reject unsupported PNG output scales.");
+        AssertThrows<ArgumentOutOfRangeException>(() => canvas.RasterScale = 5, "VisualCanvas should reject unsupported PNG output scales.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").Progress = 1.2, "VisualCanvas info tile progress should stay normalized.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").MiniChart(VisualCanvasInfoTileMiniChartKind.Sparkline, new[] { double.NaN }), "VisualCanvas info tile mini charts should reject invalid values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").TextFitPolicy((VisualCanvasTextFitPolicy)999), "VisualCanvas info tile text fit policy should reject unknown values.");

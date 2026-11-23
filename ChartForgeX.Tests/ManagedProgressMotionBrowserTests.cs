@@ -190,8 +190,8 @@ public sealed partial class ManagedProgressMotionBrowserTests {
             _width = width; _dark = dark; var values = new[] { .5, 1250d, -8d };
             _snapshots.Add("initial", new Snapshot(PrepareSection(values), values));
         }
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + Section("initial").Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + Section("initial").Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal HtmlChartSection Section(string basis) => _snapshots[basis].Section;
         internal HtmlChartSection Midpoint() => PrepareSection(new[] { .625, 1250d, -8d });
         internal Reply External(double value) => Store(new[] { value, 1250d, -8d });

@@ -74,8 +74,8 @@ var canvas = VisualCanvas.CreateSocialPreview()
     .Theme(theme).ThemeMode(ThemeMode.Dark)
     .BackgroundTop(ChartColor.FromHex("#020713")).BackgroundBottom(ChartColor.FromHex("#071A35"))
     .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
-    .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), iconKind: VisualCanvasInfoTileIconKind.Computer)
-    .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Raised, VisualCanvasInfoTileIconKind.Cpu, VisualCanvasInfoTileMiniChartKind.Area, new[] { 18d, 26d, 22d, 37d, 48d, 43d }, 100)
+    .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), icon: VisualCanvasIcons.Computer)
+    .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Raised, VisualCanvasIcons.Cpu, VisualCanvasInfoTileMiniChartKind.Area, new[] { 18d, 26d, 22d, 37d, 48d, 43d }, 100)
     .AddKeyValueBlock(
         VisualCanvasPlacement.At(VisualCanvasAnchor.BottomLeft, 66, 50),
         300,
@@ -139,8 +139,7 @@ var theme = VisualTheme.Graphite().WithTypography(
         tileDetailSize: 14));
 var canvas = VisualCanvas.Create(1200, 630).Theme(theme)
     .Style(style => style.TileTextScale = 1.15)
-    .AddInfoTileWithTextOptions(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
-        new VisualCanvasInfoTileTextOptions(textScale: 1.25,
+    .AddInfoTile(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.25,
             valueFontSize: 28));
 ```
 
@@ -274,10 +273,10 @@ for SVG or HTML delivery.
 
 Angles are in degrees, clockwise on screen from three o'clock, so `-90` starts at twelve o'clock. `DrawArc` takes `ImageLineCap.Butt`, `Round` (the default), or `Square`. `DrawProgressRing` paints a full track and a round-capped arc for `fraction` of it; a fraction of one or more fills the ring. Linear gradient angles follow the same convention: `0` runs left to right and `90` top to bottom. A radial gradient's center is in composition coordinates and may sit outside the rectangle, which is how a corner glow is drawn; fade to the same color with zero alpha to avoid a gray fringe.
 
-When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:
+When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToRgbaImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:
 
 ```csharp
-var composition = ImageComposition.FromImage(SvgRasterizer.ToImage(backdropSvg));
+var composition = ImageComposition.FromImage(SvgRasterizer.ToRgbaImage(backdropSvg));
 composition.DrawText(84, 196, 650, title, titleStyle, TextWrapMode.Word, maximumLines: 3);
 ```
 
@@ -363,7 +362,7 @@ GSUB can combine emoji ZWJ sequences when the selected face provides the ligatur
 
 #### Small text
 
-Text drawn at 12 output pixels or smaller is lightly hinted, independently of the font: the run's baseline moves to a whole pixel and each glyph is stretched vertically so its face's x-height and cap height also land on whole pixels. Nothing moves horizontally, so advances, widths, wrapping, and fitting are exactly those of unhinted text. Larger text is drawn as designed. Set `TextStyle.Hinting = TextHinting.None` for composed text, or `ChartOptions.PngTextHinting = TextHinting.None` for chart PNGs, where exact outline geometry matters more than crisp rows, such as frames of an animation that moves text by fractions of a pixel. SVG `<text>` is hinted in its own glyph buffer, which is then placed on a whole pixel row when it is only translated. `TextHinting.Auto` retains fractional horizontal positions and does not darken stems. `TextHinting.Full` adds bounded horizontal fitting of narrow, straight stems and at most 0.35 output pixels of stem-width adjustment. It can move ink by less than one output pixel while advances, wrapping, and fitted widths retain the same layout. Counter spaces remain open; ambiguous or very complex outlines retain vertical fitting, and synthetic slants, italic faces, explicitly selected `ital`/`slnt` axes and colour glyphs keep their existing policy. Set `TextStyle.Hinting = TextHinting.Full` for composition or `chart.Options.PngTextHinting = TextHinting.Full` for chart PNGs. The decision uses final output pixel size, so a 10px label receives fitting at 1x and retains its designed outline at 2x. Fitted and rotated `Full` buffers retain the final output density, including logical 5px text rendered at 2x. Native SVG and HTML keep the browser font engine; imported SVG rasterization retains the default vertical fitting.
+Text drawn at 12 output pixels or smaller is lightly hinted, independently of the font: the run's baseline moves to a whole pixel and each glyph is stretched vertically so its face's x-height and cap height also land on whole pixels. Nothing moves horizontally, so advances, widths, wrapping, and fitting are exactly those of unhinted text. Larger text is drawn as designed. Set `TextStyle.Hinting = TextHinting.None` for composed text, or `ChartOptions.RasterTextHinting = TextHinting.None` for chart PNGs, where exact outline geometry matters more than crisp rows, such as frames of an animation that moves text by fractions of a pixel. SVG `<text>` is hinted in its own glyph buffer, which is then placed on a whole pixel row when it is only translated. `TextHinting.Auto` retains fractional horizontal positions and does not darken stems. `TextHinting.Full` adds bounded horizontal fitting of narrow, straight stems and at most 0.35 output pixels of stem-width adjustment. It can move ink by less than one output pixel while advances, wrapping, and fitted widths retain the same layout. Counter spaces remain open; ambiguous or very complex outlines retain vertical fitting, and synthetic slants, italic faces, explicitly selected `ital`/`slnt` axes and colour glyphs keep their existing policy. Set `TextStyle.Hinting = TextHinting.Full` for composition or `chart.Options.RasterTextHinting = TextHinting.Full` for chart PNGs. The decision uses final output pixel size, so a 10px label receives fitting at 1x and retains its designed outline at 2x. Fitted and rotated `Full` buffers retain the final output density, including logical 5px text rendered at 2x. Native SVG and HTML keep the browser font engine; imported SVG rasterization retains the default vertical fitting.
 
 `TextHinting.Full` also uses authored horizontal EBDT/EBLC monochrome or grayscale strikes when their size exactly matches the final output pixel size. Coverage uses the text colour and opacity, while advances remain those of the shaped outline font. Byte-aligned and packed image formats 1, 2, 5, 6 and 7 support 1-, 2-, 4- and 8-bit coverage. A 6px label rendered at 2x can use a 12px strike; antialias sampling does not change strike selection. Fitted and rotated buffers retain bitmap overhangs. `Auto` and `None` retain their outline policy. Fractional or absent strikes, synthetic bold or italic, non-default variable instances, component bitmap records and EBSC scaling retain outline rendering. Browser font engines may use different strikes and advances.
 
@@ -392,7 +391,7 @@ The byte overload retains a copy, so later edits to `fontBytes` do not change th
 
 A registered family is matched before an installed family of the same name, with the same weight and slant rules, and only its registered faces are considered, so register each weight you use; a missing bold is synthesized. `RegisterFile` and `RegisterDirectory` read the family, weight, and italic flag from each file's own tables. Missing or invalid font files can be retried after they become available. The file cache detects changes to file size or modification time and retains at most 128 files and 64 MiB of font payloads. `FontRegistry.Clear()` removes every registration and clears the file cache; use it before re-registering a replacement that retains its original size and timestamp.
 
-Chart, grid, topology, and visual block PNG renderers resolve their theme font stack (and a text style's `FontFamily`) the same way, at regular weight, and draw emphasized text such as titles, legends, and data labels with that family's real bold face, measuring it with the same face, so `ChartFontStacks.SystemSans` draws Segoe UI on Windows as the SVG does in a browser. An explicit `PngFontPath` keeps its synthesized emphasis. `chart.GetPngFontInfo()` reports the resolved face. `TextMeasurementMode.InstalledFonts` measures with the same regular and bold faces, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
+Chart, grid, topology, and visual block PNG renderers resolve their theme font stack (and a text style's `FontFamily`) the same way, at regular weight, and draw emphasized text such as titles, legends, and data labels with that family's real bold face, measuring it with the same face, so `ChartFontStacks.SystemSans` draws Segoe UI on Windows as the SVG does in a browser. An explicit `PngFontPath` keeps its synthesized emphasis. `chart.GetRasterFontInfo()` reports the resolved face. `TextMeasurementMode.InstalledFonts` measures with the same regular and bold faces, and `TextMeasurementMode.PortableEstimate` still never inspects host fonts.
 
 For user-supplied files, use `RasterImageDecoder.TryRead(...)`, `RasterImageDecoder.TryDecode(...)`, `ImageComposition.TryFromFile(...)`, or `ImageComposition.TryFromBytes(...)` when unsupported or corrupt images should be handled as a normal validation result instead of an exception.
 

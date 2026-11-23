@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -33,7 +34,7 @@ public static class MermaidTimelineRendering {
         var id = string.IsNullOrWhiteSpace(options.Id) ? "mermaid-timeline" : options.Id!.Trim();
         var artifact = VisualArtifact.Create(id, VisualArtifactKind.Mermaid, block);
         artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid; artifact.Title = block.Title; artifact.Subtitle = block.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
+        artifact.NaturalSize = new VisualSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString(); artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.sections"] = document.Sections.Count.ToString(CultureInfo.InvariantCulture);

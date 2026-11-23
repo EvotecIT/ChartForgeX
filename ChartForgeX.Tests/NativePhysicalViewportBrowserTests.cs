@@ -111,9 +111,9 @@ public sealed partial class NativePhysicalViewportBrowserTests {
             _horizontal = horizontal; _width = width; _mode = mode; _secondaryOnly = secondaryOnly;
             _sections.Add("initial", _renderer.PrepareSection(Model(), configure: Configure));
         }
-        internal string Page => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+        internal string Page => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
             + "</style></head><body style='margin:12px'>" + _sections["initial"].Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         internal object Prepare(JsonElement request) {
             lock (_sections) {
                 var basis = _sections[request.GetProperty("basis").GetString()!].PreparedVisual;

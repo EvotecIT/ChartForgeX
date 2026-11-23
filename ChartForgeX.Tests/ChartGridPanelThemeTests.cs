@@ -53,16 +53,16 @@ public sealed class ChartGridPanelThemeTests {
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
             VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(showLegend: false, transparentBackground: true),
             new FontSpec { Family = "monospace" }));
-        Assert.Equal(expected.ToRgba().Pixels, prepared.ToRgba().Pixels);
+        Assert.Equal(expected.ToRgbaImage().Pixels, prepared.ToRgbaImage().Pixels);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => Assert.Equal("serif", node.Text.Style.Font.Family));
 
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(fontPath));
-        chart.Png(p => p.FontPath(fontPath));
+        chart.Raster(p => p.FontPath(fontPath));
         var authored = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
             frame: new VisualFrame(showLegend: false, transparentBackground: true)));
         Assert.All(authored.Scene.Nodes.OfType<VisualSceneText>(), node => Assert.Equal(fontPath, node.Text.Style.Font.FilePath));
-        Assert.Equal(chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToRgba().Pixels, authored.ToRgba().Pixels);
+        Assert.Equal(chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToRgbaImage().Pixels, authored.ToRgbaImage().Pixels);
     }
 
     [Fact]

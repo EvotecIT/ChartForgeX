@@ -34,7 +34,7 @@ public static class HtmlSequenceNavigation {
             foreach(var link in item.Node.Sequence!.NavigationLinks)writer.StartElement("a").Attribute("href",link.Href).Attribute("tabindex","0").Text(link.Label).EndElement();
             writer.EndElement().EndElement();
         }
-        writer.EndElement();return VisualArtifactRendering.WrapSvgPage(title,writer.Build(),language,sizing:VisualArtifactHtmlSizing.PreserveSize);
+        writer.EndElement();return ChartForgeX.Html.HtmlStrictStyles.Apply(VisualArtifactRendering.WrapSvgPage(title,writer.Build(),language,sizing:VisualArtifactHtmlSizing.PreserveSize),string.IsNullOrWhiteSpace(options?.Nonce)?null:options!.Nonce!.Trim());
     }
     private static string F(double value)=>value.ToString("R",CultureInfo.InvariantCulture);
 }

@@ -21,7 +21,7 @@ public sealed class GaugeConfigurationBrowserTests {
         if (!Enabled) return;
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var chart = GaugeConfigurationRenderingTests.Create(layout, dark, viewportWidth == 390)
-            .Theme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito")).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Png(p => p.FontPath(fontPath));
+            .Theme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito")).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Raster(p => p.FontPath(fontPath));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
             + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
@@ -84,7 +84,7 @@ public sealed class GaugeConfigurationBrowserTests {
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "gauge.label-overflow");
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
-            + Convert.ToBase64String(File.ReadAllBytes(chart.Options.Png.FontPath!)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
+            + Convert.ToBase64String(File.ReadAllBytes(chart.Options.Raster.FontPath!)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
             + (dark ? "#17191d" : "#fff") + "}svg,img{display:block;max-width:100%;height:auto}</style></head><body>" + svg
             + "<img src='data:image/png;base64," + Convert.ToBase64String(png) + "'></body></html>";
         await using var session = await OpenAsync(html, 390, 440);

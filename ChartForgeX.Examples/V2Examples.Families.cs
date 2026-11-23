@@ -177,7 +177,7 @@ public static partial class V2Examples {
         if (model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
             // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
             var natural = topology.Title(title).Subtitle(subtitle)
-                .Theme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
+                .Theme(context.Theme.WithFontFamily(ProofFont)).ThemeMode(mode).ToVisualArtifact();
             ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), natural.ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true }));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), natural.ToPng());
             WriteThumbnail(output, model, id, title, family, mode, legend);

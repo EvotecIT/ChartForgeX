@@ -50,7 +50,7 @@ internal sealed class MermaidUseCaseSettings {
             if (weight != null) {
                 var value = weight.Value?.Trim();
                 if (weight.IsString && (value is "normal" or "bold" or "bolder" or "lighter"
-                    || int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var numeric) && numeric >= 1 && numeric <= 1000)) style.FontWeight = value;
+                    || int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var numeric) && numeric >= 1 && numeric <= 1000)) style.FontWeight = ChartForgeX.Typography.TextStyleOverride.ParseFontWeight(value);
                 else Invalid(weight, "must be a CSS font-weight keyword or numeric weight string from 1 through 1000");
             }
             return style.HasOverrides ? style : null;

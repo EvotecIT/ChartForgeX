@@ -53,7 +53,7 @@ internal sealed partial class VisualTopologyCompiler {
         var projected = Bounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
         var data = TableData(node, projected, size, _scale);
         data.Opacity = HighlightFactor(active);
-        if (!string.IsNullOrWhiteSpace(node.LabelColor)) data.Foreground = Color(node.LabelColor, _colors.Foreground);
+        if (node.LabelColor != null) data.Foreground = Color(node.LabelColor, _colors.Foreground);
         var plan = NativeTablePaintPlan.Capture(data);
         if (plan.RequiredWidth > projected.Width + 1e-8)
             throw new InvalidOperationException("Embedded table fixed column widths exceed its prepared node body. Enlarge the node or remove conflicting width hints.");

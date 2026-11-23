@@ -22,7 +22,7 @@ public sealed partial class MermaidMindMapColorModeTests {
         var parsed = new MermaidParser().ParseMindMap(Configuration(mode, false) + Uneven);
         Assert.Empty(parsed.Diagnostics);
         var chart = parsed.Document!.ToTopologyChart(new MermaidTopologyRenderOptions { Width = 760, Height = 460 })
-            .Theme(VisualTheme.Graphite(), themeMode);
+            .Theme(VisualTheme.Graphite()).ThemeMode(themeMode);
         var artifact = chart.ToVisualArtifact();
         var png = artifact.ToPng(); var svg = artifact.ToSvg();
         var html = "<!doctype html><html><body style='margin:0;background:" + chart.Theme.Resolve(themeMode).Background.ToCss()

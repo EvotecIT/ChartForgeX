@@ -42,7 +42,7 @@ public sealed class GanttEndpointMarkTests {
         var window = Assert.Single(Role(document, "gantt-chart"));
         Assert.Equal(Start.ToOADate(), (double)window.Attribute("data-cfx-min")!);
         Assert.Equal(Finish.ToOADate(), (double)window.Attribute("data-cfx-max")!);
-        var image = prepared.ToRgba();
+        var image = prepared.ToRgbaImage();
         Assert.All(milestones, milestone => {
             var bounds = milestone.Bounds; var y = (int)(bounds.Top + bounds.Height / 2);
             foreach (var x in new[] { bounds.Left + bounds.Width / 4, bounds.Right - bounds.Width / 4 }) {

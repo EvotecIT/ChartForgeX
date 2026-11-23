@@ -53,7 +53,7 @@ public sealed class StandaloneHtmlSurfaceBrowserTests {
             .Theme(theme).ThemeMode(mode).XLabels("Mon", "Tue", "Wed")
             .AddLine("Completed", new[] { new ChartPoint(1, 18), new ChartPoint(2, 32), new ChartPoint(3, 27) });
         var card = MetricCard.Create().Size(640, 360).Theme(theme).ThemeMode(mode)
-            .Metric("Readiness", "74%").Status(Tone.Success).Caption("Completed checks");
+            .Metric("Readiness", "74%").Tone(Tone.Success).Caption("Completed checks");
         return producer switch {
             "chart" => chart.ToHtmlPage(),
             "chart-grid" => ChartGrid.Create().Theme(theme).ThemeMode(mode).Columns(1).Add(chart).ToHtmlPage(),

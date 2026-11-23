@@ -44,7 +44,7 @@ public static partial class TopologyChartExtensions {
         stepOptions.HighlightEdgeIds.AddRange(step.EdgeIds);
         stepOptions.HighlightConnectedEdges = false;
         // Lay out with the source chart, then repaint only the step's edge, so every step keeps the same geometry.
-        var color = step.IsFailure ? FailureColor : string.IsNullOrWhiteSpace(resolved.Scenario.Color) ? ActiveStepColor : resolved.Scenario.Color!.Trim();
+        var color = step.IsFailure ? ChartColor.FromHex(FailureColor) : ChartColorText.Parse(resolved.Scenario.Color) ?? ChartColor.FromHex(ActiveStepColor);
         return chart.Prepare(stepOptions).Restyle(frame => {
             foreach (var edge in frame.Edges.Where(candidate => step.EdgeIds.Contains(candidate.Id))) {
                 edge.Emphasis = TopologyEdgeEmphasis.Strong;
@@ -149,7 +149,7 @@ public static partial class TopologyChartExtensions {
             while (last + 1 < order.Count && groupId != null && string.Equals(nodes[order[last + 1]].GroupId, groupId, StringComparison.Ordinal)) last++;
             var group = groupId == null ? null : chart.Groups.FirstOrDefault(candidate => string.Equals(candidate.Id, groupId, StringComparison.Ordinal));
             if (group != null) {
-                var tint = ChartColor.TryParse(group.Color, out var color) ? color : SequenceColor(paint.Border, paint.Unknown);
+                var tint = group.Color is ChartColor color ? color : SequenceColor(paint.Border, paint.Unknown);
                 sequence.AddParticipantGroup(group.Id, group.Label, index, last, ChartColorMath.WithOpacity(tint, group.DashPattern.Count > 0 ? .08 : .14));
             }
 

@@ -120,7 +120,7 @@ public sealed class V2SceneTests : IDisposable {
         reference.FillRoundedRect(0, 0, 16, 12, 0, background);
         using (reference.PushClipBounds(clip)) reference.FillRoundedRect(0, 0, 16, 12, 0, red);
         reference.FillRoundedRect(7, 5, 7, 5, 0, overlay);
-        Assert.Equal(reference.ToImage().Pixels, actual.Pixels);
+        Assert.Equal(reference.ToRgbaImage().Pixels, actual.Pixels);
         Assert.Equal(new byte[] { 20, 40, 80, 255 }, Pixel(actual, scale, scale));
         Assert.Equal(new byte[] { 200, 30, 40, 255 }, Pixel(actual, 3 * scale, 4 * scale));
     }
@@ -163,7 +163,7 @@ public sealed class V2SceneTests : IDisposable {
         var reference = ReferenceCanvas((int)Math.Ceiling(sceneWidth), 12, 1, 2);
         if (fill.HasValue) reference.FillRoundedRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, radius, fill.Value);
         if (stroke.HasValue) reference.StrokeRoundedRectCentered(bounds.X, bounds.Y, bounds.Width, bounds.Height, radius, stroke.Value, 2);
-        Assert.Equal(reference.ToImage().Pixels, actual.Pixels);
+        Assert.Equal(reference.ToRgbaImage().Pixels, actual.Pixels);
     }
 
     private static RgbaCanvas ReferenceCanvas(int width, int height, int scale, int supersampling) =>

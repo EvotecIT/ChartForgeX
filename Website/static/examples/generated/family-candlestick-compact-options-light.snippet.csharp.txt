@@ -37,7 +37,7 @@ prices.Financial(financial => {
     financial.Falling.FillOpacity = .65;
     financial.Falling.Wick.Stroke = ChartColor.FromHex("#729BB7");
     financial.Falling.Wick.StrokeWidth = 1.4;
-}).PointColor(4, "#729BB7");
+}).PointColor(4, ChartColor.FromHex("#729BB7"));
 chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri").YAxis(y => y.Title("Price"))
     .Legend(l => l.ShowPoints()).DataLabels(false).AddSeries(prices);
 

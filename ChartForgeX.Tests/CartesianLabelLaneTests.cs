@@ -46,7 +46,7 @@ public sealed class CartesianLabelLaneTests {
     public void PublishedNormalizedGroupedRecipeKeepsAllTotalsAndCategoryNames(int width) {
         var chart = BarRecipe.Create("compact-options").Size(width, 360)
             .Title("Completed orders").Subtitle("Normalized grouped stacks")
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = Prepare(chart);
         AssertLanes(prepared, "stack-total-label", 8);
         Assert.All(Totals(prepared), total => Assert.Equal("100", Text(total)));
@@ -101,7 +101,7 @@ public sealed class CartesianLabelLaneTests {
 
     private static Chart Frame() => Chart.Create().Size(360, 360).Legend(false).ShowHeader(false)
         .XAxis(x => x.Title("Region")).YAxis(y => y.Title("Orders")).XLabels("North", "South", "East", "West")
-        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Totals(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "stack-total-label").ToArray();

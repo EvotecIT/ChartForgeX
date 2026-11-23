@@ -47,7 +47,7 @@ internal static partial class TopologyRenderPrimitives {
 
     public static string EdgeColor(TopologyEdge edge, TopologyPaint theme, TopologyRenderOptions options) {
         if (edge.IsMuted) return IsMonitoringDashboardStyle(options) ? "#CBD5E1" : theme.Border;
-        if (!string.IsNullOrWhiteSpace(edge.Color)) return edge.Color!.Trim();
+        if (edge.Color != null) return edge.Color.ToText()!;
         return theme.StatusColor(edge.Status);
     }
 

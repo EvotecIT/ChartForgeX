@@ -58,8 +58,8 @@ public sealed class StackedAreaMissingDataTests {
         var top = lines[1].Commands[1];
         var area = filled.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role == "area");
         var baseline = reversed ? area.Commands.Min(command => command.Y) : area.Commands.Max(command => command.Y);
-        var image = filled.ToRgba(new VisualRenderOptions(supersampling: 1));
-        var emptyImage = empty.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = filled.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
+        var emptyImage = empty.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)Math.Round((top.Y + baseline) / 2) * image.Width + (int)Math.Round(top.X)) * 4;
         Assert.Equal(0, emptyImage.Pixels[offset + 3]); Assert.True(image.Pixels[offset + 3] > 0);
         Assert.All(empty.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "line"),

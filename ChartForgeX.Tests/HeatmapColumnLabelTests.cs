@@ -201,7 +201,7 @@ public sealed class HeatmapColumnLabelTests {
     public void ToSvg_LongRotatedLabels_PreserveReadableCellsAndFitBothCanvasDimensions(double angle) {
         var longLabel = new string('W', 100);
         var chart = Chart.Create().Size(520, 380).XAxis(x => x.LabelAngle(angle))
-            .TickLabelStyle(style => style.FontWeight("700"))
+            .TickLabelStyle(style => style.FontWeight(700))
             .XLabels(longLabel, longLabel, longLabel)
             .AddHeatmapRow("Row", new[] { 1d, 2d, 3d });
         var svg = XDocument.Parse(chart.ToSvg());
@@ -232,7 +232,7 @@ public sealed class HeatmapColumnLabelTests {
         var days = Enumerable.Range(0, 14).Select(day => new DateTime(2026, 10, 14).AddDays(day).ToString("d MMM", CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().Size(360, 480).Title("Daily availability per target").XLabels(days);
         foreach (var target in targets) chart.AddHeatmapRow(target, days.Select((_, day) => (double?)(day % 5 == 0 ? 97 : 100)).ToArray());
-        chart = chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        chart = chart.Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
         var svg = XDocument.Parse(chart.ToSvg());
 
@@ -330,7 +330,7 @@ public sealed class HeatmapColumnLabelTests {
         // measured geometry and complete semantic-caption proof above.
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito example fixture must be available.");
-        return Matrix(rowPrefix).Png(p => p.FontPath(font));
+        return Matrix(rowPrefix).Raster(p => p.FontPath(font));
     }
 
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();

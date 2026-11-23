@@ -29,7 +29,7 @@ public readonly struct RgbaImage {
 }
 
 internal static class RgbaCanvasImageExtensions {
-    public static RgbaImage ToImage(this RgbaCanvas canvas) {
+    public static RgbaImage ToRgbaImage(this RgbaCanvas canvas) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         return new RgbaImage(canvas.OutputWidth, canvas.OutputHeight, canvas.ToOutputPixels());
     }

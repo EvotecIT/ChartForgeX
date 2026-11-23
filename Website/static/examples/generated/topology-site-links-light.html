@@ -118,7 +118,7 @@ public static class TopologySiteLinksRecipe {
         if (variant is not (&quot;sites&quot; or &quot;wide&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().Id(&quot;ad-site-links&quot;).Title(&quot;Contoso replication sites&quot;)
             .Subtitle(&quot;Domain controllers grouped per site; links show transports, cost and evidence&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(1360, 720, 24))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(1360, 720, 24))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.TopToBottom)
             .SiblingGrouping(new TopologySiblingGrouping { TitleFormatter = (kind, members) =&gt; &quot;Domain controllers&quot; });
         chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true, NodeDisplayMode = TopologyNodeDisplayMode.Card });
@@ -139,12 +139,12 @@ public static class TopologySiteLinksRecipe {
         Site(chart, &quot;tyo&quot;, &quot;Tokyo&quot;, 1, &quot;10.50.0.&quot;);
 
         chart.AddEdge(&quot;hub-par&quot;, &quot;hub&quot;, &quot;par&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
-            .AddEdgeStripe(&quot;hub-par&quot;, &quot;#2563EB&quot;, &quot;IP&quot;).AddEdgeStripe(&quot;hub-par&quot;, &quot;#F97316&quot;, &quot;SMTP&quot;)
+            .AddEdgeStripe(&quot;hub-par&quot;, ChartColor.FromHex(&quot;#2563EB&quot;), &quot;IP&quot;).AddEdgeStripe(&quot;hub-par&quot;, ChartColor.FromHex(&quot;#F97316&quot;), &quot;SMTP&quot;)
             .AddEdgeChip(&quot;hub-par&quot;, &quot;cost 100&quot;).UpdateEdge(&quot;hub-par&quot;, e =&gt; e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(&quot;Site link object DEFAULTIPSITELINK&quot;));
         chart.AddEdge(&quot;hub-ber&quot;, &quot;hub&quot;, &quot;ber&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip(&quot;hub-ber&quot;, &quot;cost 200&quot;).UpdateEdge(&quot;hub-ber&quot;, e =&gt; e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge(&quot;hub-nyc&quot;, &quot;hub&quot;, &quot;nyc&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
-            .AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#2563EB&quot;, &quot;IP&quot;).AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#F97316&quot;, &quot;SMTP&quot;)
+            .AddEdgeStripe(&quot;hub-nyc&quot;, ChartColor.FromHex(&quot;#2563EB&quot;), &quot;IP&quot;).AddEdgeStripe(&quot;hub-nyc&quot;, ChartColor.FromHex(&quot;#F97316&quot;), &quot;SMTP&quot;)
             .AddEdgeChip(&quot;hub-nyc&quot;, &quot;cost 300&quot;).AddEdgeChip(&quot;hub-nyc&quot;, &quot;lag 47m&quot;, Tone.Warning)
             .UpdateEdge(&quot;hub-nyc&quot;, e =&gt; e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge(&quot;hub-tyo&quot;, &quot;hub&quot;, &quot;tyo&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
@@ -209,7 +209,7 @@ public static class TopologySiteLinksRecipe {
         if (variant is not (&quot;sites&quot; or &quot;wide&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().Id(&quot;ad-site-links&quot;).Title(&quot;Contoso replication sites&quot;)
             .Subtitle(&quot;Domain controllers grouped per site; links show transports, cost and evidence&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(1360, 720, 24))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(1360, 720, 24))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.TopToBottom)
             .SiblingGrouping(new TopologySiblingGrouping { TitleFormatter = (kind, members) =&gt; &quot;Domain controllers&quot; });
         chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true, NodeDisplayMode = TopologyNodeDisplayMode.Card });
@@ -230,12 +230,12 @@ public static class TopologySiteLinksRecipe {
         Site(chart, &quot;tyo&quot;, &quot;Tokyo&quot;, 1, &quot;10.50.0.&quot;);
 
         chart.AddEdge(&quot;hub-par&quot;, &quot;hub&quot;, &quot;par&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
-            .AddEdgeStripe(&quot;hub-par&quot;, &quot;#2563EB&quot;, &quot;IP&quot;).AddEdgeStripe(&quot;hub-par&quot;, &quot;#F97316&quot;, &quot;SMTP&quot;)
+            .AddEdgeStripe(&quot;hub-par&quot;, ChartColor.FromHex(&quot;#2563EB&quot;), &quot;IP&quot;).AddEdgeStripe(&quot;hub-par&quot;, ChartColor.FromHex(&quot;#F97316&quot;), &quot;SMTP&quot;)
             .AddEdgeChip(&quot;hub-par&quot;, &quot;cost 100&quot;).UpdateEdge(&quot;hub-par&quot;, e =&gt; e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(&quot;Site link object DEFAULTIPSITELINK&quot;));
         chart.AddEdge(&quot;hub-ber&quot;, &quot;hub&quot;, &quot;ber&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip(&quot;hub-ber&quot;, &quot;cost 200&quot;).UpdateEdge(&quot;hub-ber&quot;, e =&gt; e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge(&quot;hub-nyc&quot;, &quot;hub&quot;, &quot;nyc&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
-            .AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#2563EB&quot;, &quot;IP&quot;).AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#F97316&quot;, &quot;SMTP&quot;)
+            .AddEdgeStripe(&quot;hub-nyc&quot;, ChartColor.FromHex(&quot;#2563EB&quot;), &quot;IP&quot;).AddEdgeStripe(&quot;hub-nyc&quot;, ChartColor.FromHex(&quot;#F97316&quot;), &quot;SMTP&quot;)
             .AddEdgeChip(&quot;hub-nyc&quot;, &quot;cost 300&quot;).AddEdgeChip(&quot;hub-nyc&quot;, &quot;lag 47m&quot;, Tone.Warning)
             .UpdateEdge(&quot;hub-nyc&quot;, e =&gt; e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge(&quot;hub-tyo&quot;, &quot;hub&quot;, &quot;tyo&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)

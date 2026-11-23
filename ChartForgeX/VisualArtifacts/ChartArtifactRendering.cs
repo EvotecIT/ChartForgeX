@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Globalization;
 using ChartForgeX.Core;
@@ -22,7 +23,7 @@ public static partial class ChartArtifactRendering {
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = chart.Title ?? string.Empty;
         artifact.Subtitle = chart.Subtitle ?? string.Empty;
-        artifact.NaturalSize = new VisualArtifactSize(chart.Options.Size.Width, chart.Options.Size.Height);
+        artifact.NaturalSize = new VisualSize(chart.Options.Size.Width, chart.Options.Size.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall)
             artifact.ExportFormats |= VisualArtifactExportFormat.Json;

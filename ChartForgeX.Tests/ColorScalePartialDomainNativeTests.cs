@@ -155,7 +155,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
     public void ExecutablePartialRangeExamplesKeepTheirPinnedConstraintAcrossViewportAndTheme(ChartSeriesKind kind, bool compact, bool dark) {
         var variant = compact ? "compact-partial-color-range" : "partial-color-range";
         var chart = V2GalleryModels.Create(kind, variant, dark ? ThemeMode.Dark : ThemeMode.Light)
-            .Size(compact ? 360 : 800, compact ? 360 : 440).DataLabels(false).Png(p => p.SupersamplingScale(1))
+            .Size(compact ? 360 : 800, compact ? 360 : 440).DataLabels(false).Raster(p => p.SupersamplingScale(1))
             .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var key = Role(document, kind == ChartSeriesKind.TileMap ? "map-scale" : "color-scale-0").Single();

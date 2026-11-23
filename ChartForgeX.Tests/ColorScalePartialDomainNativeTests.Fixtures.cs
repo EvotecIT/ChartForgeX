@@ -16,7 +16,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
     private static Chart Create(string family, double?[] values, int width = 800, bool dark = false) {
         const string font = "CFX Partial Color Carlito";
         FontRegistry.Register(font, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        var chart = Chart.Create().Size(width, 480).DataLabels(false).Png(p => p.SupersamplingScale(1))
+        var chart = Chart.Create().Size(width, 480).DataLabels(false).Raster(p => p.SupersamplingScale(1))
             .Theme(VisualTheme.Graphite().WithFontFamily(font)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.ShowGrid = false;
         if (family is "scatter" or "bubble") {

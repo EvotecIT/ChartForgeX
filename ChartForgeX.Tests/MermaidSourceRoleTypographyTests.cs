@@ -24,7 +24,7 @@ public sealed class MermaidSourceRoleTypographyTests {
         Write(family+".restored.svg",restored.ToSvg());Bytes(family+".restored.png",restored.ToPng());
         Assert.False(result.HasErrors);Assert.Empty(result.Diagnostics);Assert.False(fenced.HasErrors);Assert.Empty(fenced.Diagnostics);
         var chart=Assert.IsType<TopologyChart>(direct.Model);var work=Assert.Single(chart.Nodes,node=>node.Id=="work");
-        Assert.Equal(24,work.TextStyle!.FontSize);Assert.Equal("700",work.TextStyle.FontWeight);Assert.True(work.TextStyle.Italic);Assert.Equal(BrowserProofFonts.Family,work.TextStyle.FontFamily);
+        Assert.Equal(24,work.TextStyle!.FontSize);Assert.Equal(700,work.TextStyle.FontWeight);Assert.True(work.TextStyle.Italic);Assert.Equal(BrowserProofFonts.Family,work.TextStyle.FontFamily);
         Assert.Equal(24,Assert.Single(chart.Groups).TextStyle!.FontSize);Assert.Equal(18,Assert.Single(chart.Edges).TextStyle!.FontSize);
         var fence=Assert.Single(fenced.Artifacts);Assert.Equal(direct.ToSvg(),fence.ToSvg());Assert.Equal(direct.ToPng(),fence.ToPng());Assert.Equal(direct.ToPng(),restored.ToPng());
         var frozen=chart.Prepare();var frozenPng=frozen.ToPng();work.TextStyle.FontSize=32;Assert.Equal(frozenPng,frozen.ToPng());Assert.Equal(source,result.Document!.SourceText);
@@ -43,7 +43,7 @@ public sealed class MermaidSourceRoleTypographyTests {
         const string source="%%{init:{\"sequence\":{\"actorFontFamily\":\"sans-serif\",\"actorFontSize\":\"24px\",\"actorFontWeight\":700}}}%%\nsequenceDiagram\nparticipant A\nA->>A: Review";
         var result=MermaidRenderer.Render(source);Capture(result,source,"quoted-configuration-control");Assert.False(result.HasErrors);Assert.Empty(result.Diagnostics);
         var model=Assert.IsType<SequenceArtifact>(result.Artifact!.Model);Assert.Equal(24,model.Typography!.Participant!.FontSize);
-        Assert.Equal("sans-serif",model.Typography.Participant.FontFamily);Assert.Equal("700",model.Typography.Participant.FontWeight);
+        Assert.Equal("sans-serif",model.Typography.Participant.FontFamily);Assert.Equal(700,model.Typography.Participant.FontWeight);
     }
 
     private static void Capture(MermaidRenderResult result,string source,string name) {

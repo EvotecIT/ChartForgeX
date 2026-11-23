@@ -17,7 +17,7 @@ internal static partial class Program {
         var original = prepared.CaptureLayer(new VisualLayerBlur(0));
         PackageAssertions.Require(outline.Source == prepared && outline.Bounds.Width > prepared.Size.Width,
             "Core outline lost its native source or outward support.");
-        PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(original.ToImage().Pixels, noBright.ToImage().Pixels),
+        PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(original.ToRgbaImage().Pixels, noBright.ToRgbaImage().Pixels),
             "Threshold one changed captured source pixels.");
         PackageAssertions.Owner(typeof(VisualInnerShadow), "ChartForgeX");
         var innerPolicy = new VisualInnerShadow(ChartForgeX.Primitives.ChartColor.Black, 2, 2, 1,
@@ -27,7 +27,7 @@ internal static partial class Program {
         var innerJson = inner.ToArtifact().ToInterchangeJson();
         var innerEnvelope = VisualArtifactInterchangeEnvelope.FromJson(innerJson);
         var replayedInner = innerEnvelope.ApplyCapturedLayer(prepared);
-        PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(inner.ToImage().Pixels, replayedInner.ToImage().Pixels),
+        PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(inner.ToRgbaImage().Pixels, replayedInner.ToRgbaImage().Pixels),
             "Core inset capture changed pixels through typed ordered replay.");
         PackageAssertions.Require(inner.Bounds.Width == prepared.Size.Width && inner.Bounds.Height == prepared.Size.Height,
             "Core inset capture changed the original frame.");
@@ -43,7 +43,7 @@ internal static partial class Program {
         var replayedGlow = savedGlow.ApplyCapturedLayer(prepared);
         PackageAssertions.Require(glow.Source == prepared && glow.Bounds.X < 0
             && glow.Bounds.Width > prepared.Size.Width, "Zero-offset alpha glow lost outward source support.");
-        PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(glow.ToImage().Pixels, replayedGlow.ToImage().Pixels),
+        PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(glow.ToRgbaImage().Pixels, replayedGlow.ToRgbaImage().Pixels),
             "The typed shadow recipe did not replay its native pixels.");
         PackageAssertions.Require(retainedGlow.Size.Equals(prepared.Size), "Fixed-root glow silently expanded its source viewport.");
         PackageAssertions.Png(glow.Visual.ToPng());

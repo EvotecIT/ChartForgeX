@@ -6,7 +6,7 @@ public static class WardleyDepthRecipe {
         var block = WardleyMapBlock.Create().Title("Delivery strategy").Size(variant == "compact" ? 390 : 1100, 600)
             .Padding(30).Theme(VisualTheme.Graphite()).ThemeMode(mode).AnnotationsBox(.18, 0);
         block.ShowGrid = true;
-        block.SetStages(new[] { "New / Idea", "Custom", "Product", "Commodity" }).StageBoundaries(new[] { .30, .55, .78, 1d });
+        block.Stages(new[] { "New / Idea", "Custom", "Product", "Commodity" }).StageBoundaries(new[] { .30, .55, .78, 1d });
         block.AddNode("User", "User", .94, .20, WardleyMapNodeKind.Anchor);
         var build = block.AddNode("Build", "Build", .78, .12); build.Strategy = "build";
         var buy = block.AddNode("Buy", "Buy", .64, .29); buy.Strategy = "buy"; buy.Inertia = true;

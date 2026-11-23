@@ -50,7 +50,7 @@ internal static class PresentationPackageSmoke {
             Require(stream.Length > 64 && stream.CanWrite, "Stories streaming APNG failed.");
         }
         var terminal = TerminalStory.Create().Title("Completed terminal").Width(480)
-            .PngOutputScale(1).ShowFinalPrompt(false).Command("status", .1).Output("Ready");
+            .RasterScale(1).ShowFinalPrompt(false).Command("status", .1).Output("Ready");
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
             .Output(TimeSpan.FromSeconds(10), "Captured result").CompressPauses(TimeSpan.FromSeconds(1));
         var replayStory = VisualStory.Create("AOT replay").Size(480, 320);
@@ -65,12 +65,12 @@ internal static class PresentationPackageSmoke {
             .AddNode("a", "A", 20, 60, width: 60, height: 40).AddNode("b", "B", 160, 60, width: 60, height: 40)
             .AddEdge("route", "a", "b");
         var route = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("route").DurationSeconds(.2).FramesPerSecond(10).MaximumRasterFrames(2),
-            new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         Require(route.ToSvg().Contains("animateMotion", StringComparison.Ordinal), "Stories topology motion SVG failed.");
         var gif = route.ToGif();
         Require(gif.Length > 64 && gif[0] == 'G' && gif[1] == 'I' && gif[2] == 'F', "Stories topology GIF failed.");
         Require(route.ToApng().Length > 64, "Stories topology APNG failed.");
-        Require(ImageComposition.Create(8, 8, ChartColor.FromRgb(255, 0, 0)).ToImage().ToGif().Length > 32, "Stories composition GIF failed.");
+        Require(ImageComposition.Create(8, 8, ChartColor.FromRgb(255, 0, 0)).ToRgbaImage().ToGif().Length > 32, "Stories composition GIF failed.");
         var transparentGif = new RgbaImage(2, 1, new byte[] { 20, 80, 120, 255, 80, 30, 90, 0 }).ToGif();
         Require(RasterImageDecoder.Decode(transparentGif).Pixels[7] == 0, "Core GIF input lost Stories output transparency.");
         Console.WriteLine("Presentation packages AOT smoke passed: Visuals facts/canvas/watermarks and Stories scenes/motion/GIF/APNG.");

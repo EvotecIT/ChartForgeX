@@ -77,7 +77,7 @@ internal static partial class SmokeTests {
         var html = chart.ToInteractiveHtmlPage(options => {
             options.PageTitle = "Interactive security posture";
             options.IdScope = "security-posture";
-            options.ScriptNonce = "nonce-1";
+            options.Nonce = "nonce-1";
             options.Interaction.ChartId = "security-posture";
             options.Interaction.GroupName = "dashboard-a";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
@@ -134,7 +134,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains(".cfx-series-isolated-out", StringComparison.Ordinal) && html.Contains(".cfx-scenario-step-muted", StringComparison.Ordinal), "Interactive HTML should retain series isolation and spotlight scenario styling.");
         Assert(html.Contains("FocusTrail", StringComparison.Ordinal) && html.Contains("RevealLabels", StringComparison.Ordinal) && html.Contains("StateBookmarks", StringComparison.Ordinal), "Interactive HTML should retain enabled trail, reveal and bookmark feature metadata.");
         Assert(CountOccurrences(html, "<script nonce=\"nonce-1\">") == 1
-            && html.Contains("<script nonce=\"nonce-1\">" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>", StringComparison.Ordinal),
+            && html.Contains("<script nonce=\"nonce-1\">" + HtmlInteractiveChartRenderer.Script + "</script>", StringComparison.Ordinal),
             "Interactive pages should embed the actual shipped runtime once under the authored CSP nonce.");
         var keyedSeries = ChartSeries.CreateBar(new ChartSeriesId("result.passed"), "Passed", ChartPoints.FromValues(1, 2));
         var keyedChart = Chart.Create().AddSeries(keyedSeries);
@@ -203,9 +203,9 @@ internal static partial class SmokeTests {
         Assert(!assetlessFragment.Contains("data-cfx-interactive-assets=\"true\"", StringComparison.Ordinal), "Asset-light interactive fragments should omit inline interactive chart CSS assets.");
         Assert(assetlessFragment.Contains("data-cfx-asset-source=\"host\"", StringComparison.Ordinal), "Asset-light interactive fragments should declare that the embedding host owns their assets.");
         Assert(!assetlessFragment.Contains("<script>", StringComparison.Ordinal), "Asset-light interactive fragments should omit the inline interactive chart runtime script.");
-        Assert(HtmlInteractiveChartRenderer.BuildFragmentStyle().Contains(".cfx-interactive-chart, .cfx-interactive-chart * {", StringComparison.Ordinal), "Host-registered interactive chart CSS should remain scoped to chart fragments.");
-        Assert(HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("cfxRuntimeBound", StringComparison.Ordinal), "Host-registered interactive chart runtime should keep duplicate binding guards.");
-        Assert(!HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("<script>", StringComparison.Ordinal), "Host-registered interactive chart runtime should return raw JavaScript for library registration.");
+        Assert(HtmlInteractiveChartRenderer.StyleSheet.Contains(".cfx-interactive-chart, .cfx-interactive-chart * {", StringComparison.Ordinal), "Host-registered interactive chart CSS should remain scoped to chart fragments.");
+        Assert(HtmlInteractiveChartRenderer.Script.Contains("cfxRuntimeBound", StringComparison.Ordinal), "Host-registered interactive chart runtime should keep duplicate binding guards.");
+        Assert(!HtmlInteractiveChartRenderer.Script.Contains("<script>", StringComparison.Ordinal), "Host-registered interactive chart runtime should return raw JavaScript for library registration.");
 
         Action<HtmlChartInteractionOptions> tooltipOnlyOptions = options => {
             options.IncludeResetButton = false;
@@ -254,7 +254,7 @@ internal static partial class SmokeTests {
     private static void InteractiveHtmlEscapesHostProvidedAttributes() {
         var html = SampleChart().ToInteractiveHtmlPage(options => {
             options.PageTitle = "A < B & \"C\"";
-            options.ScriptNonce = "nonce\" data-bad=\"1";
+            options.Nonce = "nonce\" data-bad=\"1";
             options.Interaction.ChartId = "chart\" onmouseover=\"bad";
             options.Interaction.GroupName = "group<one>&\"two\"";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Export);
@@ -279,7 +279,6 @@ internal static partial class SmokeTests {
             options.PageTitle = "Executive interactive dashboard";
             options.IdScope = "exec-dashboard";
             options.Columns = 2;
-            options.ScriptNonce = "nonce-dashboard";
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.GroupName = "exec-review";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
@@ -296,7 +295,7 @@ internal static partial class SmokeTests {
         });
 
         Assert(html.Contains("<title>Executive interactive dashboard</title>", StringComparison.Ordinal), "Interactive dashboards should use the configured page title.");
-        Assert(html.Contains("<script nonce=\"nonce-dashboard\">", StringComparison.Ordinal), "Interactive dashboards should support CSP nonces.");
+        Assert(charts.ToInteractiveHtmlDashboardPage(options => options.Nonce = "nonce-dashboard").Contains("<script nonce=\"nonce-dashboard\">", StringComparison.Ordinal), "Interactive dashboards should support CSP nonces.");
         Assert(html.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal), "Interactive dashboards should render a grouped dashboard surface.");
         Assert(html.Contains("--cfx-dashboard-columns:2", StringComparison.Ordinal), "Interactive dashboards should honor configured column counts.");
         Assert(CountOccurrences(html, "class=\"cfx-interactive-chart\"") == 2, "Interactive dashboards should render one interactive chart section per chart.");
@@ -310,8 +309,9 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(html, "data-cfx-deep-link-state=\"true\"") == 2, "Interactive dashboards should preserve reusable scenario deep-link state for each child chart.");
         Assert(CountOccurrences(html, "data-cfx-scenario-playback-delay=\"1200\"") == 2 && CountOccurrences(html, "data-cfx-scenario-loop=\"true\"") == 2 && CountOccurrences(html, "data-cfx-scenario-autoplay=\"true\"") == 2 && CountOccurrences(html, "data-cfx-scenario-focus-mode=\"spotlight\"") == 2, "Interactive dashboards should preserve scenario playback and focus settings in every child chart.");
         Assert(CountOccurrences(html, "&quot;durationMilliseconds&quot;:1600") == 2, "Interactive dashboards should preserve per-step playback durations in every child chart.");
-        Assert(CountOccurrences(html, "<script nonce=\"nonce-dashboard\">") == 1
-            && html.Contains("<script nonce=\"nonce-dashboard\">" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>", StringComparison.Ordinal),
+        var noncedDashboard = charts.ToInteractiveHtmlDashboardPage(options => options.Nonce = "nonce-dashboard");
+        Assert(CountOccurrences(noncedDashboard, "<script nonce=\"nonce-dashboard\">") == 1
+            && noncedDashboard.Contains("<script nonce=\"nonce-dashboard\">" + HtmlInteractiveChartRenderer.Script + "</script>", StringComparison.Ordinal),
             "Interactive dashboards should share one copy of the actual shipped runtime under the authored CSP nonce.");
         Assert(html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal) && html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal), "Interactive dashboards should include enabled per-chart export controls.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should not reference external stylesheets.");

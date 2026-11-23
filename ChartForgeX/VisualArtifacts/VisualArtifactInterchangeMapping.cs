@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using System;
 using System.Collections.Generic;
@@ -189,7 +190,7 @@ public static partial class VisualArtifactInterchangeMapping {
         }
     }
 
-    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualArtifactSize? preparedSize = null) {
+    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualSize? preparedSize = null) {
         envelope.Family = VisualArtifactInterchangeFamily.Sequence;
         envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact {
             LifelineStroke = sequence.Paint.LifelineStroke,
@@ -210,7 +211,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Id = BoundedGeneratedId(sequence.Id, "sequence");
         envelope.Title = sequence.Title;
         envelope.Subtitle = sequence.Subtitle;
-        VisualArtifactSize naturalSize = preparedSize ?? SequenceArtifactRendering.CalculateNaturalSize(sequence);
+        VisualSize naturalSize = preparedSize ?? SequenceArtifactRendering.CalculateNaturalSize(sequence);
         envelope.Width = naturalSize.Width;
         envelope.Height = naturalSize.Height;
         CopyMissing(sequence.Metadata, envelope.Extensions, artifactMetadataKeys);
@@ -255,7 +256,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 SourceId = sourceId,
                 TargetId = targetId,
                 Label = message.Text,
-                Color = message.Color?.ToCss(),
+                Color = message.Color.ToText(),
                 Order = index,
                 Sequence = new VisualArtifactInterchangeSequenceEdge {
                     Kind = message.Kind,
@@ -363,8 +364,8 @@ public static partial class VisualArtifactInterchangeMapping {
             Label = group.Label,
             Subtitle = group.Subtitle,
             Status = group.Status.ToString(),
-            Color = group.Color,
-            BackgroundColor = group.BackgroundColor, BorderColor = group.BorderColor, LabelColor = group.LabelColor,
+            Color = group.Color.ToText(),
+            BackgroundColor = group.BackgroundColor.ToText(), BorderColor = group.BorderColor.ToText(), LabelColor = group.LabelColor.ToText(),
             Href = SafeHref(group.Href),
             Tooltip = group.Tooltip,
             X = group.X,
@@ -395,9 +396,9 @@ public static partial class VisualArtifactInterchangeMapping {
             IconId = node.IconId,
             Symbol = node.Symbol,
             Badge = node.Badge,
-            Color = node.Color,
-            BackgroundColor = node.BackgroundColor,
-            LabelColor = node.LabelColor,
+            Color = node.Color.ToText(),
+            BackgroundColor = node.BackgroundColor.ToText(),
+            LabelColor = node.LabelColor.ToText(),
             Href = SafeHref(node.Href),
             Tooltip = node.Tooltip,
             X = node.X,
@@ -424,7 +425,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 Value = detail.Value,
                 IconId = detail.IconId,
                 Status = detail.Status?.ToString(),
-                Color = detail.Color, TextStyle = detail.TextStyle?.Clone(), BadgeStyle = detail.BadgeStyle?.Clone()
+                Color = detail.Color.ToText(), TextStyle = detail.TextStyle?.Clone(), BadgeStyle = detail.BadgeStyle?.Clone()
             };
             Copy(detail.Metadata, mappedDetail.Extensions);
             mapped.Details.Add(mappedDetail);
@@ -456,7 +457,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Status = edge.Status.ToString(),
             SourcePortId = sourcePortId,
             TargetPortId = targetPortId,
-            Color = edge.Color, LabelColor = edge.LabelColor,
+            Color = edge.Color.ToText(), LabelColor = edge.LabelColor.ToText(),
             Href = SafeHref(edge.Href),
             Tooltip = edge.Tooltip,
             Order = order,

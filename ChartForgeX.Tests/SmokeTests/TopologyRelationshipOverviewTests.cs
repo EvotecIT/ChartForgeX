@@ -10,19 +10,19 @@ internal static partial class SmokeTests {
             .Id("relationship-overview")
             .Viewport(new TopologyViewport(1000, 300, 20))
             .Legend(TopologyLegend.Create("Links")
-                .AddNodeKind("Certificate", TopologyNodeKind.Certificate, "#2563EB", "TLS")
-                .AddEdgeKind("Verified", TopologyEdgeKind.CertificateChain, "#16A34A", TopologyEdgeLineStyle.Solid)
-                .AddEdgeKind("Risk", TopologyEdgeKind.Mapping, "#EF4444", TopologyEdgeLineStyle.Dotted))
+                .AddNodeKind("Certificate", TopologyNodeKind.Certificate, ChartColor.FromHex("#2563EB"), "TLS")
+                .AddEdgeKind("Verified", TopologyEdgeKind.CertificateChain, ChartColor.FromHex("#16A34A"), TopologyEdgeLineStyle.Solid)
+                .AddEdgeKind("Risk", TopologyEdgeKind.Mapping, ChartColor.FromHex("#EF4444"), TopologyEdgeLineStyle.Dotted))
             .AddNode("domain", "ad.evotec.xyz\nPrimary Domain", 380, 96, TopologyNodeKind.Namespace, TopologyHealthStatus.Healthy, subtitle: "Confidence 92%\n24 linked records", width: 240, height: 86, symbol: "D", iconId: "chartforgex-identity-directory:domain")
             .AddNode("cert", "CN: ad.evotec.xyz\nLet's Encrypt R3", 40, 64, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy, subtitle: "Valid\n62 days left", width: 260, height: 88, symbol: "TLS", iconId: "chartforgex-identity-directory:certificate")
-            .AddNode("finding", "Finding Bundle\n3 Critical + 4 High", 730, 64, TopologyNodeKind.Process, TopologyHealthStatus.Critical, subtitle: "TLSv1.0 observed\nEvidence linked", width: 230, height: 88, symbol: "!", color: "#EF4444")
+            .AddNode("finding", "Finding Bundle\n3 Critical + 4 High", 730, 64, TopologyNodeKind.Process, TopologyHealthStatus.Critical, subtitle: "TLSv1.0 observed\nEvidence linked", width: 230, height: 88, symbol: "!", color: ChartColor.FromHex("#EF4444"))
             .AddEdge("cert-domain", "cert", "domain", "Certificate", TopologyEdgeKind.CertificateChain, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "SAN match")
             .AddEdge("domain-finding", "domain", "finding", "Observed", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.ObstacleAvoidingOrthogonal, "3 sources")
             .UpdateEdge("cert-domain", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
             .UpdateEdge("domain-finding", e => e.LineStyle(TopologyEdgeLineStyle.Dotted))
-            .UpdateEdge("domain-finding", e => e.Color("#DC2626"));
+            .UpdateEdge("domain-finding", e => e.Color(ChartColor.FromHex("#DC2626")));
 
-        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectNode("domain");
+        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectedNodeId("domain");
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-canvas-surface-style=\"PanelGrid\"", StringComparison.Ordinal), "Relationship overview topology should render a dashboard-style canvas surface.");
         Assert(svg.Contains("data-node-surface-style=\"AccentBand\"", StringComparison.Ordinal), "Relationship overview topology should render premium tinted node surfaces.");
@@ -58,7 +58,7 @@ internal static partial class SmokeTests {
             .AddNode("target", "Target", 292, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 112, height: 62)
             .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-78))
-            .UpdateEdge("source-target", e => e.Color("#2563EB"));
+            .UpdateEdge("source-target", e => e.Color(ChartColor.FromHex("#2563EB")));
 
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
         var svg = chart.ToSvg(options);
@@ -77,7 +77,7 @@ internal static partial class SmokeTests {
             .AddNode("target", "Target", 330, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 122, height: 64)
             .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-86))
-            .EdgeLabelAnchorNode("source-target", "target");
+            .UpdateEdge("source-target", edge => edge.LabelAnchorNodeId("target"));
 
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
         var svg = chart.ToSvg(options);
@@ -85,12 +85,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-label-leader=\"true\"", StringComparison.Ordinal), "Node-anchored displaced labels should render leader lines in relationship overview mode.");
         Assert(chart.ToPng(options).Length > 64, "PNG topology output should render node-anchored label leaders.");
 
-        chart.EdgeLabelAnchor("source-target", 270, 120);
+        chart.UpdateEdge("source-target", edge => edge.LabelAnchorNodeId(null).LabelAnchor(new ChartPoint(270, 120)));
         svg = chart.ToSvg(options);
         Assert(svg.Contains("data-label-anchor-override=\"true\"", StringComparison.Ordinal), "Displaced edge labels should expose explicit point anchors for annotation-style placement.");
         Assert(svg.Contains("data-label-anchor-x=\"270\"", StringComparison.Ordinal), "Explicit point anchors should drive SVG label-leader metadata.");
 
-        chart.ClearEdgeLabelAnchor("source-target");
+        chart.UpdateEdge("source-target", edge => edge.LabelAnchor(null).LabelAnchorNodeId(null));
         svg = chart.ToSvg(options);
         Assert(svg.Contains("data-label-anchor-override=\"false\"", StringComparison.Ordinal), "Clearing a label anchor should restore route-based leader placement.");
         Assert(!svg.Contains("data-label-anchor-node-id=\"target\"", StringComparison.Ordinal), "Clearing a label anchor should remove the node anchor metadata.");
@@ -105,7 +105,7 @@ internal static partial class SmokeTests {
             .AddNode("target", "Target", 180, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 92, height: 54)
             .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-64))
-            .EdgeLabelAnchor("source-target", 100, 30);
+            .UpdateEdge("source-target", edge => edge.LabelAnchor(new ChartPoint(100, 30)));
 
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
         var shiftedSvg = shifted.ToSvg(options);
@@ -120,7 +120,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("target", "Target", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 92, height: 54)
             .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-64))
-            .EdgeLabelAnchor("source-target", 90, 120);
+            .UpdateEdge("source-target", edge => edge.LabelAnchor(new ChartPoint(90, 120)));
         mirrored.Nodes[0].Metadata["layer"] = "0";
         mirrored.Nodes[1].Metadata["layer"] = "1";
 

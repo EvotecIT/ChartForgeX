@@ -115,7 +115,7 @@ var cpu = MetricCard.Create()
     .Caption("5 minute trend")
     .Symbol("CPU")
     .BadgePlacement(MetricCardBadgePlacement.TopLeft)
-    .Status(Tone.Success)
+    .Tone(Tone.Success)
     .MiniBars(new[] { 48d, 52d, 44d, 41d, 38d }, maximum: 100);
 ```
 
@@ -126,7 +126,7 @@ var latency = MetricCard.Create()
     .Metric("Latency", "18 ms")
     .Trend("-12 ms")
     .Caption("last samples")
-    .Status(Tone.Info)
+    .Tone(Tone.Info)
     .MiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
 ```
 
@@ -173,9 +173,9 @@ var console = TerminalStory.Create()
     .WindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WorkingDirectory(@"C:\OpenSource")
     .Command(@".\Invoke-Validation.ps1")
-    .Output("Running release validation...", TerminalTextTone.Muted)
+    .Output("Running release validation...", Tone.Muted)
     .Table(results)
-    .Output("Ready", TerminalTextTone.Success);
+    .Output("Ready", Tone.Success);
 
 console.SaveSvg("validation.svg");
 console.SaveGif("validation.gif");
@@ -287,8 +287,8 @@ var progress = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
     .Title("Project Progress")
     .Subtitle("Overall completion rate all projects.")
     .HeaderSymbol("%")
-    .AddItem("Performing Progress", 89, segments: 44, delta: "+10.2%", status: Tone.Success)
-    .AddItem("Target Sales", 67, segments: 44, delta: "+2.2%", status: Tone.Info)
+    .AddItem("Performing Progress", 89, segments: 44, delta: "+10.2%", tone: Tone.Success)
+    .AddItem("Target Sales", 67, segments: 44, delta: "+2.2%", tone: Tone.Info)
     .Caption("Up by 6% compared to last week");
 ```
 
@@ -300,12 +300,12 @@ var progressWithConfiguredRows = SegmentedMetricBlock.Create()
         item.Maximum = 100;
         item.Segments = 35;
         item.Delta = "+4.3%";
-        item.Status = Tone.Success;
+        item.Tone = Tone.Success;
     })
     .AddItem(new SegmentedMetricItem("Operational Costs", 58)
         .Maximum(100).Segments(35)
         .Delta("-6.4%")
-        .Status(Tone.Danger));
+        .Tone(Tone.Danger));
 ```
 
 Set `DisplayValue` when progress rows should show exact values instead of derived percentages. The row can still use `Value` and `Maximum` for filled segment geometry. `DisplayValue` accepts ordinary values plus an optional format, so callers do not need to pre-format simple counts or currency strings:
@@ -317,7 +317,7 @@ var performance = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
         .Maximum(100).Segments(44)
         .DisplayValue(132034, "N0")
         .Delta("+4.3%")
-        .Status(Tone.Success));
+        .Tone(Tone.Success));
 ```
 
 Part-to-whole strips are the same model again: a calmer visual treatment for certificate counts, sales platforms, checks, inventory states, or any other split:
@@ -409,13 +409,13 @@ var timeline = ActivityTimelineBlock.Create()
     .ShowCard(false)
     .ShowEventSurfaces(false)
     .AddSection("In-progress")
-    .AddEvent("Shipment", status: Tone.Info, detail: "Delivery by Royal Mail Standard", symbol: "S")
-    .AddEvent("Shipment 1", status: Tone.Neutral, symbol: "1")
+    .AddEvent("Shipment", tone: Tone.Info, detail: "Delivery by Royal Mail Standard", symbol: "S")
+    .AddEvent("Shipment 1", tone: Tone.Neutral, symbol: "1")
     .AddChecklistItem("Carrier confirmed", completed: true, muted: true)
     .AddChecklistItem("Packing in progress", completed: false)
     .AddHiddenSummary(6, "items hidden")
     .AddSection("Completed")
-    .AddEvent("Order created", status: Tone.Success, symbol: "OK");
+    .AddEvent("Order created", tone: Tone.Success, symbol: "OK");
 ```
 
 Schedule timelines cover planner-style time-of-day swimlanes:

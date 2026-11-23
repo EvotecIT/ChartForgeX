@@ -39,7 +39,7 @@ public sealed class PreparedHierarchySankeyTests {
         Assert.Equal(regions.Length, Role(xml, role).Count());
         Assert.All(Role(xml, role), e => Assert.False(string.IsNullOrWhiteSpace((string?)e.Attribute("data-cfx-label"))));
         if (kind != ChartSeriesKind.Treemap) Assert.Contains(Role(xml, role), e => (string?)e.Attribute("data-cfx-label") == "Root with a long measured label");
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)); Assert.Equal(width, image.Width); Assert.Equal(height, image.Height);
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)); Assert.Equal(width, image.Width); Assert.Equal(height, image.Height);
     }
 
     [Fact]

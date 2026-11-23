@@ -25,7 +25,7 @@ var movement = ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movem
     ChartWaterfallItem.Total(7)
 }).ObservationId(3, new ChartObservationId("cost-change"))
     .ObservationId(4, new ChartObservationId("cost-checkpoint"))
-    .PointColor(4, "#A5358A");
+    .PointColor(4, ChartColor.FromHex("#A5358A"));
 chart.XLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance").AddSeries(movement)
     .Waterfall(options => options.Orientation = ChartOrientation.Vertical);
 chart.YAxis(y => y.Title("Running balance"));

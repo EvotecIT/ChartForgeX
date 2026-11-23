@@ -39,7 +39,7 @@ public sealed class TerminalStoryRasterTimingTests {
     [InlineData(RasterAnimationFormat.Gif)]
     [InlineData(RasterAnimationFormat.Apng)]
     public void ZeroDurationStoryExportsOneCompletedFrame(RasterAnimationFormat format) {
-        var story = TerminalStory.Create().Width(480).PngOutputScale(1)
+        var story = TerminalStory.Create().Width(480).RasterScale(1)
             .InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(0).ShowFinalPrompt(false).Blank();
         Assert.Equal(0, TerminalStoryLayout.Build(story).DurationSeconds);
         var options = TerminalStoryAnimationOptions.Create().FramesPerSecond(2).EndHoldSeconds(0).Loop(false);
@@ -48,7 +48,7 @@ public sealed class TerminalStoryRasterTimingTests {
         Assert.Equal(1, controls.PlayCount);
     }
 
-    private static TerminalStory ReadyStory() => TerminalStory.Create().Width(480).PngOutputScale(1)
+    private static TerminalStory ReadyStory() => TerminalStory.Create().Width(480).RasterScale(1)
         .InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(0).ShowFinalPrompt(false).Output("ready");
 
     private static byte[] Encode(TerminalStory story, RasterAnimationFormat format, TerminalStoryAnimationOptions options) =>

@@ -32,7 +32,7 @@ internal static partial class SmokeTests {
             .DrawImage(overlay, VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 6, 5), 10, 8, VisualCanvasImageFit.Stretch)
             .DrawText(4, 8, 50, "BG", 12, ChartColors.White, emphasized: true);
 
-        var output = composition.ToImage();
+        var output = composition.ToRgbaImage();
         var overlayPixel = PixelAt(output, 72, 42);
         Assert(overlayPixel.R > 160 && overlayPixel.G < 45 && overlayPixel.B < 45, "Anchored image composition should alpha-blend overlays at the resolved bottom-right position.");
 
@@ -49,11 +49,11 @@ internal static partial class SmokeTests {
     private static void ImageCompositionClearReplacesPixels() {
         var composition = ImageComposition.FromImage(SolidImage(6, 4, 20, 30, 40, 255))
             .Clear(ChartColors.Transparent);
-        var transparent = composition.ToImage();
+        var transparent = composition.ToRgbaImage();
         Assert(PixelAt(transparent, 2, 2).A == 0, "ImageComposition.Clear should replace existing pixels with transparent pixels.");
 
         composition.Clear(ChartColor.FromRgba(90, 80, 70, 128));
-        var semiTransparent = composition.ToImage();
+        var semiTransparent = composition.ToRgbaImage();
         var pixel = PixelAt(semiTransparent, 2, 2);
         Assert(pixel.R == 90 && pixel.G == 80 && pixel.B == 70 && pixel.A == 128, "ImageComposition.Clear should replace, not blend, semi-transparent fills.");
     }
@@ -66,7 +66,7 @@ internal static partial class SmokeTests {
             .DrawDashedLine(2, 14, 22, 14, ChartColors.Cyan, 1, 2, 2)
             .DrawCallout(20, 4, 2, 9, 10, 7, "C", 6, ChartColors.White, ChartColors.Black, ChartColors.Yellow, 2, 1, 2);
 
-        var output = composition.ToImage();
+        var output = composition.ToRgbaImage();
         var squareStroke = PixelAt(output, 4, 3);
         var roundedStroke = PixelAt(output, 10, 6);
         var linePixel = PixelAt(output, 12, 16);
@@ -80,7 +80,7 @@ internal static partial class SmokeTests {
             .StrokeRectangle(1, 1, 16, 10, ChartColors.Red, 2)
             .DrawText(3, 3, 12, "G", 8, ChartColors.White, emphasized: true);
 
-        var gif = composition.ToImage().ToGif();
+        var gif = composition.ToRgbaImage().ToGif();
         Assert(IsGif(gif), "Composed image output should encode GIF bytes through Stories.");
         var decoded = RasterImageDecoder.Decode(gif);
         Assert(decoded.Width == 18 && decoded.Height == 12, "Stories GIF encoding should preserve the composition artboard dimensions.");
@@ -120,7 +120,7 @@ internal static partial class SmokeTests {
             .DrawCallout(46, 18, 54, 8, 34, 18, "HTML", 9, ChartColors.Yellow, ChartColor.FromRgba(0, 0, 0, 208), ChartColors.White, 4, 2, 4)
             .DrawText(8, 34, 70, "selector", 9, ChartColors.White, emphasized: true);
 
-        var annotated = composition.ToImage();
+        var annotated = composition.ToRgbaImage();
         var highlight = PixelAt(annotated, 8, 7);
         Assert(highlight.R > 180 && highlight.G < 80 && highlight.B < 80, "Screenshot-style annotation should render a red highlight rectangle.");
         // Most of the box is its dark fill. One sampled pixel is not enough: where the label's glyphs land depends on the
@@ -136,7 +136,7 @@ internal static partial class SmokeTests {
         }
         Assert(filled >= sampled * 0.6, "Screenshot-style annotation should render a filled callout box.");
 
-        Assert(IsGif(composition.ToImage().ToGif()), "Screenshot-style annotation should export GIF bytes through Stories.");
+        Assert(IsGif(composition.ToRgbaImage().ToGif()), "Screenshot-style annotation should export GIF bytes through Stories.");
         Assert(composition.ToPng(new RasterImageOptions { PngCompressionLevel = 9 }).Length > 64, "Screenshot-style annotation should export PNG bytes.");
         Assert(composition.ToJpeg(new RasterImageOptions { JpegQuality = 86, Background = ChartColors.White }).Length > 128, "Screenshot-style annotation should export JPEG bytes.");
         Assert(composition.ToRasterImage(RasterImageFormat.Bmp).Length > 128, "Screenshot-style annotation should export BMP bytes.");

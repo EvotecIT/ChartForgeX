@@ -12,7 +12,7 @@ public sealed class VisualCanvasBackdropParityTests {
     [InlineData(2)]
     public void NativeTechnologyHorizonFollowsItsAuthoredCubicOutline(int outputScale) {
         var canvas = VisualCanvas.Create(800, 400).BackgroundTop(ChartColor.White).BackgroundBottom(ChartColor.White)
-            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon).PngOutputScale(outputScale)
+            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon).RasterScale(outputScale)
             .Style(style => style.TechHorizonFill = ChartColor.Black);
         var svg = XDocument.Parse(canvas.ToSvg());
         var horizon = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "visual-canvas-horizon");

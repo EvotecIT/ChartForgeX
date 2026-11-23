@@ -21,7 +21,7 @@ internal static partial class MermaidNativeStyles {
             switch (item.Key) {
                 case "font-size": MermaidConfigurationTypography.TrySize(item.Value, out var size); selected.FontSize = size; break;
                 case "font-family": selected.FontFamily = item.Value; break;
-                case "font-weight": selected.FontWeight = item.Value; break;
+                case "font-weight": selected.FontWeight = ChartForgeX.Typography.TextStyleOverride.ParseFontWeight(item.Value); break;
                 case "font-style": selected.Italic = item.Value == "italic"; break;
                 case "letter-spacing": selected.LetterSpacing = 0; break; // Resolved after the actual presentation size is known.
             }

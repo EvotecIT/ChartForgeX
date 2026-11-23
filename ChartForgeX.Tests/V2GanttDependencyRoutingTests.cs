@@ -316,7 +316,7 @@ public sealed class V2GanttDependencyRoutingTests {
     }
 
     private static void AssertNativeDependencyInkClears(PreparedVisual prepared, IReadOnlyList<ChartRect> surfaces, bool expectInk = true) {
-        var actual = prepared.ToRgba();
+        var actual = prepared.ToRgbaImage();
         var scene = prepared.Scene;
         var control = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size,
             scene.Nodes.Where(node => node.Role is not ("gantt-dependency-line" or "gantt-dependency-arrow")).ToArray(), scene.Diagnostics, scene.Regions));

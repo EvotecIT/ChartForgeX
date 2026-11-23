@@ -55,7 +55,7 @@ public static class GraphSceneStaticExtensions {
         target.Width = source.Width;
         target.Height = source.Height;
         target.MaximumNodeLabels = source.MaximumNodeLabels;
-        target.Theme = source.Theme;
+        target.ThemeMode = source.ThemeMode;
     }
 
     private static string SafeFileName(string value) {

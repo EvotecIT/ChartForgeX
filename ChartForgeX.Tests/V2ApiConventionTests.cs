@@ -192,7 +192,7 @@ public sealed class V2ApiConventionTests {
                 } else if (method.Name == nameof(PreparedVisual.ToSvg)) {
                     if (parameter.ParameterType == typeof(VisualSvgOptions)) Assert.Equal("options", parameter.Name);
                     else {
-                        Assert.Equal("idPrefix", parameter.Name);
+                        Assert.Equal("idScope", parameter.Name);
                         Assert.Equal(typeof(string), parameter.ParameterType);
                     }
                 } else Assert.Equal(typeof(VisualRenderOptions), parameter.ParameterType);

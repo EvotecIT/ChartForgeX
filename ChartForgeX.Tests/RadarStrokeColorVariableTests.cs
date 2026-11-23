@@ -17,7 +17,7 @@ public sealed class RadarStrokeColorVariableTests {
         var values = Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 65)).ToArray();
         var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(true).DataLabels(false).YAxis(y => y.Bounds(0, 100));
         if (mixed) chart.AddRadialColumn("Count", values);
-        chart.AddRadarArea("Target", values, color);
+        chart.AddRadar("Target", values, color);
         chart.SvgColorVariables(new SvgColorVariables().Add("--radar-outline", color, SvgColorRole.Series));
         chart.Series.Last().Radar.OutlineStroke = new ChartStrokeStyle(width: 4);
         Assert.All(Strokes(chart.ToSvg()), stroke => Assert.Contains("var(--radar-outline,", stroke, StringComparison.Ordinal));

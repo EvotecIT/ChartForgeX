@@ -19,8 +19,8 @@ internal static partial class Program {
         var normalized = new VisualTurbulence(.071, .113, 3, 8, VisualTurbulenceType.FractalNoise, stitchTiles: true)
             .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(32, 24), 0),
                 frame: new VisualFrame(transparentBackground: true)));
-        PackageAssertions.Require(prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels
-            .SequenceEqual(normalized.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels),
+        PackageAssertions.Require(prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels
+            .SequenceEqual(normalized.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels),
             "Native procedural preparation lost the retained raw-seed normalization policy.");
         PackageAssertions.Require(prepared.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)).Contains("feTurbulence"),
             "Native procedural SVG profile lost its finite source.");

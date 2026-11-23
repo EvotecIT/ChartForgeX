@@ -155,7 +155,7 @@ public sealed class GanttStyledGuideBoundaryTests {
     public void MaximumNativeReferenceStyleStillPaintsRasterInk() {
         var chart = Chart.Create().Size(320, 360).Legend(false).Gantt(g => g.Today(2)).AddGanttTask("Task", 1, 4);
         chart.Options.Gantt.TodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 1024, dash: new[] { 1024d, .25d });
-        var pixels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToRgba().Pixels;
+        var pixels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToRgbaImage().Pixels;
         Assert.Contains(Enumerable.Range(0, pixels.Length / 4), pixel => pixels[pixel * 4] == 255 && pixels[pixel * 4 + 1] == 0 && pixels[pixel * 4 + 2] == 255);
     }
 
@@ -196,7 +196,7 @@ public sealed class GanttStyledGuideBoundaryTests {
         }
         Assert.True(guide.Start.X - guide.StrokeWidth / 2 >= axis.Start.X - .001, "Guide ink crosses the automatic minimum.");
         Assert.True(guide.Start.X + guide.StrokeWidth / 2 <= axis.End.X + .001, "Guide ink crosses the automatic maximum.");
-        var actual = prepared.ToRgba();
+        var actual = prepared.ToRgbaImage();
         var control = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size,
             prepared.Scene.Nodes.Where(node => node.Role != "gantt-now-line").ToArray(), prepared.Scene.Diagnostics, prepared.Scene.Regions));
         for (var y = 0; y < actual.Height; y++) for (var x = 0; x < actual.Width; x++) {

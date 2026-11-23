@@ -206,7 +206,7 @@ internal static partial class Program {
         var artifact = rendered.Artifact ?? throw new InvalidOperationException("Packed flowchart did not produce an artifact.");
         var topology = artifact.Model as TopologyChart
             ?? throw new InvalidOperationException("Packed flowchart did not produce the native topology model.");
-        PackageAssertions.Require(topology.Nodes.All(node => node.BackgroundColor == "#dbeafe"),
+        PackageAssertions.Require(topology.Nodes.All(node => node.BackgroundColor == ChartColor.FromHex("#dbeafe")),
             "Packed default Mermaid classes did not apply to every node.");
         PackageAssertions.Png(artifact.ToPng());
         var invalid = RenderFixture("gitGraph\ncommit type: BAD");

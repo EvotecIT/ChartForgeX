@@ -120,7 +120,7 @@ public sealed class ChartLookV2RegressionTests {
 
     [Fact]
     public void FittedImplicitTimelineLegendReservesTheSameHeightAsAnExplicitlyHiddenLegend() {
-        var chart = Chart.Create().Size(600, 560).AddTimelineRange("North", 0, 10).AddTimelineRange("South", 2, 8);
+        var chart = Chart.Create().Size(600, 560).AddTimelineItem("North", 0, 10).AddTimelineItem("South", 2, 8);
         var automatic = Fit(chart, new VisualFrame());
         var hidden = Fit(chart.Legend(false), new VisualFrame());
         Assert.DoesNotContain(automatic.Scene.Nodes, node => node.Role == "legend-entry");

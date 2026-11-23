@@ -30,7 +30,7 @@ internal static class PreparedPipelineSmoke {
             AssertPrepared(donut.Prepare(context), "donut-slice");
             AssertXZoom(context);
 
-            var topology = CreateTopology().Theme(theme, mode);
+            var topology = CreateTopology().Theme(theme).ThemeMode(mode);
             var preparedTopology = topology.Prepare(context);
             AssertPrepared(preparedTopology, "topology-node");
             AssertSemanticHandoff(preparedTopology, topology.ToVisualArtifact().ToInterchangeEnvelope(),
@@ -90,7 +90,7 @@ internal static class PreparedPipelineSmoke {
         Require(svg.Contains("<svg", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"" + semanticRole + "\"", StringComparison.Ordinal),
             "Prepared SVG marks are missing: " + semanticRole);
         AssertPng(prepared.ToPng());
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Require(image.Width == 640 && image.Height == 400, "Prepared raster viewport changed.");
         Require(prepared.Regions.Count > 0, "Prepared semantic regions are missing.");
     }

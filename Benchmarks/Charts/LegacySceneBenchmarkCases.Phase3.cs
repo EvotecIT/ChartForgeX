@@ -32,7 +32,7 @@ public static partial class LegacySceneBenchmarkCases {
         var theme = CurrentTheme();
 #endif
         var chart = Chart.Create().Size(Width, Height).Theme(theme).Title(Title)
-            .Subtitle("One prepared scene for SVG and native PNG").Legend().Padding(24, 24, 24, 24).Png(p => p.OutputScale(1).SupersamplingScale(2));
+            .Subtitle("One prepared scene for SVG and native PNG").Legend().Padding(24, 24, 24, 24).Raster(p => p.OutputScale(1).SupersamplingScale(2));
         switch (fixture) {
             case "matrix":
                 chart.XLabels(Enumerable.Range(1, 12).Select(index => "Slot " + index).ToArray());
@@ -113,7 +113,7 @@ public static partial class LegacySceneBenchmarkCases {
         chart.Theme(CurrentTheme());
 #endif
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true,
-            WrapNodeLabels = true, PngOutputScale = 1, PngSupersamplingScale = 2 };
+            WrapNodeLabels = true, RasterScale = 1, RasterSupersampling = 2 };
         for (var index = 0; index < 12; index++) chart.AddAutoNode("node-" + index, "Service " + (index + 1),
             status: index % 4 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, width: 112, height: 48);
         for (var index = 1; index < 12; index++) chart.AddEdge("edge-" + index, "node-" + ((index - 1) / 2), "node-" + index,

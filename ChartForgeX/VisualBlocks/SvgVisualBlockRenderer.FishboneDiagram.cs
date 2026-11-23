@@ -5,7 +5,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderFishboneDiagram(SvgMarkupWriter writer, FishboneDiagramBlock block) {
         if (block.UsesNaturalLayout) { RenderNaturalFishbone(writer, block); return; }
         var options = block.Options;

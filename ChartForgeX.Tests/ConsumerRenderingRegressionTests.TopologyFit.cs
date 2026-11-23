@@ -17,7 +17,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("selected-group", "Selected group", 24, 24, 240, 150)
             .AddNode("selected", "Selected service", 30, 30, width: 160, height: 84, groupId: "selected-group");
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngScale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, RasterScale = pngScale };
         options.SelectedNodeIds.Add("selected");
         options.SelectedGroupIds.Add("selected-group");
         var svg = XDocument.Parse(chart.ToSvg(options));
@@ -60,7 +60,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("cloud", "Cloud", 10, 10, width: 180, height: 120);
         chart.Nodes[0].Shape = TopologyNodeShape.Cloud;
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false, PngOutputScale = pngScale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false, RasterScale = pngScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath")
             .Elements().Single(element => element.Name.LocalName == "rect");
@@ -168,7 +168,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
             .AddAutoNode("database", "Directory database", groupId: "core")
             .AddEdge("https", "gateway", "identity", "HTTPS")
             .AddEdge("long", "gateway", "database", "Long route");
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngOutputScale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, RasterScale = pngOutputScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
             .Select(element => (Id: (string?)element.Parent?.Attribute("data-node-id") ?? "",
@@ -260,7 +260,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
             .AddEdge("link", "source", "target", "HTTPS").UpdateEdge("link", e => e.SourcePortId("upper").TargetPortId("lower"));
         chart.Nodes[0].Shape = TopologyNodeShape.Diamond;
         chart.Nodes[1].Shape = TopologyNodeShape.Diamond;
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = 2 };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, RasterScale = 2 };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var edge = svg.Descendants().Single(element => Role(element) == "topology-edge");
         var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
@@ -292,7 +292,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
             .AddNode("lower", "Lower target", 420, 270, width: 120, height: 72)
             .AddEdge("upper-link", "source", "upper", "Primary")
             .AddEdge("lower-link", "source", "lower", "Backup");
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngSupersamplingScale = outputScale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, RasterSupersampling = outputScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var sourceSurface = svg.Descendants().Single(element => Role(element) == "topology-node-surface"
             && (string?)element.Parent?.Attribute("data-node-id") == "source");
@@ -371,7 +371,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
             .AddNode("target", "Target", 330, 100, width: 80, height: 60)
             .AddEdge("link", "source", "target")
             .UpdateEdge("link", e => e.SourceLabel("Long source relationship label").TargetLabel("Long target relationship label"));
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngScale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, RasterScale = pngScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var clipPath = svg.Descendants().Single(element => element.Name.LocalName == "clipPath");
         var clip = clipPath.Elements().Single(element => element.Name.LocalName == "rect");
@@ -396,7 +396,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(460, 240)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("icon", "Caption plate at canvas edge", 10, 10, width: 84, height: 54);
         chart.Nodes[0].DisplayMode = mode;
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeIconLabels = true, PngOutputScale = outputScale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeIconLabels = true, RasterScale = outputScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath").Elements().Single(element => element.Name.LocalName == "rect");
         var plate = svg.Descendants().Single(element => Role(element) == "topology-node-icon-label");

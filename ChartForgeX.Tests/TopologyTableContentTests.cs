@@ -119,5 +119,5 @@ public sealed class TopologyTableContentTests {
         Assert.Throws<NotSupportedException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("\"version\":2", "\"version\":1", StringComparison.Ordinal)));
     }
     private static TopologyChart Source(int width, bool dark) => TopologyTableContentRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light)
-        .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
 }

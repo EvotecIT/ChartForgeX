@@ -48,7 +48,7 @@ internal static class Ownership {
             return CoreReplacement("Common renderable dispatch and backend options; optional package producers/decorators own their behavior.", "Core chart/diagram and optional visual/story artifact export, semantic interchange and package graph.", "artifact-dispatch-options");
         if (api.Type.EndsWith(".VisualArtifact", StringComparison.Ordinal) && api.Name is "Model" or "Create")
             return CoreReplacement("Typed/common renderable handoff while retaining neutral semantic envelope data.", "Core/Visuals/Stories artifact creation and Office semantic interchange roundtrip.", "artifact-model-handoff");
-        if (api.Type.EndsWith("VisualArtifactSize", StringComparison.Ordinal) || api.Type.EndsWith("ChartSize", StringComparison.Ordinal) ||
+        if (api.Type.EndsWith("VisualSize", StringComparison.Ordinal) || api.Type.EndsWith("ChartSize", StringComparison.Ordinal) ||
             api.Type.EndsWith("ChartTheme", StringComparison.Ordinal) || api.Type.EndsWith("VisualDesignTokens", StringComparison.Ordinal))
             return CoreReplacement("Shared VisualSize/VisualTheme contracts; migrate actual calls after API spike, preserving explicit caller overrides.", "Shared size/theme/frame consistency; consumer old-to-new compile fixtures.", "shared-size-theme-contract");
         return Core("retained-core-capability");

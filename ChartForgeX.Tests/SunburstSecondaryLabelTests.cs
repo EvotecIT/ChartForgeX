@@ -132,12 +132,12 @@ public sealed class SunburstSecondaryLabelTests {
 
     [Fact]
     public void InheritedTypographyAndSecondaryOverridesAreClonedIntoVisiblePreparedRuns() {
-        var chart = Gallery(800, false, 6).DataLabelStyle(style => style.FontSize(16).FontWeight("bold"));
+        var chart = Gallery(800, false, 6).DataLabelStyle(style => style.FontSize(16).FontWeight(700));
         chart.Series[0].PointDataLabelStyle(0, style => style.Italic().Color(ChartColor.FromHex("#034f73")));
         var inherited = Prepare(chart).Scene.Nodes.OfType<VisualSceneText>().Single(text => text.Id == "series-0-node-secondary-label-0");
         Assert.Equal(12.8, inherited.Text.Size, 8); Assert.Equal(700, inherited.Text.Style.Font.Weight);
         Assert.True(inherited.Text.Style.Font.Italic); Assert.Equal(ChartColor.FromHex("#034f73"), inherited.Color);
-        chart.Sunburst(options => options.SecondaryLabelStyle.FontSize(10).FontWeight("normal").Color(ChartColor.FromHex("#713c11")).TextCase(TextCaseTransform.Uppercase));
+        chart.Sunburst(options => options.SecondaryLabelStyle.FontSize(10).FontWeight(400).Color(ChartColor.FromHex("#713c11")).TextCase(TextCaseTransform.Uppercase));
         var prepared = Prepare(chart); var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(text => text.Id == "series-0-node-secondary-label-0");
         Assert.Equal(10, text.Text.Size); Assert.Equal(400, text.Text.Style.Font.Weight); Assert.True(text.Text.Style.Font.Italic);
         Assert.Equal("ALLOCATION", Assert.Single(text.Text.Lines).Text); Assert.Equal(ChartColor.FromHex("#713c11"), text.Color);

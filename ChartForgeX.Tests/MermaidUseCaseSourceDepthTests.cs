@@ -33,7 +33,7 @@ public sealed class MermaidUseCaseSourceDepthTests {
         Assert.Equal("Release coordinator", chart.Nodes[0].Label); Assert.Equal("«primary»", chart.Nodes[0].Subtitle);
         Assert.Equal("«business action»", chart.Nodes[1].Subtitle);
         Assert.Equal("request", chart.Edges[0].Id); Assert.Equal("mermaid-edge-1", chart.Edges[1].Id);
-        Assert.Equal("#2563EB", chart.Edges[0].Color); Assert.Equal("#0F766E", chart.Edges[0].LabelColor);
+        Assert.Equal(ChartColor.FromHex("#2563EB"), chart.Edges[0].Color); Assert.Equal(ChartColor.FromHex("#0F766E"), chart.Edges[0].LabelColor);
         Assert.Equal(2.5, chart.Edges[0].StrokeWidth); Assert.Equal(.8, chart.Edges[0].Opacity);
         Assert.Equal(new[] { 6d, 3, 2, 6, 3, 2 }, chart.Edges[0].DashPattern);
         Assert.Equal("Publish", Assert.Single(chart.Annotations).TargetId);
@@ -143,13 +143,13 @@ public sealed class MermaidUseCaseSourceDepthTests {
     public void ExplicitHostTypographyAndPaddingOverrideOnlyTheirCorrespondingSourceDefaults() {
         var source = UseCaseSourceDepthFixture.Read(); var document = new MermaidParser().ParseFlowchart(source).Document!;
         var authored = document.ToTopologyChart(); Assert.Equal(28, authored.Viewport.Padding);
-        Assert.Equal(14, authored.Nodes[0].TextStyle!.FontSize); Assert.Equal("500", authored.Nodes[0].TextStyle!.FontWeight);
+        Assert.Equal(14, authored.Nodes[0].TextStyle!.FontSize); Assert.Equal(500, authored.Nodes[0].TextStyle!.FontWeight);
         var explicitHost = document.ToTopologyChart(new MermaidFlowchartRenderOptions { Padding = 17,
             Presentation = new MermaidPresentationOptions { FontSize = 20, FontFamily = BrowserProofFonts.Family } });
         Assert.Equal(17, explicitHost.Viewport.Padding);
         Assert.All(explicitHost.Nodes, node => { Assert.Equal(20, node.TextStyle!.FontSize); Assert.Equal(BrowserProofFonts.Family, node.TextStyle.FontFamily); });
-        Assert.Equal("500", explicitHost.Nodes[0].TextStyle!.FontWeight);
-        Assert.Equal("400", explicitHost.Nodes[1].TextStyle!.FontWeight);
+        Assert.Equal(500, explicitHost.Nodes[0].TextStyle!.FontWeight);
+        Assert.Equal(400, explicitHost.Nodes[1].TextStyle!.FontWeight);
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public sealed class MermaidUseCaseSourceDepthTests {
         var result = MermaidRenderer.Render("usecase-beta\nclassDef marked stroke:red\nclass delivery marked\nstyle delivery color:blue\nA delivery@--> B");
         Assert.Empty(result.Diagnostics); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         Assert.Equal(new[] { "A", "B" }, chart.Nodes.Select(node => node.Id));
-        Assert.Equal(("delivery", "red", "blue"), (chart.Edges[0].Id, chart.Edges[0].Color, chart.Edges[0].LabelColor));
+        Assert.Equal(("delivery", ChartColorText.Parse("red"), ChartColorText.Parse("blue")), (chart.Edges[0].Id, chart.Edges[0].Color, chart.Edges[0].LabelColor));
         var anonymous = new MermaidParser().ParseFlowchart("flowchart LR\nA[Literal @ caption] --> B").Document!;
         var before = anonymous.ToTopologyChart().Prepare(); anonymous.Edges[0].Id = null;
         Assert.Equal(before.ToSvg(), anonymous.ToTopologyChart().ToSvg()); Assert.Equal(before.ToPng(), anonymous.ToTopologyChart().ToPng());

@@ -27,12 +27,12 @@ public static class FlowArtifactRendering {
 
         for (var i = 0; i < flow.Lanes.Count; i++) {
             var lane = flow.Lanes[i];
-            chart.AddGroup(lane.Id, lane.Label, 0, 0, 280, 180, ToTopologyStatus(lane.Status), color: lane.Color);
+            chart.AddGroup(lane.Id, lane.Label, 0, 0, 280, 180, ToTopologyStatus(lane.Tone), color: lane.Color);
         }
 
         for (var i = 0; i < flow.Steps.Count; i++) {
             var step = flow.Steps[i];
-            chart.AddAutoNode(step.Id, step.Label, ToTopologyKind(step.Kind), ToTopologyStatus(step.Status), step.LaneId, step.Subtitle, width: step.Width, height: step.Height, symbol: step.Symbol, color: step.Color, iconId: step.Icon);
+            chart.AddAutoNode(step.Id, step.Label, ToTopologyKind(step.Kind), ToTopologyStatus(step.Tone), step.LaneId, step.Subtitle, width: step.Width, height: step.Height, symbol: step.Symbol, color: step.Color, iconId: step.Icon);
             chart.Nodes[i].FitLabelToContent = step.FitLabelToContent;
             // Flow declaration order is the progression contract. Infrastructure node-kind ranks
             // would put starts, decisions and ends in one layer and then reorder them by id.
@@ -43,7 +43,7 @@ public static class FlowArtifactRendering {
 
         for (var i = 0; i < flow.Connectors.Count; i++) {
             var connector = flow.Connectors[i];
-            chart.AddEdge(connector.Id, connector.SourceId, connector.TargetId, connector.Label, ToTopologyKind(connector.Kind), ToTopologyStatus(connector.Status), ToVisualLinkDirection(connector.Direction), TopologyEdgeRouting.Orthogonal, color: connector.Color);
+            chart.AddEdge(connector.Id, connector.SourceId, connector.TargetId, connector.Label, ToTopologyKind(connector.Kind), ToTopologyStatus(connector.Tone), ToVisualLinkDirection(connector.Direction), TopologyEdgeRouting.Orthogonal, color: connector.Color);
         }
 
         return chart;
@@ -61,7 +61,7 @@ public static class FlowArtifactRendering {
         artifact.SourceLanguage = sourceLanguage;
         artifact.Title = flow.Title;
         artifact.Subtitle = flow.Subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(flow.Width, flow.Height);
+        artifact.NaturalSize = new VisualSize(flow.Width, flow.Height);
         artifact.ExportFormats = flow.ExportFormats;
         if (flow.PreparedPresentation is {} captured) {
             // Match the existing topology wrapper policy: carried model facts are the baseline,

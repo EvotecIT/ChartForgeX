@@ -66,7 +66,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().Size(596, 338).Theme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")))
             .AddBar("Requests", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[0].PointColor(1, "#7b61e8");
+        chart.Series[0].PointColor(1, ChartColor.FromHex("#7b61e8"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();

@@ -22,7 +22,7 @@ public sealed class NativeOpacityDensityBudgetTests {
         }
         var prepared = new PreparedVisual(builder.Build());
         var svg = prepared.ToSvg("density-budget");
-        var control = prepared.ToRgba(new VisualRenderOptions(scale: 1, supersampling: 1));
+        var control = prepared.ToRgbaImage(new VisualRenderOptions(scale: 1, supersampling: 1));
         var output = Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {
             Directory.CreateDirectory(output);
@@ -35,7 +35,7 @@ public sealed class NativeOpacityDensityBudgetTests {
         // its actual source/return array cannot be debited as a density1 image. The public
         // pixel cap and work ceiling still admit this pose, so this is the live-array guard.
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            prepared.ToRgba(new VisualRenderOptions(scale: 2, supersampling: 1)));
+            prepared.ToRgbaImage(new VisualRenderOptions(scale: 2, supersampling: 1)));
         Assert.Equal(svg, prepared.ToSvg("density-budget"));
     }
 }

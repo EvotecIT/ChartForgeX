@@ -93,7 +93,7 @@ node api ""API"" kind:service status:healthy
 ~~~
 ";
 
-        var blocks = ChartForgeXMarkdown.ExtractTopologyPayloads(source);
+        var blocks = TopologyBlocks(source);
         Assert(blocks.Count == 1, "Markdown extraction should support standard three-tilde fences with trailing metadata.");
         var result = new MarkupTopologyParser().Parse(source);
         Assert(!result.HasErrors, "Tilde-fenced topology markup should parse without errors: " + Diagnostics(result));
@@ -189,7 +189,7 @@ layout layered lr
 ```chartforgex topology v1
 node api ""API"" kind:service status:healthy";
 
-        var blocks = ChartForgeXMarkdown.ExtractTopologyBlocks(unterminated);
+        var blocks = TopologyBlocks(unterminated);
         Assert(blocks.Count == 1, "Unterminated topology fences should remain open through EOF.");
         Assert(blocks[0].StartLine == 4, "Unterminated fence payload should preserve source line.");
 
@@ -316,7 +316,7 @@ flowchart LR
 ```";
 
         var visualBlocks = VisualMarkupScanner.ExtractBlocks(source);
-        var topologyBlocks = ChartForgeXMarkdown.ExtractTopologyBlocks(source);
+        var topologyBlocks = TopologyBlocks(source);
 
         Assert(visualBlocks.Count == 3, "Generic scanner should retain all supported visual blocks.");
         Assert(topologyBlocks.Count == 1, "Existing topology extraction should remain topology-only.");
@@ -494,7 +494,7 @@ rows:
         Assert(table.Columns[2].Type == TableArtifactColumnType.Number && table.Columns[2].Alignment == TextAlignment.Right, "Typed table columns should map type and alignment.");
         Assert(!table.Columns[2].Searchable && table.Columns[2].Sortable && !table.Columns[2].Filterable, "Typed table columns should map host behavior flags.");
         Assert(table.Rows[0].Key == "api" && table.Rows[0].Cells[0].DisplayText == "API", "Typed table rows should use key without rendering it as the first cell.");
-        Assert(table.Rows[1].Cells[1].Status == Tone.Warning, "Status columns should map recognized status text to cell status.");
+        Assert(table.Rows[1].Cells[1].Tone == Tone.Warning, "Status columns should map recognized status text to cell status.");
     }
 
     private static void VisualMarkupParserMapsTableFencesToArtifacts() {
@@ -796,4 +796,5 @@ flowchart LR
 
     private static string Diagnostics(VisualMarkupParseResult result) =>
         string.Join("; ", result.Diagnostics.ConvertAll(diagnostic => diagnostic.Severity + ":" + diagnostic.Message));
+    private static List<VisualMarkupBlock> TopologyBlocks(string text) => VisualMarkupScanner.ExtractBlocks(text).Where(block => block.Kind == VisualMarkupKind.Topology).ToList();
 }

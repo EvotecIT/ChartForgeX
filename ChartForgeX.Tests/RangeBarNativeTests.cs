@@ -16,13 +16,13 @@ public sealed class RangeBarNativeTests {
         var chart = Chart.Create().Size(horizontal ? 360 : 800, 440).Title("Delivery time ranges")
             .Subtitle("Expected and observed intervals by service").XLabels("Standard", "Express")
             .Theme(VisualTheme.Graphite()).ThemeMode(horizontal ? ThemeMode.Dark : ThemeMode.Light).DataLabels().FontFamily("Carlito")
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .Bars(b => b.Style(horizontal ? ChartBarStyle.SegmentedCapsule : ChartBarStyle.Flat))
             .RangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
             .AddRangeBar("Expected", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 3, 9) }, ChartColor.FromRgb(11, 100, 190))
             .AddRangeBar("Observed", new[] { new ChartInterval(1, 4, 10), new ChartInterval(2, 11, 5) }, ChartColor.FromRgb(220, 90, 35));
         if (horizontal) chart.Options.XAxis.Bounds(0, 12);
-        chart.Series[1].PointColor(1, "#A5358A").PointFillPattern(1, ChartFillPattern.Crosshatch);
+        chart.Series[1].PointColor(1, ChartColor.FromHex("#A5358A")).PointFillPattern(1, ChartFillPattern.Crosshatch);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var bodies = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "range-bar").ToArray();
         var caps = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "range-bar-cap").ToArray();
@@ -40,7 +40,7 @@ public sealed class RangeBarNativeTests {
         var document = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: variables)));
         Assert.All(document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "range-bar-cap").Skip(6),
             element => Assert.Contains("var(--observed,", element.Attribute("stroke")!.Value));
-        var raster = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var raster = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         var samples = bodies.Take(3).Select(body => {
             // Sample off the value gridlines that now run behind translucent horizontal bodies (design rule 2).
             var x = (int)Math.Round(body.Bounds.Left + body.Bounds.Width * (horizontal ? .43 : .5));

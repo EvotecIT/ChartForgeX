@@ -42,7 +42,7 @@ public sealed class IndependentErrorBarTests {
             Assert.True(region.Bounds.Top <= Math.Min(line.Start.Y, line.End.Y) - line.StrokeWidth / 2 + 1e-8);
             Assert.True(region.Bounds.Bottom >= Math.Max(line.Start.Y, line.End.Y) + line.StrokeWidth / 2 - 1e-8);
         }
-        Assert.NotEmpty(prepared.ToPng()); Assert.Equal(720, prepared.ToRgba().Width);
+        Assert.NotEmpty(prepared.ToPng()); Assert.Equal(720, prepared.ToRgbaImage().Width);
     }
 
     [Fact]

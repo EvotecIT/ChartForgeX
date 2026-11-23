@@ -57,7 +57,7 @@ public sealed class PolarPointDescriptionTests {
     public void MissingRadarGeometryKeepsDerivedIdentityWithoutAnAuthoredDescription(bool mixed) {
         var chart = Chart.Create().Size(500, 400).XLabels("North", "East", "South").YAxis(y => y.Bounds(0, 100));
         var observations = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) };
-        if (mixed) chart.AddRadialColumn("Observed", observations); else chart.AddRadarArea("Observed", observations);
+        if (mixed) chart.AddRadialColumn("Observed", observations); else chart.AddRadar("Observed", observations);
         chart.AddRadarLine("Target", new[] { new ChartPoint(1, 0), new ChartPoint(3, 80) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var missing = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Id == "series-1-missing-category-1");

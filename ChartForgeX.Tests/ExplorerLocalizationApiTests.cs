@@ -38,6 +38,7 @@ public sealed class ExplorerLocalizationApiTests {
     public void ExistingAndLocalizedTopologyExtensionCallsRemainDistinctAndDetached() {
         var chart = Topology();
         var options = new TopologyRenderOptions { Html = { SelectionPanel = true, ViewportControls = true } };
+        var interactions = options.Html.Interactions;
         var native = chart.ToSvg();
         Assert.Contains("Topology controls", chart.ToInteractiveHtmlPage());
         Assert.Contains("Topology controls", chart.ToInteractiveHtmlPage(options));
@@ -61,7 +62,7 @@ public sealed class ExplorerLocalizationApiTests {
         var fragment = chart.ToInteractiveHtmlFragmentWithoutAssets(options, Configure);
         Assert.Contains("Brak wyboru", fragment);
         Assert.DoesNotContain("<script", fragment);
-        Assert.False(options.Html.Interactions);
+        Assert.Equal(interactions, options.Html.Interactions);
         Assert.Equal(native, chart.ToSvg());
         var path = Path.Combine(Path.GetTempPath(), "cfx-localization-" + Guid.NewGuid().ToString("N") + ".html");
         try {

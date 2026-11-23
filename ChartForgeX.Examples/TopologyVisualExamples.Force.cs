@@ -8,18 +8,18 @@ internal static partial class TopologyVisualExamples {
         var artifacts = new List<VisualArtifact>();
         var options = new TopologyRenderOptions { IncludeLegend = true }
             .ForceGraphStyle()
-            .HtmlForceGraphControls();
+            .Html(html => html.ForceGraphControls());
         WriteForceGraphArtifact(target, artifacts, "visual-force-relationship-graph", "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", BuildForceRelationshipGraph(), options);
         WriteForceGraphArtifact(target, artifacts, "visual-force-busy-relationship-graph", "Busy Force Relationship Graph", "Busy force-directed relationship graph using the relationship solver profile for degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", BuildBusyForceRelationshipGraph(), options);
         var radialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9);
         radialOptions.IncludeEdgeLabels = true;
         WriteForceGraphArtifact(target, artifacts, "visual-relationship-radial-ego-graph", "Relationship Radial Ego Graph", "Selected application relationship graph with the root in the center, direct conversations around it, second-hop conversations farther out, and capped expansion for large networks.", BuildRelationshipRadialEgoGraph(), radialOptions);
         var largeRadialOptions = new TopologyRenderOptions { IncludeLegend = false }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40);
         WriteForceGraphArtifact(target, artifacts, "visual-relationship-radial-500-ego-graph", "Relationship Radial 500 Ego Graph", "Large 500-node relationship ego graph: all nodes remain present as dots, first-hop conversations spread around the root, second-hop conversations fan out farther, and HTML focus reveals labels on demand.", BuildLargeRelationshipRadialEgoGraph(), largeRadialOptions);
         WriteManifest(target, artifacts);
@@ -137,18 +137,18 @@ internal static partial class TopologyVisualExamples {
             .Subtitle("Start from one application, show direct conversations in different directions, then push second-hop conversations farther away with capped expansion.")
             .Viewport(new TopologyViewport(1320, 820, 32))
             .LayoutMode(TopologyLayoutMode.RelationshipRadial)
-            .AddAutoGroup("application", "Applications", TopologyHealthStatus.Healthy, "root", color: "#7C3AED")
-            .AddAutoGroup("identity", "Identity", TopologyHealthStatus.Healthy, "users", color: "#2563EB")
-            .AddAutoGroup("endpoint", "Endpoints", TopologyHealthStatus.Healthy, "devices", color: "#0891B2")
-            .AddAutoGroup("data", "Data", TopologyHealthStatus.Warning, "stores", color: "#059669")
-            .AddAutoGroup("control", "Controls", TopologyHealthStatus.Warning, "policies", color: "#DC2626")
-            .AddAutoGroup("owner", "Owners", TopologyHealthStatus.Healthy, "teams", color: "#EA580C")
-            .AddAutoNode("application-03", "Payroll API", TopologyNodeKind.Service, TopologyHealthStatus.Warning, "application", "root", width: 44, height: 44, symbol: "API", color: "#7C3AED")
-            .AddAutoNode("identity-admins", "Privileged users", TopologyNodeKind.Person, TopologyHealthStatus.Warning, "identity", "sign-in", width: 34, height: 34, symbol: "ID", color: "#2563EB")
-            .AddAutoNode("endpoint-admin", "Admin workstation", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, "endpoint", "calls", width: 34, height: 34, symbol: "PC", color: "#0891B2")
-            .AddAutoNode("data-payroll", "Payroll DB", TopologyNodeKind.Database, TopologyHealthStatus.Critical, "data", "reads", width: 34, height: 34, symbol: "DB", color: "#059669")
-            .AddAutoNode("control-mfa", "MFA policy", TopologyNodeKind.Process, TopologyHealthStatus.Warning, "control", "governs", width: 34, height: 34, symbol: "CTL", color: "#DC2626")
-            .AddAutoNode("owner-hr", "HR owners", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "owner", "owns", width: 34, height: 34, symbol: "TM", color: "#EA580C")
+            .AddAutoGroup("application", "Applications", TopologyHealthStatus.Healthy, "root", color: ChartColor.FromHex("#7C3AED"))
+            .AddAutoGroup("identity", "Identity", TopologyHealthStatus.Healthy, "users", color: ChartColor.FromHex("#2563EB"))
+            .AddAutoGroup("endpoint", "Endpoints", TopologyHealthStatus.Healthy, "devices", color: ChartColor.FromHex("#0891B2"))
+            .AddAutoGroup("data", "Data", TopologyHealthStatus.Warning, "stores", color: ChartColor.FromHex("#059669"))
+            .AddAutoGroup("control", "Controls", TopologyHealthStatus.Warning, "policies", color: ChartColor.FromHex("#DC2626"))
+            .AddAutoGroup("owner", "Owners", TopologyHealthStatus.Healthy, "teams", color: ChartColor.FromHex("#EA580C"))
+            .AddAutoNode("application-03", "Payroll API", TopologyNodeKind.Service, TopologyHealthStatus.Warning, "application", "root", width: 44, height: 44, symbol: "API", color: ChartColor.FromHex("#7C3AED"))
+            .AddAutoNode("identity-admins", "Privileged users", TopologyNodeKind.Person, TopologyHealthStatus.Warning, "identity", "sign-in", width: 34, height: 34, symbol: "ID", color: ChartColor.FromHex("#2563EB"))
+            .AddAutoNode("endpoint-admin", "Admin workstation", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, "endpoint", "calls", width: 34, height: 34, symbol: "PC", color: ChartColor.FromHex("#0891B2"))
+            .AddAutoNode("data-payroll", "Payroll DB", TopologyNodeKind.Database, TopologyHealthStatus.Critical, "data", "reads", width: 34, height: 34, symbol: "DB", color: ChartColor.FromHex("#059669"))
+            .AddAutoNode("control-mfa", "MFA policy", TopologyNodeKind.Process, TopologyHealthStatus.Warning, "control", "governs", width: 34, height: 34, symbol: "CTL", color: ChartColor.FromHex("#DC2626"))
+            .AddAutoNode("owner-hr", "HR owners", TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "owner", "owns", width: 34, height: 34, symbol: "TM", color: ChartColor.FromHex("#EA580C"))
             .AddEdge("radial-admins-api", "application-03", "identity-admins", "sign-in", TopologyEdgeKind.AuthenticationPath, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
             .AddEdge("radial-endpoint-api", "application-03", "endpoint-admin", "calls", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional)
             .AddEdge("radial-api-db", "application-03", "data-payroll", "reads", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
@@ -169,7 +169,7 @@ internal static partial class TopologyVisualExamples {
     }
 
     private static void AddRadialSecondHop(TopologyChart chart, string parentId, string nodeId, string label, TopologyNodeKind kind, string groupId, string edgeLabel, string color) {
-        chart.AddAutoNode(nodeId, label, kind, TopologyHealthStatus.Healthy, groupId, edgeLabel, width: 28, height: 28, symbol: label.Substring(0, 1).ToUpperInvariant(), color: color)
+        chart.AddAutoNode(nodeId, label, kind, TopologyHealthStatus.Healthy, groupId, edgeLabel, width: 28, height: 28, symbol: label.Substring(0, 1).ToUpperInvariant(), color: ChartColor.Parse(color))
             .AddEdge("radial-" + parentId + "-" + nodeId, parentId, nodeId, edgeLabel, TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
     }
 
@@ -181,20 +181,20 @@ internal static partial class TopologyVisualExamples {
             .Subtitle("500-node ego graph: first-hop conversations radiate from the root, second-hop conversations fan outward, labels stay hidden until HTML focus.")
             .Viewport(new TopologyViewport(1680, 1060, 32))
             .LayoutMode(TopologyLayoutMode.RelationshipRadial)
-            .AddAutoGroup("root", "Root", TopologyHealthStatus.Warning, "1 app", color: "#7C3AED")
-            .AddAutoNode("app-root", "Application Root", TopologyNodeKind.Service, TopologyHealthStatus.Warning, "root", "selected", width: 42, height: 42, symbol: "APP", color: "#7C3AED");
+            .AddAutoGroup("root", "Root", TopologyHealthStatus.Warning, "1 app", color: ChartColor.FromHex("#7C3AED"))
+            .AddAutoNode("app-root", "Application Root", TopologyNodeKind.Service, TopologyHealthStatus.Warning, "root", "selected", width: 42, height: 42, symbol: "APP", color: ChartColor.FromHex("#7C3AED"));
 
         for (var branch = 0; branch < 36; branch++) {
             var groupId = "branch-" + branch.ToString("00", CultureInfo.InvariantCulture);
             var color = colors[branch % colors.Length];
             var branchId = groupId + "-hub";
-            chart.AddAutoGroup(groupId, "Conversation " + (branch + 1).ToString(CultureInfo.InvariantCulture), branch % 8 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, "14 nodes", color: color);
-            chart.AddAutoNode(branchId, "Hop " + (branch + 1).ToString(CultureInfo.InvariantCulture), BranchKind(branch), branch % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, "direct", width: 28, height: 28, symbol: BranchSymbol(branch), color: color);
+            chart.AddAutoGroup(groupId, "Conversation " + (branch + 1).ToString(CultureInfo.InvariantCulture), branch % 8 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, "14 nodes", color: ChartColor.Parse(color));
+            chart.AddAutoNode(branchId, "Hop " + (branch + 1).ToString(CultureInfo.InvariantCulture), BranchKind(branch), branch % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, "direct", width: 28, height: 28, symbol: BranchSymbol(branch), color: ChartColor.Parse(color));
             chart.AddEdge("large-root-" + branchId, "app-root", branchId, BranchEdgeLabel(branch), BranchEdgeKind(branch), branch % 7 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
 
             for (var leaf = 0; leaf < 13; leaf++) {
                 var leafId = groupId + "-leaf-" + leaf.ToString("00", CultureInfo.InvariantCulture);
-                chart.AddAutoNode(leafId, "Leaf " + (branch + 1).ToString(CultureInfo.InvariantCulture) + "." + (leaf + 1).ToString(CultureInfo.InvariantCulture), LeafKind(leaf), leaf % 11 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, LeafEdgeLabel(leaf), width: 20, height: 20, symbol: LeafSymbol(leaf), color: color);
+                chart.AddAutoNode(leafId, "Leaf " + (branch + 1).ToString(CultureInfo.InvariantCulture) + "." + (leaf + 1).ToString(CultureInfo.InvariantCulture), LeafKind(leaf), leaf % 11 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, groupId, LeafEdgeLabel(leaf), width: 20, height: 20, symbol: LeafSymbol(leaf), color: ChartColor.Parse(color));
                 chart.AddEdge("large-" + branchId + "-" + leaf.ToString("00", CultureInfo.InvariantCulture), branchId, leafId, LeafEdgeLabel(leaf), LeafEdgeKind(leaf), leaf % 11 == 0 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy, VisualLinkDirection.Forward);
             }
         }
@@ -267,13 +267,13 @@ internal static partial class TopologyVisualExamples {
     };
 
     private static void AddForceCluster(TopologyChart chart, string groupId, string label, TopologyNodeKind kind, int count, string color) {
-        chart.AddAutoGroup(groupId, label, TopologyHealthStatus.Healthy, count.ToString(CultureInfo.InvariantCulture) + " nodes", symbol: label.Substring(0, 1).ToUpperInvariant(), color: color);
-        chart.AddAutoNode(groupId + "-hub", label + " Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, groupId, "hub", width: 42, height: 42, symbol: "H", color: color);
+        chart.AddAutoGroup(groupId, label, TopologyHealthStatus.Healthy, count.ToString(CultureInfo.InvariantCulture) + " nodes", symbol: label.Substring(0, 1).ToUpperInvariant(), color: ChartColor.Parse(color));
+        chart.AddAutoNode(groupId + "-hub", label + " Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, groupId, "hub", width: 42, height: 42, symbol: "H", color: ChartColor.Parse(color));
 
         for (var i = 0; i < count; i++) {
             var id = groupId + "-" + i.ToString("00", CultureInfo.InvariantCulture);
             var status = i % 9 == 4 ? TopologyHealthStatus.Critical : i % 5 == 2 ? TopologyHealthStatus.Warning : TopologyHealthStatus.Healthy;
-            chart.AddAutoNode(id, label + " " + (i + 1).ToString(CultureInfo.InvariantCulture), kind, status, groupId, status.ToString(), width: 32, height: 32, symbol: label.Substring(0, 1).ToUpperInvariant(), color: color);
+            chart.AddAutoNode(id, label + " " + (i + 1).ToString(CultureInfo.InvariantCulture), kind, status, groupId, status.ToString(), width: 32, height: 32, symbol: label.Substring(0, 1).ToUpperInvariant(), color: ChartColor.Parse(color));
             chart.AddEdge(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), groupId + "-hub", id, "cluster", TopologyEdgeKind.Membership, TopologyHealthStatus.Healthy, VisualLinkDirection.None)
                 .UpdateEdge(groupId + "-hub-" + i.ToString("00", CultureInfo.InvariantCulture), e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
             if (i > 0 && i % 3 != 0) {

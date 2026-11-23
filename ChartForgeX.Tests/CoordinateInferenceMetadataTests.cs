@@ -37,7 +37,7 @@ public sealed class CoordinateInferenceMetadataTests {
         var charts = new[] {
             Chart.Create().XLabels("First").AddHeatmapRow("Requests", new[] { 37d }),
             Chart.Create().AddProgressBars("Progress", new[] { new ChartProgressItem("Ready", 37) }),
-            Chart.Create().AddTimelineRange("Work", 2, 8),
+            Chart.Create().AddTimelineItem("Work", 2, 8),
             Chart.Create().AddTreemap("Teams", new[] { new ChartHierarchyItem("support", "Support", value: 37) }),
             Chart.Create().AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 37) }),
             Chart.Create().Map(m => m.ShowLabels(false)).AddRegionMap("Coverage", new ChartMapDefinition("region", "Region", 100, 100,

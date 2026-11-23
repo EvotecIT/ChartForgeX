@@ -165,7 +165,7 @@ public sealed class OpenTypeLayoutTests {
             FontRegistry.Register("CFX Layout Test", path);
             var font = TypographyFontResolver.ResolveFace("CFX Layout Test", 400, false).Font!;
             var text = "H" + new string('\u0301', count);
-            var actual = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><text x='10' y='140' font-family='CFX Layout Test' font-size='100'>" + text + "</text></svg>").Pixels;
+            var actual = SvgRasterizer.ToRgbaImage("<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><text x='10' y='140' font-family='CFX Layout Test' font-size='100'>" + text + "</text></svg>").Pixels;
             var direct = new RgbaCanvas(180, 180, 4, font, 1, useDefaultOutlineFont: false);
             font.Draw(direct, 10, 60, text, ChartColor.Black, 100);
             Assert.All(direct.ToOutputPixels().Zip(actual), pair => Assert.InRange(Math.Abs(pair.First - pair.Second), 0, 1));

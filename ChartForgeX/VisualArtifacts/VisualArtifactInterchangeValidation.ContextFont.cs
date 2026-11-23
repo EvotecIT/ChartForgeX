@@ -23,7 +23,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         }
         void Font(FontSpec value) {
             Text(value.Family, "captured font family"); OptionalText(value.FaceName, "captured font requested face");
-            ValidateDetailTextStyle(new TextStyleOverride { FontFamily = value.Family, FontWeight = value.Weight.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ValidateDetailTextStyle(new TextStyleOverride { FontFamily = value.Family, FontWeight = value.Weight,
                 Italic = value.Italic, ColorPaletteIndex = value.ColorPaletteIndex, Variations = value.Variations });
         }
         void Face(TrueTypeFont value) {

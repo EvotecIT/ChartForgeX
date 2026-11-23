@@ -96,7 +96,6 @@ internal static class VisualCanvasLayoutAnalyzer {
 
     private static void AnalyzeInfoTile(VisualCanvasInfoTileLayer tile, int layerIndex, List<VisualCanvasLayoutDiagnostic> diagnostics, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
-        VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
         var layoutResult = VisualCanvasInfoTileTextLayout.CalculateLayout(tile, theme);

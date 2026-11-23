@@ -17,7 +17,7 @@ internal sealed partial class VisualTopologyCompiler {
     private void BuildNode(TopologyNode node) {
         if (TryBuildCapturedNode(node)) return;
         using var textPolicy = UseTextPolicy(node.TextStyle);
-        if (node.TextStyle?.Color is ChartColor authoredTextColor) node.LabelColor = authoredTextColor.ToHexRgba();
+        if (node.TextStyle?.Color is ChartColor authoredTextColor) node.LabelColor = authoredTextColor;
         var mode = EffectiveNodeDisplayMode(node, _options);
         if (mode == TopologyNodeDisplayMode.Hidden) return;
         var bounds = Bounds(node.X, node.Y, node.Width, node.Height);
@@ -29,7 +29,7 @@ internal sealed partial class VisualTopologyCompiler {
         var accentRole = NodeUsesPalette(node) && string.IsNullOrWhiteSpace(authoredAccent) ? SvgColorRole.Series : AccentRole(authoredAccent);
         var baseAccent = NodeAccent(node);
         var accent = Highlight(baseAccent, active);
-        var baseFill = string.IsNullOrWhiteSpace(node.BackgroundColor) && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
+        var baseFill = node.BackgroundColor == null && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
             ? ChartColorMath.BlendPremultiplied(_colors.Background, baseAccent, IsMonitoringDashboardStyle(_options) ? .065 : .10)
             : Color(NodeFill(node, Theme()), _colors.Surface);
         var fill = Highlight(baseFill, active);
@@ -124,8 +124,8 @@ internal sealed partial class VisualTopologyCompiler {
         }
         var fitSingleLine = TopologyCaptionPresentation.ResolveSingleLineFitting(_options)
             || MeasurePolicyText("Ag", size * _scale, 600).LineHeight > height;
-        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
-        Text(node.LabelContent.IsStructured ? NodeCaptionContent(node) : TextContent.Plain(label), new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(labelColor, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), fitSingleLine: fitSingleLine);
+        var labelColor = node.LabelColor == null ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        Text(node.LabelContent.IsStructured ? NodeCaptionContent(node) : TextContent.Plain(label), new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(labelColor, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), paint: node.LabelColor == null ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), fitSingleLine: fitSingleLine);
         var y = bounds.Y + height;
         if (!string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
             var subtitleHeight = MeasureRoleText("Ag", RoleTextSize(size * .85, node.SubtitleTextStyle) * _scale, 400, node.SubtitleTextStyle).LineHeight * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines, node.SubtitleTextStyle);
@@ -160,13 +160,13 @@ internal sealed partial class VisualTopologyCompiler {
                 if (!string.IsNullOrWhiteSpace(detail.IconId)) {
                     var glyph = new TopologyNode { IconId = detail.IconId, Color = detail.Color, Status = detail.Status ?? TopologyHealthStatus.Unknown };
                     var fallback = detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground;
-                    var authored = detail.Color ?? ResolveNodeIcon(glyph, _options)?.Color;
+                    var authored = (detail.Color ?? ResolveNodeIcon(glyph, _options)?.Color).ToText();
                     var glyphColor = Highlight(Color(authored, fallback), active);
                     BuildGlyph(glyph, (row.X - _offsetX) / _scale + 5, (row.Y - _offsetY) / _scale + row.Height / _scale / 2, glyphColor, .45,
                         !string.IsNullOrWhiteSpace(authored) ? SvgColorRole.Any : detail.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Text,
                         artworkOpacity: HighlightFactor(active), sourceFallback: fallback);
                 }
-                else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: new VisualScenePaintBinding(SourcePaint(detail.Color ?? (detail.Status.HasValue ? _svgTheme?.StatusColor(detail.Status.Value) : _svgTheme?.Foreground), color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
+                else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: new VisualScenePaintBinding(SourcePaint(detail.Color.ToText() ?? (detail.Status.HasValue ? _svgTheme?.StatusColor(detail.Status.Value) : _svgTheme?.Foreground), color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
             }
             BuildDetailBadgeOrText(detail, new ChartRect(row.X + reserve, row.Y, Math.Max(0, row.Width - reserve), row.Height), size * .8, active);
             y += row.Height;
@@ -263,7 +263,7 @@ internal sealed partial class VisualTopologyCompiler {
         var resolved = new TopologyNode { Kind = kind, IconId = node.IconId, IconShape = node.IconShape };
         var shape = EffectiveIconShape(resolved, _options);
         var source = GlyphAccentSource(node);
-        var authored = TopologyNodeAccent.Authored(node, icon, source);
+        var authored = TopologyNodeAccent.Authored(node, icon, source).ToText();
         var opacity = artworkOpacity ?? HighlightFactor(_highlight.IsNodeHighlighted(node));
         var fallback = sourceFallback ?? Status(node.Status);
         var glyphPaint = TopologyNodeAccent.UsesPalette(node, source) && string.IsNullOrWhiteSpace(authored)

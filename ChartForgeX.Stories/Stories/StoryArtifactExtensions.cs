@@ -55,7 +55,7 @@ public static class StoryArtifactExtensions {
         var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(id) ? defaultId : id!.Trim(), VisualArtifactKind.Story, model);
         artifact.RenderSource = source; artifact.SourceLanguage = language;
         artifact.Title = title; artifact.Subtitle = subtitle;
-        artifact.NaturalSize = new VisualArtifactSize(width, height);
+        artifact.NaturalSize = new VisualSize(width, height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png
             | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
         artifact.Metadata["render.model"] = model.GetType().Name;

@@ -41,7 +41,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
             }
         });
         if (composed) {
-            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
+            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Raster.FontPath!));
             html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         }
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 540 : 650);
@@ -271,8 +271,8 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         var chart = SunburstBranchHighlightExamples.CreateChart();
         var html = externalAssets
             ? chart.ToInteractiveHtmlPage(options => { Configure(options); options.ExternalAssets = new HtmlAssetReferences("https://assets.example.test/"); })
-            : "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body>"
-                + chart.ToInteractiveHtmlFragmentWithoutAssets(Configure) + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            : "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style></head><body>"
+                + chart.ToInteractiveHtmlFragmentWithoutAssets(Configure) + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", 850, 650);
         var errors = new List<string>(); session.Page.PageError += (_, error) => errors.Add(error);
         if (externalAssets) await session.Page.RouteAsync("https://assets.example.test/**", async route => {

@@ -127,8 +127,8 @@ internal static class SvgTerminalStoryChromeRenderer {
         new TextStyle { Font = new FontSpec { Family = family }, FontSize = TerminalWindowChrome.TitleFontSize }).Width;
 
     private static void WriteTabIcon(SvgMarkupWriter writer, TerminalTab tab, double x, double y) {
-        if (tab.Icon == TerminalTabIcon.None) return;
-        if (tab.Icon == TerminalTabIcon.Ubuntu) {
+        if (tab.Icon.IsEmpty) return;
+        if (tab.Icon.Equals(TerminalTabIcons.Ubuntu)) {
             writer.StartElement("circle").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 9).Attribute("fill", tab.ResolvedStyle.Accent.ToCss()).EndEmptyElement().Line()
                 .StartElement("circle").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 3).Attribute("fill", "none").Attribute("stroke", tab.ResolvedStyle.Background.ToCss()).Attribute("stroke-width", 1.6).EndEmptyElement().Line();
             return;

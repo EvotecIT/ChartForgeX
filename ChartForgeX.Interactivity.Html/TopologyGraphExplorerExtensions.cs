@@ -89,7 +89,7 @@ public static class TopologyGraphExplorerExtensions {
                 AddMetadata(cluster.Metadata, "topology.subtitle", group.Subtitle);
                 AddMetadata(cluster.Metadata, "topology.iconId", group.IconId);
                 AddMetadata(cluster.Metadata, "topology.symbol", group.Symbol);
-                AddMetadata(cluster.Metadata, "topology.color", group.Color);
+                AddMetadata(cluster.Metadata, "topology.color", group.Color.ToText());
                 CopyMetadata(group.Metadata, cluster.Metadata, "topology.meta.");
                 scene.Clusters.Add(cluster);
             }
@@ -155,13 +155,13 @@ public static class TopologyGraphExplorerExtensions {
         }
 
         var theme = chart.ResolvedTheme;
-        var authoredAccent = TopologyNodeAccent.Authored(node, icon, options.AccentSource);
+        var authoredAccent = TopologyNodeAccent.Authored(node, icon, options.AccentSource).ToText();
         var palette = chart.Theme.Resolve(chart.ThemeMode).Palette;
         var paletteAccent = TopologyNodeAccent.UsesPalette(node, options.AccentSource)
             ? palette[node.PaletteIndex.GetValueOrDefault() % palette.Count].ToCss() : null;
         var accentColor = FirstText(authoredAccent, paletteAccent, theme.StatusColor(node.Status))!;
         var card = shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill;
-        var themedBackground = string.IsNullOrWhiteSpace(node.BackgroundColor);
+        var themedBackground = node.BackgroundColor == null;
         graphNode.Style.BackgroundColor = themedBackground
             ? null
             : TopologyRenderPrimitives.NodeFill(node, theme);
@@ -190,8 +190,8 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.badge", node.Badge);
         AddMetadata(graphNode.Metadata, "topology.href", node.Href);
         AddMetadata(graphNode.Metadata, "topology.tooltip", node.Tooltip);
-        AddMetadata(graphNode.Metadata, "topology.color", node.Color);
-        AddMetadata(graphNode.Metadata, "topology.backgroundColor", node.BackgroundColor);
+        AddMetadata(graphNode.Metadata, "topology.color", node.Color.ToText());
+        AddMetadata(graphNode.Metadata, "topology.backgroundColor", node.BackgroundColor.ToText());
         CopyMetadata(node.Metadata, graphNode.Metadata, "topology.meta.");
         CopyMetadata(node.Metrics, graphNode.Metadata, "topology.metric.");
         return graphNode;
@@ -241,7 +241,7 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphEdge.Metadata, "topology.tertiaryLabel", edge.TertiaryLabel);
         AddMetadata(graphEdge.Metadata, "topology.href", edge.Href);
         AddMetadata(graphEdge.Metadata, "topology.tooltip", edge.Tooltip);
-        AddMetadata(graphEdge.Metadata, "topology.color", edge.Color);
+        AddMetadata(graphEdge.Metadata, "topology.color", edge.Color.ToText());
         CopyMetadata(edge.Metadata, graphEdge.Metadata, "topology.meta.");
         CopyMetadata(edge.Metrics, graphEdge.Metadata, "topology.metric.");
         return graphEdge;

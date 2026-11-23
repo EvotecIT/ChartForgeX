@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,26 +96,26 @@ public sealed partial class TopologyIconCatalog {
     private static TopologyIconPack BuiltInCommon() {
         return new TopologyIconPack("common", "Common Infrastructure", isBuiltIn: true)
             .AddTags("common", "infrastructure")
-            .AddIcon("server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server, "SRV", "#2563EB", "Compute")
-            .AddIcon("database", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", "#0F766E", "Data")
-            .AddIcon("storage", "Storage", TopologyNodeKind.Storage, TopologyIconShape.Storage, "ST", "#64748B", "Data")
-            .AddIcon("application", "Application", TopologyNodeKind.Application, TopologyIconShape.Application, "APP", "#7C3AED", "Application")
-            .AddIcon("service", "Service", TopologyNodeKind.Service, TopologyIconShape.Service, "SVC", "#2563EB", "Application")
-            .AddIcon("endpoint", "Endpoint", TopologyNodeKind.Endpoint, TopologyIconShape.Desktop, "EP", "#475569", "Endpoint")
-            .AddIcon("laptop", "Laptop", TopologyNodeKind.Endpoint, TopologyIconShape.Laptop, "PC", "#475569", "Endpoint")
-            .AddIcon("desktop", "Desktop", TopologyNodeKind.Endpoint, TopologyIconShape.Desktop, "PC", "#475569", "Endpoint")
-            .AddIcon("certificate", "Certificate", TopologyNodeKind.Certificate, TopologyIconShape.Certificate, "TLS", "#D97706", "Security");
+            .AddIcon("server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server, "SRV", ChartColor.FromHex("#2563EB"), "Compute")
+            .AddIcon("database", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", ChartColor.FromHex("#0F766E"), "Data")
+            .AddIcon("storage", "Storage", TopologyNodeKind.Storage, TopologyIconShape.Storage, "ST", ChartColor.FromHex("#64748B"), "Data")
+            .AddIcon("application", "Application", TopologyNodeKind.Application, TopologyIconShape.Application, "APP", ChartColor.FromHex("#7C3AED"), "Application")
+            .AddIcon("service", "Service", TopologyNodeKind.Service, TopologyIconShape.Service, "SVC", ChartColor.FromHex("#2563EB"), "Application")
+            .AddIcon("endpoint", "Endpoint", TopologyNodeKind.Endpoint, TopologyIconShape.Desktop, "EP", ChartColor.FromHex("#475569"), "Endpoint")
+            .AddIcon("laptop", "Laptop", TopologyNodeKind.Endpoint, TopologyIconShape.Laptop, "PC", ChartColor.FromHex("#475569"), "Endpoint")
+            .AddIcon("desktop", "Desktop", TopologyNodeKind.Endpoint, TopologyIconShape.Desktop, "PC", ChartColor.FromHex("#475569"), "Endpoint")
+            .AddIcon("certificate", "Certificate", TopologyNodeKind.Certificate, TopologyIconShape.Certificate, "TLS", ChartColor.FromHex("#D97706"), "Security");
     }
 
     private static TopologyIconPack BuiltInNetwork() {
         return new TopologyIconPack("network", "Network", isBuiltIn: true)
             .AddTags("network", "connectivity")
-            .AddIcon("switch", "Switch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "SW", "#0891B2", "Network")
-            .AddIcon("router", "Router", TopologyNodeKind.Gateway, TopologyIconShape.Router, "RTR", "#2563EB", "Network")
-            .AddIcon("firewall", "Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FW", "#EA580C", "Security")
-            .AddIcon("load-balancer", "Load Balancer", TopologyNodeKind.Gateway, TopologyIconShape.LoadBalancer, "LB", "#7C3AED", "Network")
-            .AddIcon("subnet", "Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", "#0891B2", "Network")
-            .AddIcon("wan-link", "WAN Link", TopologyNodeKind.Network, TopologyIconShape.Network, "WAN", "#2563EB", "Network")
+            .AddIcon("switch", "Switch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "SW", ChartColor.FromHex("#0891B2"), "Network")
+            .AddIcon("router", "Router", TopologyNodeKind.Gateway, TopologyIconShape.Router, "RTR", ChartColor.FromHex("#2563EB"), "Network")
+            .AddIcon("firewall", "Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FW", ChartColor.FromHex("#EA580C"), "Security")
+            .AddIcon("load-balancer", "Load Balancer", TopologyNodeKind.Gateway, TopologyIconShape.LoadBalancer, "LB", ChartColor.FromHex("#7C3AED"), "Network")
+            .AddIcon("subnet", "Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", ChartColor.FromHex("#0891B2"), "Network")
+            .AddIcon("wan-link", "WAN Link", TopologyNodeKind.Network, TopologyIconShape.Network, "WAN", ChartColor.FromHex("#2563EB"), "Network")
             .AddIconTags("load-balancer", "loadbalancer", "lb")
             .AddIconTags("subnet", "cidr", "network-segment");
     }
@@ -122,15 +123,15 @@ public sealed partial class TopologyIconCatalog {
     private static TopologyIconPack BuiltInActiveDirectory() {
         return new TopologyIconPack("microsoft-ad", "Microsoft Active Directory", vendor: "Microsoft", isBuiltIn: true)
             .AddTags("active-directory", "directory", "microsoft", "ad")
-            .AddIcon("forest", "Forest", TopologyNodeKind.Namespace, TopologyIconShape.Forest, "FOR", "#16A34A", "Directory")
-            .AddIcon("domain", "Domain", TopologyNodeKind.Namespace, TopologyIconShape.Domain, "DOM", "#2563EB", "Directory")
-            .AddIcon("domain-controller", "Domain Controller", TopologyNodeKind.Server, TopologyIconShape.DomainController, "DC", "#2563EB", "Directory")
-            .AddIcon("read-only-domain-controller", "Read Only Domain Controller", TopologyNodeKind.Server, TopologyIconShape.ReadOnlyDomainController, "RODC", "#7C3AED", "Directory")
-            .AddIcon("global-catalog", "Global Catalog", TopologyNodeKind.Server, TopologyIconShape.DomainController, "GC", "#0F766E", "Directory")
-            .AddIcon("site", "AD Site", TopologyNodeKind.Location, TopologyIconShape.Site, "SITE", "#16A34A", "Directory")
-            .AddIcon("site-link", "AD Site Link", TopologyNodeKind.Network, TopologyIconShape.Network, "LINK", "#2563EB", "Directory")
-            .AddIcon("ad-subnet", "AD Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", "#0891B2", "Directory")
-            .AddIcon("bridgehead", "Bridgehead Server", TopologyNodeKind.Server, TopologyIconShape.DomainController, "BH", "#0F766E", "Directory")
+            .AddIcon("forest", "Forest", TopologyNodeKind.Namespace, TopologyIconShape.Forest, "FOR", ChartColor.FromHex("#16A34A"), "Directory")
+            .AddIcon("domain", "Domain", TopologyNodeKind.Namespace, TopologyIconShape.Domain, "DOM", ChartColor.FromHex("#2563EB"), "Directory")
+            .AddIcon("domain-controller", "Domain Controller", TopologyNodeKind.Server, TopologyIconShape.DomainController, "DC", ChartColor.FromHex("#2563EB"), "Directory")
+            .AddIcon("read-only-domain-controller", "Read Only Domain Controller", TopologyNodeKind.Server, TopologyIconShape.ReadOnlyDomainController, "RODC", ChartColor.FromHex("#7C3AED"), "Directory")
+            .AddIcon("global-catalog", "Global Catalog", TopologyNodeKind.Server, TopologyIconShape.DomainController, "GC", ChartColor.FromHex("#0F766E"), "Directory")
+            .AddIcon("site", "AD Site", TopologyNodeKind.Location, TopologyIconShape.Site, "SITE", ChartColor.FromHex("#16A34A"), "Directory")
+            .AddIcon("site-link", "AD Site Link", TopologyNodeKind.Network, TopologyIconShape.Network, "LINK", ChartColor.FromHex("#2563EB"), "Directory")
+            .AddIcon("ad-subnet", "AD Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", ChartColor.FromHex("#0891B2"), "Directory")
+            .AddIcon("bridgehead", "Bridgehead Server", TopologyNodeKind.Server, TopologyIconShape.DomainController, "BH", ChartColor.FromHex("#0F766E"), "Directory")
             .AddIconTags("domain-controller", "dc", "ldap", "kerberos")
             .AddIconTags("read-only-domain-controller", "rodc", "read-only")
             .AddIconTags("global-catalog", "gc")
@@ -142,20 +143,20 @@ public sealed partial class TopologyIconCatalog {
     private static TopologyIconPack BuiltInCloud() {
         return new TopologyIconPack("cloud", "Cloud", isBuiltIn: true)
             .AddTags("cloud")
-            .AddIcon("cloud", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CLD", "#2563EB", "Cloud")
-            .AddIcon("microsoft-365", "Microsoft 365", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "M365", "#2563EB", "Cloud")
-            .AddIcon("azure", "Azure", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "AZ", "#2563EB", "Cloud")
-            .AddIcon("aws", "AWS", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "AWS", "#EA580C", "Cloud")
-            .AddIcon("tenant", "Tenant", TopologyNodeKind.Namespace, TopologyIconShape.Domain, "TEN", "#7C3AED", "Cloud");
+            .AddIcon("cloud", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CLD", ChartColor.FromHex("#2563EB"), "Cloud")
+            .AddIcon("microsoft-365", "Microsoft 365", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "M365", ChartColor.FromHex("#2563EB"), "Cloud")
+            .AddIcon("azure", "Azure", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "AZ", ChartColor.FromHex("#2563EB"), "Cloud")
+            .AddIcon("aws", "AWS", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "AWS", ChartColor.FromHex("#EA580C"), "Cloud")
+            .AddIcon("tenant", "Tenant", TopologyNodeKind.Namespace, TopologyIconShape.Domain, "TEN", ChartColor.FromHex("#7C3AED"), "Cloud");
     }
 
     private static TopologyIconPack BuiltInPeople() {
         return new TopologyIconPack("people", "People and Teams", isBuiltIn: true)
             .AddTags("people", "team")
-            .AddIcon("person", "Person", TopologyNodeKind.Person, TopologyIconShape.Person, "USR", "#475569", "People")
-            .AddIcon("team", "Team", TopologyNodeKind.Team, TopologyIconShape.Team, "TEAM", "#2563EB", "People")
-            .AddIcon("operator", "Operator", TopologyNodeKind.Person, TopologyIconShape.Person, "OPS", "#0F766E", "People")
-            .AddIcon("owner", "Owner", TopologyNodeKind.Person, TopologyIconShape.Person, "OWN", "#7C3AED", "People");
+            .AddIcon("person", "Person", TopologyNodeKind.Person, TopologyIconShape.Person, "USR", ChartColor.FromHex("#475569"), "People")
+            .AddIcon("team", "Team", TopologyNodeKind.Team, TopologyIconShape.Team, "TEAM", ChartColor.FromHex("#2563EB"), "People")
+            .AddIcon("operator", "Operator", TopologyNodeKind.Person, TopologyIconShape.Person, "OPS", ChartColor.FromHex("#0F766E"), "People")
+            .AddIcon("owner", "Owner", TopologyNodeKind.Person, TopologyIconShape.Person, "OWN", ChartColor.FromHex("#7C3AED"), "People");
     }
 }
 
@@ -206,7 +207,7 @@ public sealed class TopologyIconPack {
     /// <summary>
     /// Adds an icon definition to the pack.
     /// </summary>
-    public TopologyIconPack AddIcon(string id, string label, TopologyNodeKind nodeKind, TopologyIconShape shape = TopologyIconShape.Auto, string? symbol = null, string? color = null, string? category = null, TopologyNodeDisplayMode? displayMode = null) {
+    public TopologyIconPack AddIcon(string id, string label, TopologyNodeKind nodeKind, TopologyIconShape shape = TopologyIconShape.Auto, string? symbol = null, ChartColor? color = null, string? category = null, TopologyNodeDisplayMode? displayMode = null) {
         var icon = new TopologyIconDefinition(Id, id, label, nodeKind, shape) {
             Symbol = symbol,
             Color = color,
@@ -347,7 +348,7 @@ public sealed class TopologyIconDefinition {
     public string? Symbol { get; set; }
 
     /// <summary>Gets or sets the optional identity color used when the node does not set a color.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets the optional catalog category.</summary>
     public string? Category { get; set; }

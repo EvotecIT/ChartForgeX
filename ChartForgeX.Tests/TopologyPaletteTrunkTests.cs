@@ -19,7 +19,7 @@ public sealed class TopologyPaletteTrunkTests {
         var prepared = chart.Prepare(options);
         var svg = XDocument.Parse(prepared.ToSvg());
         var reference = FanIn(namedPort);
-        foreach (var edge in reference.Edges) { edge.Color = reference.Theme.Resolve(ThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(); edge.PaletteIndex = null; }
+        foreach (var edge in reference.Edges) { edge.Color = ChartColorText.Parse(reference.Theme.Resolve(ThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss()); edge.PaletteIndex = null; }
         var referencePixels = reference.ToPng(options);
         TopologyPaletteRegressionEvidence.Write("trunk-distinct-" + namedPort, prepared, Receipt(svg), referencePixels);
         Assert.Equal(0, Count(svg, "topology-shared-trunk-tail"));
@@ -59,7 +59,7 @@ public sealed class TopologyPaletteTrunkTests {
         var chart = FanIn(false);
         foreach (var edge in chart.Edges) {
             if (policy == "default") edge.PaletteIndex = null;
-            if (policy == "explicit") edge.Color = "#DC2626";
+            if (policy == "explicit") edge.Color = ChartColor.FromHex("#DC2626");
             if (policy == "muted") edge.IsMuted = true;
         }
         var options = Options(); var prepared = chart.Prepare(options);

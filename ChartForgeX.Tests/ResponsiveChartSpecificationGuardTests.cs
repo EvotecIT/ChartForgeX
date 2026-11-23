@@ -17,7 +17,7 @@ public sealed class ResponsiveChartSpecificationGuardTests {
     }
 
     private static string Page(string fragment) =>
-        "<html><body style='width:320px'><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>" + fragment + "</body></html>";
+        "<html><body style='width:320px'><script>" + HtmlResponsiveChartRenderer.Script + "</script>" + fragment + "</body></html>";
 
     [Fact]
     public void Fragment_ContainsOneSpecificationScript() {

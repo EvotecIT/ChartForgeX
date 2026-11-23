@@ -24,11 +24,11 @@ public sealed class NativeInnerShadowBrowserTests {
         var source = NativeAppearanceExample.PrepareSource(variant, mode);
         var layer = NativeAppearanceExample.Create("inner", variant, mode);
         var retained = source.WithInnerShadow(NativeAppearanceExample.InnerShadowPolicy(mode));
-        var svg = retained.ToSvg(new VisualSvgOptions(idPrefix: "inner-native", effectProfile: VisualSvgEffectProfile.NativeFilters));
+        var svg = retained.ToSvg(new VisualSvgOptions(idScope: "inner-native", effectProfile: VisualSvgEffectProfile.NativeFilters));
         var sourceWords = XDocument.Parse(source.ToSvg()).Descendants().Count(item => item.Name.LocalName == "text");
         var simple = InnerShadowFixture.Source(128).WithInnerShadow(new VisualInnerShadow(
             ChartColor.FromRgb(0, 0, 255), 0, 0, 0, orderedDither: false));
-        var simpleSvg = simple.ToSvg(new VisualSvgOptions(idPrefix: "inner-sample", effectProfile: VisualSvgEffectProfile.NativeFilters));
+        var simpleSvg = simple.ToSvg(new VisualSvgOptions(idScope: "inner-sample", effectProfile: VisualSvgEffectProfile.NativeFilters));
         var background = mode == ThemeMode.Dark ? "#0f172a" : "#f8fafc";
         var html = "<style>body{margin:0;background:" + background + "}section svg{max-width:100%;height:auto}</style>"
             + "<section id='native'>" + svg + "</section><section id='baked'>" + layer.Visual.ToSvg() + "</section>"

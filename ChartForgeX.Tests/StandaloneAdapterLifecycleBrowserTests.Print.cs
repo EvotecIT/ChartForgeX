@@ -48,7 +48,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         }
         var consoleEntries = new ConcurrentQueue<object>();
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
         })).Replace("<head>", "<head><script>" + GraphPrintContextProbe + "</script>", StringComparison.Ordinal), width, 720,
             configurePage: page => page.Console += (_, message) => consoleEntries.Enqueue(new {

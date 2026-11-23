@@ -126,8 +126,8 @@ public sealed class StoryReplayViewportReviewTests {
             builder.Dark.Status.Pass = new VisualTokenColor(ChartColor.FromHex("#00FF00"), ChartColor.FromHex("#00FF00"));
             builder.Dark.Status.Critical = new VisualTokenColor(ChartColor.FromHex("#FF0000"), ChartColor.FromHex("#FF0000")); });
         return TerminalStory.Create().Theme(theme).ShowFinalPrompt(false).InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(0).TabHoldSeconds(0)
-            .Output("FIRST", TerminalTextTone.Success).OpenTab("other", "Other", TerminalDialect.Bash, "~/src", theme, transitionSeconds: 0)
-            .Blank().Output("SECOND", TerminalTextTone.Error).SelectTab("main", 1);
+            .Output("FIRST", Tone.Success).OpenTab("other", "Other", TerminalDialect.Bash, "~/src", theme, transitionSeconds: 0)
+            .Blank().Output("SECOND", Tone.Danger).SelectTab("main", 1);
     }
 
     private static int InkCount(RgbaImage image, XElement row, ChartColor color, double opacity) {

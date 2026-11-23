@@ -74,7 +74,7 @@ public sealed class NativeSeriesVisibilityTests {
         var context = VisualExportRequest.ForChart(chart).Context;
         var from = chart.PrepareVisibility(context, new ChartVisibilityView(labelLayering: ChartVisibilityLabelLayering.GroupWithSeries));
         var to = chart.PrepareVisibility(context, new ChartVisibilityView(new[] { new ChartSeriesId("observed") }, ChartVisibilityLabelLayering.GroupWithSeries));
-        var middle = VisualSeriesVisibilityCapture.Frames(from, to, 3)[1]; var full = from.ToRgba(new VisualRenderOptions(supersampling: 1)); var half = middle.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var middle = VisualSeriesVisibilityCapture.Frames(from, to, 3)[1]; var full = from.ToRgbaImage(new VisualRenderOptions(supersampling: 1)); var half = middle.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         NativeSeriesVisibilityDefaultControls.Save("native-label-alpha-overlap", middle);
         var ink = 0; for (var index = 0; index < full.Pixels.Length; index += 4) {
             if (full.Pixels[index + 3] != 255) continue;

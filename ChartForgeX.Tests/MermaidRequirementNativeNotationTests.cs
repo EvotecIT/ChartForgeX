@@ -30,9 +30,9 @@ public sealed class MermaidRequirementNativeNotationTests {
         var artifact = Assert.IsType<ChartForgeX.VisualArtifacts.VisualArtifact>(output.Artifact);
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
         var requirement = Assert.Single(topology.Nodes, node => node.Id == "authentication");
-        Assert.Equal("#fed7aa", requirement.BackgroundColor);
-        Assert.Equal("#164e63", requirement.Color);
-        Assert.Equal("#172554", requirement.LabelColor);
+        Assert.Equal(ChartColor.FromHex("#fed7aa"), requirement.BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#164e63"), requirement.Color);
+        Assert.Equal(ChartColor.FromHex("#172554"), requirement.LabelColor);
         Assert.Equal(new[] { "id", "text", "risk", "verifymethod" }, requirement.Details.Select(detail => detail.Label));
         Assert.Equal(new[] { "AUTH-1", "User identity; risk: never a field", "High", "Test" }, requirement.Details.Select(detail => detail.Value));
         Assert.Equal("functionalRequirement", requirement.Metadata["mermaid.requirementType"]);
@@ -71,7 +71,7 @@ public sealed class MermaidRequirementNativeNotationTests {
         Assert.Equal(new[] { "user access" }, parsed.Document!.Requirements.Select(item => item.Name));
         Assert.Equal(new[] { "test service" }, parsed.Document.Elements.Select(item => item.Name));
         var nodes = parsed.Document.ToTopologyChart().Nodes;
-        Assert.Equal("#fed7aa", Assert.Single(nodes, node => node.Id == "user access").BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#fed7aa"), Assert.Single(nodes, node => node.Id == "user access").BackgroundColor);
         Assert.Equal(("test service", "user access"), (parsed.Document.Relationships[0].SourceName, parsed.Document.Relationships[0].TargetName));
     }
 

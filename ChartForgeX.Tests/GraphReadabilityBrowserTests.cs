@@ -25,7 +25,7 @@ public sealed class GraphReadabilityBrowserTests {
             .AddEdge("ap", "global", "apac");
         scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Selection | GraphSceneFeatures.Export;
         await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(o => {
-            o.RenderBackend = backend; o.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            o.RenderBackend = backend; o.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             o.PersistThemePreference = false;
         }), 390, 844);
         var page = session.Page;

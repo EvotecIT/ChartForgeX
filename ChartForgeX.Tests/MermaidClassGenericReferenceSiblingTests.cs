@@ -77,6 +77,6 @@ public sealed class MermaidClassGenericReferenceSiblingTests {
             Assert.Equal("caption", chart.Annotations[0].Text);
         } else if (template.StartsWith("link", StringComparison.Ordinal) || template.StartsWith("click", StringComparison.Ordinal))
             Assert.Equal("https://example.invalid/", node.Href);
-        else Assert.Equal("#fff", node.BackgroundColor);
+        else Assert.Equal(ChartColor.FromHex("#fff"), node.BackgroundColor);
     }
 }

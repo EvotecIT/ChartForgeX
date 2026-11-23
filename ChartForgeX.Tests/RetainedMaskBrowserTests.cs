@@ -25,13 +25,13 @@ public sealed class RetainedMaskBrowserTests {
         var loaded = VisualArtifactInterchangeEnvelope.FromJson(saved);
         var masked = loaded.ApplyCapturedEffects(source);
         var edited = NativeRetainedMaskExample.Restore(saved, variant, mode, "Approved");
-        var editedSvg = edited.ToSvg(new VisualSvgOptions(idPrefix: "retained-mask-edited",
+        var editedSvg = edited.ToSvg(new VisualSvgOptions(idScope: "retained-mask-edited",
             effectProfile: VisualSvgEffectProfile.NativeFilters, responsive: true));
-        var native = masked.ToSvg(new VisualSvgOptions(idPrefix: "retained-mask-browser",
+        var native = masked.ToSvg(new VisualSvgOptions(idScope: "retained-mask-browser",
             effectProfile: VisualSvgEffectProfile.NativeFilters, responsive: true));
-        var baked = masked.ToSvg(new VisualSvgOptions(idPrefix: "retained-mask-baked", responsive: true));
+        var baked = masked.ToSvg(new VisualSvgOptions(idScope: "retained-mask-baked", responsive: true));
         var plate = RetainedMaskFixture.Plate().WithMask(RetainedMaskFixture.Mask(64, 48, 1, VisualMaskMode.Luminance));
-        var plateSvg = plate.ToSvg(new VisualSvgOptions(idPrefix: "retained-mask-plate", effectProfile: VisualSvgEffectProfile.NativeFilters));
+        var plateSvg = plate.ToSvg(new VisualSvgOptions(idScope: "retained-mask-plate", effectProfile: VisualSvgEffectProfile.NativeFilters));
         var background = VisualTheme.Graphite().Resolve(mode).Background.ToCss();
         var html = "<style>body{margin:0;background:" + background + "}section{max-width:100%}svg{display:block}</style>" +
             "<section id='native'>" + native + "</section><section id='baked'>" + baked +

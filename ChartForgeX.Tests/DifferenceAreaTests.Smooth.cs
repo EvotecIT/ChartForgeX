@@ -28,7 +28,7 @@ public sealed partial class DifferenceAreaTests {
             var path = Path.Combine(captures, "difference-independent-smooth-x" + reverseX + "-y" + reverseY);
             File.WriteAllText(path + ".svg", prepared.ToSvg()); File.WriteAllBytes(path + ".png", prepared.ToPng());
         }
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)); var probes = 0;
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)); var probes = 0;
         var jumps = b.Zip(b.Skip(1), (left, right) => (left, right))
             .Where(pair => pair.left.X == pair.right.X && pair.left.Y != pair.right.Y).Select(pair => pair.left.X).Distinct().ToArray();
         // A vertical step is painted boundary ink, not an interior fill sample. Check both adjacent interiors instead.

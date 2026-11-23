@@ -42,7 +42,7 @@ public sealed partial class MermaidC4PresentationDepthTests {
     [Fact]
     public void PaintTechnologyAndExplicitNativeLegendProjectionReachSharedOwners() {
         var document = Parse(Fixture("c4-style-shapes-native")); var chart = document.ToTopologyChart();
-        var app = chart.Nodes.Single(node => node.Id == "app"); Assert.Equal("#123456", app.BackgroundColor); Assert.Equal("#ef6543", app.Color);
+        var app = chart.Nodes.Single(node => node.Id == "app"); Assert.Equal(ChartColor.FromHex("#123456"), app.BackgroundColor); Assert.Equal(ChartColor.FromHex("#ef6543"), app.Color);
         Assert.Equal(TopologyNodeShape.Subroutine, app.Shape); Assert.Contains("Native", app.Subtitle);
         Assert.Equal(new[] { "Application tier", "Data tier" }, chart.Legend!.Items.Select(item => item.Label));
         var parsed = Parse("C4Container\nContainer(app, \"App\", \"Before\")\nUpdateElementStyle(app,$techn=\"After\")");

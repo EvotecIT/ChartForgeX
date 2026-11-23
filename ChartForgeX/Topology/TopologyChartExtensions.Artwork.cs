@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 
 namespace ChartForgeX.Topology;
@@ -24,7 +25,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="backgroundColor">The optional node surface fill color.</param>
     /// <param name="displayMode">The display mode to apply with the artwork.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddAutoArtworkNode(this TopologyChart chart, string id, string label, TopologyIconArtwork artwork, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? backgroundColor = null, TopologyNodeDisplayMode displayMode = TopologyNodeDisplayMode.Artwork) {
+    public static TopologyChart AddAutoArtworkNode(this TopologyChart chart, string id, string label, TopologyIconArtwork artwork, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, ChartColor? color = null, ChartColor? backgroundColor = null, TopologyNodeDisplayMode displayMode = TopologyNodeDisplayMode.Artwork) {
         return AddArtworkNode(chart, id, label, artwork, 0, 0, kind, status, groupId, subtitle, href, tooltip, width, height, symbol, cssClass, color, backgroundColor, displayMode);
     }
 
@@ -51,7 +52,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="backgroundColor">The optional node surface fill color.</param>
     /// <param name="displayMode">The display mode to apply with the artwork.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart AddArtworkNode(this TopologyChart chart, string id, string label, TopologyIconArtwork artwork, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, string? color = null, string? backgroundColor = null, TopologyNodeDisplayMode displayMode = TopologyNodeDisplayMode.Artwork) {
+    public static TopologyChart AddArtworkNode(this TopologyChart chart, string id, string label, TopologyIconArtwork artwork, double x, double y, TopologyNodeKind kind = TopologyNodeKind.Generic, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? symbol = null, string? cssClass = null, ChartColor? color = null, ChartColor? backgroundColor = null, TopologyNodeDisplayMode displayMode = TopologyNodeDisplayMode.Artwork) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateArtwork(artwork);
         ValidateEnum(typeof(TopologyNodeDisplayMode), displayMode, nameof(displayMode), "Topology node display modes");

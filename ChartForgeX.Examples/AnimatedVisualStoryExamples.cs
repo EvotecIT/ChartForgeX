@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.VisualBlocks;
 
 internal static class AnimatedVisualStoryExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         var theme = VisualTheme.Graphite();
         var activity = Chart.Create()
             .Title("Release activity")
@@ -46,7 +46,7 @@ internal static class AnimatedVisualStoryExamples {
             .Gap(16)
             .Padding(28)
             .FrameVisible()
-            .PngOutputScale((int)pngOutputScale)
+            .RasterScale((int)pngOutputScale)
             .Add("metric-projects", Metric("Projects", "24", "Reusable libraries"))
             .Add("metric-users", Metric("Monthly users", "18.4K", "+12% this quarter"))
             .Add("metric-releases", Metric("Releases", "96", "Last 12 months"))

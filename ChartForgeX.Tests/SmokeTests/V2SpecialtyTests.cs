@@ -27,7 +27,7 @@ public sealed class V2SpecialtyTests {
     [Fact]
     public void CustomPathUsesItsViewBoxInBothPaintersAndIgnoresTheLegacyPngFallback() {
         var custom = Pictorial(ChartPictorialShape.Circle, .5)
-            .Pictorial(p => p.SvgPath("M110 100 L120 120 L100 120 Z", new ChartRect(100, 100, 20, 20), ChartPictorialShape.Circle));
+            .Pictorial(p => p.SvgPath("M110 100 L120 120 L100 120 Z", new ChartRect(100, 100, 20, 20)));
         var customScene = Compile(custom);
         var triangle = Compile(Pictorial(ChartPictorialShape.Triangle, .5));
         var circle = Compile(Pictorial(ChartPictorialShape.Circle, .5));
@@ -82,7 +82,7 @@ public sealed class V2SpecialtyTests {
     public void RotatedWordCloudUsesActualStyledMetricsAndRetainsLimitedAndZeroWeightTerms() {
         var chart = Chart.Create().WordCloud(w => w.Angles(new double[] { 90 }).MaxTerms(1).FontRange(16, 40))
             .AddWordCloud("Words", new[] { new ChartWordCloudItem("office ffi", 80), new ChartWordCloudItem("Limited", 40), new ChartWordCloudItem("Zero", 0) });
-        chart.Series[0].PointDataLabelStyle(0, style => style.FontWeight("900").Italic().TextCase(TextCaseTransform.Uppercase));
+        chart.Series[0].PointDataLabelStyle(0, style => style.FontWeight(900).Italic().TextCase(TextCaseTransform.Uppercase));
         var scene = Compile(chart);
         var text = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "word-cloud-text");
         Assert.Equal("OFFICE FFI", Assert.Single(text.Text.Lines).Text);

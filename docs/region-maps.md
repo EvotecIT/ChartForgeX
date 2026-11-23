@@ -74,8 +74,8 @@ var chart = Chart.Create()
         new ChartMapPoint("Anchorage", -149.90, 61.22, 20),
         new ChartMapPoint("Honolulu", -157.86, 21.31, 30)
     })
-    .AddMapRoute("Denver to New York", -104.99, 39.74, -74.00, 40.71)
-    .AddMapRouteBetweenPoints("Denver to Anchorage", "Denver", "Anchorage");
+    .AddMapConnector("Denver to New York", -104.99, 39.74, -74.00, 40.71)
+    .AddMapConnectorBetweenPoints("Denver to Anchorage", "Denver", "Anchorage");
 ```
 
 Use one colour per status (for example green, amber and red) to show a tone

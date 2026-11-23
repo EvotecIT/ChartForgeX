@@ -79,7 +79,7 @@ internal static partial class SmokeTests {
         var highDensity = GifReader.Decode(split.ToGif(highDensityOptions));
         var stretched = ImageComposition.Create(highDensity.Width, highDensity.Height, ChartColor.Transparent)
             .DrawImage(normal, 0, 0, highDensity.Width, highDensity.Height, VisualCanvasImageFit.Stretch)
-            .ToImage();
+            .ToRgbaImage();
         Assert(highDensity.Width == normal.Width * 2 && highDensity.Height == normal.Height * 2,
             "Animated visual-story output scale should multiply the rendered frame dimensions.");
         Assert(!highDensity.Pixels.SequenceEqual(stretched.Pixels),
@@ -87,11 +87,11 @@ internal static partial class SmokeTests {
 
         var terminal = TerminalStory.Create()
             .Width(480)
-            .PngOutputScale(1)
+            .RasterScale(1)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Command("Get-Process | Sort-Object CPU", 0.05)
-            .Output("ready", TerminalTextTone.Success);
+            .Output("ready", Tone.Success);
         var terminalRenderer = new PngTerminalStoryRenderer();
         var terminalNormal = PngReader.Decode(terminalRenderer.Render(terminal, 1));
         var terminalHighDensity = PngReader.Decode(terminalRenderer.Render(terminal, 4));
@@ -106,7 +106,7 @@ internal static partial class SmokeTests {
                 terminalHighDensity.Width,
                 terminalHighDensity.Height,
                 VisualCanvasImageFit.Stretch)
-            .ToImage();
+            .ToRgbaImage();
         Assert(!terminalHighDensity.Pixels.SequenceEqual(stretchedTerminal.Pixels),
             "Terminal panels should support native story output density instead of stretched terminal text.");
 
@@ -122,7 +122,7 @@ internal static partial class SmokeTests {
 
         var longTerminal = TerminalStory.Create()
             .Width(960)
-            .PngOutputScale(4)
+            .RasterScale(4)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Output(string.Join(Environment.NewLine, Enumerable.Repeat("completed line", 105)));

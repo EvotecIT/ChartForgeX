@@ -22,7 +22,7 @@ internal static partial class TopologyLayoutEngine {
         }
         foreach (var edge in chart.Edges) {
             MirrorVerticalPorts(edge);
-            edge.RouteLane = -edge.RouteLane;
+            edge.SetLayoutRouteLane(-edge.RouteLane);
             if (edge.HasLabelAnchorOverride) edge.LabelAnchorY = axis - edge.LabelAnchorY;
             if (edge.LabelPosition != null) edge.LabelPosition = edge.LabelPosition.Transform(point => new ChartPoint(point.X, axis - point.Y));
             for (var i = 0; i < edge.Waypoints.Count; i++) {
@@ -42,7 +42,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var node in chart.Nodes) node.X = axis - node.X - node.Width;
         foreach (var edge in chart.Edges) {
             MirrorHorizontalPorts(edge);
-            edge.RouteLane = -edge.RouteLane;
+            edge.SetLayoutRouteLane(-edge.RouteLane);
             if (edge.HasLabelAnchorOverride) edge.LabelAnchorX = axis - edge.LabelAnchorX;
             if (edge.LabelPosition != null) edge.LabelPosition = edge.LabelPosition.Transform(point => new ChartPoint(axis - point.X, point.Y));
             for (var i = 0; i < edge.Waypoints.Count; i++) {

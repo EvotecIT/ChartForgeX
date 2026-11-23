@@ -184,7 +184,7 @@ public sealed class TextFallbackTests : IDisposable {
         var primary = TrueTypeFont.TryLoadDefault();
         if (primary == null || FontFallbackChain.For(primary).FaceFor(Tokyo) == null) return;
         var style = new TextStyle { FontSize = 32, Color = ChartColor.Black };
-        var image = ImageComposition.Create(160, 60, ChartColor.White).DrawText(4, 4, 150, "\u6771\u4EAC", style, TextWrapMode.NoWrap).ToImage();
+        var image = ImageComposition.Create(160, 60, ChartColor.White).DrawText(4, 4, 150, "\u6771\u4EAC", style, TextWrapMode.NoWrap).ToRgbaImage();
         var ink = 0;
         for (var i = 0; i < image.Pixels.Length; i += 4) if (image.Pixels[i] < 128) ink++;
         Assert.True(ink > 150, "CJK text should draw ink through its fallback face.");

@@ -6,14 +6,14 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>Renders genuine core diagrams and delegates other blocks to their static pixel producer.</summary>
-public sealed class PngVisualBlockRenderer {
+internal sealed class PngVisualBlockRenderer {
     /// <summary>Renders a genuine diagram or producer-owned static block to PNG.</summary>
     public byte[] Render(IVisualBlock block) => PngWriter.WriteRgba(RenderImage(block));
     internal RgbaImage RenderImage(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
         return SvgVisualBlockRenderer.IsNativeBlock(block) ? RenderNativeImage(block) : block.RenderRgba();
     }
-    internal RgbaImage RenderNativeImage(IVisualBlock block) => RenderCanvas(block).ToImage();
+    internal RgbaImage RenderNativeImage(IVisualBlock block) => RenderCanvas(block).ToRgbaImage();
     internal RgbaCanvas RenderCanvas(IVisualBlock block, int? outputScale = null) {
         VisualBlockRendering.Validate(block);
         return RenderOwnedCanvas(block, () => new SvgVisualBlockRenderer().RenderLabelScene(block), outputScale);
@@ -24,7 +24,7 @@ public sealed class PngVisualBlockRenderer {
         var options = block.Options;
         var theme = options.ResolvedTheme;
         var scene = labelScene();
-        var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
+        var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.RasterScale);
         target.Clear(ChartColor.Transparent);
         scene.PaintMarks(target);
         scene.Paint(target);

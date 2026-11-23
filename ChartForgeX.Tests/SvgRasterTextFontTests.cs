@@ -46,8 +46,8 @@ public sealed class SvgRasterTextFontTests {
         string inherited = "<g font-family='Archivo' font-size='28'><text x='8' y='40' letter-spacing='"
             + spacing.ToString("R", CultureInfo.InvariantCulture) + "'><tspan " + spanAttributes + ">" + digits
             + "</tspan><tspan fill='red'>H</tspan></text></g></svg>";
-        byte[] actual = SvgRasterizer.ToImage(prefix + rootAttributes + ">" + inherited).Pixels;
-        byte[] expected = SvgRasterizer.ToImage(prefix + "><text x='" + expectedX.ToString("R", CultureInfo.InvariantCulture)
+        byte[] actual = SvgRasterizer.ToRgbaImage(prefix + rootAttributes + ">" + inherited).Pixels;
+        byte[] expected = SvgRasterizer.ToRgbaImage(prefix + "><text x='" + expectedX.ToString("R", CultureInfo.InvariantCulture)
             + "' y='40' font-family='Archivo' font-size='28' fill='red'>H</text></svg>").Pixels;
         Assert.Contains(expected, value => value != 0);
         Assert.Equal(RedAlpha(expected), RedAlpha(actual));
@@ -124,7 +124,7 @@ public sealed class SvgRasterTextFontTests {
     public void TextSitsOnItsBaselineWhateverTheFaceAscent() {
         foreach (var family in new[] { "sans-serif", "Arial", "Segoe UI", "Georgia", "Calibri" }) {
             if (family != "sans-serif" && !HasFace(family, 400)) continue;
-            var image = SvgRasterizer.ToImage("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"100\"><text x=\"10\" y=\"60\" font-family=\"" + family + "\" font-size=\"40\">H</text></svg>");
+            var image = SvgRasterizer.ToRgbaImage("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"100\"><text x=\"10\" y=\"60\" font-family=\"" + family + "\" font-size=\"40\">H</text></svg>");
             var bottom = -1;
             for (var y = 0; y < image.Height; y++) {
                 for (var x = 0; x < image.Width; x++) if (image.Pixels[(y * image.Width + x) * 4 + 3] > 128) bottom = y;
@@ -141,7 +141,7 @@ public sealed class SvgRasterTextFontTests {
     private static byte[] Text(string attributes) => Render("<text x=\"8\" y=\"40\" font-size=\"28\" " + attributes + ">Hamburgefonstiv</text>");
 
     private static byte[] Render(string body) =>
-        SvgRasterizer.ToImage("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"56\">" + body + "</svg>").Pixels;
+        SvgRasterizer.ToRgbaImage("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"56\">" + body + "</svg>").Pixels;
 
     private static long Ink(byte[] pixels) {
         long ink = 0;

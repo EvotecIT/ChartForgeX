@@ -163,8 +163,8 @@ public sealed class MermaidFlowchartCompoundTests {
         Assert.Empty(result.Diagnostics);
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(result.Artifact!.ToInterchangeJson());
         Assert.Equal(2, envelope.Nodes.Count); Assert.Equal(3, envelope.Edges.Count);
-        Assert.Equal("#d6e7fa", envelope.Nodes.Single(node => node.Id == "A").BackgroundColor);
-        Assert.Equal("#35632a", envelope.Edges[1].Color);
+        Assert.Equal("#D6E7FA", envelope.Nodes.Single(node => node.Id == "A").BackgroundColor);
+        Assert.Equal("#35632A", envelope.Edges[1].Color);
         Assert.Equal(new[] { "one", "two", "retry" }, envelope.Edges.Select(edge => edge.Label));
         Assert.All(envelope.Edges, edge => Assert.True(edge.ResolvedRoute.Count > 1));
     }

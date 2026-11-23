@@ -217,7 +217,7 @@ public sealed class WaterfallInterchangeTests {
         if (typed) series.ObservationId(4, new ChartObservationId("checkpoint"));
         series.PointColor(typed ? 4 : 1, new ChartColor(137, 51, 177, 187)).PointFillPattern(0, ChartFillPattern.Crosshatch)
             .PointLabel(0, "Opening <balance>").PointDataLabelStyle(0, style => { style.FontSize = 13; style.Italic = true; })
-            .DataLabelStyle(style => style.FontWeight = "600");
+            .DataLabelStyle(style => style.FontWeight = 600);
         var chart = Chart.Create().Size(width, 440).Title("Running balance").Subtitle("Portable authoring")
             .Padding(18, 14, 18, 12).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).DataLabels().Legend(false).AddSeries(series)

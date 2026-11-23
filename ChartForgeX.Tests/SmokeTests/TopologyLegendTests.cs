@@ -12,7 +12,7 @@ internal static partial class SmokeTests {
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "TLS")
             .AddNode("risk", "Risk", 300, 220, TopologyNodeKind.Process, TopologyHealthStatus.Critical, symbol: "!")
             .AddEdge("cert-risk", "cert-a", "risk", "flags", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
-            .UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"));
+            .UpdateNodes(TopologyNodeKind.Certificate, n => n.Color(ChartColor.FromHex("#2563EB")).BackgroundColor(ChartColor.FromHex("#EFF6FF")));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
         Assert(svg.Contains("data-node-color=\"#2563EB\"", StringComparison.Ordinal), "Bulk node-kind styling should apply reusable node accent colors.");
@@ -37,7 +37,7 @@ internal static partial class SmokeTests {
             .AddNode("queue", "Queue", 300, 180, TopologyNodeKind.Service, TopologyHealthStatus.Warning, symbol: "Q")
             .AddEdge("app-db", "app", "db", "reads", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .AddEdge("app-queue", "app", "queue", "publishes", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
-            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dotted).Color("#64748B"));
+            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dotted).Color(ChartColor.FromHex("#64748B")));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
         var legend = TopologyLegendMarkup(svg);
@@ -60,9 +60,9 @@ internal static partial class SmokeTests {
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning)
             .AddNode("owner", "Owner", 300, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
             .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"))
+            .UpdateNodes(TopologyNodeKind.Certificate, n => n.Color(ChartColor.FromHex("#2563EB")).BackgroundColor(ChartColor.FromHex("#EFF6FF")))
             .NodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog)
-            .UpdateEdges(TopologyEdgeKind.Ownership, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Color("#7C3AED"));
+            .UpdateEdges(TopologyEdgeKind.Ownership, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Color(ChartColor.FromHex("#7C3AED")));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Merge });
         var legend = TopologyLegendMarkup(svg);

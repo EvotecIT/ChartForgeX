@@ -24,7 +24,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         var graph = GraphEnvironmentFixture(backend);
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = backend;
-            options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false;
         })), width, 900);
         var page = session.Page;

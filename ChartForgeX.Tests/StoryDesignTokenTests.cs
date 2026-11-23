@@ -55,8 +55,8 @@ public sealed class StoryDesignTokenTests {
         var theme = VisualTheme.Graphite().Configure(builder =>
             builder.Colors(mode).Status.Critical = new VisualTokenColor(ChartColors.Red, error));
         var story = TerminalStory.Create().Theme(theme).ThemeMode(mode)
-            .Output("normal").Output("success", TerminalTextTone.Success)
-            .Output("warning", TerminalTextTone.Warning).Output("error", TerminalTextTone.Error);
+            .Output("normal").Output("success", Tone.Success)
+            .Output("warning", Tone.Warning).Output("error", Tone.Danger);
         var output = XDocument.Parse(story.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == "terminal-output")
             .ToDictionary(element => element.Value, element => (string?)element.Attribute("fill"));

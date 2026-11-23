@@ -4,7 +4,7 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.Stories;
 
 /// <summary>Renders script-free SVG using the common prepared playback clock.</summary>
-public sealed class SvgVisualStoryRenderer {
+internal sealed class SvgVisualStoryRenderer {
     internal const int MaximumDocumentCharacters = 64 * 1024 * 1024;
     /// <summary>Renders a visual story to animated SVG markup.</summary>
     public string Render(VisualStory story) => Render(story, string.Empty);

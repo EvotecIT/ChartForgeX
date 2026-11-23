@@ -22,7 +22,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         if (!Enabled) return;
         var chart = Frame(dark, "Visible bar observations").Bars(b => b.Style(ChartBarStyle.Solid))
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Baseline", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[1].PointColor(1, "#7b61e8");
+        chart.Series[1].PointColor(1, ChartColor.FromHex("#7b61e8"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
         var page = session.Page;
         var hidden = hidePoint ? Point(1, 1) : Point(1, 1) + " [data-cfx-role='bar']";
@@ -57,7 +57,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         if (!Enabled) return;
         var chart = Frame(dark, "Pattern-only bar observations").Bars(b => b.Style(ChartBarStyle.Solid))
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Baseline", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[1].PointColor(1, "#7b61e8").PointFillPattern(1, ChartFillPattern.Crosshatch);
+        chart.Series[1].PointColor(1, ChartColor.FromHex("#7b61e8")).PointFillPattern(1, ChartFillPattern.Crosshatch);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
         var page = session.Page;
         var point = Point(1, 1);

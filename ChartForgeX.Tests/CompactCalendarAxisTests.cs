@@ -27,7 +27,7 @@ public sealed class CompactCalendarAxisTests {
             "timeline" => TimelineRecipe.Create(mode: mode),
             _ => GanttLaneRecipe.Create(mode: mode)
         };
-        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode).Png(p => p.FontPath(Font())).Size(width, width == 400 ? 280 : 440)
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode).Raster(p => p.FontPath(Font())).Size(width, width == 400 ? 280 : 440)
             .ShowHeader(false).Padding(16, 16, 16, 16).GridLineStyle(style => style.ShowVerticalLines = true);
         if (width == 400) chart.TickLabelStyle(style => style.FontSize(13.5));
         var prepared = Prepare(chart); var labels = Captions(prepared, "schedule-tick-label");
@@ -60,7 +60,7 @@ public sealed class CompactCalendarAxisTests {
     public void NarrowFullIsoDatesUseARegularSourceDayStrideBeforeFallingBackToTwoLabels(int width, ThemeMode mode) {
         var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().Size(width, 260).TransparentBackground().ShowHeader(false).Legend(false)
-            .Padding(64, 14, 20, 46).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).ThemeMode(mode).Png(p => p.FontPath(Font()))
+            .Padding(64, 14, 20, 46).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).ThemeMode(mode).Raster(p => p.FontPath(Font()))
             .AddLine("Score", Enumerable.Range(0, 19).Select(index => new ChartPoint(start.AddDays(index), 50 + index % 5 * 4)));
         var prepared = Prepare(chart); var labels = Captions(prepared, "axis-x-label");
         Assert.InRange(labels.Length, 4, 8);
@@ -80,7 +80,7 @@ public sealed class CompactCalendarAxisTests {
     public void ADateBesideAClockCaptionUsesTheirMeasuredMeanAndKeepsSixHourBoundaries(int width, ThemeMode mode) {
         var start = new DateTime(2026, 10, 13, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().Size(width, 160).TransparentBackground().ShowHeader(false).Padding(0, 10, 16, 0)
-            .XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).ThemeMode(mode).Png(p => p.FontPath(Font()))
+            .XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")).ThemeMode(mode).Raster(p => p.FontPath(Font()))
             .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#2E7D32")));
         chart.AddStateTimelineLane("Nightly run", new[] { new ChartStateTimelineSegment(start, start.AddHours(24), "up") });
         chart.AddStateTimelineLane("Weekly run", new[] { new ChartStateTimelineSegment(start, start.AddHours(24), "up") });

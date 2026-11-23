@@ -9,7 +9,7 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Stories;
 
 /// <summary>Renders visual stories as embeddable HTML or complete HTML pages.</summary>
-public sealed class HtmlVisualStoryRenderer {
+internal sealed class HtmlVisualStoryRenderer {
     /// <summary>Renders an embeddable HTML fragment.</summary>
     public string RenderFragment(VisualStory story) => RenderFragment(story, string.Empty);
 

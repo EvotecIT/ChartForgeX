@@ -14,7 +14,7 @@ public sealed class MermaidGraphStyleSettingsCausalTests {
         var rendered=MermaidRenderer.Render(source);Capture(rendered,"flowchart-named-edge-class");
         Assert.Empty(rendered.Diagnostics);var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);
         Assert.Equal(new[]{"A","B"},chart.Nodes.Select(node=>node.Id));var edge=Assert.Single(chart.Edges);
-        Assert.Equal("reads",edge.Id);Assert.Equal("#123456",edge.Color);Assert.Equal("#654321",edge.LabelColor);
+        Assert.Equal("reads",edge.Id);Assert.Equal(ChartColor.FromHex("#123456"),edge.Color);Assert.Equal(ChartColor.FromHex("#654321"),edge.LabelColor);
         Assert.Equal("marked",edge.Metadata["mermaid.classes"]);
     }
 
@@ -38,7 +38,7 @@ public sealed class MermaidGraphStyleSettingsCausalTests {
         var rendered=MermaidRenderer.Render(source);Capture(rendered,"flowchart-group-paints");
         Assert.Empty(rendered.Diagnostics);var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);
         Assert.Equal(new[]{"A","B"},chart.Nodes.Select(node=>node.Id));var group=Assert.Single(chart.Groups);
-        Assert.Equal("#aabbcc",group.BackgroundColor);Assert.Equal("#123456",group.BorderColor);Assert.Equal("#654321",group.LabelColor);
+        Assert.Equal(ChartColor.FromHex("#aabbcc"),group.BackgroundColor);Assert.Equal(ChartColor.FromHex("#123456"),group.BorderColor);Assert.Equal(ChartColor.FromHex("#654321"),group.LabelColor);
         Assert.Equal("framed",group.Metadata["mermaid.classes"]);
     }
 
@@ -57,7 +57,7 @@ public sealed class MermaidGraphStyleSettingsCausalTests {
         const string source="flowchart LR\nA -->|Reads| B\nlinkStyle 0 stroke:#123456,color:#654321,stroke-width:3px,opacity:0.6,stroke-dasharray:9 4 2";
         var rendered=MermaidRenderer.Render(source);Capture(rendered,"flowchart-exact-edge-style");
         Assert.Empty(rendered.Diagnostics);var edge=Assert.Single(Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Edges);
-        Assert.Equal(3,edge.StrokeWidth);Assert.Equal(.6,edge.Opacity);Assert.Equal("#654321",edge.LabelColor);
+        Assert.Equal(3,edge.StrokeWidth);Assert.Equal(.6,edge.Opacity);Assert.Equal(ChartColor.FromHex("#654321"),edge.LabelColor);
         Assert.Equal(new double[]{9,4,2,9,4,2},edge.DashPattern);
     }
 
@@ -66,8 +66,8 @@ public sealed class MermaidGraphStyleSettingsCausalTests {
         const string source="agentflow-beta LR\nflow review[Review]\na[Work] --> b[Check]\nend\nclassDef marked fill:#ffeedd,stroke:#123456,color:#654321\nclass a,review marked\nlinkStyle 0 stroke:#234567,stroke-width:3px";
         var rendered=MermaidRenderer.Render(source);Capture(rendered,"agentflow-style-cascade");
         Assert.Empty(rendered.Diagnostics);var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);
-        Assert.Equal("#ffeedd",chart.Nodes.Single(node=>node.Id=="a").BackgroundColor);Assert.Equal("#ffeedd",Assert.Single(chart.Groups).BackgroundColor);
-        Assert.Equal("#234567",Assert.Single(chart.Edges).Color);Assert.Equal(3,chart.Edges[0].StrokeWidth);
+        Assert.Equal(ChartColor.FromHex("#ffeedd"),chart.Nodes.Single(node=>node.Id=="a").BackgroundColor);Assert.Equal(ChartColor.FromHex("#ffeedd"),Assert.Single(chart.Groups).BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#234567"),Assert.Single(chart.Edges).Color);Assert.Equal(3,chart.Edges[0].StrokeWidth);
     }
 
     [Fact]

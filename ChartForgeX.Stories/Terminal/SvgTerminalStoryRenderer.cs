@@ -11,7 +11,7 @@ namespace ChartForgeX.Terminal;
 /// <summary>
 /// Renders terminal stories as self-contained, script-free animated SVG.
 /// </summary>
-public sealed class SvgTerminalStoryRenderer {
+internal sealed class SvgTerminalStoryRenderer {
     /// <summary>Renders a terminal story to SVG markup.</summary>
     public string Render(TerminalStory story) => Render(story, string.Empty);
 
@@ -279,15 +279,5 @@ public sealed class SvgTerminalStoryRenderer {
         return description.ToString();
     }
 
-    internal static string ToneColor(ResolvedTerminalStyle theme, TerminalTextTone tone) {
-        switch (tone) {
-            case TerminalTextTone.Default: return theme.Text.ToCss();
-            case TerminalTextTone.Muted: return theme.Muted.ToCss();
-            case TerminalTextTone.Accent: return theme.Accent.ToCss();
-            case TerminalTextTone.Success: return theme.Success.ToCss();
-            case TerminalTextTone.Warning: return theme.Warning.ToCss();
-            case TerminalTextTone.Error: return theme.Error.ToCss();
-            default: throw new ArgumentOutOfRangeException(nameof(tone));
-        }
-    }
+    internal static string ToneColor(ResolvedTerminalStyle theme, Tone tone) => TerminalLinePlayback.ToneColor(theme, tone).ToCss();
 }

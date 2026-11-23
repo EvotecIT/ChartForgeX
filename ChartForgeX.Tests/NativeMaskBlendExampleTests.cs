@@ -12,7 +12,7 @@ public sealed class NativeMaskBlendExampleTests {
     public void CompletePublicProgramsShareNativeSourceAndKeepOptionalVisualsOutOfCore(string variant, ThemeMode mode) {
         var layer = NativeMaskExample.Create(variant, mode); MaskBlendFixture.Capture("native-mask-example-" + variant + "-" + mode, layer);
         var report = NativeMaskBlendCompositionExample.Create(variant, mode, VisualBlendMode.Screen);
-        MaskBlendFixture.CaptureImage("native-mask-report-" + variant + "-" + mode, report.ToImage());
+        MaskBlendFixture.CaptureImage("native-mask-report-" + variant + "-" + mode, report.ToRgbaImage());
         var core = ExampleRecipeSource.EmitNativeMask(variant, mode); var visuals = ExampleRecipeSource.EmitNativeMaskComposition(variant, mode);
         Assert.DoesNotContain("{{", core); Assert.DoesNotContain("{{", visuals); Assert.DoesNotContain("ChartForgeX.Examples", core);
         Assert.DoesNotContain("ChartForgeX.Composition", core); Assert.Contains("public static class NativeMaskExample", core);

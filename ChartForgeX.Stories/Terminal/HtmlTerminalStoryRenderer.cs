@@ -6,7 +6,7 @@ namespace ChartForgeX.Terminal;
 /// <summary>
 /// Renders terminal stories as self-contained HTML.
 /// </summary>
-public sealed class HtmlTerminalStoryRenderer {
+internal sealed class HtmlTerminalStoryRenderer {
     /// <summary>Renders an inline SVG terminal story fragment.</summary>
     public string RenderFragment(TerminalStory story) => RenderFragment(story, string.Empty);
 

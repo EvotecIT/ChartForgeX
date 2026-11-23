@@ -92,7 +92,7 @@ public sealed class CategoricalObservationLifecycleTests {
     public void FailedReplacementKeepsLaneDataAndKeysWhileSuccessfulReplacementClearsOverrides() {
         var series = ChartSeries.CreateStateTimelineLane(new ChartSeriesId("service"), "Service",
             new[] { new ChartStateTimelineSegment(1, 2, "up") })
-            .ObservationId(0, new ChartObservationId("first")).PointColor(0, "#123456");
+            .ObservationId(0, new ChartObservationId("first")).PointColor(0, ChartColor.FromHex("#123456"));
         var chart = ChartWithStates().AddSeries(series);
         var before = chart.ToSvg();
         Assert.Throws<ArgumentException>(() => series.ReplaceStateTimelineSegments(new[] { new ChartStateTimelineSegment(3, 4, "down"), default }));

@@ -38,7 +38,7 @@ public sealed class TopologyGroupHeaderCausalRegressionTests {
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var parent = chart.Groups.Single(group => group.Id == "Domain: core");
         var child = chart.Groups.Single(group => group.Id == "Order group");
-        Assert.Equal("#dcfce7", parent.BackgroundColor); Assert.Equal("#14532d", parent.LabelColor);
+        Assert.Equal(ChartColor.FromHex("#dcfce7"), parent.BackgroundColor); Assert.Equal(ChartColor.FromHex("#14532d"), parent.LabelColor);
         Assert.Null(child.BackgroundColor); Assert.Null(child.LabelColor);
         var prepared = chart.Prepare();
         // The maintained source has exactly these two shells, painted parent first.
@@ -57,10 +57,10 @@ public sealed class TopologyGroupHeaderCausalRegressionTests {
     [InlineData(true)]
     public void ExplicitInkAndOrdinarySingleLineDefaultInkKeepTheirAuthoredAndThemeContracts(bool dark) {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 280, 16)).Legend((TopologyLegend?)null)
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("plain", "Plain control", 24, 40, 280, 180)
             .AddGroup("explicit", "Explicit control", 328, 40, 280, 180);
-        chart.Groups[1].BackgroundColor = "#DCFCE7"; chart.Groups[1].LabelColor = "#7C3AED";
+        chart.Groups[1].BackgroundColor = ChartColor.FromHex("#DCFCE7"); chart.Groups[1].LabelColor = ChartColor.FromHex("#7C3AED");
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false,
             IncludeGroupStatusDots = false, CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Plain });
         var rows = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "topology-group-label").ToArray();

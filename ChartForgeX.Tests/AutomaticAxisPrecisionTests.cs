@@ -170,7 +170,7 @@ public sealed class AutomaticAxisPrecisionTests {
 
     [Fact]
     public void NumericScheduleTicksKeepDefaultPrecisionAndAuthoredValueNotation() {
-        var chart = Chart.Create().Size(640, 400).Legend(false).AddTimelineRange("Window", .0001, .0005);
+        var chart = Chart.Create().Size(640, 400).Legend(false).AddTimelineItem("Window", .0001, .0005);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var captions = prepared.Regions.Where(region => region.Role == "schedule-tick-label").Select(region => region.Label).ToArray();
         Assert.Equal(new[] { "0.0001", "0.0002", "0.0003", "0.0004", "0.0005" }, captions);

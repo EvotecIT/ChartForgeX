@@ -37,7 +37,7 @@ public sealed class V2FrameTypographyTests {
         Assert.Equal("#7923A1", lineText.Attribute("fill")!.Value, ignoreCase: true);
         Assert.Contains(XDocument.Parse(line.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "text-decoration");
         Assert.True(double.Parse(lineText.Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture) > 100);
-        Assert.Equal(480, line.ToRgba().Width);
+        Assert.Equal(480, line.ToRgbaImage().Width);
     }
 
     [Fact]

@@ -34,7 +34,7 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         Assert.Equal(14, calls);
-        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
+        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Raster.FontPath!));
         html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         chart.Options.Sunburst.SecondaryLabelFormatter = _ => throw new InvalidOperationException("Prepared captions must remain detached.");
         chart.Options.Sunburst.SecondaryLabelStyle.FontSize(40); descriptions["engineering"] = "Changed after preparation";

@@ -14,7 +14,7 @@ public sealed class NativeDropShadowLayerTests {
         var source = ShadowFilterFixture.Source(); var before = source.ToSvg(); var png = source.ToPng(ShadowFilterFixture.Options);
         var layer = source.CaptureLayer(new VisualDropShadow(ChartColor.FromRgba(0, 0, 255, 128), 4, 2, 0,
             spread: spread, orderedDither: false), ShadowFilterFixture.Options);
-        NativeEffectBeforeCapture.Write("native-shadow-spread-" + spread, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
+        NativeEffectBeforeCapture.Write("native-shadow-spread-" + spread, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToRgbaImage());
         Assert.Equal(new byte[] { 255, 0, 0, 128 }, ShadowFilterFixture.WorldPixel(layer, 24, 17));
         Assert.Equal(spread < 0 ? new byte[4] : new byte[] { 0, 0, 255, 64 }, ShadowFilterFixture.WorldPixel(layer, 35, 21));
         Assert.Equal(160, ShadowFilterFixture.WorldPixel(layer, 29, 20)[3]);
@@ -31,28 +31,28 @@ public sealed class NativeDropShadowLayerTests {
     public void LogicalNegativeOffsetsAndPositiveSpreadUseOneDensityConversionAndDetachedSnapshots(int density) {
         var source = ShadowFilterFixture.Source(); var options = new VisualRenderOptions(scale: density, supersampling: 1);
         var effect = new VisualDropShadow(ChartColor.FromRgba(0, 0, 255, 128), -4, -2, 0, spread: 1, orderedDither: false);
-        var layer = source.CaptureLayer(effect, options); var before = layer.Visual.ToSvg(); var pixels = layer.ToImage();
+        var layer = source.CaptureLayer(effect, options); var before = layer.Visual.ToSvg(); var pixels = layer.ToRgbaImage();
         NativeEffectBeforeCapture.Write("native-shadow-negative-density-" + density, before, layer.Visual.ToPng(options), pixels);
         Assert.Equal(new ChartRect(-5, -3, 69, 51), layer.Bounds); Assert.Equal(69 * density, pixels.Width); Assert.Equal(51 * density, pixels.Height);
         Assert.Equal(-4, effect.OffsetX); Assert.Equal(-2, effect.OffsetY); Assert.Equal(1, effect.Spread); Assert.Equal(density, layer.PixelsPerUnit);
         Assert.Equal("native-source", Assert.Single(layer.Visual.Regions).Id);
         Assert.Equal(5, layer.Visual.Regions[0].Bounds.X); Assert.Equal(3, layer.Visual.Regions[0].Bounds.Y);
         Array.Clear(pixels.Pixels, 0, pixels.Pixels.Length); Assert.Equal(before, layer.Visual.ToSvg());
-        Assert.Contains(layer.ToImage().Pixels, value => value > 0);
+        Assert.Contains(layer.ToRgbaImage().Pixels, value => value > 0);
         Assert.NotEmpty(SvgRasterizer.Rasterize(layer.Visual.ToSvg(), strict: true).Image.Pixels);
     }
 
     [Fact]
     public void TransparentTintSkipsConversionWhileCancellationAndRejectedCaptureNeverMutateSource() {
-        var source = ShadowFilterFixture.Source(); var before = source.ToSvg(); var pixels = source.ToRgba(ShadowFilterFixture.Options).Pixels;
+        var source = ShadowFilterFixture.Source(); var before = source.ToSvg(); var pixels = source.ToRgbaImage(ShadowFilterFixture.Options).Pixels;
         var layer = source.CaptureLayer(new VisualDropShadow(ChartColor.Transparent, 4, -2, 3, spread: 2), ShadowFilterFixture.Options);
-        NativeEffectBeforeCapture.Write("native-shadow-transparent", layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
-        Assert.Equal(new ChartRect(0, 0, 64, 48), layer.Bounds); Assert.Equal(pixels, layer.ToImage().Pixels);
+        NativeEffectBeforeCapture.Write("native-shadow-transparent", layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToRgbaImage());
+        Assert.Equal(new ChartRect(0, 0, 64, 48), layer.Bounds); Assert.Equal(pixels, layer.ToRgbaImage().Pixels);
         Assert.Throws<OperationCanceledException>(() => source.CaptureLayer(new VisualDropShadow(ChartColor.Black, 2, 3, 1),
             cancellationToken: new CancellationToken(true)));
         Assert.Throws<ArgumentOutOfRangeException>(() => source.CaptureLayer(new VisualDropShadow(ChartColor.Black, 2, 3, 1),
             new VisualRenderOptions(pixelBudget: 1)));
-        Assert.Equal(before, source.ToSvg()); Assert.Equal(pixels, source.ToRgba(ShadowFilterFixture.Options).Pixels);
+        Assert.Equal(before, source.ToSvg()); Assert.Equal(pixels, source.ToRgbaImage(ShadowFilterFixture.Options).Pixels);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ internal static class ShadowFilterFixture {
         return new PreparedVisual(builder.Build());
     }
     internal static byte[] WorldPixel(CapturedVisualLayer layer, int x, int y) {
-        var image = layer.ToImage(); var px = checked((int)((x - layer.Bounds.X) * layer.PixelsPerUnit));
+        var image = layer.ToRgbaImage(); var px = checked((int)((x - layer.Bounds.X) * layer.PixelsPerUnit));
         var py = checked((int)((y - layer.Bounds.Y) * layer.PixelsPerUnit));
         return image.Pixels.Skip((py * image.Width + px) * 4).Take(4).ToArray();
     }

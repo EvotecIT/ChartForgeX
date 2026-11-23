@@ -17,9 +17,9 @@ internal sealed partial class VisualTopologyCompiler {
         var ordinaryFullPath = _numericRoutes.TryGetValue(edge, out var numeric) && edge.Interpolation.HasValue ? numeric.FullPath : edge.PathGeometry?.Capture();
         var startAdjacent = ordinaryFullPath == null ? points[1] : Point(ordinaryFullPath.AdjacentToEndpoint(true));
         var endAdjacent = ordinaryFullPath == null ? points[points.Length - 2] : Point(ordinaryFullPath.AdjacentToEndpoint(false));
-        var colorRole = edge.IsMuted ? SvgColorRole.Surface : !string.IsNullOrWhiteSpace(edge.Color) ? SvgColorRole.Any : SvgColorRole.Status;
+        var colorRole = edge.IsMuted ? SvgColorRole.Surface : edge.Color != null ? SvgColorRole.Any : SvgColorRole.Status;
         var authoredColor = EdgeColor(edge, _svgTheme ?? Theme(), _options);
-        var usePalette = !edge.IsMuted && string.IsNullOrWhiteSpace(edge.Color) && edge.PaletteIndex.HasValue;
+        var usePalette = !edge.IsMuted && edge.Color == null && edge.PaletteIndex.HasValue;
         var cssVariable = SvgPaint.TryCssVariable(authoredColor, edge.IsMuted ? _colors.Border : Status(edge.Status), out var resolvedColor, out var sourcePaint);
         if (!cssVariable) resolvedColor = Color(authoredColor, edge.IsMuted ? _colors.Border : Status(edge.Status));
         if (usePalette) resolvedColor = PaletteColor(edge.PaletteIndex!.Value);
@@ -164,7 +164,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (!_options.IncludeEdgeLabels) return;
         foreach (var layout in _edgeLabels.OrderBy(layout => _edgeRenderOrders[layout.Edge])) {
             using var textPolicy = UseTextPolicy(layout.Edge.TextStyle);
-            if (layout.Edge.TextStyle?.Color is ChartColor authoredTextColor) layout.Edge.LabelColor = authoredTextColor.ToHexRgba();
+            if (layout.Edge.TextStyle?.Color is ChartColor authoredTextColor) layout.Edge.LabelColor = authoredTextColor;
             var bounds = Bounds(layout.CenterX - layout.Width / 2, layout.CenterY - layout.Height / 2, layout.Width, layout.Height);
             var edge = layout.Edge;
             var units = TopologyPreparedEdgePlan.Units(edge);
@@ -197,7 +197,7 @@ internal sealed partial class VisualTopologyCompiler {
             ChartRect[]? chipRows = null;
             if (_options.IncludeEdgeLabelBackplates && UsesQuietEdgeLabelSurface(_options)) {
                 var (surface, cells) = QuietEdgeLabelSurface(edge, bounds, labels, units); chipRows = cells;
-                var authored = !string.IsNullOrWhiteSpace(edge.LabelBackgroundColor);
+                var authored = edge.LabelBackgroundColor != null;
                 // The chip is a step off the surface it sits on: the canvas, or the group around the label.
                 var underlay = LabelUnderlay(layout);
                 var tone = authored ? Color(edge.LabelBackgroundColor, _colors.Surface) : ChartColorMath.Blend(underlay.Fill, _colors.Foreground, EdgeLabelQuietTint);
@@ -207,7 +207,7 @@ internal sealed partial class VisualTopologyCompiler {
                 _builder.Rect(surface, fill, radius: surface.Height / 2, role: "topology-edge-label-surface", paint: new VisualScenePaintBinding(paint));
             }
             else if (_options.IncludeEdgeLabelBackplates) {
-                var fill = LabelColor(ChartColorMath.WithOpacity(Color(edge.LabelBackgroundColor ?? EdgeLabelBackplateFill(Theme(), _options), _colors.Surface), EdgeLabelBackplateFillOpacity(_options)));
+                var fill = LabelColor(ChartColorMath.WithOpacity(Color(edge.LabelBackgroundColor.ToText() ?? EdgeLabelBackplateFill(Theme(), _options), _colors.Surface), EdgeLabelBackplateFillOpacity(_options)));
                 var stroke = LabelColor(ChartColorMath.WithOpacity(_colors.Border, EdgeLabelBackplateStrokeOpacity(_options)));
                 _builder.Rect(bounds, fill, stroke, EdgeLabelBackplateStrokeWidth * units * _scale,
                     EdgeLabelBackplateRadius(_options) * units * _scale, "topology-edge-label-surface", paint: new VisualScenePaintBinding(

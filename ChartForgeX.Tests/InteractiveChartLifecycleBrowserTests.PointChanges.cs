@@ -19,7 +19,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var series = ChartSeries.CreateScatter(new ChartSeriesId("live"), "Live",
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) })
             .ObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") })
-            .PointColor(1, "#123456").PointLabel(1, "Retained sample");
+            .PointColor(1, ChartColor.FromHex("#123456")).PointLabel(1, "Retained sample");
         var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Size(640, 360).XAxis(x => x.Bounds(0, 6)).YAxis(y => y.Bounds(0, 60)).AddSeries(series);
         void Options(HtmlChartInteractionOptions options) { Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Brush); }

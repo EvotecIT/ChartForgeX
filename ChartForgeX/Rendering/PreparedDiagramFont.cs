@@ -17,7 +17,7 @@ internal sealed class PreparedDiagramFont {
     internal string ThemeFamily { get; }
     internal FontSpec Font => _font.Clone();
     internal VisualSceneTextCapture? Text { get; }
-    internal TextStyleOverride Policy => new() { FontFamily = _font.Family, FontWeight = _font.Weight.ToString(CultureInfo.InvariantCulture),
+    internal TextStyleOverride Policy => new() { FontFamily = _font.Family, FontWeight = _font.Weight,
         Italic = _font.Italic, ColorPaletteIndex = _font.ColorPaletteIndex, Variations = _font.Variations };
     internal FontSpec ForPreparation() => Text is {} captured ? _font.WithCapturedText(captured.ContinueTopology()) : _font.Clone();
     internal static PreparedDiagramFont? Capture(VisualRenderContext context) {

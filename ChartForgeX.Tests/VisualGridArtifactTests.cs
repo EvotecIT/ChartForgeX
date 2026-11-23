@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
@@ -32,7 +33,7 @@ public sealed class VisualGridArtifactTests {
     [Fact]
     public void CreatingAnEnvelopeMeasuresLogicalSizeWithoutRenderingChildren() {
         var child = new DeferredBlock();
-        var grid = VisualGrid.Create().Columns(1).Padding(10).PngOutputScale(3).Add(child);
+        var grid = VisualGrid.Create().Columns(1).Padding(10).RasterScale(3).Add(child);
 
         var artifact = grid.ToVisualArtifact("  report-grid  ", VisualArtifactSourceLanguage.Markdown);
 
@@ -40,7 +41,7 @@ public sealed class VisualGridArtifactTests {
         Assert.Equal("report-grid", artifact.Id);
         Assert.Equal(VisualArtifactKind.ChartGrid, artifact.Kind);
         Assert.Equal(VisualArtifactSourceLanguage.Markdown, artifact.SourceLanguage);
-        Assert.Equal(new VisualArtifactSize(140, 90), artifact.NaturalSize);
+        Assert.Equal(new VisualSize(140, 90), artifact.NaturalSize);
         Assert.Equal("1", artifact.Metadata["visual-grid.items"]);
         Assert.Equal("1", artifact.Metadata["visual-grid.columns"]);
         Assert.Equal("VisualGrid", artifact.Metadata["render.model"]);
@@ -57,7 +58,7 @@ public sealed class VisualGridArtifactTests {
         chart.AddLine("Completed", ChartPoints.FromValues(3, 7, 5));
         var grid = VisualGrid.Create().Title("Service summary").Subtitle("Charts and facts")
             .Columns(2).Padding(12).Gap(9).AdaptiveRowHeights(adaptiveRows)
-            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).PngOutputScale(2)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).RasterScale(2)
             .Add("requests", chart, columnSpan: 2)
             .Add("ready", MetricCard.Create().Metric("Ready", "12").Size(120, 70))
             .Add("waiting", MetricCard.Create().Metric("Waiting", "3").Size(150, 90));
@@ -75,7 +76,7 @@ public sealed class VisualGridArtifactTests {
         Assert.Equal(grid.Title, artifact.Accessibility.Name);
         Assert.Equal("3", artifact.Metadata["visual-grid.items"]);
         Assert.Equal("2", artifact.Metadata["visual-grid.columns"]);
-        Assert.Equal(new VisualArtifactSize(width, height), artifact.NaturalSize);
+        Assert.Equal(new VisualSize(width, height), artifact.NaturalSize);
         Assert.Equal((int)width * 2, image.Width);
         Assert.Equal((int)height * 2, image.Height);
         Assert.Equal(width, envelope.Width);

@@ -20,7 +20,7 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
         var before = Prepare(fixture, text); var svg = before.ToSvg(); var png = before.ToPng();
         var automatic = before.ToSvg(Automatic()); Capture(fixture, before, automatic);
         var image = Image(automatic); var pixels = Decode(image);
-        AssertCrop(before.ToRgba(), image, pixels);
+        AssertCrop(before.ToRgbaImage(), image, pixels);
         Assert.DoesNotContain(XDocument.Parse(automatic).Descendants(), node => node.Name.LocalName == "text");
         Assert.Contains("data-cfx-native-raster-text-ink", automatic, StringComparison.Ordinal);
         Assert.DoesNotContain("data-cfx-owned-font-text", automatic, StringComparison.Ordinal);
@@ -54,10 +54,10 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
             var node = new VisualSceneText(single, text.X, text.Baseline + index * source.Metrics.LineHeight, ChartColor.White,
                 text.Alignment, text.Role, text.Id, stroke: stroke ? ChartColor.White : null, strokeWidth: text.StrokeWidth);
             return new PreparedVisual(new VisualScene(before.Size, new VisualSceneNode[] { node },
-                Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>())).ToRgba();
+                Array.Empty<VisualDiagnostic>(), Array.Empty<VisualSemanticRegion>())).ToRgbaImage();
         }
         var automatic = before.ToSvg(Automatic()); Capture("overlap-" + stroke, before, automatic);
-        var image = Image(automatic); AssertCrop(before.ToRgba(), image, Decode(image));
+        var image = Image(automatic); AssertCrop(before.ToRgbaImage(), image, Decode(image));
         Assert.Single(XDocument.Parse(automatic).Descendants(), node => node.Name.LocalName == "image");
         Assert.Equal(2, Assert.Single(before.Scene.Nodes.OfType<VisualSceneText>()).Text.Lines.Count);
     }
@@ -70,7 +70,7 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
         Assert.True(Math.Min(first.Bottom, second.Bottom + node.Text.Metrics.LineHeight)
             > Math.Max(first.Top, second.Top + node.Text.Metrics.LineHeight));
         var raster = new VisualRenderOptions(scale: scale, supersampling: 2);
-        var full = before.ToRgba(raster); var automatic = before.ToSvg(Automatic(raster));
+        var full = before.ToRgbaImage(raster); var automatic = before.ToSvg(Automatic(raster));
         Capture("stroke-output-grid-" + scale, before, automatic);
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output);
@@ -85,7 +85,7 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
     public void IntegerOutputAndCoverageGridRetainsTheExactFullNativeCrop(string fixture, string text, int scale) {
         var before = Prepare(fixture, text); var ordinarySvg = before.ToSvg(); var ordinaryPng = before.ToPng();
         var raster = new VisualRenderOptions(scale: scale, supersampling: 2);
-        var full = before.ToRgba(raster); var automatic = before.ToSvg(Automatic(raster));
+        var full = before.ToRgbaImage(raster); var automatic = before.ToSvg(Automatic(raster));
         Capture("output-grid-" + fixture + "-" + scale, before, automatic);
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output);
@@ -161,7 +161,7 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
         var family = bitmap ? BrowserProofFonts.Family : Register(fixture, Bytes(fixture));
         var text = bitmap ? "A" : "😀";
         var chart = HtmlOwnedFontDeliveryTests.Model(family).Title("").XLabels(text, text);
-        if (bitmap) chart.Options.Png.FontPath = FixturePath(fixture);
+        if (bitmap) chart.Options.Raster.FontPath = FixturePath(fixture);
         return chart;
     }
     internal static PreparedVisual Prepare(string fixture, string text, bool stroke = false, double lineHeight = 1.2, byte[]? bytes = null) {

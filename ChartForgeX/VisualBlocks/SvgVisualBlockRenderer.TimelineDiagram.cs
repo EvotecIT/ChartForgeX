@@ -5,7 +5,7 @@ using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderTimelineDiagram(SvgMarkupWriter writer, TimelineDiagramBlock block) {
         var theme = block.Options.ResolvedTheme; var content = VisualBlockRendering.ContentRect(block.Options); var y = content.Top;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);

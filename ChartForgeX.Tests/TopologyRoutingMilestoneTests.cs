@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -18,7 +19,7 @@ public sealed class TopologyRoutingMilestoneTests {
         var chart = DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(600, 300)).LayoutMode(mode);
         chart.DefaultRenderOptions(Options());
         var artifact = chart.ToVisualArtifact();
-        if (explicitSize) artifact.NaturalSize = new VisualArtifactSize(480, 240);
+        if (explicitSize) artifact.NaturalSize = new VisualSize(480, 240);
         artifact.PreserveNaturalSize = true;
         var size = artifact.NaturalSize!.Value;
         var view = Options();
@@ -231,7 +232,7 @@ public sealed class TopologyRoutingMilestoneTests {
     [Fact]
     public void TrunksRetainDistinctInkAndSelectionStates() {
         var chart = FanIn(false);
-        chart.Edges[1].Color = "#dc2626";
+        chart.Edges[1].Color = ChartColor.FromHex("#dc2626");
         var options = Options();
         options.ShareIncomingTrunks = true;
         options.SelectedEdgeIds.Add("e2");

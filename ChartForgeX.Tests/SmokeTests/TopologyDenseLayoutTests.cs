@@ -13,9 +13,9 @@ internal static partial class SmokeTests {
             .Viewport(new TopologyViewport(1040, 540, 24))
             .Legend((TopologyLegend?)null)
             .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
-            .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: "#16A34A")
-            .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Warning, "56 sites", symbol: "region", color: "#2563EB")
-            .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: "#8B5CF6")
+            .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: ChartColor.FromHex("#16A34A"))
+            .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Warning, "56 sites", symbol: "region", color: ChartColor.FromHex("#2563EB"))
+            .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: ChartColor.FromHex("#8B5CF6"))
             .AddAutoNode("amer-hub", "AMER Hub", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "amer", "10.0.0.0/16", width: 72, height: 46, symbol: "H")
             .AddAutoNode("amer-west", "NAM West", TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "amer", "10.1.0.0/24", width: 72, height: 46, symbol: "S")
             .AddAutoNode("amer-east", "NAM East", TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "amer", "10.2.0.0/24", width: 72, height: 46, symbol: "S")
@@ -322,9 +322,9 @@ internal static partial class SmokeTests {
             .Viewport(new TopologyViewport(1400, 760, 28))
             .Legend((TopologyLegend?)null)
             .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
-            .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: "#16A34A")
-            .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Warning, "56 sites", symbol: "region", color: "#2563EB")
-            .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: "#8B5CF6")
+            .AddAutoGroup("amer", "AMER", TopologyHealthStatus.Healthy, "47 sites", symbol: "region", color: ChartColor.FromHex("#16A34A"))
+            .AddAutoGroup("emea", "EMEA", TopologyHealthStatus.Warning, "56 sites", symbol: "region", color: ChartColor.FromHex("#2563EB"))
+            .AddAutoGroup("apac", "APAC", TopologyHealthStatus.Critical, "39 sites", symbol: "region", color: ChartColor.FromHex("#8B5CF6"))
             .UpdateGroup("amer", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots))
             .UpdateGroup("emea", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots))
             .UpdateGroup("apac", g => g.LayoutPolicy(TopologyGroupLayoutPolicy.CollapsedDots));
@@ -625,7 +625,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
             .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .EdgeRouteLane("link", 24), options: new TopologyRenderOptions { IncludeLegend = false });
+            .UpdateEdge("link", edge => edge.RouteLane(24)), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
             .Id("btt-route-lane")
             .Viewport(new TopologyViewport(360, 620, 24))
@@ -636,7 +636,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("top-node", "Top", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "top")
             .AddAutoNode("bottom-node", "Bottom", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "bottom")
             .AddEdge("link", "top-node", "bottom-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .EdgeRouteLane("link", 18), options: new TopologyRenderOptions { IncludeLegend = false });
+            .UpdateEdge("link", edge => edge.RouteLane(18)), options: new TopologyRenderOptions { IncludeLegend = false });
 
         Assert(Math.Abs(rightToLeft.Edges.Single().RouteLane + 24) < 0.001, "Right-to-left mirroring should invert the route-lane sign for regenerated edge geometry.");
         Assert(Math.Abs(bottomToTop.Edges.Single().RouteLane + 18) < 0.001, "Bottom-to-top mirroring should invert the route-lane sign for regenerated edge geometry.");

@@ -13,7 +13,7 @@ internal sealed partial class VisualTopologyCompiler {
         var baseTint = ChartForgeX.Rendering.ChartColorMath.BlendPremultiplied(_colors.Background, baseColor, .10);
         var tint = ChartForgeX.Rendering.ChartColorMath.WithOpacity(baseTint, opacity);
         var policy = GlyphAccentSource(node);
-        var authored = TopologyNodeAccent.Authored(node, ResolveNodeIcon(node, _options), policy);
+        var authored = TopologyNodeAccent.Authored(node, ResolveNodeIcon(node, _options), policy).ToText();
         var source = string.IsNullOrWhiteSpace(authored) ? sourcePaint : SourcePaint(authored, baseColor, role, fallback: fallback);
         var background = BackgroundPaint(_colors.Background);
         var tintPaint = TopologyNodeAccent.UsesPalette(node, policy) || source.HasCssVariable || background.HasCssVariable ? SvgPaint.Mix(baseTint, background, source, .10)

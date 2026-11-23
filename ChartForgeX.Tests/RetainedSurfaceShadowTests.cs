@@ -23,8 +23,8 @@ public sealed class RetainedSurfaceShadowTests {
         var model = RetainedSurfaceFixture.Model(width, dark);
         var context = RetainedSurfaceFixture.Context(model);
         var prepared = model.Prepare(context);
-        var baked = prepared.ToSvg(new VisualSvgOptions(idPrefix: "retained-fixed"));
-        var native = prepared.ToSvg(new VisualSvgOptions(idPrefix: "retained-fixed",
+        var baked = prepared.ToSvg(new VisualSvgOptions(idScope: "retained-fixed"));
+        var native = prepared.ToSvg(new VisualSvgOptions(idScope: "retained-fixed",
             effectProfile: VisualSvgEffectProfile.NativeFilters));
         var envelope = prepared.ToArtifact(model.Id, VisualArtifactKind.Sequence).ToInterchangeEnvelope();
         var json = envelope.ToJson();
@@ -60,7 +60,7 @@ public sealed class RetainedSurfaceShadowTests {
         model.Paint.NoteShadow = null;
         model.Participants[0].Label = "Changed producer";
         envelope.Nodes[1].Sequence!.SurfaceShadow = null;
-        Assert.Equal(baked, prepared.ToSvg(new VisualSvgOptions(idPrefix: "retained-fixed")));
+        Assert.Equal(baked, prepared.ToSvg(new VisualSvgOptions(idScope: "retained-fixed")));
         Assert.Equal(json, prepared.ToArtifact(model.Id, VisualArtifactKind.Sequence).ToInterchangeJson());
     }
 
@@ -69,11 +69,11 @@ public sealed class RetainedSurfaceShadowTests {
     public void ShadowOnlyPixelsPreserveSourceOnceAndFractionalOpacityBeforeFinalByteConversion(int density) {
         var source = RetainedSurfaceFixture.Plate(alpha: 25, shadow: true);
         var options = new VisualRenderOptions(density, 1);
-        var image = source.ToRgba(options);
+        var image = source.ToRgbaImage(options);
         RetainedSurfaceFixture.Capture("surface-alpha-" + density, source, options);
         Assert.Equal(new byte[] { 255, 0, 0, 25 }, RetainedSurfaceFixture.Pixel(image, 10 * density, 6 * density));
         Assert.Equal(new byte[] { 0, 0, 255, 2 }, RetainedSurfaceFixture.Pixel(image, 18 * density, 8 * density));
-        var roundedTint = RetainedSurfaceFixture.Plate(alpha: 25, shadow: true, roundedTint: true).ToRgba(options);
+        var roundedTint = RetainedSurfaceFixture.Plate(alpha: 25, shadow: true, roundedTint: true).ToRgbaImage(options);
         Assert.Equal(1, RetainedSurfaceFixture.Pixel(roundedTint, 18 * density, 8 * density)[3]);
     }
 
@@ -82,13 +82,13 @@ public sealed class RetainedSurfaceShadowTests {
     public void ExistingIsolationClipsAndRigidTransformsApplyToCompletedShadowAndSourceOnce(double opacity) {
         var ordinary = RetainedSurfaceFixture.Plate(128, true);
         var isolated = RetainedSurfaceFixture.Plate(128, true, opacity: opacity, clipped: true);
-        var pixels = isolated.ToRgba(RetainedSurfaceFixture.Pixels);
+        var pixels = isolated.ToRgbaImage(RetainedSurfaceFixture.Pixels);
         RetainedSurfaceFixture.Capture("surface-isolation-" + opacity, isolated);
         Assert.Equal((byte)Math.Round(128 * opacity), RetainedSurfaceFixture.Pixel(pixels, 10, 6)[3]);
         Assert.Equal((byte)Math.Round(8 * opacity), RetainedSurfaceFixture.Pixel(pixels, 18, 8)[3]);
         Assert.Equal(new byte[4], RetainedSurfaceFixture.Pixel(pixels, 22, 8));
-        if (opacity == 1) Assert.Equal(ordinary.ToRgba(RetainedSurfaceFixture.Pixels).Pixels, pixels.Pixels);
-        var rotated = RetainedSurfaceFixture.Plate(128, true, rotated: true).ToRgba(RetainedSurfaceFixture.Pixels);
+        if (opacity == 1) Assert.Equal(ordinary.ToRgbaImage(RetainedSurfaceFixture.Pixels).Pixels, pixels.Pixels);
+        var rotated = RetainedSurfaceFixture.Plate(128, true, rotated: true).ToRgbaImage(RetainedSurfaceFixture.Pixels);
         // The local +4/+2 shadow offset rotates with the same native surface, not screen axes.
         Assert.Equal(new byte[] { 0, 0, 255, 8 }, RetainedSurfaceFixture.Pixel(rotated, 23, 18));
     }
@@ -106,10 +106,10 @@ public sealed class RetainedSurfaceShadowTests {
         var same = publicSource.CaptureLayer(new VisualDropShadow(ChartColor.FromRgb(0, 0, 255), 4, 2, 0,
             orderedDither: false, opacity: 1), RetainedSurfaceFixture.Pixels);
         Assert.Equal(old.Bounds, same.Bounds);
-        Assert.Equal(old.ToImage().Pixels, same.ToImage().Pixels);
+        Assert.Equal(old.ToRgbaImage().Pixels, same.ToRgbaImage().Pixels);
         var clipped = publicSource.CaptureLayer(new VisualDropShadow(ChartColor.FromRgb(0, 0, 255), 4, 2, 0,
             orderedDither: false, relativeRegion: new ChartRect(10, 10, 1, 1)), RetainedSurfaceFixture.Pixels);
-        Assert.Equal(publicSource.ToRgba(RetainedSurfaceFixture.Pixels).Pixels, clipped.ToImage().Pixels);
+        Assert.Equal(publicSource.ToRgbaImage(RetainedSurfaceFixture.Pixels).Pixels, clipped.ToRgbaImage().Pixels);
         Assert.Equal(new ChartRect(0, 0, 64, 48), clipped.Bounds);
     }
 
@@ -209,8 +209,8 @@ internal static class RetainedSurfaceFixture {
         if (string.IsNullOrWhiteSpace(output)) return;
         Directory.CreateDirectory(output);
         var path = Path.Combine(output, name);
-        File.WriteAllText(path + ".baked.svg", prepared.ToSvg(new VisualSvgOptions(idPrefix: "retained-proof")));
-        File.WriteAllText(path + ".native-filter.svg", prepared.ToSvg(new VisualSvgOptions(idPrefix: "retained-proof",
+        File.WriteAllText(path + ".baked.svg", prepared.ToSvg(new VisualSvgOptions(idScope: "retained-proof")));
+        File.WriteAllText(path + ".native-filter.svg", prepared.ToSvg(new VisualSvgOptions(idScope: "retained-proof",
             effectProfile: VisualSvgEffectProfile.NativeFilters)));
         File.WriteAllBytes(path + ".png", prepared.ToPng(raster ?? Pixels));
         if (prepared.Regions.Any(region => region.Role == "sequence-participant")) {

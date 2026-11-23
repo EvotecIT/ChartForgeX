@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 /// heights.
 /// </summary>
 internal static class ReportHostExamples {
-    internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void Write(string output, ChartRasterScale pngOutputScale) {
         WriteRotatedStatusMatrix(output, pngOutputScale);
         WriteShortCardCalendar(output, pngOutputScale);
         WriteFlatHistogram(output, pngOutputScale);
@@ -16,7 +16,7 @@ internal static class ReportHostExamples {
         WriteThemedStatusCounts(output, pngOutputScale);
     }
 
-    private static void WriteThemedStatusCounts(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteThemedStatusCounts(string output, ChartRasterScale pngOutputScale) {
         // A status matrix with a count in every cell, its SVG colours written as the custom properties of the design
         // tokens: the count takes the card colour on solid marks and the text colour on quiet ones, by role, so a host that
         // draws the matrix without card or plot surface can ship one SVG for its light and dark themes.
@@ -30,7 +30,7 @@ internal static class ReportHostExamples {
             .Subtitle("Counts take the card or text colour by role, not a fixed contrast colour")
             .Theme(new VisualTheme(tokens, tokens))
             .Size(800, 379)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .MarkBackdrop(ChartMarkBackdrop.Card)
             .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always))
             .SvgColorVariables(tokens.ToSvgColorVariables())
@@ -52,7 +52,7 @@ internal static class ReportHostExamples {
         chart.SavePng(Path.Combine(output, "report-host-themed-status-counts.png"));
     }
 
-    private static void WriteThemedCalendar(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteThemedCalendar(string output, ChartRasterScale pngOutputScale) {
         // A dark calendar whose SVG writes token colours as CSS custom properties: ramp steps, zero and empty days are
         // color-mix() of the properties, so a host page switching themes recolours the same SVG.
         var tokens = VisualDesignTokens.Dark();
@@ -62,7 +62,7 @@ internal static class ReportHostExamples {
             .Subtitle("SVG colours are the custom properties of the design tokens")
             .Theme(new VisualTheme(tokens, tokens))
             .Size(800, 316)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .SvgColorVariables(tokens.ToSvgColorVariables())
             .AddCalendarHeatmap("Changes", items);
 
@@ -71,7 +71,7 @@ internal static class ReportHostExamples {
         chart.SavePng(Path.Combine(output, "report-host-themed-calendar.png"));
     }
 
-    private static void WriteFlatHistogram(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteFlatHistogram(string output, ChartRasterScale pngOutputScale) {
         // A histogram in a report card: flat bars are exactly the series colour, with no derived gradient or highlight.
         var latencies = Enumerable.Range(0, 400).Select(i => 18 + (i * 37 % 23) + (i * 11 % 7) * 1.5 + (i % 41 == 0 ? 28 : 0)).ToArray();
         var chart = Chart.Create()
@@ -79,7 +79,7 @@ internal static class ReportHostExamples {
             .Subtitle("Flat bars: one colour per bar")
             .Theme(VisualTheme.Graphite())
             .Size(800, 379)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .Bars(b => b.Style(ChartBarStyle.Flat))
             .XAxis(x => x.Title("Latency (ms)"))
             .YAxis(y => y.Title("Samples"))
@@ -90,7 +90,7 @@ internal static class ReportHostExamples {
         chart.SavePng(Path.Combine(output, "report-host-flat-histogram.png"));
     }
 
-    private static void WriteShortCardCalendar(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteShortCardCalendar(string output, ChartRasterScale pngOutputScale) {
         // A quarter of changes in a 230 px card without an in-chart header: the calendar takes the padding it does not
         // need, and each day is named in the report's language instead of by its ISO date.
         var french = System.Globalization.CultureInfo.GetCultureInfo("fr-FR");
@@ -102,7 +102,7 @@ internal static class ReportHostExamples {
             .ShowHeader(false)
             .Theme(VisualTheme.Graphite())
             .Size(800, 242)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .Calendar(options => {
                 options.MaximumCellSize = 18;
                 options.FirstDayOfWeek = french.DateTimeFormat.FirstDayOfWeek;
@@ -122,7 +122,7 @@ internal static class ReportHostExamples {
         chart.SavePng(Path.Combine(output, "report-host-short-calendar.png"));
     }
 
-    private static void WriteRotatedStatusMatrix(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteRotatedStatusMatrix(string output, ChartRasterScale pngOutputScale) {
         // Twelve checks in a narrow card: the column labels rotate instead of shrinking and being cut off.
         string[] checks = {
             "Replication health", "SYSVOL sharing", "DNS scavenging", "Time source", "LDAP signing", "Kerberos armoring",
@@ -133,7 +133,7 @@ internal static class ReportHostExamples {
             .Subtitle("Column labels follow the x-axis label angle")
             .Theme(VisualTheme.Graphite())
             .Size(600, 426)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .XAxis(x => x.LabelAngle(-45))
             .StateCategories(
                 new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52"), emphasis: ChartStateEmphasis.Quiet),

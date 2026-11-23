@@ -79,7 +79,7 @@ Pass `VisualStoryTerminalOptions` to an authored terminal surface to select a fi
 ```csharp
 var recorded = StoryReplay.Create(TimeSpan.FromSeconds(60), workingDirectory: "~/demo")
     .Command(TimeSpan.FromSeconds(1), "./Test-Project.ps1")
-    .Output(TimeSpan.FromSeconds(35), "24 checks passed", TerminalTextTone.Success);
+    .Output(TimeSpan.FromSeconds(35), "24 checks passed", Tone.Success);
 var replay = recorded.Trim(TimeSpan.Zero, TimeSpan.FromSeconds(40))
     .CompressPauses(TimeSpan.FromSeconds(2))
     .Explain(TimeSpan.FromSeconds(1), "The recorded wait is shortened.");

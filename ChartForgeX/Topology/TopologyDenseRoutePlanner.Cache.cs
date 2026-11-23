@@ -208,8 +208,8 @@ internal static partial class TopologyDenseRoutePlanner {
     /// </summary>
     private static string TrunkInputs(TopologyEdge edge, TopologyRenderOptions options, TopologyHighlightState highlight, bool? selected = null, bool? highlighted = null) =>
         string.Join("|", edge.TargetNodeId.Length + ":" + edge.TargetNodeId, (int)edge.Kind, (int)edge.Status,
-            (int)edge.Direction, (int)edge.Emphasis, edge.IsMuted, edge.Color?.Length + ":" + edge.Color,
-            !edge.IsMuted && string.IsNullOrWhiteSpace(edge.Color) ? edge.PaletteIndex : null,
+            (int)edge.Direction, (int)edge.Emphasis, edge.IsMuted, edge.Color.ToText(),
+            !edge.IsMuted && edge.Color == null ? edge.PaletteIndex : null,
             edge.StrokeWidth?.ToString("R", CultureInfo.InvariantCulture), edge.Opacity?.ToString("R", CultureInfo.InvariantCulture),
             (int?)edge.TargetMarker, edge.TargetPortId?.Length + ":" + edge.TargetPortId,
             selected ?? options.SelectedEdgeIds.Contains(edge.Id), highlighted ?? highlight.IsEdgeHighlighted(edge))
@@ -219,5 +219,5 @@ internal static partial class TopologyDenseRoutePlanner {
             + ":" + edge.InterpolationCornerBlendLength?.ToString("R", CultureInfo.InvariantCulture) : string.Empty)
         + (TopologyPreparedEdgePlan.Units(edge) != 1 ? "|preparedUnits:" + TopologyPreparedEdgePlan.Units(edge).ToString("R", CultureInfo.InvariantCulture) : string.Empty)
         // A shared tail is painted in its owner's bands, so only identically striped edges may share one.
-        + (edge.Stripes.Count > 1 ? "|stripes:" + string.Join(";", System.Linq.Enumerable.Select(edge.Stripes, stripe => stripe.Color.Length + ":" + stripe.Color)) : string.Empty);
+        + (edge.Stripes.Count > 1 ? "|stripes:" + string.Join(";", System.Linq.Enumerable.Select(edge.Stripes, stripe => stripe.Color.ToText())) : string.Empty);
 }

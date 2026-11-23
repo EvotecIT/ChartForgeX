@@ -183,8 +183,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
 
     private static void Fit(HtmlChartInteractionOptions options) => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
 
-    private static string RuntimePage() => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-        + "</style></head><body style='margin:12px'><script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+    private static string RuntimePage() => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
+        + "</style></head><body style='margin:12px'><script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
 
     private static Task InsertAsync(IPage page, string html) => page.EvaluateAsync("html=>document.body.insertAdjacentHTML('beforeend',html)", html);
 

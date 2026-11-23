@@ -57,7 +57,7 @@ public sealed class RadialAngularReversalTests {
     public void RadarFormsReverseCategorySpokesCaptionsAndPointsTogether(bool reverseSecondaryRadius) {
         var color = ChartColor.FromHex("#2468AC");
         var chart = Bare().XLabels("North", "East", "South", "West").SecondaryYAxis(s => s.Bounds(0, 10))
-            .AddRadarArea("Observed", new[] { new ChartPoint(3, 60), new ChartPoint(1, 80), new ChartPoint(2, 50), new ChartPoint(4, 70) })
+            .AddRadar("Observed", new[] { new ChartPoint(3, 60), new ChartPoint(1, 80), new ChartPoint(2, 50), new ChartPoint(4, 70) })
             .AddRadarLine("Target", new[] { new ChartPoint(4, reverseSecondaryRadius ? 3 : 7), new ChartPoint(1, reverseSecondaryRadius ? 2 : 8), new ChartPoint(2, 5) });
         chart.Series[0].PointColor(0, color).PointLabel(0, "South source").Markers(markers => markers.Radius = 6);
         chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Reversed(reverseSecondaryRadius);

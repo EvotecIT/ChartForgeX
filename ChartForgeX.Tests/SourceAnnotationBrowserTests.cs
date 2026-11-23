@@ -46,7 +46,7 @@ public sealed partial class SourceAnnotationBrowserTests {
     private static Chart Model(int width, ThemeMode mode, bool updated) {
         var chart = Chart.Create().Size(width, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode)
             .FontFamily(BrowserProofFonts.Family)
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .Title("Source drawings").AddLine("Observed", new[] { new ChartPoint(0, 10), new ChartPoint(3, 40), new ChartPoint(10, 70) });
         chart.Options.XAxis.Bounds(0, 10); chart.Options.YAxis.Bounds(0, 100);
         chart.AddNote(new ChartPoint(updated ? 6 : 3, 40), updated ? "Reviewed" : "Review", id: new ChartAnnotationId("note"))

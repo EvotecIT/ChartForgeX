@@ -29,7 +29,7 @@ public sealed partial class DifferenceAreaTests {
             Assert.True(region.Close); Assert.Null(region.Stroke);
             Assert.Contains(region.Commands, point => Math.Abs(point.X - crossX) < 1e-8 && Math.Abs(point.Y - crossY) < 1e-8);
         }
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, Sample(first, second, .25), Red, 128);
         AssertPaint(image, Sample(first, second, .85), Blue, 128);
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -50,7 +50,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "difference-positive"));
         var left = prepared.Regions.Single(region => region.Id == "series-0-point-1").Bounds;
         var right = prepared.Regions.Single(region => region.Id == "series-0-point-2").Bounds;
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(0, Pixel(image, (left.X + right.X) / 2, left.Y + left.Height / 2).A);
         Assert.Equal(4, prepared.Regions.Count(region => region.Role == "point"));
     }
@@ -61,7 +61,7 @@ public sealed partial class DifferenceAreaTests {
         var prepared = Prepare(chart);
         Assert.Single(prepared.Scene.Nodes, node => node.Role == "difference-positive");
         var middle = prepared.Regions.Single(region => region.Id == "series-0-point-1").Bounds;
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, new ChartPoint(middle.X, middle.Y + middle.Height / 2), Red, 128);
         var tied = Prepare(Model(new(0, 4, 4), new(1, 4, 4), new(2, 4, 4)));
         Assert.DoesNotContain(tied.Scene.Nodes, node => node.Role is "difference-positive" or "difference-negative");
@@ -84,7 +84,7 @@ public sealed partial class DifferenceAreaTests {
         var y = first.Commands[0].Y + (first.Commands[^1].Y - first.Commands[0].Y) * 5 / 9;
         foreach (var role in new[] { "difference-positive", "difference-negative" })
             Assert.Contains(Boundary(prepared, role).Commands, point => Math.Abs(point.X - x) < 1e-8 && Math.Abs(point.Y - y) < 1e-8);
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, Sample(first, second, .4), Red, 128);
         AssertPaint(image, Sample(first, second, .7), Blue, 128);
         Assert.Equal("secondary", Group(prepared, "series-0-point-0")["data-cfx-axis"]);

@@ -20,23 +20,23 @@ internal static class DashboardPortfolioExamples {
     private static readonly ChartColor TicketAmber = ChartColor.FromHex("#F5BF72");
     private static readonly ChartColor TicketRose = ChartColor.FromHex("#F39AAF");
 
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         var scale = (int)pngOutputScale;
-        var kpiSparkline = KpiSparkline().Png(p => p.OutputScale((int)pngOutputScale));
-        var deviceSplit = DeviceSplit().Png(p => p.OutputScale((int)pngOutputScale));
-        var projectActivity = ProjectActivity().Png(p => p.OutputScale((int)pngOutputScale));
-        var attendance = AttendanceHexbin().Png(p => p.OutputScale((int)pngOutputScale));
-        var mrrTrend = MrrTrend().Png(p => p.OutputScale((int)pngOutputScale));
-        var mrrDrivers = MrrDrivers().Png(p => p.OutputScale((int)pngOutputScale));
-        var reports = RestaurantReports().Png(p => p.OutputScale((int)pngOutputScale));
-        var orderStatus = RestaurantOrderStatus().Png(p => p.OutputScale((int)pngOutputScale));
-        var customers = RestaurantCustomersHexbin().Png(p => p.OutputScale((int)pngOutputScale));
-        var occupation = RestaurantOccupation().Png(p => p.OutputScale((int)pngOutputScale));
-        var weeklySummary = RestaurantWeeklySummary().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingTrend = TicketingRevenueTrend().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingPackages = TicketingPackageMix().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingPromoters = TicketingPromoterAttribution().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingFunnel = TicketingGuestFunnel().Png(p => p.OutputScale((int)pngOutputScale));
+        var kpiSparkline = KpiSparkline().Raster(p => p.OutputScale((int)pngOutputScale));
+        var deviceSplit = DeviceSplit().Raster(p => p.OutputScale((int)pngOutputScale));
+        var projectActivity = ProjectActivity().Raster(p => p.OutputScale((int)pngOutputScale));
+        var attendance = AttendanceHexbin().Raster(p => p.OutputScale((int)pngOutputScale));
+        var mrrTrend = MrrTrend().Raster(p => p.OutputScale((int)pngOutputScale));
+        var mrrDrivers = MrrDrivers().Raster(p => p.OutputScale((int)pngOutputScale));
+        var reports = RestaurantReports().Raster(p => p.OutputScale((int)pngOutputScale));
+        var orderStatus = RestaurantOrderStatus().Raster(p => p.OutputScale((int)pngOutputScale));
+        var customers = RestaurantCustomersHexbin().Raster(p => p.OutputScale((int)pngOutputScale));
+        var occupation = RestaurantOccupation().Raster(p => p.OutputScale((int)pngOutputScale));
+        var weeklySummary = RestaurantWeeklySummary().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingTrend = TicketingRevenueTrend().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingPackages = TicketingPackageMix().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingPromoters = TicketingPromoterAttribution().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingFunnel = TicketingGuestFunnel().Raster(p => p.OutputScale((int)pngOutputScale));
         var hrOverview = HrOverviewGrid(scale);
         var saasOverview = SaasOverviewGrid(scale);
         var restaurantOverview = RestaurantOverviewGrid(scale);
@@ -72,7 +72,7 @@ internal static class DashboardPortfolioExamples {
             .PanelSize(380, 260)
             .PanelFit(VisualPanelFit.Contain)
             .Theme(DashboardTheme())
-            .PngOutputScale(scale)
+            .RasterScale(scale)
             .Add(kpiSparkline)
             .Add(deviceSplit)
             .Add(projectActivity)
@@ -379,13 +379,13 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(320, 170)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(TicketingTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(MetricCard.Create()
             .Title("Ticket Sales")
             .Metric("Sold today", "288")
             .Trend("+12%")
             .Caption("vs yesterday")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .Theme(TicketingTheme())
             .Size(320, 170)
             .Padding(22, 24, 22, 18)
@@ -396,7 +396,7 @@ internal static class DashboardPortfolioExamples {
             .Title("Collected")
             .Metric("Checked in", "288")
             .Caption("Beach arrival cohort")
-            .Status(Tone.Info)
+            .Tone(Tone.Info)
             .Theme(TicketingTheme())
             .Size(320, 170)
             .Padding(22, 24, 22, 18)
@@ -407,7 +407,7 @@ internal static class DashboardPortfolioExamples {
             .Title("Total Revenue")
             .Metric("Gross", "EUR 42.8K")
             .Trend("+8.4%")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .Theme(TicketingTheme())
             .Size(320, 170)
             .Padding(22, 24, 22, 18)
@@ -462,7 +462,7 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(420, 300)
         .PanelFit(VisualPanelFit.Contain)
         .Theme(RestaurantTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(RestaurantReports().Size(800, 298), 2)
         .Add(RestaurantOrderStatus())
         .Add(RestaurantCustomersHexbin())
@@ -479,14 +479,14 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(300, 210)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(DashboardTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(KpiSparkline().Size(300, 210))
         .Add(MetricCard.Create()
             .Title("Employee")
             .Metric("Total employee", "1,218")
             .Caption("Active workforce snapshot")
             .Symbol("+")
-            .Status(Tone.Success)
+            .Tone(Tone.Success)
             .AddDetail("Male", "782", Tone.Success)
             .AddDetail("Female", "436", Tone.Info)
             .Theme(DashboardTheme()))
@@ -507,10 +507,10 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(420, 190)
         .PanelFit(VisualPanelFit.Contain)
         .Theme(SaasTheme())
-        .PngOutputScale(outputScale)
-        .Add(MetricCard.Create().Title("MRR").Metric("Monthly Recurring Revenue", "$120,400").Status(Tone.Success).AddDetail("Change", "+$8K", Tone.Success).AddDetail("Plan", "$121K", Tone.Info).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
-        .Add(MetricCard.Create().Title("Target").Metric("October target", "$121K").Caption("Tracking above plan").Status(Tone.Info).AddDetail("Gap", "$0.6K", Tone.Warning).AddDetail("Runway", "98.3%", Tone.Success).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
-        .Add(MetricCard.Create().Title("Net Change").Metric("This month", "+$8.0K").Caption("New business offset churn").Status(Tone.Success).AddDetail("Adds", "+$12K", Tone.Success).AddDetail("Drag", "-$4K", Tone.Danger).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
+        .RasterScale(outputScale)
+        .Add(MetricCard.Create().Title("MRR").Metric("Monthly Recurring Revenue", "$120,400").Tone(Tone.Success).AddDetail("Change", "+$8K", Tone.Success).AddDetail("Plan", "$121K", Tone.Info).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
+        .Add(MetricCard.Create().Title("Target").Metric("October target", "$121K").Caption("Tracking above plan").Tone(Tone.Info).AddDetail("Gap", "$0.6K", Tone.Warning).AddDetail("Runway", "98.3%", Tone.Success).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
+        .Add(MetricCard.Create().Title("Net Change").Metric("This month", "+$8.0K").Caption("New business offset churn").Tone(Tone.Success).AddDetail("Adds", "+$12K", Tone.Success).AddDetail("Drag", "-$4K", Tone.Danger).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
         .Add(MrrTrend().Size(800, 372), 2, 2)
         .Add(DriverSummaryList(), 1, 2)
         .Add(MrrDrivers().Size(800, 372), 2, 2);
@@ -522,7 +522,7 @@ internal static class DashboardPortfolioExamples {
         .Size(420, 400)
         .Padding(26, 30, 26, 24)
         .Dense()
-        .Marker(VisualListMarker.Status)
+        .Marker(VisualListMarker.Tone)
         .AddStatusItem("New Business", Tone.Success, "+12%")
         .AddStatusItem("Expansion", Tone.Success, "+4%")
         .AddStatusItem("Contraction", Tone.Danger, "-2%")
@@ -537,7 +537,7 @@ internal static class DashboardPortfolioExamples {
         .Size(300, 210)
         .Padding(24, 28, 24, 20)
         .Dense()
-        .Marker(VisualListMarker.Status)
+        .Marker(VisualListMarker.Tone)
         .AddStatusItem("Male employee", Tone.Success, "782")
         .AddStatusItem("Female employee", Tone.Info, "436")
         .AddStatusItem("Active projects", Tone.Warning, "73")
@@ -550,7 +550,7 @@ internal static class DashboardPortfolioExamples {
         .Size(300, 210)
         .Padding(24, 28, 24, 20)
         .Dense()
-        .Marker(VisualListMarker.Status)
+        .Marker(VisualListMarker.Tone)
         .AddStatusItem("Notifications", Tone.Danger, "99+")
         .AddStatusItem("Day-off requests", Tone.Warning, "23")
         .AddStatusItem("Recruiting", Tone.Info, "12")
@@ -567,9 +567,9 @@ internal static class DashboardPortfolioExamples {
         .AddRow("54253", "Dianne Russell", "Marketing", "Attend", "03:44", "02:45")
         .AddRow("54288", "Marcus Stone", "Projects", "Attend", "03:57", "02:52")
         .AddRow("54312", "Anika Hall", "Recruiting", "Attend", "04:05", "03:10")
-        .UpdateRow(0, row => row.Cells[3].Status = Tone.Success)
-        .UpdateRow(1, row => row.Cells[3].Status = Tone.Success)
-        .UpdateRow(2, row => row.Cells[3].Status = Tone.Success);
+        .UpdateRow(0, row => row.Cells[3].Tone = Tone.Success)
+        .UpdateRow(1, row => row.Cells[3].Tone = Tone.Success)
+        .UpdateRow(2, row => row.Cells[3].Tone = Tone.Success);
 
     private static void Save(Chart chart, string output, string name) {
         chart.SaveSvg(Path.Combine(output, name + ".svg"));

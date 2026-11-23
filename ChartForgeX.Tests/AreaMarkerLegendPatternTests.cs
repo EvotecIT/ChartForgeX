@@ -51,7 +51,7 @@ public sealed class AreaMarkerLegendPatternTests {
             ChartSeriesKind.StackedArea => chart.AddStackedArea("Samples", points),
             ChartSeriesKind.RangeArea => chart.AddRangeArea("Samples", ranges, smooth: false),
             ChartSeriesKind.RangeBand => chart.AddRangeBand("Samples", ranges),
-            ChartSeriesKind.Radar => chart.AddRadarArea("Samples", points),
+            ChartSeriesKind.Radar => chart.AddRadar("Samples", points),
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
     }

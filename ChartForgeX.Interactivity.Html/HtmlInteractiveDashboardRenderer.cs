@@ -51,11 +51,11 @@ public sealed class HtmlInteractiveDashboardRenderer {
 
         writer.EndElement().Line()
             .EndElement().Line();
-        HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
+        HtmlInteractivePage.EndDocument(writer, options.Nonce, options.ExternalAssets,
             options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
             HtmlInteractiveAssets.FeatureBundlesFor(options.Runtime, options.Interaction.Features,
                 options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive, options.Motion.EffectiveDuration > 0, false, chartArray.Any(HtmlInteractiveAssets.HasHierarchy)));
-        return HtmlStrictStyles.Apply(writer.Build(), options.StyleNonce);
+        return HtmlStrictStyles.Apply(writer.Build(), options.Nonce);
     }
 
     // A fitted chart scales its text with its column; 5/6 of the widest design width keeps 12px text at the 10px floor.

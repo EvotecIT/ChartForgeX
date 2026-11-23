@@ -90,7 +90,7 @@ public sealed class V2FormattingSparklineTests {
         string Line(PreparedVisual visual) => Role(visual.ToSvg(), "line").Attribute("d")!.Value;
         Assert.Equal(2, Line(gap).Count(character => character == 'M'));
         Assert.Equal(1, Line(connect).Count(character => character == 'M'));
-        var gapPixels = gap.ToRgba(); var connectPixels = connect.ToRgba();
+        var gapPixels = gap.ToRgbaImage(); var connectPixels = connect.ToRgbaImage();
         var alpha = (50 * 100 + 50) * 4 + 3;
         Assert.Equal(0, gapPixels.Pixels[alpha]);
         Assert.True(connectPixels.Pixels[alpha] > 0);

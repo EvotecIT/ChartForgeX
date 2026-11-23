@@ -26,7 +26,7 @@ public sealed class NativeRetainedAppearanceExampleTests {
         RetainedAppearanceFixture.Save("appearance-example-edited-" + variant + "-" + mode, edited);
         RetainedAppearanceFixture.Save("appearance-example-terminal-" + variant + "-" + mode, layer, captureSaved);
         Assert.Equal(root.ToPng(), replayed.ToPng());
-        Assert.Equal(layer.Bounds, restored.Bounds); Assert.Equal(layer.ToImage().Pixels, restored.ToImage().Pixels);
+        Assert.Equal(layer.Bounds, restored.Bounds); Assert.Equal(layer.ToRgbaImage().Pixels, restored.ToRgbaImage().Pixels);
         var options = new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters);
         var document = XDocument.Parse(root.ToSvg(options));
         foreach (var text in new[] { "Review", "Archive", "Save", "Stored", "Facts stay editable" })
@@ -35,7 +35,7 @@ public sealed class NativeRetainedAppearanceExampleTests {
         Assert.DoesNotContain(document.Descendants(), node => node.Name.LocalName is "script" or "foreignObject");
         Assert.Contains("Approved", edited.ToSvg(options));
         Assert.Contains("Approved", editedLayer.Source.ToSvg(options));
-        Assert.False(layer.ToImage().Pixels.SequenceEqual(editedLayer.ToImage().Pixels));
+        Assert.False(layer.ToRgbaImage().Pixels.SequenceEqual(editedLayer.ToRgbaImage().Pixels));
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(saved);
         Assert.Throws<NotSupportedException>(() => envelope.ToSequenceArtifact());
         var terminal = VisualArtifactInterchangeEnvelope.FromJson(captureSaved);

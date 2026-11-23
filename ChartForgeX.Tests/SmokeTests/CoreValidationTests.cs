@@ -20,9 +20,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => Chart.Create().Options.Theme = null!, "Chart options should reject null themes.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.TickCount = 1, "Chart options should reject invalid tick counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.XAxis.LabelDensity = (ChartLabelDensity)999, "Chart options should reject unknown label density values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().Png(p => p.FontPath(" ")), "PNG font paths should reject empty values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().Png(p => p.FontPath("font.ttc").FontFaceName(" ")), "PNG font face names should reject empty values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Png(p => p.FontPath("font.ttc").FontCollectionIndex(-1)), "PNG font collection indexes should reject negative values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().Raster(p => p.FontPath(" ")), "PNG font paths should reject empty values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().Raster(p => p.FontPath("font.ttc").FontFaceName(" ")), "PNG font face names should reject empty values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Raster(p => p.FontPath("font.ttc").FontCollectionIndex(-1)), "PNG font collection indexes should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartSize(-1, 100), "ChartSize should reject non-positive dimensions.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartPadding.All(double.NegativeInfinity), "ChartPadding should reject non-finite values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartPoint(1, double.NaN), "ChartPoint should reject non-finite values.");
@@ -87,7 +87,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => Chart.Create().Pictorial(p => p.SvgPath("")), "Pictorial charts should reject empty SVG path data.");
         AssertThrows<ArgumentException>(() => Chart.Create().Pictorial(p => p.SvgPath("M0 0 <script>")), "Pictorial charts should reject unsafe SVG path data.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Pictorial(p => p.SvgPath("M0 0 L1 1 Z", new ChartRect(0, 0, 0, 24))), "Pictorial charts should reject empty SVG path viewBoxes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Pictorial(p => p.SvgPath("M0 0 L1 1 Z", (ChartPictorialShape)999)), "Pictorial charts should reject unknown PNG fallback shapes.");
         AssertThrows<ArgumentException>(() => new ChartWordCloudItem("", 1), "Word cloud terms should reject empty text.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartWordCloudItem("Bad", -1), "Word cloud terms should reject negative weights.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartWordCloudItem("Bad", double.NaN), "Word cloud terms should reject non-finite weights.");
@@ -106,7 +105,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGauge("Score", 80, 100, 0), "Gauges should reject inverted scales.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddProgressRing("Bad", Points(101)), "Progress rings should reject values above 100.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddProgressRing("Bad", Points(-1)), "Progress rings should reject negative values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineRange("Task", 10, 2), "Timelines should reject inverted ranges.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineItem("Task", 10, 2), "Timelines should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 10, 2), "Gantt tasks should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, 1.1), "Gantt tasks should reject progress above one.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Gantt(g => g.Today(double.NaN)), "Gantt today markers should reject non-finite values.");
@@ -151,7 +150,7 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ChartGrid.Create().Add(Chart.Create().AddGauge("Score", 87)).ShareYAxis(), "Shared y-axis grids should require cartesian charts.");
         AssertThrows<ArgumentNullException>(() => ChartExtensions.ToSvg((ChartGrid)null!), "Chart grid SVG export should reject null grids.");
         AssertThrows<ArgumentNullException>(() => ChartExtensions.ToPng((ChartGrid)null!), "Chart grid PNG export should reject null grids.");
-        AssertThrows<ArgumentNullException>(() => ChartExtensions.GetPngFontInfo(null!), "PNG font diagnostics should reject null charts.");
+        AssertThrows<ArgumentNullException>(() => ChartExtensions.GetRasterFontInfo(null!), "PNG font diagnostics should reject null charts.");
         AssertThrows<ArgumentNullException>(() => new HtmlChartRenderer().RenderFragment(null!), "HTML fragment rendering should reject null charts.");
         AssertThrows<ArgumentNullException>(() => new HtmlChartRenderer().RenderPage(null!), "HTML page rendering should reject null charts.");
         AssertThrows<ArgumentNullException>(() => new HtmlChartGridRenderer().RenderPage(null!), "HTML grid rendering should reject null grids.");

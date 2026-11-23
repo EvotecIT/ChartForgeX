@@ -76,8 +76,8 @@ public sealed class NativeRemainingValueMotionBrowserTests {
         internal string Role => _kind == "rings" ? "progress-ring-point" : _kind.StartsWith("gauge-", StringComparison.Ordinal) ? "gauge" : "bullet-row";
         internal string MarkRole => _kind == "rings" ? "progress-ring-ring" : _kind == "gauge-needle" ? "gauge-needle"
             : _kind.StartsWith("gauge-", StringComparison.Ordinal) ? "gauge-value" : "bullet-value";
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + _snapshots["initial"].Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + _snapshots["initial"].Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal Reply Prepare(JsonElement request) {
             var before = _snapshots[request.GetProperty("basis").GetString()!]; var next = Section(request.GetProperty("value").GetDouble());
             var transition = _renderer.PrepareValueTransitionJson(before, next, 3); var basis = "remaining-" + _snapshots.Count;

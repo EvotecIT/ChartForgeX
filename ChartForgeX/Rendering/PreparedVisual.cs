@@ -93,7 +93,7 @@ public sealed partial class PreparedVisual {
         SecondaryXProjection = secondaryXProjection; SecondaryYProjection = secondaryYProjection;
         CartesianViewport = viewport; CartesianOrientation = cartesianOrientation;
         HierarchyPreparation = hierarchyPreparation; TopologyHierarchyPreparation = topologyHierarchyPreparation; PolarProjection = polarProjection; PolarViewport = polarViewport;
-        _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
+        _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdScope ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
     internal VisualArtifactInterchangeEnvelope? CapturedSemanticSnapshot => _semanticSnapshot == null ? null : VisualArtifactInterchangeSnapshot.Capture(_semanticSnapshot);
@@ -107,7 +107,7 @@ public sealed partial class PreparedVisual {
         SecondaryXProjection = basis.SecondaryXProjection; SecondaryYProjection = basis.SecondaryYProjection;
         CartesianViewport = basis.CartesianViewport; CartesianOrientation = basis.CartesianOrientation;
         HierarchyPreparation = basis.HierarchyPreparation; TopologyHierarchyPreparation = basis.TopologyHierarchyPreparation; PolarProjection = basis.PolarProjection; PolarViewport = basis.PolarViewport;
-        _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
+        _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdScope ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
     internal PreparedVisual WithScene(VisualScene scene, VisualSvgOptions? svgOptions) => new PreparedVisual(scene, this, svgOptions);
@@ -164,32 +164,32 @@ public sealed partial class PreparedVisual {
         _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _svgIdPrefix.Value,
         (_defaultSvgOptions ?? new VisualSvgOptions()).WithoutProductFonts(), _capturePngText);
     /// <summary>Exports SVG with a host-owned ID namespace, allowing identical prepared visuals in one document.</summary>
-    /// <param name="idPrefix">A unique host prefix beginning with an ASCII letter and containing only letters, digits, hyphens, underscores and periods.</param>
+    /// <param name="idScope">A unique host prefix beginning with an ASCII letter and containing only letters, digits, hyphens, underscores and periods.</param>
     /// <remarks>DOM IDs are scoped; source identities in semantic data attributes and regions remain unchanged.</remarks>
-    public string ToSvg(string idPrefix) => ExportSvg(VisualSceneSvgRenderer.ValidatePrefix(idPrefix));
+    public string ToSvg(string idScope) => ExportSvg(VisualSceneSvgRenderer.ValidatePrefix(idScope));
     /// <summary>Exports SVG using detached host namespace, color and safe link policies.</summary>
     public string ToSvg(VisualSvgOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         return VisualSceneSvgRenderer.Render(_scene, _accessibility.Name, _accessibility.Description,
-            _accessibility.Language, _accessibility.IsDecorative, options.IdPrefix, options, _capturePngText);
+            _accessibility.Language, _accessibility.IsDecorative, options.IdScope, options, _capturePngText);
     }
-    private string ExportSvg(string idPrefix) => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
-        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions, _capturePngText);
+    private string ExportSvg(string idScope) => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
+        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idScope, _defaultSvgOptions, _capturePngText);
     /// <summary>Exports an owning artifact's metadata without altering the prepared snapshot.</summary>
-    internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null, int? maximumCharacters = null,
+    internal string ToSvg(VisualAccessibility accessibility, string? idScope = null, int? maximumCharacters = null,
         VisualSvgTextPresentation? textPresentation = null, bool productFonts = true) {
         if (accessibility == null) throw new ArgumentNullException(nameof(accessibility));
         var options = textPresentation.HasValue
             ? (_defaultSvgOptions ?? new VisualSvgOptions()).WithTextPresentation(textPresentation.Value) : _defaultSvgOptions;
         if (!productFonts) options = (options ?? new VisualSvgOptions()).WithoutProductFonts();
         return VisualSceneSvgRenderer.Render(_scene, accessibility.Name, accessibility.Description,
-            accessibility.Language, accessibility.IsDecorative, idPrefix ?? options?.IdPrefix, options, _capturePngText, maximumCharacters);
+            accessibility.Language, accessibility.IsDecorative, idScope ?? options?.IdScope, options, _capturePngText, maximumCharacters);
     }
     /// <summary>Exports native RGBA pixels without repeating layout or parsing SVG.</summary>
-    public RgbaImage ToRgba(VisualRenderOptions? options = null) {
+    public RgbaImage ToRgbaImage(VisualRenderOptions? options = null) {
         options ??= new VisualRenderOptions();
         return VisualSceneRasterRenderer.Render(_scene, options.Scale, options.Supersampling, options.PixelBudget, options.TextHinting);
     }
     /// <summary>Exports PNG from the native raster backend.</summary>
-    public byte[] ToPng(VisualRenderOptions? options = null) => PngWriter.WriteRgba(ToRgba(options));
+    public byte[] ToPng(VisualRenderOptions? options = null) => PngWriter.WriteRgba(ToRgbaImage(options));
 }

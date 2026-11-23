@@ -123,7 +123,7 @@ public sealed class GaugeCircularScaleTests {
         series.ShowDataLabels = false;
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         // Match the browser fixture's room for an authored 60 px face rather than relying on host fallback metrics.
-        var chart = Chart.Create().Size(520, fontSize >= 60 ? 360 : 260).Png(p => p.FontPath(font)).ShowHeader(false).Legend(false).AddSeries(series)
+        var chart = Chart.Create().Size(520, fontSize >= 60 ? 360 : 260).Raster(p => p.FontPath(font)).ShowHeader(false).Legend(false).AddSeries(series)
             .Gauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360; options.TickCount = 97; });
         chart.Options.TickLabelStyle.FontSize = fontSize;
         return chart;

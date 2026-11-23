@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,7 +60,7 @@ internal sealed class TopologySiblingMember {
     }
     internal TopologySiblingMember(TopologyNode node) {
         Id = node.Id; Label = node.Label; Subtitle = node.Subtitle; Badge = node.Badge; Status = node.Status;
-        Kind = node.Kind; IconId = node.IconId; Symbol = node.Symbol; Color = node.Color; Href = node.Href; Tooltip = node.Tooltip;
+        Kind = node.Kind; IconId = node.IconId; Symbol = node.Symbol; Color = node.Color.ToText(); Href = node.Href; Tooltip = node.Tooltip;
     }
     internal string Id { get; }
     internal string Label { get; }
@@ -289,7 +290,7 @@ internal static class TopologySiblingGroupingLayout {
                 foreach (var edge in chart.Edges) {
                     if (edge.SourceNodeId != children[index].Id && edge.TargetNodeId != children[index].Id) continue;
                     if (edge.Routing != TopologyEdgeRouting.Orthogonal || edge.HasRouteLaneOverride) continue;
-                    edge.RouteLane = -sign * depth / 2; edge.HasRouteLaneOverride = true;
+                    edge.RouteLane = -sign * depth / 2;
                 }
             }
         }
@@ -312,6 +313,16 @@ internal static class TopologySiblingGroupingLayout {
     }
 
     private static string? Signature(IEnumerable<string> parts) { var text = string.Join("\u001e", parts); return text.Length == 0 ? null : text; }
+
+    private static ChartColor? Shared<T>(IEnumerable<T> items, Func<T, ChartColor?> value) {
+        ChartColor? first = null; var any = false;
+        foreach (var item in items) {
+            var candidate = value(item);
+            if (!any) { first = candidate; any = true; continue; }
+            if (!Equals(first, candidate)) return null;
+        }
+        return first;
+    }
 
     private static string? Shared<T>(IEnumerable<T> items, Func<T, string?> value) {
         var values = items.Select(value).Distinct(StringComparer.Ordinal).ToArray();

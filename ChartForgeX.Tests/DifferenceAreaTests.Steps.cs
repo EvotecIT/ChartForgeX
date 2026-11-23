@@ -35,7 +35,7 @@ public sealed partial class DifferenceAreaTests {
             Assert.Equal(start.X, positive.Commands.Min(point => point.X), 8);
             Assert.Equal(transition, positive.Commands.Max(point => point.X), 8);
         }
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         foreach (var fraction in new[] { .25, .75 }) {
             var previous = position == ChartStepPosition.End || position == ChartStepPosition.Middle && fraction < .5;
             var y = previous ? (start.Y + second.Commands[0].Y) / 2 : (end.Y + second.Commands[^1].Y) / 2;
@@ -63,7 +63,7 @@ public sealed partial class DifferenceAreaTests {
                 Assert.Contains(fill.Commands, point => point.X == knot.X && point.Y == knot.Y);
         }
         var middle = prepared.Regions.Single(region => region.Id == "series-0-point-1").Bounds;
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, new ChartPoint(middle.X, middle.Y + middle.Height / 2), Red, 128);
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
         AssertPaint(image, new ChartPoint(first.Commands[0].X * .875 + first.Commands[^1].X * .125,
@@ -81,7 +81,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "difference-positive"));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "difference-negative");
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(0, Pixel(image, first.Commands[0].X / 2 + first.Commands[^1].X / 2,
             first.Commands[0].Y / 2 + second.Commands[0].Y / 2).A);
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "point"));
@@ -104,7 +104,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "difference-positive"));
         var left = prepared.Regions.Single(region => region.Id == "series-0-point-1").Bounds;
         var right = prepared.Regions.Single(region => region.Id == "series-0-point-2").Bounds;
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(0, Pixel(image, left.X / 2 + right.X / 2, left.Y + left.Height / 2).A);
         Assert.Equal(4, prepared.Regions.Count(region => region.Role == "point"));
         var breakFacts = Group(prepared, "series-0-point-2");
@@ -131,7 +131,7 @@ public sealed partial class DifferenceAreaTests {
         AssertStepTransition(first, transition); AssertStepTransition(second, transition);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role is "difference-positive" or "difference-negative"));
         foreach (var role in new[] { "difference-positive", "difference-negative" }) AssertAxisAligned(Boundary(prepared, role));
-        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1));
         AssertPaint(image, new ChartPoint(first.Commands[0].X * .6 + first.Commands[^1].X * .4,
             first.Commands[0].Y / 2 + second.Commands[0].Y / 2), Red, 128);
         AssertPaint(image, new ChartPoint(first.Commands[0].X * .4 + first.Commands[^1].X * .6,

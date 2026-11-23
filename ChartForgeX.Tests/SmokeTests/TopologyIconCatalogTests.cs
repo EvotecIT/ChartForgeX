@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyIconCatalogsResolveBuiltinAndVendorIcons() {
         var vendorPack = new TopologyIconPack("veeam", "Veeam", vendor: "Veeam", version: "1.0")
-            .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", "#00B336", "Backup")
-            .AddIcon("repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", "#007A5A", "Backup");
+            .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", ChartColor.FromHex("#00B336"), "Backup")
+            .AddIcon("repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", ChartColor.FromHex("#007A5A"), "Backup");
         var catalog = TopologyIconCatalog.Default().AddPack(vendorPack);
         var unqualifiedSubnet = catalog.Resolve("subnet");
         Assert(unqualifiedSubnet?.QualifiedId == "network:subnet", "Unqualified subnet should keep resolving to the generic network icon.");
@@ -46,8 +46,8 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconCatalogsRenderPaletteCharts() {
         var vendorPack = new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
-            .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security")
-            .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", "#DA291C", "Network");
+            .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", ChartColor.FromHex("#DA291C"), "Security")
+            .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", ChartColor.FromHex("#DA291C"), "Network");
         var catalog = TopologyIconCatalog.Default().AddPack(vendorPack);
 
         var palette = catalog.ToPaletteChart(new TopologyIconPaletteOptions {
@@ -86,7 +86,7 @@ internal static partial class SmokeTests {
             .AddTags("azure", "cloud", "vendor", "sample")
             .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
                 Symbol = "ADF",
-                Color = "#0078D4",
+                Color = ChartColor.FromHex("#0078D4"),
                 Category = "Azure",
                 DisplayMode = TopologyNodeDisplayMode.Tile,
                 Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"6\" width=\"13\" height=\"32\" rx=\"2\" fill=\"#50E6FF\"/><path d=\"M20 17 H28 M20 31 H28\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"29\" r=\"2.6\" fill=\"#FFFFFF\"/>", "0 0 48 48")
@@ -130,7 +130,7 @@ internal static partial class SmokeTests {
             .AddTags("azure", "cloud", "vendor", "sample")
             .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
                 Symbol = "ADF",
-                Color = "#0078D4",
+                Color = ChartColor.FromHex("#0078D4"),
                 Category = "Azure",
                 DisplayMode = TopologyNodeDisplayMode.Tile,
                 Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/>", "0 0 48 48")
@@ -351,8 +351,8 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconCatalogsSearchAndFilterPaletteCharts() {
         var vendorPack = new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
-            .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security")
-            .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", "#DA291C", "Network");
+            .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", ChartColor.FromHex("#DA291C"), "Security")
+            .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", ChartColor.FromHex("#DA291C"), "Network");
         var catalog = TopologyIconCatalog.Default().AddPack(vendorPack);
 
         var switches = catalog.Search(new TopologyIconCatalogQuery { SearchText = "switch" });
@@ -386,12 +386,12 @@ internal static partial class SmokeTests {
             .AddTags("backup", "vendor")
             .AddIcon(new TopologyIconDefinition("veeam", "proxy", "Backup Proxy", TopologyNodeKind.Server, TopologyIconShape.Server) {
                 Symbol = "PRX",
-                Color = "#00B336",
+                Color = ChartColor.FromHex("#00B336"),
                 Category = "Backup"
             }.Metadata("product", "Backup and Replication").AddTags("proxy", "worker"))
             .AddIcon(new TopologyIconDefinition("veeam", "repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
                 Symbol = "REPO",
-                Color = "#007A5A",
+                Color = ChartColor.FromHex("#007A5A"),
                 Category = "Storage"
             }.Metadata("product", "Backup and Replication").AddTags("repository", "repo"));
         var catalog = TopologyIconCatalog.Default().AddPack(vendorPack);
@@ -432,13 +432,13 @@ internal static partial class SmokeTests {
             .AddTags("backup", "vendor", "repository")
             .AddIcon(new TopologyIconDefinition("veeam", "backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server) {
                 Symbol = "VBR",
-                Color = "#00B336",
+                Color = ChartColor.FromHex("#00B336"),
                 Category = "Backup",
                 DisplayMode = TopologyNodeDisplayMode.Tile
             }.Metadata("product", "Backup and Replication").AddTags("vbr", "backup-server"))
             .AddIcon(new TopologyIconDefinition("veeam", "repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
                 Symbol = "REPO",
-                Color = "#007A5A",
+                Color = ChartColor.FromHex("#007A5A"),
                 Category = "Storage",
                 DisplayMode = TopologyNodeDisplayMode.Tile
             }.Metadata("product", "Backup and Replication").AddTags("repo", "object-storage"));
@@ -487,13 +487,13 @@ internal static partial class SmokeTests {
             .AddTags("network", "security", "vendor")
             .AddIcon(new TopologyIconDefinition("fortinet", "firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall) {
                 Symbol = "FG",
-                Color = "#DA291C",
+                Color = ChartColor.FromHex("#DA291C"),
                 Category = "Security",
                 DisplayMode = TopologyNodeDisplayMode.Tile
             }.AddTags("fortigate", "firewall"))
             .AddIcon(new TopologyIconDefinition("fortinet", "switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch) {
                 Symbol = "FSW",
-                Color = "#DA291C",
+                Color = ChartColor.FromHex("#DA291C"),
                 Category = "Network",
                 DisplayMode = TopologyNodeDisplayMode.Tile
             }.AddTags("fortiswitch", "switch"));
@@ -534,12 +534,12 @@ internal static partial class SmokeTests {
         try {
             new TopologyIconPack("acme-backup", "Acme Backup", vendor: "Acme", version: "1")
                 .AddTags("backup", "vendor")
-                .AddIcon("repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", "#007A5A", "Backup")
+                .AddIcon("repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", ChartColor.FromHex("#007A5A"), "Backup")
                 .SaveJsonManifest(Path.Combine(directory, "02-acme-backup.json"));
 
             new TopologyIconPack("acme-network", "Acme Network", vendor: "Acme", version: "1")
                 .AddTags("network", "vendor")
-                .AddIcon("firewall", "Security Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FW", "#DA291C", "Security")
+                .AddIcon("firewall", "Security Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FW", ChartColor.FromHex("#DA291C"), "Security")
                 .SaveJsonManifest(Path.Combine(childDirectory, "01-acme-network.json"));
 
             var topOnly = TopologyIconPackJson.LoadJsonManifestsFromDirectory(directory);
@@ -566,7 +566,7 @@ internal static partial class SmokeTests {
         try {
             new TopologyIconPack("valid-pack", "Valid Pack", vendor: "Acme", version: "1")
                 .AddTags("valid", "vendor")
-                .AddIcon("server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server, "SRV", "#2563EB", "Compute")
+                .AddIcon("server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server, "SRV", ChartColor.FromHex("#2563EB"), "Compute")
                 .SaveJsonManifest(Path.Combine(directory, "01-valid.json"));
             File.WriteAllText(Path.Combine(directory, "02-broken.json"), "{\"schema\":\"chartforgex.topology.iconPack\",\"id\":\"broken\",\"label\":\"Broken\",\"icons\":[{\"id\":\"bad\",\"label\":\"Bad\",\"nodeKind\":\"NoSuchKind\"}]}");
 
@@ -595,10 +595,10 @@ internal static partial class SmokeTests {
         try {
             new TopologyIconPack("acme-apps", "Acme Apps", vendor: "Acme", version: "1")
                 .AddTags("application", "vendor")
-                .AddIcon("portal", "Portal", TopologyNodeKind.Application, TopologyIconShape.Application, "APP", "#7C3AED", "Application")
+                .AddIcon("portal", "Portal", TopologyNodeKind.Application, TopologyIconShape.Application, "APP", ChartColor.FromHex("#7C3AED"), "Application")
                 .SaveJsonManifest(Path.Combine(directory, "01-acme-apps.json"));
             new TopologyIconPack("common", "Duplicate Common", vendor: "Acme", version: "1")
-                .AddIcon("duplicate", "Duplicate", TopologyNodeKind.Server, TopologyIconShape.Server, "DUP", "#2563EB", "Compute")
+                .AddIcon("duplicate", "Duplicate", TopologyNodeKind.Server, TopologyIconShape.Server, "DUP", ChartColor.FromHex("#2563EB"), "Compute")
                 .SaveJsonManifest(Path.Combine(directory, "02-duplicate-common.json"));
             File.WriteAllText(Path.Combine(directory, "03-broken.json"), "{\"schema\":\"chartforgex.topology.iconPack\",\"id\":\"broken\",\"label\":\"Broken\",\"icons\":[{\"id\":\"bad\",\"label\":\"Bad\",\"nodeKind\":\"NoSuchKind\"}]}");
 
@@ -625,10 +625,10 @@ internal static partial class SmokeTests {
         Directory.CreateDirectory(directory);
         try {
             new TopologyIconPack("common", "Custom Common", vendor: "Acme", version: "1")
-                .AddIcon("custom-server", "Custom Server", TopologyNodeKind.Server, TopologyIconShape.Server, "CSR", "#2563EB", "Compute")
+                .AddIcon("custom-server", "Custom Server", TopologyNodeKind.Server, TopologyIconShape.Server, "CSR", ChartColor.FromHex("#2563EB"), "Compute")
                 .SaveJsonManifest(Path.Combine(directory, "01-custom-common.json"));
             new TopologyIconPack("acme-network", "Acme Network", vendor: "Acme", version: "1")
-                .AddIcon("router", "Router", TopologyNodeKind.Gateway, TopologyIconShape.Router, "RTR", "#2563EB", "Network")
+                .AddIcon("router", "Router", TopologyNodeKind.Gateway, TopologyIconShape.Router, "RTR", ChartColor.FromHex("#2563EB"), "Network")
                 .SaveJsonManifest(Path.Combine(directory, "02-acme-network.json"));
 
             var skip = TopologyIconPackJson.LoadJsonCatalogFromDirectory(directory, new TopologyIconCatalogLoadOptions {
@@ -661,10 +661,10 @@ internal static partial class SmokeTests {
             var catalog = TopologyIconCatalog.Default()
                 .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam", version: "13")
                     .AddTags("backup", "vendor")
-                    .AddIcon("repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", "#007A5A", "Storage"))
+                    .AddIcon("repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage, "REPO", ChartColor.FromHex("#007A5A"), "Storage"))
                 .AddPack(new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
                     .AddTags("security", "vendor")
-                    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security"));
+                    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", ChartColor.FromHex("#DA291C"), "Security"));
 
             var exported = catalog.SaveJsonManifestsToDirectory(directory);
             Assert(exported.Count == 2, "Catalog export should default to custom/vendor packs only.");
@@ -704,11 +704,10 @@ internal static partial class SmokeTests {
         pack.Tags.Add("network");
         pack.AddIcon(new TopologyIconDefinition("acme", "server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server) {
             Symbol = "SERVER-LONG",
-            Color = "acme-blue",
             Category = "Compute"
         });
         var duplicate = new TopologyIconDefinition("acme", "repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
-            Color = "#007A5A",
+            Color = ChartColor.FromHex("#007A5A"),
             Category = "Storage"
         };
         pack.AddIcon(duplicate);
@@ -720,7 +719,6 @@ internal static partial class SmokeTests {
         Assert(result.Errors.Any(issue => issue.Message.Contains("duplicated", StringComparison.OrdinalIgnoreCase)), "Pack validation should report duplicate icon ids.");
         Assert(result.Errors.Any(issue => issue.Path.Contains(".packId", StringComparison.Ordinal)), "Pack validation should report icons whose pack id no longer matches the containing pack.");
         Assert(result.Warnings.Any(issue => issue.Message.Contains("vendor", StringComparison.OrdinalIgnoreCase)), "Pack validation should warn when custom packs omit vendor labels.");
-        Assert(result.Warnings.Any(issue => issue.Path.Contains(".color", StringComparison.Ordinal)), "Pack validation should warn about non-portable icon colors.");
         Assert(result.Warnings.Any(issue => issue.Path.Contains(".symbol", StringComparison.Ordinal)), "Pack validation should warn about long fallback symbols.");
         Assert(result.Warnings.Any(issue => issue.Message.Contains("Tag", StringComparison.Ordinal)), "Pack validation should warn about duplicate tags.");
 
@@ -740,19 +738,19 @@ internal static partial class SmokeTests {
                 .AddTags("backup", "vendor")
                 .AddIcon(new TopologyIconDefinition("veeam", "repository", "Backup Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
                     Symbol = "REPO",
-                    Color = "#007A5A",
+                    Color = ChartColor.FromHex("#007A5A"),
                     Category = "Storage"
                 }.AddTags("repo", "repository"))
                 .AddIcon(new TopologyIconDefinition("veeam", "proxy", "Backup Proxy", TopologyNodeKind.Server, TopologyIconShape.Server) {
                     Symbol = "PRX",
-                    Color = "#00B336",
+                    Color = ChartColor.FromHex("#00B336"),
                     Category = "Backup"
                 }.AddTags("proxy")))
             .AddPack(new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet", version: "2026.1")
                 .AddTags("network", "security", "vendor")
                 .AddIcon(new TopologyIconDefinition("fortinet", "firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall) {
                     Symbol = "FG",
-                    Color = "#DA291C",
+                    Color = ChartColor.FromHex("#DA291C"),
                     Category = "Security"
                 }.AddTags("firewall", "fortigate")));
 

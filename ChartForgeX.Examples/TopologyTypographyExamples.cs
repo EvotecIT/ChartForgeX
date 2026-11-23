@@ -31,7 +31,7 @@ internal static class TopologyTypographyExamples {
             File.WriteAllText(path + ".html", chart.ToInteractiveHtmlPage(options));
             File.WriteAllText(path + ".svg", chart.ToSvg(options));
             File.WriteAllBytes(path + ".png", chart.ToPng(options));
-            Console.WriteLine($"{name}: {chart.GetPngFontInfo().ResolvedFaceName}");
+            Console.WriteLine($"{name}: {chart.GetRasterFontInfo().ResolvedFaceName}");
         }
     }
 }

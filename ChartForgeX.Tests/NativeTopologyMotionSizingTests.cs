@@ -20,7 +20,7 @@ public sealed class NativeTopologyMotionSizingTests {
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
         var options = new TopologyRenderOptions {
             FitContentToViewport = true,
-            PngSupersamplingScale = 8
+            RasterSupersampling = 8
         };
         var motion = TopologyMotionOptions.RoutePulseForEdges("route").DurationSeconds(.8).FramesPerSecond(10).MaximumRasterFrames(8);
         using var output = new MemoryStream();
@@ -41,7 +41,7 @@ public sealed class NativeTopologyMotionSizingTests {
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
         var options = new TopologyRenderOptions {
             FitContentToViewport = true,
-            PngSupersamplingScale = 1
+            RasterSupersampling = 1
         };
         var motion = TopologyMotionOptions.RoutePulseForEdges("route").DurationSeconds(200).FramesPerSecond(10).MaximumRasterFrames(2000);
         var error = Assert.Throws<InvalidOperationException>(() => {
@@ -75,7 +75,7 @@ public sealed class NativeTopologyMotionSizingTests {
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)
             .AddScenario("delivery", "Delivery", scenario => scenario.AddEdgeStep("route"));
         var options = new TopologyRenderOptions {
-            FitContentToViewport = fit, PngSupersamplingScale = 1,
+            FitContentToViewport = fit, RasterSupersampling = 1,
             LegendMode = TopologyLegendMode.Explicit
         };
         var motion = new TopologyMotionOptions {

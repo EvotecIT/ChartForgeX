@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
         var theme = new VisualTheme(tokens, tokens, new VisualTypography(family));
         var chart = Chart.Create().Theme(theme).ThemeMode(ThemeMode.Dark).AddLine("Values", Points(1, 3, 2));
         var canvas = VisualCanvas.Create(640, 360).Theme(theme).ThemeMode(ThemeMode.Dark).AddText(20, 20, 300, "Shared brand", 24, tokens.Foreground);
-        var topology = TopologyChart.Create().Theme(theme, ThemeMode.Dark).AddNode("node", "Node", 100, 100, status: TopologyHealthStatus.Healthy);
+        var topology = TopologyChart.Create().Theme(theme).ThemeMode(ThemeMode.Dark).AddNode("node", "Node", 100, 100, status: TopologyHealthStatus.Healthy);
 
         var chartColors = chart.Options.Theme.Resolve(chart.Options.ThemeMode);
         var canvasColors = canvas.Theme.Resolve(canvas.ThemeMode);

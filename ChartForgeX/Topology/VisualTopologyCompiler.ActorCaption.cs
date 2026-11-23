@@ -8,7 +8,7 @@ internal sealed partial class VisualTopologyCompiler {
         var caption = TopologyActorCaption.Prepare(node, _options, _chart.TextMeasurement);
         var color = Highlight(Color(node.LabelColor, _colors.Foreground), active);
         var titleStyle = caption.TitleStyle.Clone(); titleStyle.Color = color; titleStyle.FontSize *= _scale; titleStyle.LetterSpacing *= _scale;
-        var titlePaint = string.IsNullOrWhiteSpace(node.LabelColor)
+        var titlePaint = node.LabelColor == null
             ? ForegroundPaint(color, HighlightFactor(active))
             : SourcePaint(node.LabelColor, color, ChartForgeX.Themes.SvgColorRole.Any, HighlightFactor(active), _colors.Foreground);
         _builder.InlineText(caption.Title, Project(caption.TitleBounds), titleStyle, caption.Wrap,

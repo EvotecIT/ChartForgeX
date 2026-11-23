@@ -115,7 +115,7 @@ public static class TopologyMindMapExtensions {
             chart.AddEdge(EdgeId(options.EdgeIdPrefix, item.ParentId!, item.Id), item.ParentId!, item.Id, kind: options.EdgeKind, status: options.EdgeStatus, direction: options.EdgeDirection, routing: options.EdgeRouting);
             var edge = chart.Edges[chart.Edges.Count - 1];
             edge.IsMuted = options.MutedEdges;
-            if (options.UseParentColorForEdges && byId.TryGetValue(item.ParentId!, out var parent) && !string.IsNullOrWhiteSpace(parent.Color)) edge.Color = parent.Color;
+            if (options.UseParentColorForEdges && byId.TryGetValue(item.ParentId!, out var parent) && parent.Color != null) edge.Color = parent.Color;
             edge.Metadata["mindmap.relationship"] = "parent-child";
         }
 

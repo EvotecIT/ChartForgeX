@@ -95,7 +95,7 @@ public sealed class SequenceMessagePresentationTests {
     [Fact]
     public void PartialNumberTypographyOverridesMatchingFieldsAndRemainsDynamicAfterPreparationAndRestore() {
         var model=SequenceMessageFixture.Badged("999");model.AddMessage("B","A","Ready");model.Paint.NumberText=ChartColor.FromHex("#123456");model.Paint.NumberFill=ChartColor.FromHex("#e6f0ff");
-        model.Typography=new SequenceTypography(number:new TextStyleOverride{Color=ChartColor.FromHex("#a02020"),FontWeight="700"});var context=SequenceMessageFixture.Context();var prepared=model.Prepare(context);
+        model.Typography=new SequenceTypography(number:new TextStyleOverride{Color=ChartColor.FromHex("#a02020"),FontWeight=700});var context=SequenceMessageFixture.Context();var prepared=model.Prepare(context);
         var portable=prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeEnvelope();var restored=VisualArtifactInterchangeEnvelope.FromJson(portable.ToJson()).ToSequenceArtifact();var again=restored.Prepare(context);
         SequenceMessageFixture.Capture("sequence-number-partial-first",prepared);SequenceMessageFixture.Capture("sequence-number-partial-second",again);
         Assert.Equal("12",SequenceMessageFixture.Text(prepared,"sequence-number","999").Attribute("font-size")!.Value);Assert.Equal("9",SequenceMessageFixture.Text(prepared,"sequence-number","1000").Attribute("font-size")!.Value);

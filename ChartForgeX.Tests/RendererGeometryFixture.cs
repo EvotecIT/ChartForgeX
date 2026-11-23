@@ -26,7 +26,7 @@ internal static class RendererGeometryFixture {
         if (family.StartsWith("funnel", StringComparison.Ordinal)) {
             var chart = Chart.Create().Size(400, 280).Theme(theme).ShowCard(false).ShowPlotBackground(false).Legend(false);
             chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.DataLabels.Visible = false;
-            chart.Options.Png.OutputScale = density;
+            chart.Options.Raster.OutputScale = density;
             chart.AddFunnel("Stages", new[] { new ChartPoint(0, 8), new ChartPoint(1, 5) }, family == "funnel-series" ? ink : null);
             chart.Series[0].ShowDataLabels = false;
             if (family == "funnel-point") chart.Series[0].PointColor(0, ink).PointColor(1, ink);
@@ -34,7 +34,7 @@ internal static class RendererGeometryFixture {
         }
         if (family.StartsWith("wardley-contract", StringComparison.Ordinal)) {
             theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ink; });
-            var map = WardleyMapBlock.Create().Size(400, 280).Theme(theme).ShowCard(false).TransparentBackground().PngOutputScale(density);
+            var map = WardleyMapBlock.Create().Size(400, 280).Theme(theme).ShowCard(false).TransparentBackground().RasterScale(density);
             map.AddNode("origin", "Origin", 0.5, 0.1).Strategy = "buy";
             map.AddNode("user", "User", 0.8, 0.6, WardleyMapNodeKind.Anchor);
             map.AddLink("user", "origin", flow: VisualLinkDirection.Bidirectional);
@@ -45,7 +45,7 @@ internal static class RendererGeometryFixture {
         if (family.StartsWith("wardley", StringComparison.Ordinal)) {
             if (family != "wardley") theme = VisualTheme.Graphite();
             var mode = family == "wardley-dark" ? ThemeMode.Dark : ThemeMode.Light;
-            var map = WardleyMapBlock.Create().Size(400, 280).Theme(theme).ThemeMode(mode).ShowCard(false).TransparentBackground().PngOutputScale(density);
+            var map = WardleyMapBlock.Create().Size(400, 280).Theme(theme).ThemeMode(mode).ShowCard(false).TransparentBackground().RasterScale(density);
             map.AddNode("origin", "Origin", 0.5, 0.1);
             map.AddEvolution("origin", 0.8);
             map.AddMarker("Forward", 0.8, 0.2, WardleyMapMarkerKind.Accelerator);
@@ -60,8 +60,8 @@ internal static class RendererGeometryFixture {
             return map;
         }
         if (family is "fork" or "flame" or "droplet") {
-            var icon = family == "fork" ? Icons.ForkKnife : family == "flame" ? Icons.Flame : Icons.Droplet;
-            var card = MetricCard.Create().Metric("Meals", 12).Size(200, 140).Theme(theme).ShowCard(false).TransparentBackground().Icon(icon).PngOutputScale(density);
+            var icon = family == "fork" ? MetricCardIcons.ForkKnife : family == "flame" ? MetricCardIcons.Flame : MetricCardIcons.Droplet;
+            var card = MetricCard.Create().Metric("Meals", 12).Size(200, 140).Theme(theme).ShowCard(false).TransparentBackground().Icon(icon).RasterScale(density);
             return card;
         }
         var topologyTheme = VisualTheme.Graphite();
@@ -76,7 +76,7 @@ internal static class RendererGeometryFixture {
         topology.AddEdge("route", "a", "b", null, TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
         if (family == "halo" || family.StartsWith("geo-", StringComparison.Ordinal)) {
             topologyTheme = topologyTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#FFFFFF80"); });
-            topology.Edges[0].Color = "#1E50AA80";
+            topology.Edges[0].Color = ChartColor.FromHex("#1E50AA80");
             topology.Edges[0].Opacity = 0.5;
         }
         if (family.StartsWith("geo-", StringComparison.Ordinal)) {
@@ -89,7 +89,7 @@ internal static class RendererGeometryFixture {
             if (family.Contains("theme")) topologyTheme = topologyTheme.Configure(builder => { var status = builder.Light.Status; status.Neutral = new VisualTokenColor(ChartColor.FromHex("#0000FF80"), status.Neutral.Ink); });
             else foreach (var id in new[] { "a", "b", "c" }) {
                 if (family.Contains("catalog")) topology.NodeIcon(id, "sample:" + id, TopologyOptions(family, density).IconCatalog);
-                else topology.UpdateNode(id, n => n.Color("#0000FF80"));
+                else topology.UpdateNode(id, n => n.Color(ChartColor.FromHex("#0000FF80")));
             }
         }
         return topology.Theme(topologyTheme);
@@ -98,15 +98,15 @@ internal static class RendererGeometryFixture {
     internal static TopologyRenderOptions TopologyOptions(string family, int density) {
         var monitoring = family.StartsWith("monitoring", StringComparison.Ordinal) || family.EndsWith("-monitoring", StringComparison.Ordinal) || family == "halo" || family.StartsWith("geo-", StringComparison.Ordinal);
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeNodeLabels = false, IncludeStatusBadges = false, IncludeEdgeLabels = false,
-            ArrowMarkerStyle = TopologyArrowMarkerStyle.Chevron, PngOutputScale = density,
+            ArrowMarkerStyle = TopologyArrowMarkerStyle.Chevron, RasterScale = density,
             VisualStyle = monitoring ? TopologyVisualStyle.MonitoringDashboard : TopologyVisualStyle.Default };
         if (family.StartsWith("topology-", StringComparison.Ordinal) || family.StartsWith("monitoring-", StringComparison.Ordinal))
             options.ArrowMarkerStyle = Enum.Parse<TopologyArrowMarkerStyle>(family.Substring(family.IndexOf('-') + 1));
         if (family.Contains("catalog")) {
             var pack = new TopologyIconPack("sample", "Sample")
-                .AddIcon("a", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", "#0000FF80")
-                .AddIcon("b", "Queue", TopologyNodeKind.Queue, TopologyIconShape.Badge, "Q", "#0000FF80")
-                .AddIcon("c", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CL", "#0000FF80");
+                .AddIcon("a", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", ChartColor.FromHex("#0000FF80"))
+                .AddIcon("b", "Queue", TopologyNodeKind.Queue, TopologyIconShape.Badge, "Q", ChartColor.FromHex("#0000FF80"))
+                .AddIcon("c", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CL", ChartColor.FromHex("#0000FF80"));
             options.IconCatalog = TopologyIconCatalog.Default().AddPack(pack);
         }
         return options;

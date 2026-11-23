@@ -11,7 +11,7 @@ public sealed class AuthoredHandoffRecipeProgramTests {
     [Theory]
     [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
     public void CompleteNativeConsumerProgramCapturesTheAuthoredRouteAndSeparateLabelSurface(ThemeMode mode) {
-        var chart = TopologyAuthoredPathBadgeRecipe.Create().Theme(VisualTheme.Graphite(), mode);
+        var chart = TopologyAuthoredPathBadgeRecipe.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode);
         var artifact = chart.ToVisualArtifact(); var svg = artifact.ToSvg(); var png = artifact.ToPng();
         var json = artifact.ToInterchangeJson(); var html = artifact.ToHtmlPage();
         var program = ExampleRecipeSource.EmitAuthoredHandoff(mode);
@@ -30,7 +30,7 @@ public sealed class AuthoredHandoffRecipeProgramTests {
             var path = Path.Combine(restoredOutput, "authored-handoff-program-" + mode + "-restored");
             File.WriteAllText(path + ".svg", after.ToSvg()); File.WriteAllBytes(path + ".png", after.ToPng()); File.WriteAllText(path + ".json", after.ToInterchangeJson());
         }
-        Assert.Equal("#193857", restored.Edges.Single().LabelBackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#193857"), restored.Edges.Single().LabelBackgroundColor);
         Assert.Equal("M 284 190 C 350 42 444 42 510 190", chart.Edges.Single().PathGeometry!.PathData);
         Assert.Equal(saved.Edges.Single().Topology!.PathGeometry!.PathData, restored.Edges.Single().PathGeometry!.PathData);
         Assert.Equal(TopologyStaticPaintObservation.Paint(svg), TopologyStaticPaintObservation.Paint(after.ToSvg())); Assert.Equal(png, after.ToPng());

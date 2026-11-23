@@ -38,7 +38,7 @@ public sealed class VisualStoryMediaSurface : VisualStorySurface {
     public VisualStoryMediaSurface(PreparedVisual prepared, string accessibleText)
         : base(VisualStorySurfaceKind.Media, accessibleText) {
         if (prepared == null) throw new ArgumentNullException(nameof(prepared));
-        Raster = RequireRaster(prepared.ToRgba());
+        Raster = RequireRaster(prepared.ToRgbaImage());
         var svg = prepared.ToSvg("story-media");
         // Native raster rounds fractional logical dimensions up to whole pixels. Keep that same
         // padded viewport in the vector representation rather than stretching its geometry.

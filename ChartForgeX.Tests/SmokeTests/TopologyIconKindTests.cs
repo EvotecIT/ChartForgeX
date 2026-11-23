@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
             .Viewport(new TopologyViewport(520, 300, 24))
             .Legend((TopologyLegend?)null)
             .AddNode("cert-a", "Certificate A", 72, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy)
-            .AddNode("cert-b", "Certificate B", 250, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "CRT", color: "#1D4ED8")
+            .AddNode("cert-b", "Certificate B", 250, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "CRT", color: ChartColor.FromHex("#1D4ED8"))
             .AddNode("owner", "Owner", 250, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
             .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .NodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog);
@@ -47,11 +47,11 @@ internal static partial class SmokeTests {
             .Viewport(new TopologyViewport(520, 300, 24))
             .AddNode("owner-a", "Owner A", 72, 120, TopologyNodeKind.Generic, TopologyHealthStatus.Healthy)
             .AddNode("owner-b", "Owner B", 250, 120, TopologyNodeKind.Generic, TopologyHealthStatus.Warning)
-            .NodesOfKindStyle(TopologyNodeKind.Generic, color: "#7C3AED", backgroundColor: "#F5F3FF", iconId: "people:owner", catalog: catalog);
+            .NodesOfKindStyle(TopologyNodeKind.Generic, color: ChartColor.FromHex("#7C3AED"), backgroundColor: ChartColor.FromHex("#F5F3FF"), iconId: "people:owner", catalog: catalog);
 
         Assert(chart.Nodes[0].Kind == TopologyNodeKind.Person, "Combined node-kind styling should apply the icon's generic node kind after matching the original kind.");
-        Assert(chart.Nodes[0].Color == "#7C3AED", "Combined node-kind styling should keep caller accent colors ahead of icon fallback colors.");
-        Assert(chart.Nodes[0].BackgroundColor == "#F5F3FF", "Combined node-kind styling should apply caller node backgrounds.");
+        Assert(chart.Nodes[0].Color == ChartColor.FromHex("#7C3AED"), "Combined node-kind styling should keep caller accent colors ahead of icon fallback colors.");
+        Assert(chart.Nodes[0].BackgroundColor == ChartColor.FromHex("#F5F3FF"), "Combined node-kind styling should apply caller node backgrounds.");
         Assert(chart.Nodes[0].IconId == "people:owner", "Combined node-kind styling should apply reusable icon ids.");
         Assert(chart.Nodes[0].Symbol == "OWN", "Combined node-kind styling should fill missing symbols from the icon.");
         var svg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Auto });

@@ -86,7 +86,7 @@ public sealed class MapCalendarObservationLifecycleTests {
     [InlineData(ChartSeriesKind.TileMap)]
     public void ReplacementClearsObservationMetadataAndSupportsEmptyRefill(ChartSeriesKind kind) {
         var series = Create(kind).ObservationId(0, new ChartObservationId("old"))
-            .PointColor(0, "#123456").PointLabel(0, "Old label").StateRole(ChartSeriesState.Warning);
+            .PointColor(0, ChartColor.FromHex("#123456")).PointLabel(0, "Old label").StateRole(ChartSeriesState.Warning);
         var chart = Chart.Create().Size(480, 280).AddSeries(series);
         ReplaceEmpty(series);
         Assert.Equal(0, series.SourcePointCount);
@@ -117,7 +117,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         Assert.Equal("2", (string?)points[0].Attribute("data-cfx-longitude"));
         var glyph = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneEllipse>().First(mark => mark.Role == "dotted-map-point");
         Assert.Equal(ChartColor.FromHex("#123456"), glyph.Fill);
-        chart.AddMapRouteBetweenPoints("Route snapshot", "Paris", "Paris peer");
+        chart.AddMapConnectorBetweenPoints("Route snapshot", "Paris", "Paris peer");
         series.UpdateMapPoint(0, new ChartMapPoint("Paris moved", 5, 50, 7));
         Assert.Equal(2, chart.Options.Map.Connectors[0].FromLongitude);
         Assert.Equal(48, chart.Options.Map.Connectors[0].FromLatitude);
@@ -173,7 +173,7 @@ public sealed class MapCalendarObservationLifecycleTests {
     [InlineData(ChartSeriesKind.RegionMap)]
     [InlineData(ChartSeriesKind.TileMap)]
     public void FailedReplacementKeepsInstalledDataMetadataAndGeometry(ChartSeriesKind kind) {
-        var series = Create(kind).ObservationId(0, new ChartObservationId("first")).PointColor(0, "#123456");
+        var series = Create(kind).ObservationId(0, new ChartObservationId("first")).PointColor(0, ChartColor.FromHex("#123456"));
         var chart = Chart.Create().AddSeries(series);
         var before = chart.ToSvg();
         Assert.ThrowsAny<ArgumentException>(() => {

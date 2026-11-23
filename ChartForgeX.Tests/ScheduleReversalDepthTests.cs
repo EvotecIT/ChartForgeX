@@ -77,7 +77,7 @@ public sealed class ScheduleReversalDepthTests {
             Assert.Equal(successor.Right, tip.X - arrow.StrokeWidth / 2, 3);
             Assert.True(arrow.Commands[0].X > tip.X);
         }
-        var actual = prepared.ToRgba(); var scene = prepared.Scene;
+        var actual = prepared.ToRgbaImage(); var scene = prepared.Scene;
         var control = VisualSceneRasterRenderer.Render(new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "gantt-dependency-arrow").ToArray(), scene.Diagnostics, scene.Regions));
         Assert.True(actual.Pixels.Where((value, index) => value != control.Pixels[index]).Count() > 4, "The reversed arrow must paint actual native pixels, not only metadata.");
         Assert.DoesNotContain(scene.Diagnostics, item => item.Code == "gantt.dependency-insufficient-space");
@@ -86,8 +86,8 @@ public sealed class ScheduleReversalDepthTests {
     [Fact]
     public void ExplicitWindowEdgesKeepTheSameInstantFloorAndClippingUnderReversal() {
         var chart = Chart.Create().Size(800, 420).ShowHeader(false).Legend(false).Axes(false).DataLabels(false)
-            .XAxis(x => x.Bounds(0, 10)).AddTimelineRange("Minimum instant", 0, 0).AddTimelineRange("Maximum instant", 10, 10)
-            .AddTimelineRange("Clipped start", -2, 3).AddTimelineRange("Clipped end", 7, 12);
+            .XAxis(x => x.Bounds(0, 10)).AddTimelineItem("Minimum instant", 0, 0).AddTimelineItem("Maximum instant", 10, 10)
+            .AddTimelineItem("Clipped start", -2, 3).AddTimelineItem("Clipped end", 7, 12);
         var normal = Prepare(chart); var before = SourceRegions(normal); chart.Options.XAxis.Reversed = true;
         var reverse = Prepare(chart); var sum = normal.Scene.DataProjection!.Plot.Left + reverse.Scene.DataProjection!.Plot.Right;
         foreach (var region in SourceRegions(reverse)) {
@@ -111,7 +111,7 @@ public sealed class ScheduleReversalDepthTests {
         var chart = Chart.Create().Size(width, 460).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
             .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .XAxis(x => x.Bounds(0, 10)).StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
-        if (kind == ChartSeriesKind.Timeline) chart.AddTimelineRange("First", 1, 4).AddTimelineRange("Second", 6, 9);
+        if (kind == ChartSeriesKind.Timeline) chart.AddTimelineItem("First", 1, 4).AddTimelineItem("Second", 6, 9);
         else if (kind == ChartSeriesKind.Gantt) chart.AddGanttTask("First", 1, 4, .5).AddGanttTask("Second", 6, 9);
         else if (kind == ChartSeriesKind.StateTimeline) chart.AddStateTimelineLane("First", new[] { new ChartStateTimelineSegment(1, 4, "up") })
             .AddStateTimelineLane("Second", new[] { new ChartStateTimelineSegment(6, 9, "up") });

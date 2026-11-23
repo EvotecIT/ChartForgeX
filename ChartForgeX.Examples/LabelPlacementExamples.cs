@@ -26,9 +26,9 @@ public static class LabelPlacementExamples {
                 new ChartMapPoint("Madrid", -3.7038, 40.4168), new ChartMapPoint("Paris", 2.3522, 48.8566),
                 new ChartMapPoint("London", -0.1278, 51.5074), new ChartMapPoint("Warsaw", 21.0122, 52.2297),
                 new ChartMapPoint("Berlin", 13.4050, 52.5200), new ChartMapPoint("Rome", 12.4964, 41.9028)
-            }).AddMapRouteBetweenPoints("Madrid to Paris", "Madrid", "Paris")
-            .AddMapRouteBetweenPoints("London to Warsaw", "London", "Warsaw")
-            .AddMapRouteBetweenPoints("Berlin to Rome", "Berlin", "Rome");
+            }).AddMapConnectorBetweenPoints("Madrid to Paris", "Madrid", "Paris")
+            .AddMapConnectorBetweenPoints("London to Warsaw", "London", "Warsaw")
+            .AddMapConnectorBetweenPoints("Berlin to Rome", "Berlin", "Rome");
         var sankey = Chart.Create().Title("Finding flow").Size(800, 484).Theme(theme).ThemeMode(mode).DataLabels()
             .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediation", "Remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
                 new ChartFlowLink("flow-1", "Discovered", "Validated", 72), new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 18),
@@ -41,13 +41,13 @@ public static class LabelPlacementExamples {
     /// <summary>Creates a dashboard with dense labels at the target PNG density.</summary>
     public static ChartGrid Scorecard(bool dark) {
         var panels = Charts(dark);
-        return ChartGrid.Create().Title("Measured control scorecards").Columns(2).PngOutputScale(2)
+        return ChartGrid.Create().Title("Measured control scorecards").Columns(2).RasterScale(2)
             .Add(panels[2].Chart).Add(panels[0].Chart).Add(panels[1].Chart).Add(panels[3].Chart);
     }
 
     /// <summary>Creates a topology with close captions, multiline nodes and labelled routes.</summary>
     public static TopologyChart Topology(bool dark) => TopologyChart.Create().Viewport(new TopologyViewport(1000, 500))
-        .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).Title("Measured service topology")
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Measured service topology")
         .AddNode("gateway", "Regional gateway", 70, 170, width: 180, height: 96, subtitle: "Traffic and routing")
         .AddNode("identity", "Identity service", 380, 120, width: 190, height: 96, subtitle: "Authentication")
         .AddNode("policy", "Policy evaluation", 380, 290, width: 190, height: 96, subtitle: "Control checks")
@@ -61,13 +61,13 @@ public static class LabelPlacementExamples {
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             foreach (var (name, chart) in Charts(dark)) {
-                chart.Png(p => p.OutputScale(2));
+                chart.Raster(p => p.OutputScale(2));
                 var chartPath = Path.Combine(output, "label-placement-" + name + "-" + suffix);
                 chart.SaveSvg(chartPath + ".svg"); chart.SavePng(chartPath + ".png"); chart.SaveHtml(chartPath + ".html");
             }
-            ExampleArtifactWriter.SaveGrid(Scorecard(dark), output, "label-placement-scorecards-" + suffix, ChartPngOutputScale.Retina);
+            ExampleArtifactWriter.SaveGrid(Scorecard(dark), output, "label-placement-scorecards-" + suffix, ChartRasterScale.Retina);
             var path = Path.Combine(output, "label-placement-topology-" + suffix);
-            var topology = Topology(dark); var options = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 };
+            var topology = Topology(dark); var options = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 2 };
             File.WriteAllText(path + ".svg", topology.ToSvg(options)); File.WriteAllBytes(path + ".png", topology.ToPng(options));
             File.WriteAllText(path + ".html", topology.ToHtmlPage(options));
         }

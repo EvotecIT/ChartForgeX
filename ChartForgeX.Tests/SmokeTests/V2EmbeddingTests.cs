@@ -15,24 +15,24 @@ namespace ChartForgeX.Tests;
 public sealed class V2EmbeddingTests {
     [Fact]
     public void ImageCompositionEmbedsTheSamePreparedChartAndGridPixelsWithFitAndOpacity() {
-        var chart = Sample().Png(p => p.OutputScale(2)).TransparentBackground(false);
+        var chart = Sample().Raster(p => p.OutputScale(2)).TransparentBackground(false);
         var chartRequest = VisualExportRequest.ForChart(chart);
-        var chartPixels = chart.Prepare(chartRequest.Context).ToRgba(chartRequest.RasterOptions);
+        var chartPixels = chart.Prepare(chartRequest.Context).ToRgbaImage(chartRequest.RasterOptions);
         var actualChart = ImageComposition.Create(340, 230, ChartColor.White)
-            .DrawChart(chart, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToImage();
+            .DrawChart(chart, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToRgbaImage();
         var expectedChart = ImageComposition.Create(340, 230, ChartColor.White)
-            .DrawImage(chartPixels, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToImage();
+            .DrawImage(chartPixels, 11, 13, 300, 180, VisualCanvasImageFit.Contain, .65).ToRgbaImage();
         Assert.Equal(expectedChart.Pixels, actualChart.Pixels);
         var grid = ChartGrid.Create().Columns(2).PanelSize(180, 130).Padding(8)
-            .PngOutputScale(2).Add(chart).Add(Sample());
+            .RasterScale(2).Add(chart).Add(Sample());
         var gridRequest = VisualExportRequest.ForGrid(grid);
-        var gridPixels = grid.Prepare(gridRequest.Context).ToRgba(gridRequest.RasterOptions);
+        var gridPixels = grid.Prepare(gridRequest.Context).ToRgbaImage(gridRequest.RasterOptions);
         var actualGrid = ImageComposition.CreateTransparent(410, 180)
-            .DrawChartGrid(grid, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToImage();
+            .DrawChartGrid(grid, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToRgbaImage();
         var expectedGrid = ImageComposition.CreateTransparent(410, 180)
-            .DrawImage(gridPixels, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToImage();
+            .DrawImage(gridPixels, 5, 7, 390, 160, VisualCanvasImageFit.Stretch, .8).ToRgbaImage();
         Assert.Equal(expectedGrid.Pixels, actualGrid.Pixels);
-        Assert.Equal(2, chart.Options.Png.OutputScale);
+        Assert.Equal(2, chart.Options.Raster.OutputScale);
         Assert.False(chart.Options.TransparentBackground);
     }
 
@@ -61,7 +61,7 @@ public sealed class V2EmbeddingTests {
         var ids = a.DescendantsAndSelf().Concat(b.DescendantsAndSelf()).Attributes("id").Select(attribute => attribute.Value).ToArray();
         Assert.NotEmpty(ids); Assert.Equal(ids.Length, ids.Distinct(StringComparer.Ordinal).Count());
         Assert.Single(a.DescendantsAndSelf(), element => element.Name.LocalName == "svg");
-        Assert.Equal(prepared.ToRgba().Pixels, grid.ToRgbaImage().Pixels);
+        Assert.Equal(prepared.ToRgbaImage().Pixels, grid.ToRgbaImage().Pixels);
     }
 
     [Theory]
@@ -69,7 +69,7 @@ public sealed class V2EmbeddingTests {
     [InlineData(true)]
     public void VisualGridHostsSharePreparedChartSourcesWithoutMutatingTransparency(bool dark) {
         var chart = Sample().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.TransparentBackground(false).Png(p => p.OutputScale(2));
+        chart.TransparentBackground(false).Raster(p => p.OutputScale(2));
         var grid = VisualGrid.Create().Padding(0).Gap(0).PanelSize(240, 160).Add(chart);
         var svg = new SvgVisualGridRenderer().Render(grid);
         var html = new HtmlVisualGridRenderer().RenderFragment(grid, "host scope");
@@ -81,7 +81,7 @@ public sealed class V2EmbeddingTests {
         Assert.Equal(240, pixels.Width); Assert.Equal(160, pixels.Height);
         Assert.Contains(pixels.Pixels.Where((_, index) => index % 4 == 3), alpha => alpha > 0);
         Assert.False(chart.Options.TransparentBackground);
-        Assert.Equal(2, chart.Options.Png.OutputScale);
+        Assert.Equal(2, chart.Options.Raster.OutputScale);
         Assert.Equal("Source", chart.Title);
     }
 

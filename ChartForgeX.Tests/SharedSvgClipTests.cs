@@ -22,8 +22,8 @@ public sealed class SharedSvgClipTests {
             }
         }
         var scene = builder.Build();
-        var first = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, idPrefix: "first"));
-        var second = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, idPrefix: "second"));
+        var first = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, idScope: "first"));
+        var second = XDocument.Parse(VisualSceneSvgRenderer.Render(scene, idScope: "second"));
         foreach (var document in new[] { first, second }) {
             var clips = document.Descendants().Where(element => element.Name.LocalName == "clipPath").ToArray();
             Assert.Equal(2, clips.Length);

@@ -27,7 +27,7 @@ public sealed class V2ScheduleTests {
     [Fact]
     public void StateLanesCoalesceAdjacentBucketsButPreserveGapProvenanceAndSummaries() {
         var chart = Chart.Create().StateCategories(new ChartStateCategory("up", "Available", ChartColor.FromHex("#1d8a52")))
-            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 2, "up"), new ChartStateTimelineSegment(2, 3, "up"), new ChartStateTimelineSegment(4, 5, "pending") }, "99%", "Production");
+            .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 2, "up"), new ChartStateTimelineSegment(2, 3, "up"), new ChartStateTimelineSegment(4, 5, "pending") }, "Production", "99%");
         chart.Options.StateTimeline.SummaryHeader = "Availability";
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var segments = ByRole(document, "state-timeline-segment"); Assert.Equal(2, segments.Length);
@@ -136,7 +136,7 @@ public sealed class V2ScheduleTests {
     }
 
     private static Chart Fixture(ChartSeriesKind kind) => kind switch {
-        ChartSeriesKind.Timeline => Chart.Create().AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
+        ChartSeriesKind.Timeline => Chart.Create().AddTimelineItem("Plan", 1, 3).AddTimelineItem("Build", 2, 4),
         ChartSeriesKind.Gantt => GanttFixture(),
         ChartSeriesKind.StateTimeline => Chart.Create().AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }),
         _ => Chart.Create().AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "high") })

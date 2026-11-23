@@ -9,7 +9,7 @@ using ChartForgeX.VisualBlocks;
 internal static class PremiumSurfaceExamples {
     private const string ManifestFileName = "premium-surface-manifest.json";
 
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         SaveDesktopWallpaper(output, (int)pngOutputScale);
         SaveCompactEmailSummary(output, (int)pngOutputScale);
         WriteManifest(output);
@@ -21,7 +21,7 @@ internal static class PremiumSurfaceExamples {
             .Title("Premium endpoint desktop wallpaper")
             .BackgroundTop(ChartColor.FromHex("#020617")).BackgroundBottom(ChartColor.FromHex("#0B2447"))
             .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
-            .PngOutputScale(outputScale)
+            .RasterScale(outputScale)
             .AddText(70, 58, 1780, "ENDPOINT OVERVIEW", 18, ChartColor.FromHex("#7DD3FC"), emphasized: true)
             .AddHeroTitle(520, 354, 880, 78, new[] {
                 new VisualCanvasTextRun("DEV-WKS-", ChartColor.FromHex("#F8FAFC")),
@@ -69,7 +69,7 @@ internal static class PremiumSurfaceExamples {
             .Metric(label, value)
             .Caption(caption)
             .Symbol(symbol)
-            .Status(status)
+            .Tone(status)
             .MiniSparkline(history, color: color, fillColor: color.WithAlpha(34));
 
         var cards = new[] {
@@ -82,7 +82,7 @@ internal static class PremiumSurfaceExamples {
         var grid = VisualGrid.CreateMetricStrip("Monthly Security Summary", cards, columns: 2, panelWidth: 260, panelHeight: 142)
             .Subtitle("Compact 584 px visual for email and narrow report columns.")
             .Theme(theme)
-            .PngOutputScale(outputScale);
+            .RasterScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "premium-email-summary-grid.svg"));
         grid.SaveHtml(Path.Combine(output, "premium-email-summary-grid.html"));

@@ -20,13 +20,13 @@ public sealed class CapturedLayerSampleBoundaryTests {
         var source = Source();
         var layer = source.CaptureLayer(new VisualDropShadow(ChartColor.FromRgba(11, 29, 248, 255),
             6, 0, 0, orderedDither: false, opacity: alpha / 255d), Unit);
-        var raw = layer.ToImage();
-        var visual = layer.Visual.ToRgba(Unit);
+        var raw = layer.ToRgbaImage();
+        var visual = layer.Visual.ToRgbaImage(Unit);
         var png = layer.Visual.ToPng(Unit);
         // Common artifact export uses its incumbent default raster coverage. The explicit
         // prepared export above owns the unit-coverage raw-pixel comparison.
         var artifactPng = layer.Visual.ToArtifact("captured-pixel-boundary").ToPng();
-        var defaultVisual = layer.Visual.ToRgba();
+        var defaultVisual = layer.Visual.ToRgbaImage();
         NativeEffectBeforeCapture.Write("captured-layer-unit-" + alpha, layer.Visual.ToSvg(), png, raw);
         NativeEffectBeforeCapture.Json("captured-layer-unit-" + alpha + "-pixels", new {
             raw = raw.Pixels, visual = visual.Pixels, raw.Width, raw.Height, layer.Bounds
@@ -53,12 +53,12 @@ public sealed class CapturedLayerSampleBoundaryTests {
         retained.Image(new VisualSceneImageData(image), new ChartRect(2, 2, 1, 1));
         var first = new PreparedVisual(direct.Build());
         var second = new PreparedVisual(retained.Build());
-        NativeEffectBeforeCapture.Write("captured-layer-ordinary-image-control", first.ToSvg(), first.ToPng(Unit), first.ToRgba(Unit));
+        NativeEffectBeforeCapture.Write("captured-layer-ordinary-image-control", first.ToSvg(), first.ToPng(Unit), first.ToRgbaImage(Unit));
         Assert.Equal(first.ToSvg(), second.ToSvg());
-        Assert.Equal(first.ToRgba(Unit).Pixels, second.ToRgba(Unit).Pixels);
+        Assert.Equal(first.ToRgbaImage(Unit).Pixels, second.ToRgbaImage(Unit).Pixels);
         Assert.Equal(first.ToPng(Unit), second.ToPng(Unit));
         Assert.True(RasterImageDecoder.TryDecode(first.ToPng(Unit), out var decoded));
-        Assert.Equal(first.ToRgba(Unit).Pixels, decoded.Pixels);
+        Assert.Equal(first.ToRgbaImage(Unit).Pixels, decoded.Pixels);
     }
 
     private static readonly VisualRenderOptions Unit = new(supersampling: 1);

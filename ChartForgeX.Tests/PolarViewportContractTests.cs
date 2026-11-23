@@ -109,7 +109,7 @@ public sealed class PolarViewportContractTests {
         chart.Series[0].Polar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
         chart.Series[0].Markers.Enabled = false;
         var prepared = Prepare(chart, new ChartPolarViewport(angle: new ChartAxisWindow(0, Math.PI / 2)));
-        var projection = prepared.PolarProjection!; var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 2));
+        var projection = prepared.PolarProjection!; var image = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 2));
         var inside = projection.Project(Math.PI / 4, 35); var outside = projection.Project(Math.PI, 35);
         Assert.True(Alpha(image, inside) > 0); Assert.Equal(0, Alpha(image, outside));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();

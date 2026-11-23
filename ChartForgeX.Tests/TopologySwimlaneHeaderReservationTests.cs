@@ -29,7 +29,7 @@ public sealed class TopologySwimlaneHeaderReservationTests {
     [InlineData(false)] [InlineData(true)]
     public void AuthoredMultilineLaneHeadersReserveTheirCompleteHeightBeforeFactualCards(bool dark) {
         var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(600, 300, 24)).Legend((TopologyLegend?)null)
-            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("lane", "Orders\nrecords", subtitle: "Observed\nfacts")
             .AddAutoNode("node", "Complete card", TopologyNodeKind.Generic, groupId: "lane", width: 144, height: 64);

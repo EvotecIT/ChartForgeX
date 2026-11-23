@@ -27,8 +27,8 @@ public sealed class SlopeStagesBrowserTests {
         chart.Options.SlopeOrientation = ChartOrientation.Horizontal;
         chart.XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 5)).SecondaryXAxis(s => s.Bounds(0, 100));
         var renderer = new HtmlInteractiveChartRenderer(); var initial = renderer.PrepareSection(chart, configure: Configure);
-        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
+            + "</style></head><body>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 750);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var requests = new List<JsonElement>(); HtmlChartSection? accepted = null;

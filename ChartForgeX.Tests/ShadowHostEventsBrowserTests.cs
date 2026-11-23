@@ -100,7 +100,7 @@ public sealed class ShadowHostEventsBrowserTests {
         graph.Options.Manipulation.EnableEditing();
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
             options.PersistThemePreference = false;
-            options.Theme = mode == "closed" ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.ThemeMode = mode == "closed" ? ThemeMode.Dark : ThemeMode.Light;
         }), 900, 700);
         var page = session.Page;
         var pageErrors = new List<string>();

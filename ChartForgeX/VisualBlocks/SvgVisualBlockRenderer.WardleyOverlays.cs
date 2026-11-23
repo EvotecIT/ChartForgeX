@@ -10,7 +10,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void WriteWardleySourcing(SvgMarkupWriter writer, VisualBlockRendering.WardleyNodePlacement placement,
         double radius, ChartColor color, ResolvedVisualTheme theme) {
         var strategy = placement.Node.Strategy;

@@ -13,7 +13,7 @@ public sealed class KeyedTypedObservationChangesTests {
         var series = ChartSeries.CreateBubble(new ChartSeriesId("bubbles"), "Requests", new[] {
             new ChartBubble(1, 10, 2).WithColorValue(-1), new ChartBubble(2, 20, 3).WithColorValue(4)
         }).ObservationIds(new[] { Id("a"), Id("b") }).PointLabel(1, "Retained request")
-            .PointColor(1, "#123456").PointFillPattern(1, ChartFillPattern.Crosshatch)
+            .PointColor(1, ChartColor.FromHex("#123456")).PointFillPattern(1, ChartFillPattern.Crosshatch)
             .PointDataLabelStyle(1, options => options.FontSize = 13);
         series.PointSliceOffsets.AddRange(new[] { 0d, .2 });
         var chart = Chart.Create().Size(640, 360).AddSeries(series);

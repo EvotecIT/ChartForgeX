@@ -61,7 +61,7 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
             .ForceGraphStyle()
-            .HtmlForceGraphControls();
+            .Html(html => html.ForceGraphControls());
         var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("data-cfx-force-graph-controls=\"true\"", StringComparison.Ordinal), "Force graph HTML should opt into graph-specific controls.");
@@ -97,7 +97,7 @@ internal static partial class SmokeTests {
                 View = new TopologyView { GroupIds = { "group-01" } }
             }
             .ForceGraphStyle()
-            .HtmlForceGraphControls();
+            .Html(html => html.ForceGraphControls());
         var html = chart.ToInteractiveHtmlPage(options);
 
         Assert(html.Contains("<option value=\"group-01\">Group 2</option>", StringComparison.Ordinal), "Force graph group filters should include groups that remain in the prepared view.");
@@ -112,7 +112,7 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("group-00-hub", maxDepth: 2, maxFanout: 12);
         var html = chart.ToInteractiveHtmlPage(options);
 

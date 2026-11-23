@@ -55,8 +55,8 @@ public sealed class PageThemeSvgTests {
         literal.Rect(new ChartRect(20, 0, 20, 20), ChartColor.FromRgba(36, 104, 172, 64));
         literal.Rect(new ChartRect(40, 0, 20, 20), ChartColor.FromRgba(36, 104, 172, 64));
         var options = new VisualRenderOptions(supersampling: 1);
-        var pixels = prepared.ToRgba(options);
-        Assert.Equal(new PreparedVisual(literal.Build()).ToRgba(options).Pixels, pixels.Pixels);
+        var pixels = prepared.ToRgbaImage(options);
+        Assert.Equal(new PreparedVisual(literal.Build()).ToRgbaImage(options).Pixels, pixels.Pixels);
         var offset = (10 * pixels.Width + 10) * 4;
         Assert.Equal(new byte[] { 36, 104, 172, 128 }, pixels.Pixels.Skip(offset).Take(4).ToArray());
         Assert.Equal(0x2468AC80u, color.WithAlpha(128).ToRgba());

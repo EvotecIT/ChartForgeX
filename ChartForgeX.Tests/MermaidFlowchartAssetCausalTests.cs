@@ -51,7 +51,7 @@ public sealed class MermaidFlowchartAssetCausalTests {
             var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 12)).Legend((TopologyLegend?)null);
             var image = new RgbaImage(2, 2, new byte[] { 255,0,0,255, 0,255,0,128, 0,0,255,0, 255,255,0,255 });
             chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Caption", Subtitle = "Detail", X = 80, Y = 65, Width = 64, Height = 64, DisplayMode = mode,
-                Shape = TopologyNodeShape.Rectangle, Color = "#123456", IconId = "common:server",
+                Shape = TopologyNodeShape.Rectangle, Color = ChartColor.FromHex("#123456"), IconId = "common:server",
                 Artwork = mode == TopologyNodeDisplayMode.Artwork ? TopologyIconArtwork.Portrait(image) : null,
                 ShowStatusBadge = false, PreserveDisplayModeSize = true });
             failures.Add(CaptureArtifact(chart.ToVisualArtifact(), "ordinary-null-caption-glyph-" + mode));

@@ -141,7 +141,7 @@ internal static partial class SmokeTests {
     private static void DottedMapRendersConnectorRoutes() {
         var chart = Chart.Create().Size(520, 300).Map(m => m.Viewport(ChartMapViewport.Europe())).AddDottedMap("Visited", new[] {
             new ChartMapPoint("Spain", -3.7038, 40.4168), new("Warsaw", 21.0122, 52.2297), new("Oslo", 10.7522, 59.9139)
-        }).AddMapRouteBetweenPoints("Spain to Warsaw", "Spain", "Warsaw", ChartColor.FromHex("#22C55E"))
+        }).AddMapConnectorBetweenPoints("Spain to Warsaw", "Spain", "Warsaw", ChartColor.FromHex("#22C55E"))
             .AddMapConnectorBetweenPoints("Warsaw to Oslo", "Warsaw", "Oslo");
         var prepared = PreparedFamily(chart);
         Verify.Equal(2, FamilyGroups(prepared, "dotted-map-connector-source").Length);
@@ -169,12 +169,12 @@ internal static partial class SmokeTests {
         Verify.Equal(2, FamilyLabels(PreparedFamily(chart.Size(900, 520)), "dotted-map-connector-label").Length);
         AssertThrows<ArgumentException>(() => Chart.Create().AddMapConnector(" ", 0, 0, 1, 1), "Routes need a label.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddMapConnector("Bad", -181, 0, 1, 1), "Route coordinates must be geographic.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddMapRouteBetweenPoints("Bad", "Spain", "Warsaw"), "Bound routes require source points.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }).AddMapRouteBetweenPoints("Bad", "Spain", "Missing"), "Bound routes require known endpoints.");
+        AssertThrows<InvalidOperationException>(() => Chart.Create().AddMapConnectorBetweenPoints("Bad", "Spain", "Warsaw"), "Bound routes require source points.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }).AddMapConnectorBetweenPoints("Bad", "Spain", "Missing"), "Bound routes require known endpoints.");
         var ports = new[] { new ChartMapPoint("Rotterdam", 4.4792, 51.9244), new ChartMapPoint("Singapore", 103.8198, 1.3521) };
         var sea = Chart.Create().Size(760, 420).AddDottedMap("Ports", ports)
-            .AddMapRoute("Via Suez", new[] { ports[0], new ChartMapPoint("Suez", 32.5498, 29.9668), ports[1] })
-            .AddMapRoute("Via Cape", new[] { ports[0], new ChartMapPoint("Cape", 18.4741, -34.3587), ports[1] });
+            .AddMapConnector("Via Suez", new[] { ports[0], new ChartMapPoint("Suez", 32.5498, 29.9668), ports[1] })
+            .AddMapConnector("Via Cape", new[] { ports[0], new ChartMapPoint("Cape", 18.4741, -34.3587), ports[1] });
         var seaPrepared = PreparedFamily(sea);
         Verify.All(FamilyGroups(seaPrepared, "dotted-map-connector-source"), route => { Verify.Equal("waypoint", route.Metadata["data-cfx-route-kind"]); Verify.Equal("3", route.Metadata["data-cfx-waypoint-count"]); });
         Verify.All(seaPrepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "dotted-map-connector"),

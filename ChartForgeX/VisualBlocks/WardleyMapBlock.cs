@@ -80,8 +80,7 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     /// <summary>Creates an empty Wardley map block.</summary>
     public static WardleyMapBlock Create() => new();
 
-    /// <summary>Sets the left-to-right evolution stages.</summary>
-    public WardleyMapBlock SetStages(IEnumerable<string> stages) {
+    internal WardleyMapBlock SetStages(IEnumerable<string> stages) {
         if (stages == null) throw new ArgumentNullException(nameof(stages));
         _stages.Clear();
         foreach (var stage in stages) {

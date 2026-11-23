@@ -33,12 +33,28 @@ public sealed class TopologyHtmlOptions {
 
 
     /// <summary>Gets or sets whether force-directed HTML pages should include graph exploration controls.</summary>
-    public bool ForceGraphControls { get; set; }
+    /// <remarks>Turning it on also turns on interactions and viewport controls.</remarks>
+    public bool ForceGraphControls {
+        get => _forceGraphControls;
+        set {
+            _forceGraphControls = value;
+            if (value) { Interactions = true; ViewportControls = true; }
+        }
+    }
+    private bool _forceGraphControls;
 
 
     /// <summary>Gets or sets whether interactive HTML pages render a find bar that highlights nodes by text, group or kind and moves the viewport to them.</summary>
-    /// <remarks>Force graph controls already carry their own search, so force-directed pages with those controls keep that panel instead.</remarks>
-    public bool FindControls { get; set; }
+    /// <remarks>Force graph controls already carry their own search, so force-directed pages with those controls keep that panel instead.
+    /// Turning it on also turns on interactions and viewport controls.</remarks>
+    public bool FindControls {
+        get => _findControls;
+        set {
+            _findControls = value;
+            if (value) { Interactions = true; ViewportControls = true; }
+        }
+    }
+    private bool _findControls;
 
 
     /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
@@ -46,15 +62,26 @@ public sealed class TopologyHtmlOptions {
 
 
     /// <summary>Gets or sets whether interactive HTML pages should render scenario picker controls when scenarios are present.</summary>
-    public bool ScenarioControls { get; set; } = true;
+    /// <remarks>Turning it on also turns on interactions.</remarks>
+    public bool ScenarioControls {
+        get => _scenarioControls;
+        set {
+            _scenarioControls = value;
+            if (value) { Interactions = true; }
+        }
+    }
+    private bool _scenarioControls = true;
 
 
     /// <summary>Gets or sets how interactive HTML pages should render scenario controls.</summary>
+    /// <remarks>Setting it also turns on interactions and scenario controls.</remarks>
     public TopologyHtmlScenarioControlMode ScenarioControlMode {
         get => _htmlScenarioControlMode;
         set {
             TopologyModelGuards.EnumDefined(value, nameof(value));
             _htmlScenarioControlMode = value;
+            Interactions = true;
+            ScenarioControls = true;
         }
     }
 
@@ -62,19 +89,51 @@ public sealed class TopologyHtmlOptions {
 
 
     /// <summary>Gets or sets whether interactive HTML pages should render a compact scenario detail panel when scenarios are present.</summary>
-    public bool ScenarioPanel { get; set; } = true;
+    /// <remarks>Turning it on also turns on interactions.</remarks>
+    public bool ScenarioPanel {
+        get => _scenarioPanel;
+        set {
+            _scenarioPanel = value;
+            if (value) { Interactions = true; }
+        }
+    }
+    private bool _scenarioPanel = true;
 
 
     /// <summary>Gets or sets whether interactive HTML pages show each scenario's matching sequence diagram and highlight the active step's message in it.</summary>
-    public bool ScenarioSequence { get; set; }
+    /// <remarks>Turning it on also turns on interactions.</remarks>
+    public bool ScenarioSequence {
+        get => _scenarioSequence;
+        set {
+            _scenarioSequence = value;
+            if (value) { Interactions = true; }
+        }
+    }
+    private bool _scenarioSequence;
 
 
     /// <summary>Gets or sets whether interactive HTML pages should render a compact selected-record panel for clicked nodes, edges, and groups.</summary>
-    public bool SelectionPanel { get; set; }
+    /// <remarks>Turning it on also turns on interactions.</remarks>
+    public bool SelectionPanel {
+        get => _selectionPanel;
+        set {
+            _selectionPanel = value;
+            if (value) { Interactions = true; }
+        }
+    }
+    private bool _selectionPanel;
 
 
     /// <summary>Gets or sets whether interactive HTML pages should render a fullscreen viewport control.</summary>
-    public bool FullscreenControl { get; set; }
+    /// <remarks>Turning it on also turns on interactions.</remarks>
+    public bool FullscreenControl {
+        get => _fullscreenControl;
+        set {
+            _fullscreenControl = value;
+            if (value) { Interactions = true; }
+        }
+    }
+    private bool _fullscreenControl;
 
 
     /// <summary>Gets or sets where viewport, fullscreen, and export controls are placed in interactive HTML output.</summary>
@@ -114,7 +173,15 @@ public sealed class TopologyHtmlOptions {
 
 
     /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
-    public bool ScenarioUrlState { get; set; }
+    /// <remarks>Turning it on also turns on interactions.</remarks>
+    public bool ScenarioUrlState {
+        get => _scenarioUrlState;
+        set {
+            _scenarioUrlState = value;
+            if (value) { Interactions = true; }
+        }
+    }
+    private bool _scenarioUrlState;
 
 
     /// <summary>Gets or sets the optional HTML synchronization group name used by topology wrappers on the same page.</summary>

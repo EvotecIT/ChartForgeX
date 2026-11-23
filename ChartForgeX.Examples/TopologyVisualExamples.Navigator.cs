@@ -14,10 +14,10 @@ internal static partial class TopologyVisualExamples {
     // Interactive HTML only: a dense estate opens at a readable scale with find, group and kind filters.
     private static void WriteDenseEstateNavigator(string target) {
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-            .HtmlFindControls();
+            .Html(html => html.FindControls());
         options.Html.SelectionPanel = true;
         BuildDenseServiceEstate().SaveInteractiveHtml(Path.Combine(target, "visual-dense-service-estate-navigator.html"), options);
-        BuildDenseServiceEstate().Theme(VisualTheme.Graphite(), ThemeMode.Dark)
+        BuildDenseServiceEstate().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
             .SaveInteractiveHtml(Path.Combine(target, "visual-dense-service-estate-navigator-dark.html"), options);
     }
 

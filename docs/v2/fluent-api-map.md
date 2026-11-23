@@ -140,8 +140,8 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPictorialFillDirection(ChartPictorialFillDirection)` | `.Pictorial(p => p.FillDirection(direction))` |
 | `WithPictorialMaximum(Double?)` | `.Pictorial(p => p.Max(maximum))` |
 | `WithPictorialShape(ChartPictorialShape)` | `.Pictorial(p => p.Shape(shape)).Pictorial(p => p.SvgPathData(null))` |
-| `WithPictorialSvgPath(string,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData, pngFallbackShape))` |
-| `WithPictorialSvgPath(string,ChartRect,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData, viewBox, pngFallbackShape))` |
+| `WithPictorialSvgPath(string,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData))` |
+| `WithPictorialSvgPath(string,ChartRect,ChartPictorialShape)` | `.Pictorial(p => p.SvgPath(pathData, viewBox))` |
 | `WithPictorialSymbolScale(Double)` | `.Pictorial(p => p.SymbolScale(scale))` |
 | `WithPictorialValuePerSymbol(Double?)` | `.Pictorial(p => p.ValuePerSymbol(valuePerSymbol))` |
 | `WithPictorialValues` | `.Pictorial(p => p.ShowValues(visible))` |
@@ -151,11 +151,11 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPlainLineStyle` | `.Lines(l => l.PlainStyle())` |
 | `WithPlotBackground` | `.ShowPlotBackground(visible)` |
 | `WithPlotClipping` | `.ClipMarksToPlot(enabled)` |
-| `WithPngFont(string?,int?,string?)` | `.Png(p => p.FontPath(fontPath)).Png(p => p.FontCollectionIndex(collectionIndex)).Png(p => p.FontFaceName(faceName))` |
-| `WithPngFont(string?,string?)` | `.Png(p => p.FontPath(fontPath)).Png(p => p.FontFaceName(faceName))` |
-| `WithPngOutputScale(ChartPngOutputScale)` | `.Png(p => p.OutputScale((int)scale))` |
-| `WithPngOutputScale(Int32)` | `.Png(p => p.OutputScale(scale))` |
-| `WithPngSupersampling(Int32)` | `.Png(p => p.SupersamplingScale(scale))` |
+| `WithPngFont(string?,int?,string?)` | `.Raster(p => p.FontPath(fontPath)).Raster(p => p.FontCollectionIndex(collectionIndex)).Raster(p => p.FontFaceName(faceName))` |
+| `WithPngFont(string?,string?)` | `.Raster(p => p.FontPath(fontPath)).Raster(p => p.FontFaceName(faceName))` |
+| `WithPngOutputScale(ChartRasterScale)` | `.Raster(p => p.OutputScale((int)scale))` |
+| `WithPngOutputScale(Int32)` | `.Raster(p => p.OutputScale(scale))` |
+| `WithPngSupersampling(Int32)` | `.Raster(p => p.SupersamplingScale(scale))` |
 | `WithPointLegend` | `.Legend(l => l.ShowPoints(visible))` |
 | `WithPolarGridShape` | `.Polar(p => p.GridShape(shape))` |
 | `WithProgressBarThickness` | `.Progress(p => p.BarThicknessRatio(ratio))` |
@@ -296,7 +296,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | --- | --- |
 | `ConfigureTheme` | `.Theme(...)` |
 | `WithPalette` | `.Palette(...)` |
-| `WithPngOutputScale(ChartPngOutputScale)` | `.PngOutputScale((int)scale)` |
+| `WithPngOutputScale(ChartRasterScale)` | `.RasterScale((int)scale)` |
 
 ## ChartGrid
 
@@ -312,8 +312,8 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPanelSize` | `.PanelSize(...)` |
 | `WithPanelSpan` | `.PanelSpan(...)` |
 | `WithPanelThemes(Boolean)` | `.UsePanelThemes(enabled)` |
-| `WithPngOutputScale(ChartPngOutputScale)` | `.PngOutputScale((int)scale)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(ChartRasterScale)` | `.RasterScale((int)scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithSharedAxes` | `.ShareAxes(...)` |
 | `WithSharedXAxis` | `.ShareXAxis(...)` |
 | `WithSharedYAxis` | `.ShareYAxis(...)` |
@@ -442,7 +442,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `PictorialEmptyOpacity (property)` | `Pictorial.EmptyOpacity` |
 | `PictorialFillDirection (property)` | `Pictorial.FillDirection` |
 | `PictorialMaximum (property)` | `Pictorial.Max` |
-| `PictorialPngFallbackShape (property)` | `Pictorial.PngFallbackShape` |
+| `PictorialPngFallbackShape (property)` | removed; SVG and PNG both draw the custom path |
 | `PictorialShape (property)` | `Pictorial.Shape` |
 | `PictorialSvgPathData (property)` | `Pictorial.SvgPathData` |
 | `PictorialSvgPathViewBox (property)` | `Pictorial.SvgPathViewBox` |
@@ -461,9 +461,9 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `PngFontCollectionIndex (property)` | `Png.FontCollectionIndex` |
 | `PngFontFaceName (property)` | `Png.FontFaceName` |
 | `PngFontPath (property)` | `Png.FontPath` |
-| `PngOutputScale (property)` | `Png.OutputScale` |
-| `PngSupersamplingScale (property)` | `Png.SupersamplingScale` |
-| `PngTextHinting (property)` | `Png.TextHinting` |
+| `RasterScale (property)` | `Png.OutputScale` |
+| `RasterSupersampling (property)` | `Png.SupersamplingScale` |
+| `RasterTextHinting (property)` | `Png.TextHinting` |
 | `PolarAxisLabelFactor (property)` | `Polar.AxisLabelFactor` |
 | `PolarAxisScaleFactor (property)` | `Polar.AxisScaleFactor` |
 | `PolarAxisStroke (property)` | `Polar.AxisStroke` |
@@ -811,7 +811,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithFinalPrompt(Boolean)` | `.ShowFinalPrompt(visible)` |
 | `WithInitialTab` | `.InitialTab(...)` |
 | `WithPlaybackSpeed` | `.PlaybackSpeed(...)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithStyle(TerminalStyleOptions)` | `.Style(style)` |
 | `WithTabHold(Double)` | `.TabHoldSeconds(seconds)` |
 | `WithTheme` | `.Theme(theme).ThemeMode(mode)` |
@@ -881,9 +881,9 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithEdgeEmphasis` | `.UpdateEdge(edgeId, e => e.Emphasis(emphasis))` |
 | `WithEdgeEndpointLabels` | `.UpdateEdge(edgeId, e => e.SourceLabel(sourceLabel).TargetLabel(targetLabel))` |
 | `WithEdgeEvidence` | `.UpdateEdge(edgeId, e => e.Evidence(evidence).EvidenceText(text))` |
-| `WithEdgeLabelAnchor` | `.EdgeLabelAnchor(...)` |
-| `WithEdgeLabelAnchorNode` | `.EdgeLabelAnchorNode(...)` |
-| `WithEdgeLabelAnnotationOffset` | `.EdgeLabelAnnotationOffset(...)` |
+| `WithEdgeLabelAnchor` | `.UpdateEdge(id, e => e.LabelAnchor(point))` |
+| `WithEdgeLabelAnchorNode` | `.UpdateEdge(id, e => e.LabelAnchorNodeId(nodeId))` |
+| `WithEdgeLabelAnnotationOffset` | `.UpdateEdge(id, e => e.LabelOffsetX(x).LabelOffsetY(y).LabelAnchor(null))` |
 | `WithEdgeLabelOffset` | `.UpdateEdge(edgeId, e => e.LabelOffsetX(x).LabelOffsetY(y))` |
 | `WithEdgeLayoutHints` | `.UpdateEdge(edgeId, e => e.PreferredLength(preferredLength).MinimumRankSpan(minimumRankSpan).RoutingPriority(routingPriority))` |
 | `WithEdgeLineStyle` | `.UpdateEdge(edgeId, e => e.LineStyle(lineStyle))` |
@@ -892,7 +892,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithEdgeNamedPorts` | `.UpdateEdge(edgeId, e => e.SourcePortId(sourcePortId).TargetPortId(targetPortId))` |
 | `WithEdgePorts` | `.UpdateEdge(edgeId, e => e.SourcePort(sourcePort).TargetPort(targetPort))` |
 | `WithEdgeRouteBundle` | `.EdgeRouteBundle(...)` |
-| `WithEdgeRouteLane` | `.EdgeRouteLane(...)` |
+| `WithEdgeRouteLane` | `.UpdateEdge(id, e => e.RouteLane(...))` |
 | `WithEdgeStroke` | `.EdgeStroke(...)` |
 | `WithEdgeUplink` | `.UpdateEdge(edgeId, e => e.UplinkEnd(childEnd))` |
 | `WithEdgeWaypoints` | `.EdgeWaypoints(...)` |
@@ -1015,18 +1015,18 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithForceGraphStyle` | `.ForceGraphStyle(...)` |
 | `WithForceLayout` | `.ForceLayoutProfile(profile).ForceLayoutIterations(iterations)` |
 | `WithHtmlControlPlacement` | `.Html(h => h.ControlPlacement(placement))` |
-| `WithHtmlFindControls` | `.HtmlFindControls(...)` |
-| `WithHtmlForceGraphControls` | `.HtmlForceGraphControls(...)` |
-| `WithHtmlFullscreenControl` | `.HtmlFullscreenControl(...)` |
+| `WithHtmlFindControls` | `.Html(html => html.FindControls(...))` |
+| `WithHtmlForceGraphControls` | `.Html(html => html.ForceGraphControls(...))` |
+| `WithHtmlFullscreenControl` | `.Html(html => html.FullscreenControl(...))` |
 | `WithHtmlNarrowMinimumHeight(TopologyRenderOptions, Double)` | `.Html(h => h.NarrowMinimumHeight(height))` |
 | `WithHtmlOpeningView` | `.Html(h => h.OpeningView(view))` |
-| `WithHtmlScenarioCheckboxes` | `.HtmlScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes)` |
-| `WithHtmlScenarioControlMode` | `.HtmlScenarioControlMode(...)` |
-| `WithHtmlScenarioControls` | `.HtmlScenarioControls(...)` |
-| `WithHtmlScenarioPanel` | `.HtmlScenarioPanel(...)` |
-| `WithHtmlScenarioSequence` | `.HtmlScenarioSequence(...)` |
-| `WithHtmlScenarioUrlState` | `.HtmlScenarioUrlState(...)` |
-| `WithHtmlSelectionPanel` | `.HtmlSelectionPanel(...)` |
+| `WithHtmlScenarioCheckboxes` | `.Html(html => html.ScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes))` |
+| `WithHtmlScenarioControlMode` | `.Html(html => html.ScenarioControlMode(...))` |
+| `WithHtmlScenarioControls` | `.Html(html => html.ScenarioControls(...))` |
+| `WithHtmlScenarioPanel` | `.Html(html => html.ScenarioPanel(...))` |
+| `WithHtmlScenarioSequence` | `.Html(html => html.ScenarioSequence(...))` |
+| `WithHtmlScenarioUrlState` | `.Html(html => html.ScenarioUrlState(...))` |
+| `WithHtmlSelectionPanel` | `.Html(html => html.SelectionPanel(...))` |
 | `WithHtmlWheelZoom` | `.Html(h => h.WheelZoom(wheelZoom))` |
 | `WithLuminousTopologyEdges` | `.LuminousEdges(...)` |
 | `WithMindMapStyle` | `.MindMapStyle(...)` |
@@ -1037,9 +1037,9 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithRelationshipOverviewStyle` | `.RelationshipOverviewStyle(...)` |
 | `WithRelationshipRadialFocus` | `.RelationshipRadialFocus(...)` |
 | `WithRequiredIcons(TopologyRenderOptions, Boolean)` | `.RequireResolvedIcons(required)` |
-| `WithSelectedEdge` | `.SelectEdge(...)` |
-| `WithSelectedGroup` | `.SelectGroup(...)` |
-| `WithSelectedNode` | `.SelectNode(...)` |
+| `WithSelectedEdge` | `.SelectedEdgeId(...)` |
+| `WithSelectedGroup` | `.SelectedGroupId(...)` |
+| `WithSelectedNode` | `.SelectedNodeId(...)` |
 | `WithStateColorsPinnedInForcedColors(TopologyRenderOptions, Boolean)` | `.PinStateColorsInForcedColors(pin)` |
 | `WithTopologyEdgeVisualStyle(TopologyRenderOptions, ChartLineVisualStyle)` | `.EdgeVisualStyle(style)` |
 | `WithoutActiveScenario(TopologyRenderOptions)` | `.ActiveScenarioId(null)` |
@@ -1072,7 +1072,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | --- | --- |
 | `WithCard(Boolean)` | `.ShowCard(enabled)` |
 | `WithHostFrame(Boolean)` | `.HostOwnsFrame(hostOwnsFrame)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithSubtitle(String)` | `.Subtitle(subtitle)` |
 | `WithSvgColorVariables(SvgColorVariables)` | `.SvgColorVariables(variables)` |
 | `WithThemeMode(ThemeMode)` | `.ThemeMode(mode)` |
@@ -1091,7 +1091,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithBackground(ChartColor, ChartColor)` | `.BackgroundTop(top).BackgroundBottom(bottom)` |
 | `WithFixedLayout` | `.FixedLayout(...)` |
 | `WithOutputSize(Int32, Int32)` | `.Width(width).Height(height)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithResponsiveLayout` | `.ResponsiveLayout(...)` |
 | `WithStyle(VisualCanvasStyleOptions)` | `.Style(style)` |
 | `WithTheme` | `.Theme(theme).ThemeMode(mode)` |
@@ -1117,7 +1117,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPadding(Int32)` | `.Padding(padding)` |
 | `WithPanelFit(VisualPanelFit)` | `.PanelFit(fit)` |
 | `WithPanelSize` | `.PanelSize(...)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithSubtitle(String)` | `.Subtitle(subtitle)` |
 | `WithTheme` | `.Theme(theme).ThemeMode(mode)` |
 | `WithThemeMode(ThemeMode)` | `.ThemeMode(mode)` |
@@ -1178,7 +1178,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | 4.x | 5.0 |
 | --- | --- |
 | `ConfigureTheme` | `.Theme(...)` |
-| `WithPngOutputScale` | `.PngOutputScale((int)scale)` |
+| `WithPngOutputScale` | `.RasterScale((int)scale)` |
 
 ## WardleyMapBlock
 

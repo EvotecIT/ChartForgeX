@@ -60,7 +60,7 @@ public static partial class VisualArtifactRendering {
         artifact.Title = title ?? semantics?.Title ?? accessibility.Name ?? string.Empty;
         artifact.Subtitle = subtitle ?? semantics?.Subtitle ?? string.Empty;
         artifact.SourceLanguage = semantics?.SourceLanguage ?? VisualArtifactSourceLanguage.Native;
-        artifact.NaturalSize = new VisualArtifactSize(prepared.Size.Width, prepared.Size.Height);
+        artifact.NaturalSize = new VisualSize(prepared.Size.Width, prepared.Size.Height);
         artifact.PreserveNaturalSize = true;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png |
             VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;

@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,8 +20,9 @@ public static class MermaidTreeViewRendering {
         foreach (var node in document.Nodes) {
             if (!seen.Add(node)) throw new ArgumentException("Tree view rows must be distinct.", nameof(document));
             if (node.Parent != null && !seen.Contains(node.Parent)) throw new ArgumentException("Tree view parents must precede their children in the document.", nameof(document));
-            var icon = node.IconReference == null ? TreeViewIcon.Auto : node.IconReference == "" || node.IconReference == "none" ? TreeViewIcon.None
-                : node.IconReference == "file" ? TreeViewIcon.File : node.IconReference == "folder" ? TreeViewIcon.Folder : TreeViewIcon.Unknown;
+            var icon = node.IconReference == null ? (Icon?)null : node.IconReference == "" || node.IconReference == "none" ? Icon.None
+                : node.IconReference == "file" ? TreeViewIcons.File : node.IconReference == "folder" ? TreeViewIcons.Folder
+                : Icon.TryParse(node.IconReference, out var key) && !key.IsEmpty ? key : Icon.Named("unknown");
             var highlight = false; foreach (var name in node.Classes) if (name == "highlight") highlight = true;
             block.AddItem(new TreeViewItem(node.Id, node.Label, node.Parent?.Id, node.Description,
                 node.IsDirectory ? TreeViewItemKind.Directory : TreeViewItemKind.Auto, icon, highlight, node.IconReference, node.Classes));
@@ -36,7 +38,7 @@ public static class MermaidTreeViewRendering {
         var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-treeview" : options.Id!.Trim(), VisualArtifactKind.Mermaid, block);
         artifact.Title = block.Title; artifact.Subtitle = block.Subtitle; artifact.SourceLanguage = VisualArtifactSourceLanguage.Mermaid;
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
-        artifact.NaturalSize = new VisualArtifactSize(block.Options.Size.Width, block.Options.Size.Height);
+        artifact.NaturalSize = new VisualSize(block.Options.Size.Width, block.Options.Size.Height);
         artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString(); artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.nodes"] = document.Nodes.Count.ToString(CultureInfo.InvariantCulture);

@@ -44,7 +44,7 @@ public sealed class V2ExportRequestTests {
         chart.Options.Padding = new ChartPadding(9, 11, 15, 17);
         chart.Options.ShowHeader = false; chart.Options.Legend.Visible = false;
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
-        chart.Options.TransparentBackground = true; chart.Options.Png.OutputScale = 2;
+        chart.Options.TransparentBackground = true; chart.Options.Raster.OutputScale = 2;
         chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#306090") }; });
         var pixels = chart.ToRgbaImage();
         Assert.Equal(480, pixels.Width); Assert.Equal(300, pixels.Height);
@@ -63,7 +63,7 @@ public sealed class V2ExportRequestTests {
         builder.Text("Small text", 5, 25, 11, ChartColor.Black);
         var prepared = new PreparedVisual(builder.Build());
         var before = prepared.ToSvg();
-        var pixels = prepared.ToRgba(new VisualRenderOptions(scale: 2, textHinting: TextHinting.None));
+        var pixels = prepared.ToRgbaImage(new VisualRenderOptions(scale: 2, textHinting: TextHinting.None));
         Assert.Equal(320, pixels.Width); Assert.Equal(100, pixels.Height);
         Assert.Equal(before, prepared.ToSvg());
         Assert.Throws<ArgumentOutOfRangeException>(() => new VisualRenderOptions(textHinting: (TextHinting)999));

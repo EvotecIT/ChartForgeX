@@ -22,7 +22,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
             .WithPatternTiles();
         var hostedOptions = options.WithoutProductFonts();
         Assert.NotSame(options, hostedOptions);
-        Assert.Equal("original-policy", hostedOptions.IdPrefix);
+        Assert.Equal("original-policy", hostedOptions.IdScope);
         Assert.True(hostedOptions.Responsive);
         Assert.True(hostedOptions.PatternTiles);
 
@@ -35,8 +35,8 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         Assert.DoesNotContain("@font-face", hostedSvg, StringComparison.Ordinal);
         Assert.True(XNode.DeepEquals(standalone, hosted), "Host font ownership must preserve every other SVG node and attribute.");
         Assert.Contains("var(--hfx-", hostedSvg, StringComparison.Ordinal);
-        Assert.Equal("original-policy", options.IdPrefix);
-        Assert.Equal("original-policy", hostedOptions.IdPrefix);
+        Assert.Equal("original-policy", options.IdScope);
+        Assert.Equal("original-policy", hostedOptions.IdScope);
         Assert.Equal(chart.ToSvg(scope), chart.ToSvg(defaults, scope));
         Assert.Equal(chart.ToSvg(), chart.ToSvg(defaults, null));
         var policyIds = XDocument.Parse(chart.ToSvg(hostedOptions, null)).Descendants().Attributes("id").ToArray();
@@ -78,14 +78,14 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
 
     [Fact]
     public void BrowserHostsDoNotReplaceAnExplicitlyRegisteredProductFamily() {
-        Assert.Contains("@font-face{font-family:'Archivo'", HtmlGraphExplorerRenderer.BuildFragmentStyle(), StringComparison.Ordinal);
+        Assert.Contains("@font-face{font-family:'Archivo'", HtmlGraphExplorerRenderer.StyleSheet, StringComparison.Ordinal);
         FontRegistry.Register("Archivo", ProductFont("JetBrainsMono", "ttf"));
         var renderer = new HtmlInteractiveChartRenderer();
         var chart = Model().Title("11118888");
         foreach (var html in new[] {
             renderer.RenderPage(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
             ChartFontAssets.StyleSheet,
-            HtmlGraphExplorerRenderer.BuildFragmentStyle()
+            HtmlGraphExplorerRenderer.StyleSheet
         }) {
             Assert.DoesNotContain("@font-face{font-family:'Archivo'", html, StringComparison.Ordinal);
             Assert.Contains("@font-face{font-family:'JetBrains Mono'", html, StringComparison.Ordinal);
@@ -97,15 +97,15 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     [Fact]
     public void StyleOnlyHelpersLetHostsRegisterOneSharedFontPayloadWithoutDuplication() {
         foreach (var css in new[] {
-            HtmlInteractiveChartRenderer.BuildFragmentStyle(),
-            TopologyHtmlRenderer.BuildFragmentStyle(), HtmlResponsiveChartRenderer.Stylesheet
+            HtmlInteractiveChartRenderer.StyleSheet,
+            TopologyHtmlRenderer.StyleSheet(), HtmlResponsiveChartRenderer.StyleSheet
         }) {
             Assert.DoesNotContain("@font-face", css, StringComparison.Ordinal);
             Assert.DoesNotContain("data:font", css, StringComparison.Ordinal);
             Assert.NotEmpty(css);
         }
-        var shared = ChartFontAssets.StyleSheet + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + TopologyHtmlRenderer.BuildFragmentStyle() + HtmlResponsiveChartRenderer.Stylesheet;
+        var shared = ChartFontAssets.StyleSheet + HtmlInteractiveChartRenderer.StyleSheet
+            + TopologyHtmlRenderer.StyleSheet() + HtmlResponsiveChartRenderer.StyleSheet;
         Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(shared, "@font-face\\{").Count);
     }
 
@@ -169,14 +169,14 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     [BrowserFact]
     public async Task NativeContourHostAssetsStayFontFreeUnderStrictCsp() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var css = HtmlInteractiveChartRenderer.BuildFragmentStyle();
+        var css = HtmlInteractiveChartRenderer.StyleSheet;
         var fragment = new HtmlInteractiveChartRenderer().RenderFragmentWithoutAssets(Model(), value => value.TextPresentation = HtmlChartTextPresentation.NativeContours);
         Assert.DoesNotContain("@font-face", css + fragment, StringComparison.Ordinal);
         Assert.DoesNotContain("data-cfx-font-root=", fragment, StringComparison.Ordinal);
         const string policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'; base-uri 'none'";
         var html = "<!doctype html><html><head><meta http-equiv=\"Content-Security-Policy\" content=\"" + policy + "\"><style>" + css
             + "</style><script>window.fontPolicyViolations=[];addEventListener('securitypolicyviolation',event=>fontPolicyViolations.push(event.effectiveDirective));</script></head><body>"
-            + fragment + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + fragment + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 800, 560, waitForOwnedFonts: false);
         Assert.Equal(0, await session.Page.EvaluateAsync<int>("()=>document.fonts.size"));
         Assert.Equal("[]", await session.Page.EvaluateAsync<string>("()=>JSON.stringify(fontPolicyViolations)"));
@@ -203,13 +203,13 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
             _ => throw new ArgumentOutOfRangeException(nameof(path))
         };
         var css = path switch {
-            "chart-host" => HtmlInteractiveChartRenderer.BuildFragmentStyle(),
-            "topology-host" => TopologyHtmlRenderer.BuildFragmentStyle(),
-            _ => HtmlResponsiveChartRenderer.Stylesheet
+            "chart-host" => HtmlInteractiveChartRenderer.StyleSheet,
+            "topology-host" => TopologyHtmlRenderer.StyleSheet(),
+            _ => HtmlResponsiveChartRenderer.StyleSheet
         };
         var script = path switch {
-            "responsive-host" => HtmlResponsiveChartRenderer.InitializationScript,
-            "chart-host" => HtmlInteractiveChartRenderer.BuildInteractionScript(),
+            "responsive-host" => HtmlResponsiveChartRenderer.Script,
+            "chart-host" => HtmlInteractiveChartRenderer.Script,
             _ => string.Empty
         };
         return ("<!doctype html><html><head><style>" + ChartFontAssets.StyleSheet + css + "</style></head><body>" + fragment + "<script>" + script + "</script></body></html>", fragment);

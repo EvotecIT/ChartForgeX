@@ -28,7 +28,7 @@ public sealed class StrictStyleTests {
 
     [Fact]
     public void RendererNonceKeepsSvgStyleElementsInTheirSvg() {
-        var html = new HtmlChartRenderer { StyleNonce = Nonce }.RenderFragment(Chart.Create().Size(320, 200).AddLine("A", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }), "a");
+        var html = new HtmlChartRenderer { Nonce = Nonce }.RenderFragment(Chart.Create().Size(320, 200).AddLine("A", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }), "a");
         var svg = html.Substring(html.IndexOf("<svg", StringComparison.Ordinal));
         Assert.Matches("<style nonce=\"n0nce\">[^<]*@font-face", svg);
         Assert.DoesNotContain("@font-face", HtmlStrictStyles.Extract(html).Markup, StringComparison.Ordinal);
@@ -48,7 +48,8 @@ public sealed class StrictStyleTests {
 
     public static TheoryData<string> Outputs => new() {
         "static-fragment", "static-page", "responsive-fragment", "interactive-fragment", "interactive-page", "interactive-section",
-        "dashboard-page", "interactive-adaptive-page", "topology-fragment", "topology-page", "topology-interactive-fragment", "topology-interactive-page", "graph-fragment"
+        "dashboard-page", "interactive-adaptive-page", "topology-fragment", "topology-page", "topology-interactive-fragment", "topology-interactive-page", "graph-fragment",
+        "flow-interactive-page", "sequence-interactive-fragment"
     };
 
     [Theory]
@@ -191,23 +192,25 @@ public sealed class StrictStyleTests {
             .AddEdge("http", "app", "api", "HTTPS")
             .AddScenario("save", "Save a note", scenario => scenario.AddEdgeStep("http"));
         var topologyOptions = new TopologyRenderOptions { Html = { Nonce = nonce } };
-        void Interactive(HtmlChartInteractionOptions options) { options.StyleNonce = nonce; options.ScriptNonce = nonce; }
+        void Interactive(HtmlChartInteractionOptions options) { options.Nonce = nonce; }
         return output switch {
-            "static-fragment" => new HtmlChartRenderer { StyleNonce = nonce }.RenderFragment(chart, "checks"),
-            "static-page" => new HtmlChartRenderer { StyleNonce = nonce }.RenderPage(chart),
-            "responsive-fragment" => new HtmlResponsiveChartRenderer { StyleNonce = nonce, ScriptNonce = nonce }.RenderFragment(chart, idScope: "checks"),
+            "static-fragment" => new HtmlChartRenderer { Nonce = nonce }.RenderFragment(chart, "checks"),
+            "static-page" => new HtmlChartRenderer { Nonce = nonce }.RenderPage(chart),
+            "responsive-fragment" => new HtmlResponsiveChartRenderer { Nonce = nonce }.RenderFragment(chart, idScope: "checks"),
             "interactive-fragment" => chart.ToInteractiveHtmlFragment(Interactive),
             "interactive-page" => chart.ToInteractiveHtmlPage(Interactive),
             // The narrow drawing waits in a template until a narrow container selects it.
             "interactive-adaptive-page" => chart.ToInteractiveHtmlPage(options => { Interactive(options); options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.Breakpoint = 1200; }),
             "interactive-section" => chart.ToInteractiveHtmlFragmentWithoutAssets(Interactive),
-            "dashboard-page" => new HtmlInteractiveDashboardRenderer().RenderPage(new[] { chart }, options => { options.StyleNonce = nonce; options.ScriptNonce = nonce; }),
+            "dashboard-page" => new HtmlInteractiveDashboardRenderer().RenderPage(new[] { chart }, options => { options.Nonce = nonce; }),
             "topology-fragment" => new TopologyHtmlRenderer().RenderFragment(topology, topologyOptions),
             "topology-page" => new TopologyHtmlRenderer().RenderPage(topology, topologyOptions),
             "topology-interactive-fragment" => new HtmlInteractiveTopologyRenderer().RenderFragment(topology, topologyOptions),
             "topology-interactive-page" => new HtmlInteractiveTopologyRenderer().RenderPage(topology, topologyOptions),
             "graph-fragment" => new HtmlGraphExplorerRenderer().RenderFragment(GraphScene.Create("map", "Map").AddNode("a", "A").AddNode("b", "B").AddEdge("ab", "a", "b"),
-                options => { options.StyleNonce = nonce; options.ScriptNonce = nonce; }),
+                options => { options.Nonce = nonce; }),
+            "flow-interactive-page" => FlowRecipe.Create().ToInteractiveHtmlPage(configure: options => options.Nonce = nonce),
+            "sequence-interactive-fragment" => SequenceRecipe.Create().ToInteractiveHtmlFragment(configure: options => options.Nonce = nonce),
             _ => throw new ArgumentOutOfRangeException(nameof(output))
         };
     }

@@ -47,7 +47,7 @@ A state timeline draws each series as a lane over the categories, which are peri
 ```javascript
 const chart = ChartForgeXRenderer.create(host, {
   type: "state-timeline", label: "Site health",
-  states: [{ id: "up", label: "Up", color: "#2f9e44" }, { id: "down", label: "Down", color: "#d6336c" }],
+  states: [{ id: "up", label: "Up", color: ChartColor.FromHex("#2f9e44") }, { id: "down", label: "Down", color: ChartColor.FromHex("#d6336c") }],
   categories: hours,                                  // [{ id, label, instant }]
   series: [{ id: "dc1", name: "DC1", values: [0, 0, 1] }]
 });

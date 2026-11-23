@@ -72,7 +72,7 @@ public sealed class GraphBadgeLayoutTests {
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         }
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false;
         }), 1000, 720, configurePageAsync: page => page.EvaluateAsync("""
             () => {

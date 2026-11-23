@@ -1,6 +1,5 @@
 using System.Linq;
 using System;
-using System.Reflection;
 using System.Xml.Linq;
 using ChartForgeX.Composition;
 using ChartForgeX.Themes;
@@ -14,10 +13,8 @@ public sealed class VisualCanvasTileTypographyTests {
         var baseline = VisualCanvas.Create(420, 150)
             .AddInfoTile(12, 12, 396, 126, "PC", "HOSTNAME", "DEV-WKS-01", "Windows workstation");
         var explicitDefaults = VisualCanvas.Create(420, 150)
-            .AddInfoTileWithTextOptions(12, 12, 396, 126, "PC", "HOSTNAME",
-                "DEV-WKS-01",
-                new VisualCanvasInfoTileTextOptions(textScale: 1, labelFontSize: 14,
-                    valueFontSize: 22, detailFontSize: 13), "Windows workstation");
+            .AddInfoTile(12, 12, 396, 126, "PC", "HOSTNAME", "DEV-WKS-01", "Windows workstation", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1, labelFontSize: 14,
+                    valueFontSize: 22, detailFontSize: 13));
 
         Assert.Equal(baseline.ToSvg(), explicitDefaults.ToSvg());
         Assert.Equal(baseline.ToPng(), explicitDefaults.ToPng());
@@ -51,9 +48,8 @@ public sealed class VisualCanvasTileTypographyTests {
         var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(
             tileLabelSize: 16, tileValueSize: 26, tileDetailSize: 15));
         var canvas = VisualCanvas.Create(440, 160).Theme(theme)
-            .AddInfoTileWithTextOptions(12, 12, 416, 136, "OS", "SYSTEM",
-                "Windows 11", new VisualCanvasInfoTileTextOptions(textScale: 0.8,
-                    labelFontSize: 18), "Enterprise");
+            .AddInfoTile(12, 12, 416, 136, "OS", "SYSTEM", "Windows 11", "Enterprise", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 0.8,
+                    labelFontSize: 18));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var style = canvas.ResolveStyle();
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
@@ -67,10 +63,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void AScaleThatDoesNotFitIsReducedAndReported() {
-        var canvas = VisualCanvas.Create(300, 100).AddInfoTileWithTextOptions(
-            8, 8, 284, 58, "PC", "VERY LONG HOST LABEL",
-            "A workstation value that needs room",
-            new VisualCanvasInfoTileTextOptions(textScale: 1.5), "extra detail");
+        var canvas = VisualCanvas.Create(300, 100).AddInfoTile(8, 8, 284, 58, "PC", "VERY LONG HOST LABEL", "A workstation value that needs room", "extra detail", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.5));
 
         Assert.Contains(canvas.AnalyzeLayout().Diagnostics,
             diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
@@ -79,17 +72,8 @@ public sealed class VisualCanvasTileTypographyTests {
     [Fact]
     public void FixedSizeFallbackKeepsTheIconVisibleAndTextAfterItsBox() {
         var accent = ChartColor.FromHex("#38BDF8");
-        var withIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
-            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
-            new VisualCanvasInfoTileTextOptions(textScale: 4),
-            "Windows desktop", accent,
-            surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
-            iconKind: VisualCanvasInfoTileIconKind.Computer);
-        var withoutIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
-            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
-            new VisualCanvasInfoTileTextOptions(textScale: 4),
-            "Windows desktop", accent,
-            surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline);
+        var withIcon = VisualCanvas.Create(320, 100).AddInfoTile(8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01", "Windows desktop", accent, surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline, icon: VisualCanvasIcons.Computer, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 4));
+        var withoutIcon = VisualCanvas.Create(320, 100).AddInfoTile(8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01", "Windows desktop", accent, surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 4));
         var tile = (VisualCanvasInfoTileLayer)withIcon.Layers[0];
         var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
             withIcon.ResolveStyle());
@@ -138,10 +122,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void NarrowFallbackKeepsTheIconFloorAtNormalPadding() {
-        var canvas = VisualCanvas.Create(64, 72).AddInfoTileWithTextOptions(
-            8, 8, 48, 56, string.Empty, "HOSTNAME", "WORKSTATION-01",
-            new VisualCanvasInfoTileTextOptions(textScale: 4),
-            iconKind: VisualCanvasInfoTileIconKind.Computer);
+        var canvas = VisualCanvas.Create(64, 72).AddInfoTile(8, 8, 48, 56, string.Empty, "HOSTNAME", "WORKSTATION-01", icon: VisualCanvasIcons.Computer, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 4));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
             canvas.ResolveStyle());
@@ -155,9 +136,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void SmallRequestedScaleKeepsTheSmallIconBoxWithoutFallback() {
-        var canvas = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
-            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
-            new VisualCanvasInfoTileTextOptions(textScale: 0.2), "Windows desktop");
+        var canvas = VisualCanvas.Create(320, 100).AddInfoTile(8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01", "Windows desktop", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 0.2));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
             canvas.ResolveStyle());
@@ -168,11 +147,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void SmallRequestedScaleKeepsItsIconSizeWhenTextMustShrink() {
-        var canvas = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(
-            8, 8, 304, 36, string.Empty, "HOSTNAME",
-            "A long host value that needs extra room to fit in the tile",
-            new VisualCanvasInfoTileTextOptions(textScale: 0.5),
-            "Windows workstation");
+        var canvas = VisualCanvas.Create(320, 80).AddInfoTile(8, 8, 304, 36, string.Empty, "HOSTNAME", "A long host value that needs extra room to fit in the tile", "Windows workstation", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 0.5));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
             canvas.ResolveStyle());
@@ -185,10 +160,7 @@ public sealed class VisualCanvasTileTypographyTests {
     [InlineData(1.5)]
     [InlineData(4)]
     public void ShrinkToFitKeepsTextInsideShortTiles(double requestedScale) {
-        var canvas = VisualCanvas.Create(300, 100).AddInfoTileWithTextOptions(
-            8, 8, 284, 58, "PC", "VERY LONG HOST LABEL",
-            "A workstation value that needs room",
-            new VisualCanvasInfoTileTextOptions(textScale: requestedScale), "extra detail");
+        var canvas = VisualCanvas.Create(300, 100).AddInfoTile(8, 8, 284, 58, "PC", "VERY LONG HOST LABEL", "A workstation value that needs room", "extra detail", textOptions: new VisualCanvasInfoTileTextOptions(textScale: requestedScale));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var style = canvas.ResolveStyle();
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
@@ -203,9 +175,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void ShrinkLoopGoesBelowItsPreferredFloorToPreventVerticalOverflow() {
-        var canvas = VisualCanvas.Create(240, 100).AddInfoTileWithTextOptions(8, 8,
-            224, 84, "PC", "A long label", "A value that cannot fit at scale three",
-            new VisualCanvasInfoTileTextOptions(textScale: 3));
+        var canvas = VisualCanvas.Create(240, 100).AddInfoTile(8, 8, 224, 84, "PC", "A long label", "A value that cannot fit at scale three", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 3));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var style = canvas.ResolveStyle();
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
@@ -219,11 +189,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void ZeroWidthMiniChartDoesNotReserveTextSpace() {
-        var canvas = VisualCanvas.Create(200, 220).AddInfoTileWithTextOptions(0, 0,
-            200, 196, "CPU", "PROCESSOR", "Intel Xeon",
-            new VisualCanvasInfoTileTextOptions(textScale: 2),
-            miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
-            miniChartValues: new[] { 1d, 2d, 3d });
+        var canvas = VisualCanvas.Create(200, 220).AddInfoTile(0, 0, 200, 196, "CPU", "PROCESSOR", "Intel Xeon", miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline, miniChartValues: new[] { 1d, 2d, 3d }, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 2));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile,
             canvas.ResolveStyle());
@@ -234,11 +200,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void MiniChartWithInsufficientHeightIsSuppressed() {
-        var canvas = VisualCanvas.Create(300, 80).AddInfoTileWithTextOptions(8, 8,
-            284, 56, "CPU", "PROCESSOR", "Intel Xeon",
-            new VisualCanvasInfoTileTextOptions(textScale: 3),
-            miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
-            miniChartValues: new[] { 1d, 2d, 3d });
+        var canvas = VisualCanvas.Create(300, 80).AddInfoTile(8, 8, 284, 56, "CPU", "PROCESSOR", "Intel Xeon", miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline, miniChartValues: new[] { 1d, 2d, 3d }, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 3));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile,
             canvas.ResolveStyle());
@@ -247,21 +209,8 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.True(metrics.TextMax > 20);
         Assert.DoesNotContain("data-cfx-role=\"visual-canvas-info-tile-mini-chart\"",
             canvas.ToSvg());
-        var withoutMiniChart = VisualCanvas.Create(300, 80).AddInfoTileWithTextOptions(8, 8,
-            284, 56, "CPU", "PROCESSOR", "Intel Xeon",
-            new VisualCanvasInfoTileTextOptions(textScale: 3));
+        var withoutMiniChart = VisualCanvas.Create(300, 80).AddInfoTile(8, 8, 284, 56, "CPU", "PROCESSOR", "Intel Xeon", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 3));
         Assert.Equal(withoutMiniChart.ToPng(), canvas.ToPng());
-    }
-
-    [Fact]
-    public void ExistingAddInfoTileClrSignaturesRemainAvailable() {
-        var methods = typeof(VisualCanvas).GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(method => method.Name == nameof(VisualCanvas.AddInfoTile)).ToArray();
-
-        Assert.Contains(methods, method => method.GetParameters().Length == 16 &&
-            method.GetParameters()[15].ParameterType == typeof(VisualCanvasTextFitPolicy));
-        Assert.Contains(methods, method => method.GetParameters().Length == 15 &&
-            method.GetParameters()[14].ParameterType == typeof(VisualCanvasTextFitPolicy));
     }
 
     [Fact]
@@ -280,15 +229,13 @@ public sealed class VisualCanvasTileTypographyTests {
             .AddInfoTile(VisualCanvasPlacement.At(VisualCanvasAnchor.TopLeft, 8, 8),
                 304, 84, "PC", "HOST", "WORKSTATION", "detail", default);
 
-        Assert.Null(((VisualCanvasInfoTileLayer)coordinateCanvas.Layers[0]).AccentOverride);
-        Assert.Null(((VisualCanvasInfoTileLayer)placedCanvas.Layers[0]).AccentOverride);
+        Assert.Null(((VisualCanvasInfoTileLayer)coordinateCanvas.Layers[0]).Accent);
+        Assert.Null(((VisualCanvasInfoTileLayer)placedCanvas.Layers[0]).Accent);
     }
 
     [Fact]
     public void NarrowTileGeometryStaysInsideTileAndReportsUnfittedText() {
-        var canvas = VisualCanvas.Create(80, 72).AddInfoTileWithTextOptions(5, 8,
-            60, 56, "PC", "HOST", "WORKSTATION",
-            new VisualCanvasInfoTileTextOptions(textScale: 2));
+        var canvas = VisualCanvas.Create(80, 72).AddInfoTile(5, 8, 60, 56, "PC", "HOST", "WORKSTATION", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 2));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, canvas.ResolveStyle());
 
@@ -302,9 +249,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void SmallRequestedScaleIsNotRaisedOrReportedAsReduced() {
-        var canvas = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(8, 8,
-            304, 84, "PC", "HOST", "WORKSTATION",
-            new VisualCanvasInfoTileTextOptions(textScale: 0.2));
+        var canvas = VisualCanvas.Create(320, 100).AddInfoTile(8, 8, 304, 84, "PC", "HOST", "WORKSTATION", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 0.2));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var style = canvas.ResolveStyle();
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
@@ -322,9 +267,7 @@ public sealed class VisualCanvasTileTypographyTests {
     [InlineData(1.5, 12)]
     public void ProgressRailUsesResolvedTypographyScale(double requestedScale, double expectedHeight) {
         var canvas = VisualCanvas.Create(460, 220)
-            .AddInfoTileWithTextOptions(12, 12, 436, 196, "CPU", "PROCESSOR",
-                "Intel Xeon", new VisualCanvasInfoTileTextOptions(textScale: requestedScale),
-                progress: 0.45);
+            .AddInfoTile(12, 12, 436, 196, "CPU", "PROCESSOR", "Intel Xeon", progress: 0.45, textOptions: new VisualCanvasInfoTileTextOptions(textScale: requestedScale));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var style = canvas.ResolveStyle();
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
@@ -346,8 +289,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
         var image = canvas.ToRgbaImage();
         var withoutProgress = VisualCanvas.Create(460, 220)
-            .AddInfoTileWithTextOptions(12, 12, 436, 196, "CPU", "PROCESSOR",
-                "Intel Xeon", new VisualCanvasInfoTileTextOptions(textScale: requestedScale));
+            .AddInfoTile(12, 12, 436, 196, "CPU", "PROCESSOR", "Intel Xeon", textOptions: new VisualCanvasInfoTileTextOptions(textScale: requestedScale));
         var baseline = withoutProgress.ToRgbaImage();
         var trackX = Math.Clamp((int)Math.Round(metrics.TextX + metrics.TextMax * 0.8),
             0, image.Width - 1);
@@ -368,9 +310,7 @@ public sealed class VisualCanvasTileTypographyTests {
 
     [Fact]
     public void LargeProgressRailScaleStaysInsideShortTileInBothRenderers() {
-        var canvas = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(8, 8,
-            304, 56, "PC", "HOST", "WORKSTATION",
-            new VisualCanvasInfoTileTextOptions(textScale: 4), progress: 0.45);
+        var canvas = VisualCanvas.Create(320, 80).AddInfoTile(8, 8, 304, 56, "PC", "HOST", "WORKSTATION", progress: 0.45, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 4));
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
         var style = canvas.ResolveStyle();
         var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
@@ -390,9 +330,7 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.InRange(railY, metrics.Y, tileBottom - metrics.ProgressRailHeight);
 
         var image = canvas.ToRgbaImage();
-        var baseline = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(8, 8,
-            304, 56, "PC", "HOST", "WORKSTATION",
-            new VisualCanvasInfoTileTextOptions(textScale: 4)).ToRgbaImage();
+        var baseline = VisualCanvas.Create(320, 80).AddInfoTile(8, 8, 304, 56, "PC", "HOST", "WORKSTATION", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 4)).ToRgbaImage();
         var railX = Math.Clamp((int)Math.Round(metrics.TextX + metrics.TextMax * 0.8),
             0, image.Width - 1);
         var changedRows = new List<int>();

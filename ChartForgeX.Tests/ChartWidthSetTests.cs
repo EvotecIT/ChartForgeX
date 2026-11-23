@@ -36,7 +36,7 @@ public sealed class ChartWidthSetTests {
     [InlineData(320, 390)]
     public async Task TheContainerShowsTheWidestDrawingThatFits(int container, int expected) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var fragment = new HtmlChartRenderer { StyleNonce = "n" }.RenderWidths(Chart(), "checks");
+        var fragment = new HtmlChartRenderer { Nonce = "n" }.RenderWidths(Chart(), "checks");
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><head></head><body style=\"margin:0\"><div style=\"width:"
             + container + "px\">" + fragment + "</div></body></html>", 1100, 600);
         var visible = await session.Page.EvaluateAsync<string[]>("()=>[...document.querySelectorAll('[data-cfx-width]')].filter(node=>getComputedStyle(node).display!=='none').map(node=>node.dataset.cfxWidth)");

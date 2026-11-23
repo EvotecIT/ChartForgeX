@@ -20,8 +20,8 @@ public sealed class AlphaGlowPresentationTests {
         var mask = new VisualMask(AppearanceFixture.Solid(16, 16, 128), orderedDither: false);
         var glowThenMask = source.WithDropShadow(glow).WithMask(mask);
         var maskThenGlow = source.WithMask(mask).WithDropShadow(glow);
-        var after = glowThenMask.ToRgba(AlphaGlowFixture.Unit);
-        var before = maskThenGlow.ToRgba(AlphaGlowFixture.Unit);
+        var after = glowThenMask.ToRgbaImage(AlphaGlowFixture.Unit);
+        var before = maskThenGlow.ToRgbaImage(AlphaGlowFixture.Unit);
         NativeEffectBeforeCapture.Write("alpha-glow-order-glow-mask", glowThenMask.ToSvg(), glowThenMask.ToPng(AlphaGlowFixture.Unit), after);
         NativeEffectBeforeCapture.Write("alpha-glow-order-mask-glow", maskThenGlow.ToSvg(), maskThenGlow.ToPng(AlphaGlowFixture.Unit), before);
         Assert.Equal(80, AppearanceFixture.Pixel(after, 8, 8)[3]);
@@ -71,14 +71,14 @@ public sealed class AlphaGlowPresentationTests {
         Assert.Equal(.6, policy.Opacity);
         Assert.Null(policy.RelativeRegion);
         Assert.Empty(imported.Diagnostics);
-        var filterPixels = filterCapture.ToImage();
+        var filterPixels = filterCapture.ToRgbaImage();
         var cropped = new byte[64 * 48 * 4];
         for (var y = 0; y < 48; y++) Buffer.BlockCopy(filterPixels.Pixels,
             ((y - (int)filterCapture.Bounds.Y) * filterPixels.Width - (int)filterCapture.Bounds.X) * 4,
             cropped, y * 64 * 4, 64 * 4);
         Assert.Equal(cropped, imported.Image.Pixels);
-        Assert.Equal(layer.ToImage().Pixels, direct.ToImage().Pixels);
-        Assert.Equal(layer.ToImage().Pixels, replayed.ToImage().Pixels);
+        Assert.Equal(layer.ToRgbaImage().Pixels, direct.ToRgbaImage().Pixels);
+        Assert.Equal(layer.ToRgbaImage().Pixels, replayed.ToRgbaImage().Pixels);
         Assert.Equal(layer.Bounds, replayed.Bounds);
         Assert.True(layer.Bounds.X < 0 && layer.Bounds.Width > fresh.Size.Width);
         var document = XDocument.Parse(nativeSvg);

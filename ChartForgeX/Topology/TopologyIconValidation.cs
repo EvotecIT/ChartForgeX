@@ -111,8 +111,7 @@ public static class TopologyIconValidationExtensions {
             var path = PackPath(pack) + ".icons[" + icon.Id + "]";
             if (!iconIds.Add(icon.Id)) Add(issues, TopologyIconValidationSeverity.Error, path, "Icon id is duplicated inside the pack.");
             if (!string.Equals(icon.PackId, pack.Id, StringComparison.OrdinalIgnoreCase)) Add(issues, TopologyIconValidationSeverity.Error, path + ".packId", "Icon pack id does not match the containing pack.");
-            if (!string.IsNullOrWhiteSpace(icon.Color) && !LooksLikeHexColor(icon.Color!)) Add(issues, TopologyIconValidationSeverity.Warning, path + ".color", "Icon color should use #RGB or #RRGGBB for portable rendering.");
-            if (!string.IsNullOrWhiteSpace(icon.Symbol) && icon.Symbol!.Trim().Length > 8) Add(issues, TopologyIconValidationSeverity.Warning, path + ".symbol", "Icon symbol is long and may not fit compact palette nodes.");
+                if (!string.IsNullOrWhiteSpace(icon.Symbol) && icon.Symbol!.Trim().Length > 8) Add(issues, TopologyIconValidationSeverity.Warning, path + ".symbol", "Icon symbol is long and may not fit compact palette nodes.");
             if (icon.Artwork != null && !icon.Artwork.HasSvgBody && !icon.Artwork.HasSvgPath && !icon.Artwork.HasImageHref) Add(issues, TopologyIconValidationSeverity.Warning, path + ".artwork", "Icon artwork is empty.");
             if (icon.Artwork != null && !icon.Artwork.IsSafe) Add(issues, TopologyIconValidationSeverity.Error, path + ".artwork", "Icon artwork contains unsafe SVG or image href content.");
             AddDuplicateWarnings(issues, path + ".tags", icon.Tags);
@@ -153,15 +152,4 @@ public static class TopologyIconValidationExtensions {
         return "packs[" + pack.Id + "]";
     }
 
-    private static bool LooksLikeHexColor(string value) {
-        var text = value.Trim();
-        if (text.Length != 4 && text.Length != 7) return false;
-        if (text[0] != '#') return false;
-        for (var i = 1; i < text.Length; i++) {
-            var ch = text[i];
-            if (!char.IsDigit(ch) && (ch < 'a' || ch > 'f') && (ch < 'A' || ch > 'F')) return false;
-        }
-
-        return true;
-    }
 }

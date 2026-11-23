@@ -23,8 +23,8 @@ public sealed class MermaidElevenTopologyPresetRoleTests {
     public void EveryNamedPresetResolvesItsLiteralTopologyRolesWithoutClaimingEffectsOrPaletteSlotPaint(string preset, string fill, string? border, string text, string? cluster, string? clusterBorder) {
         var result = Render(preset); Capture(preset + "-direct", result); Assert.False(result.HasErrors);
         var artifact = Assert.IsType<VisualArtifact>(result.Artifact); var chart = Assert.IsType<TopologyChart>(artifact.Model); var node = Assert.Single(chart.Nodes, item => item.Id == "work"); var group = Assert.Single(chart.Groups); var edge = Assert.Single(chart.Edges);
-        Color(fill, node.BackgroundColor); Assert.Equal(border == null ? chart.Theme.Resolve(chart.ThemeMode).Border : ChartColor.FromHex(border), ChartColor.Parse(node.BorderColor!)); Color(text, node.LabelColor); Color(text, edge.LabelColor);
-        Assert.Equal(cluster == null ? chart.Theme.Resolve(chart.ThemeMode).Neutral2 : ChartColor.FromHex(cluster), ChartColor.Parse(group.BackgroundColor!));
+        Color(fill, node.BackgroundColor); Assert.Equal(border == null ? chart.Theme.Resolve(chart.ThemeMode).Border : ChartColor.FromHex(border), node.BorderColor!.Value); Color(text, node.LabelColor); Color(text, edge.LabelColor);
+        Assert.Equal(cluster == null ? chart.Theme.Resolve(chart.ThemeMode).Neutral2 : ChartColor.FromHex(cluster), group.BackgroundColor!.Value);
         Assert.NotNull(group.BorderColor); if (clusterBorder != null) Color(clusterBorder, group.BorderColor); Assert.NotNull(group.LabelColor); Assert.NotNull(edge.LabelBackgroundColor); Assert.NotNull(edge.Color);
         var saved = artifact.ToInterchangeEnvelope(); var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart().Prepare(); CaptureArtifact(preset + "-restored", restored.Visual.ToArtifact());
         Assert.Equal(TopologyStaticPaintObservation.Paint(artifact.ToSvg()), TopologyStaticPaintObservation.Paint(restored.ToSvg())); Assert.Equal(artifact.ToPng(), restored.ToPng()); Assert.Equal(preset, result.Document!.Configuration.Theme); Assert.Equal(preset, artifact.Metadata["mermaid.config.theme"]);
@@ -36,9 +36,9 @@ public sealed class MermaidElevenTopologyPresetRoleTests {
         var options = Options(); options.Presentation!.Theme = VisualTheme.Graphite().Configure(builder => { builder.Light.Surface = ChartColor.FromHex("#102030"); builder.Light.Border = ChartColor.FromHex("#203040"); });
         var plain = Render("redux", family: family, options: options); var authored = Render("redux", "\"nodeBorder\":\"#345678\",\"mainBkg\":\"#456789\",\"nodeTextColor\":\"#56789a\"", family, options);
         Capture(family + "-host", plain); Capture(family + "-host-literals", authored); Assert.False(plain.HasErrors); Assert.False(authored.HasErrors);
-        var host = Assert.IsType<TopologyChart>(plain.Artifact!.Model); var node = Assert.Single(host.Nodes, item => item.Id == "work"); Assert.Null(node.BorderColor); Assert.Null(node.BackgroundColor); Assert.Null(node.LabelColor); Color("#102030", host.Theme.Resolve(host.ThemeMode).Surface.ToHexRgba());
+        var host = Assert.IsType<TopologyChart>(plain.Artifact!.Model); var node = Assert.Single(host.Nodes, item => item.Id == "work"); Assert.Null(node.BorderColor); Assert.Null(node.BackgroundColor); Assert.Null(node.LabelColor); Color("#102030", host.Theme.Resolve(host.ThemeMode).Surface);
         var literal = Assert.Single(Assert.IsType<TopologyChart>(authored.Artifact!.Model).Nodes, item => item.Id == "work"); Color("#345678", literal.BorderColor); Color("#456789", literal.BackgroundColor); Color("#56789a", literal.LabelColor);
-        if (family == "agentflow") Assert.Equal(ChartColor.Transparent, ChartColor.Parse(Assert.Single(host.Groups).BackgroundColor!));
+        if (family == "agentflow") Assert.Equal(ChartColor.Transparent, Assert.Single(host.Groups).BackgroundColor!.Value);
     }
     [Theory] [InlineData("base")] [InlineData("dark")] [InlineData("redux-dark-color")]
     public void AuthoredRolesAndDirectStylesReplayAfterDerivedNamedAssignments(string preset) {
@@ -57,7 +57,7 @@ public sealed class MermaidElevenTopologyPresetRoleTests {
         var header = family == "flowchart" ? "flowchart LR\nsubgraph scope[Scope]" : family == "swimlane" ? "swimlane-beta LR\nsubgraph scope[Scope]" : "agentflow-beta LR\nflow scope[Scope]";
         return MermaidRenderer.Render("%%{init: {\"theme\":\"" + preset + "\",\"themeVariables\":{" + roles + "}}}%%\n" + header + "\nwork[Work] -->|Route| done[Done]\nend" + style, options ?? Options());
     }
-    private static void Color(string expected, string? actual) => Assert.Equal(ChartColor.FromHex(expected), ChartColor.Parse(actual!));
+    private static void Color(string expected, ChartColor? actual) => Assert.Equal(ChartColor.FromHex(expected), actual!.Value);
     private static void Capture(string name, MermaidRenderResult result) {
         if (Environment.GetEnvironmentVariable("CFX_SOURCE_CONTOUR_CAPTURE_DIRECTORY") is { Length: > 0 } output) { Directory.CreateDirectory(output); File.WriteAllText(Path.Combine(output, "named-topology-" + name + ".diagnostics.json"), JsonSerializer.Serialize(result.Diagnostics)); }
         if (result.Artifact != null) CaptureArtifact(name, result.Artifact);

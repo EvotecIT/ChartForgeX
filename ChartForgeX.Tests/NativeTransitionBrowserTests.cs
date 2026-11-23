@@ -126,7 +126,7 @@ public sealed partial class NativeTransitionBrowserTests {
         NativeTransitionDefaultControls.Configure(options, dark); options.Interaction.Enable(ChartInteractionFeatures.Export | ChartInteractionFeatures.LegendToggles);
         options.ProgressEditing.Enabled = progress;
     }
-    private static string Page(HtmlChartSection section) => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + section.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+    private static string Page(HtmlChartSection section) => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + section.Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
     private static async Task<IDownload> DownloadSvgAsync(IPage page) {
         await page.Locator(".cfx-interactive-chart").HoverAsync(new() { Position = new() { X = 1, Y = 1 } });
         return await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());

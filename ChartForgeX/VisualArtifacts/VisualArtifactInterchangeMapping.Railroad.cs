@@ -19,7 +19,7 @@ public static partial class VisualArtifactInterchangeMapping {
         var source = envelope.Railroad;
         var block = RailroadDiagramBlock.Create().Title(envelope.Title).Subtitle(envelope.Subtitle)
             .Theme(source.Theme).ThemeMode(source.ThemeMode).TransparentBackground(source.TransparentBackground)
-            .ShowCard(source.ShowCard).PngOutputScale(source.PngOutputScale);
+            .ShowCard(source.ShowCard).RasterScale(source.RasterScale);
         block.RuleComparison = source.RuleComparison; block.Options.Padding = source.Padding;
         block.Options.HostOwnsFrame = source.HostOwnsFrame;
         block.Options.Accessibility.Name = envelope.AccessibleName;
@@ -41,7 +41,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Railroad = new VisualArtifactInterchangeRailroadArtifact {
             RuleComparison = block.RuleComparison, Theme = source.Theme, ThemeMode = source.ThemeMode,
             Padding = source.ConfiguredPadding, TransparentBackground = source.TransparentBackground, ShowCard = source.ShowCard,
-            HostOwnsFrame = source.HostOwnsFrame, PngOutputScale = source.PngOutputScale
+            HostOwnsFrame = source.HostOwnsFrame, RasterScale = source.RasterScale
         };
         envelope.Railroad.Rules.AddRange(block.Rules);
         envelope.Width = source.Size.Width; envelope.Height = source.Size.Height;

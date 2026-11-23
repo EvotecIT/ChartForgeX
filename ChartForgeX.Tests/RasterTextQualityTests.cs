@@ -44,7 +44,7 @@ public sealed class RasterTextQualityTests {
             var least = long.MaxValue;
             var most = 0L;
             for (var offset = 0.0; offset < 1; offset += 0.125) {
-                var image = ImageComposition.CreateTransparent(40, 40).DrawText(8, 8 + offset, 30, "e", size, ChartColors.White).ToImage();
+                var image = ImageComposition.CreateTransparent(40, 40).DrawText(8, 8 + offset, 30, "e", size, ChartColors.White).ToRgbaImage();
                 Assert.True(HasCrossbar(image), FormattableString.Invariant($"The crossbar of 'e' vanished at {size} px, vertical offset {offset}."));
                 var ink = Ink(image.Pixels);
                 least = Math.Min(least, ink);
@@ -83,7 +83,7 @@ public sealed class RasterTextQualityTests {
         if (!File.Exists(path)) return;
         var style = TextStyle.Create(64, ChartColors.White);
         style.Font = FontSpec.FromFile(path);
-        var image = ImageComposition.CreateTransparent(80, 100).DrawText(10, 8, 60, "t", style, TextWrapMode.NoWrap).ToImage();
+        var image = ImageComposition.CreateTransparent(80, 100).DrawText(10, 8, 60, "t", style, TextWrapMode.NoWrap).ToRgbaImage();
 
         // Walk down the column with the most ink (the stem): once it starts it must not break.
         var bestColumn = 0;
@@ -215,7 +215,7 @@ public sealed class RasterTextQualityTests {
         var style = TextStyle.Create(28, ChartColors.White);
         style.Font = FontSpec.FromFamily(family);
         style.Font.Weight = weight;
-        return ImageComposition.CreateTransparent(320, 48).DrawText(4, 4, 312, "Hamburgefonstiv 0123", style, TextWrapMode.NoWrap).ToImage().Pixels;
+        return ImageComposition.CreateTransparent(320, 48).DrawText(4, 4, 312, "Hamburgefonstiv 0123", style, TextWrapMode.NoWrap).ToRgbaImage().Pixels;
     }
 
     private static long Ink(byte[] pixels) {

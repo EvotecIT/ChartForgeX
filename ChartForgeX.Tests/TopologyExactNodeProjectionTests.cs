@@ -55,8 +55,8 @@ public sealed class TopologyExactNodeProjectionTests {
     [Fact]
     public void FreshStyleAndLabelInputsRemainAuthoritativeWhileTheImmutableProjectionKeepsItsUnits() {
         var chart = TopologyTranslatedContourCausalTests.Source().Prepare().ToInterchangeEnvelope().ToTopologyChart();
-        var basis = chart.Nodes[0].PreparedNodeBasis; chart.Nodes[0].BackgroundColor = "#ff0000";
-        chart.Nodes[0].BorderColor = "#0000ff"; chart.Nodes[0].StrokeWidth = 3;
+        var basis = chart.Nodes[0].PreparedNodeBasis; chart.Nodes[0].BackgroundColor = ChartColor.FromHex("#ff0000");
+        chart.Nodes[0].BorderColor = ChartColor.FromHex("#0000ff"); chart.Nodes[0].StrokeWidth = 3;
         chart.Nodes[0].ShowLabel = true; chart.Nodes[0].Label = "Edited";
         var edited = chart.Prepare(); Capture("style-edited", edited.Visual);
         var surfaces = edited.Visual.Scene.Nodes.OfType<VisualScenePath>().Where(mark => mark.Role == "topology-node-surface").ToArray();

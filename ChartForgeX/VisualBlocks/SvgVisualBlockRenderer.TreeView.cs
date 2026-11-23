@@ -6,7 +6,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
-public sealed partial class SvgVisualBlockRenderer {
+internal sealed partial class SvgVisualBlockRenderer {
     private static void RenderTreeView(SvgMarkupWriter writer, TreeViewBlock block) {
         var theme = block.Options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(block.Options); var y = content.Top;

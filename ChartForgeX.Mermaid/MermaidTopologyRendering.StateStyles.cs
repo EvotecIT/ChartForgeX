@@ -12,9 +12,9 @@ public static partial class MermaidTopologyRendering {
                 var styles = MermaidStyleParser.Resolve(definitions, state.Classes, state.Styles, state.Span, includeDefault: false);
                 if (state.Classes.Count > 0) group.Metadata["mermaid.classes"] = string.Join(",", state.Classes);
                 foreach (var entry in styles) group.Metadata["mermaid.style." + entry.Key] = entry.Value;
-                if (Paint("fill") is { } fill) group.BackgroundColor = fill;
-                if (Paint("stroke") is { } stroke) group.BorderColor = stroke;
-                if (Paint("color") is { } color) group.LabelColor = color;
+                if (Paint("fill") is { } fill) group.BackgroundColor = ChartColorText.Parse(fill);
+                if (Paint("stroke") is { } stroke) group.BorderColor = ChartColorText.Parse(stroke);
+                if (Paint("color") is { } color) group.LabelColor = ChartColorText.Parse(color);
 
                 string? Paint(string property) => styles.TryGetValue(property, out var value) && MermaidStyleValues.IsColor(value) ? value : null;
             } else {

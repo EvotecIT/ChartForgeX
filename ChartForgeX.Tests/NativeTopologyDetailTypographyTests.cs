@@ -16,7 +16,7 @@ public sealed class NativeTopologyDetailTypographyTests {
         node.Shape = TopologyNodeShape.Rectangle;
         node.FitLabelToContent = fitted;
         node.ShowStatusBadge = false;
-        var style = new TextStyleOverride().Italic().Underline().FontWeight("700");
+        var style = new TextStyleOverride().Italic().Underline().FontWeight(700);
         node.Details.Add(new TopologyNodeDetail { Text = "Qualified member", TextStyle = style });
         var options = new TopologyRenderOptions { IncludeLegend = false };
         var prepared = chart.Prepare(options);
@@ -27,13 +27,13 @@ public sealed class NativeTopologyDetailTypographyTests {
         Assert.Equal("Qualified member", Assert.Single(text.Text.Lines).Text);
         Assert.Single(prepared.Visual.Scene.Nodes, item => item.Role == "text-decoration");
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        style.Italic = false; style.Underline = false; style.FontWeight = "400";
+        style.Italic = false; style.Underline = false; style.FontWeight = 400;
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng());
         var saved = Assert.Single(Assert.Single(prepared.ToInterchangeEnvelope().Nodes).Details).TextStyle;
         Assert.True(saved!.Italic);
         Assert.True(saved.Underline);
-        Assert.Equal("700", saved.FontWeight);
+        Assert.Equal(700, saved.FontWeight);
         saved.Italic = false;
         Assert.True(Assert.Single(Assert.Single(prepared.ToInterchangeEnvelope().Nodes).Details).TextStyle!.Italic);
         var resized = prepared.WithOutputSize(prepared.Width + 20, prepared.Height + 20);

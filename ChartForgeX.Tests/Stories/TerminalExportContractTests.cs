@@ -20,7 +20,7 @@ public sealed class TerminalExportContractTests {
             var theme = TerminalThemes.Default().Configure(builder =>
                 builder.Typography = new VisualTypography(monospaceFamily: family));
             TerminalStory CreateStory(string caption) => TerminalStory.Create().Width(480).WindowStyle(style).Theme(theme)
-                .PngOutputScale(1).ShowFinalPrompt(false).Title(caption).Output("ready");
+                .RasterScale(1).ShowFinalPrompt(false).Title(caption).Output("ready");
             var story = CreateStory(new string('W', 60));
             var svg = System.Xml.Linq.XDocument.Parse(story.ToSvg());
             var title = Assert.Single(svg.Descendants(), element =>

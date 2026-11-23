@@ -42,8 +42,8 @@ public sealed class ScheduleTimelineBlock : FactualVisualBlock<ScheduleTimelineB
 
 
     /// <summary>Adds a schedule event.</summary>
-    public ScheduleTimelineBlock AddEvent(string title, double start, double end, int lane = 0, ChartColor? color = null, Tone? status = null, string? badge = null, string[]? avatars = null) {
-        _events.Add(new ScheduleTimelineEvent(title, start, end, lane, color, status, badge, avatars));
+    public ScheduleTimelineBlock AddEvent(string title, double start, double end, int lane = 0, ChartColor? color = null, Tone? tone = null, string? badge = null, string[]? avatars = null) {
+        _events.Add(new ScheduleTimelineEvent(title, start, end, lane, color, tone, badge, avatars));
         return this;
     }
 }
@@ -54,17 +54,17 @@ public sealed class ScheduleTimelineBlock : FactualVisualBlock<ScheduleTimelineB
 public sealed class ScheduleTimelineEvent {
     private string _title;
     private string _badge = string.Empty;
-    private Tone _status;
+    private Tone _tone;
     private readonly List<string> _avatars = new();
 
     /// <summary>Initializes a schedule event.</summary>
-    public ScheduleTimelineEvent(string title, double start, double end, int lane = 0, ChartColor? color = null, Tone? status = null, string? badge = null, string[]? avatars = null) {
+    public ScheduleTimelineEvent(string title, double start, double end, int lane = 0, ChartColor? color = null, Tone? tone = null, string? badge = null, string[]? avatars = null) {
         _title = title ?? throw new ArgumentNullException(nameof(title));
         Start = start;
         End = end;
         Lane = lane;
         Color = color;
-        Status = status ?? Tone.Neutral;
+        Tone = tone ?? Tone.Neutral;
         _badge = badge ?? string.Empty;
         if (avatars != null) foreach (var avatar in avatars) _avatars.Add(avatar ?? string.Empty);
     }
@@ -85,7 +85,7 @@ public sealed class ScheduleTimelineEvent {
     public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets semantic event status.</summary>
-    public Tone Status { get => _status; set => _status = value; }
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     /// <summary>Gets or sets optional compact badge text.</summary>
     public string Badge { get => _badge; set => _badge = value ?? throw new ArgumentNullException(nameof(value)); }

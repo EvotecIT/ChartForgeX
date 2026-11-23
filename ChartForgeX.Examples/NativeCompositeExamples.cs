@@ -10,7 +10,7 @@ internal static class NativeCompositeExamples {
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
             foreach (var operation in new[] { VisualCompositeOperator.SourceIn, VisualCompositeOperator.DestinationOut, VisualCompositeOperator.Xor }) {
                 var composition = NativeCompositeCompositionExample.Create(variant, mode, operation);
-                var image = composition.ToImage();
+                var image = composition.ToRgbaImage();
                 var stem = Path.Combine(output, "native-composite-" + operation + "-" + variant + "-" + mode);
                 File.WriteAllBytes(stem + ".png", composition.ToPng());
                 var canvas = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)

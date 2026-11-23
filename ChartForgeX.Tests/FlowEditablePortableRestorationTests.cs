@@ -26,7 +26,7 @@ public sealed class FlowEditablePortableRestorationTests : IDisposable {
         FontRegistry.Clear();var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToFlowArtifact();var after=restored.ToVisualArtifact();Capture("flow-"+mode+"-restored",after);
         Assert.Equal("Source H",saved.Title);Assert.Equal("Source O",saved.Subtitle);Assert.Equal(flow.Title,restored.Title);Assert.Equal(flow.Subtitle,restored.Subtitle);Assert.Equal(mode,restored.LayoutMode);Assert.Equal(flow.Direction,restored.Direction);
         Assert.Equal(flow.Lanes.Select(lane=>lane.Id),restored.Lanes.Select(lane=>lane.Id));Assert.Equal(flow.Steps.Select(step=>(step.Id,step.Width,step.Height,step.Kind,step.LaneId)),restored.Steps.Select(step=>(step.Id,step.Width,step.Height,step.Kind,step.LaneId)));
-        Assert.Equal(flow.Connectors.Select(edge=>(edge.Id,edge.SourceId,edge.TargetId,edge.Label,edge.Kind,edge.Direction,edge.Status)),restored.Connectors.Select(edge=>(edge.Id,edge.SourceId,edge.TargetId,edge.Label,edge.Kind,edge.Direction,edge.Status)));
+        Assert.Equal(flow.Connectors.Select(edge=>(edge.Id,edge.SourceId,edge.TargetId,edge.Label,edge.Kind,edge.Direction,edge.Tone)),restored.Connectors.Select(edge=>(edge.Id,edge.SourceId,edge.TargetId,edge.Label,edge.Kind,edge.Direction,edge.Tone)));
         Assert.All(saved.Edges, edge => { Assert.Null(edge.SecondaryLabel); Assert.Null(edge.TertiaryLabel); });
         Assert.Equal(flow.ExportFormats,restored.ExportFormats);Assert.Equal("flow-value",restored.Metadata["flow-key"]);Assert.Equal("step-value",restored.Steps[0].Metadata["step-key"]);Assert.Equal("edge-value",restored.Connectors[0].Metadata["edge-key"]);
         Assert.Equal(theme.ToJson(),saved.Presentation!.Theme!.Definition!.ToJson());Assert.Equal(themeMode,saved.Presentation.Theme.Mode??ThemeMode.Light);
@@ -79,9 +79,9 @@ public sealed class FlowEditablePortableRestorationTests : IDisposable {
     }
     private static FlowArtifact Source() {
         var flow=FlowArtifact.Create("flow-restoration").Title("Source H").Subtitle("Source O").Width(900).Height(620).Padding(24)
-            .AddLane("lane_a","H",Tone.Success,"#287A5F").AddLane("lane_b","O",Tone.Warning,"#B58422")
+            .AddLane("lane_a","H",Tone.Success,ChartColor.FromHex("#287A5F")).AddLane("lane_b","O",Tone.Warning,ChartColor.FromHex("#B58422"))
             .AddStep("start","H",FlowArtifactStepKind.Start,"lane_a").AddStep("process","O",FlowArtifactStepKind.Process,"lane_a").AddStep("end","H",FlowArtifactStepKind.End,"lane_b")
-            .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,Tone.Success,"#245C86")
+            .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,Tone.Success,ChartColor.FromHex("#245C86"))
             .AddConnector("process","end","O",FlowArtifactConnectorKind.Flow,VisualLinkDirection.Bidirectional);
         flow.UpdateStep("start",step=>{step.Width=160;step.Height=74;step.FitLabelToContent=false;step.Metadata["step-key"]="step-value";});
         flow.UpdateStep("process",step=>{step.Width=200;step.Height=100;step.Subtitle="H";});flow.UpdateConnector(0,edge=>{edge.Id="source_edge";edge.Metadata["edge-key"]="edge-value";});

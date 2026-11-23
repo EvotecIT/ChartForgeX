@@ -53,16 +53,16 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [Fact]
     public void DottedDefaultsAreStatusesAndExplicitPointOverridesRetainSeriesRole() {
         var chart = Chart.Create().AddDottedMap("Locations", new[] { new ChartMapPoint("First", 0, 20), new ChartMapPoint("Second", 10, 30) })
-            .AddMapRouteBetweenPoints("Connection", "First", "Second");
+            .AddMapConnectorBetweenPoints("Connection", "First", "Second");
         chart.Series[0].PointColor(0, Shared);
         var prepared = chart.Prepare(Context()); var variables = Variables();
         var points = Paints(prepared, variables, "dotted-map-point", "fill");
         // Unstated points and routes are data, not a status (design rule 10).
         Assert.Contains("var(--series,", points[0]); Assert.DoesNotContain("var(--status,", points[1]);
         Assert.All(Paints(prepared, variables, "dotted-map-connector", "stroke"), paint => Assert.DoesNotContain("var(--status,", paint));
-        var rgba = prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels;
+        var rgba = prepared.ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels;
         chart.Options.SvgColorVariables = variables;
-        Assert.Equal(rgba, chart.Prepare(Context()).ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels);
+        Assert.Equal(rgba, chart.Prepare(Context()).ToRgbaImage(new VisualRenderOptions(supersampling: 1)).Pixels);
     }
 
     [Fact]

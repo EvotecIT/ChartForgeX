@@ -96,7 +96,7 @@ public sealed class MermaidNativeThemeColorTests {
         Assert.Equal(ChartColor.FromHex("#010203"), host.Resolve(ThemeMode.Dark).Background);
         Assert.NotEqual(ChartColor.FromHex("#112233"), shared.Resolve(ThemeMode.Dark).Background);
         Assert.All(Assert.IsType<TopologyChart>(rendered.Artifact.Model).Nodes,
-            node => Assert.Equal(ChartColor.FromHex("#EEDDCC"), ChartColor.Parse(node.LabelColor!)));
+            node => Assert.Equal(ChartColor.FromHex("#EEDDCC"), node.LabelColor!.Value));
         var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + Colors + "flowchart LR\nA --> B\n```");
         Assert.False(fenced.HasErrors); Assert.Equal(rendered.Artifact.ToPng(), Assert.Single(fenced.Artifacts).ToPng());
     }
@@ -126,7 +126,7 @@ public sealed class MermaidNativeThemeColorTests {
         Assert.Equal(ChartColor.FromHex("#334455"), colors.Surface);
         Assert.Equal(ChartColor.FromHex("#EEDDCC"), colors.Foreground);
         Assert.All(Assert.IsType<TopologyChart>(rendered.Artifact.Model).Nodes,
-            node => Assert.Equal(ChartColor.FromHex("#EEDDCC"), ChartColor.Parse(node.LabelColor!)));
+            node => Assert.Equal(ChartColor.FromHex("#EEDDCC"), node.LabelColor!.Value));
         Assert.Equal(ChartColor.FromHex("#CCDDEE"), colors.Status.Neutral.Fill);
     }
 

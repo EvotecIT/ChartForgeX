@@ -42,7 +42,7 @@ public static partial class VisualArtifactInterchangeMapping {
     internal static VisualArtifactInterchangeEnvelope FromPreparedSequence(SequenceArtifact sequence, VisualRenderContext context) {
         var artifact = VisualArtifact.Create(sequence.Id, VisualArtifactKind.Sequence, sequence);
         var envelope = Common(artifact, out var metadataKeys);
-        MapSequence(envelope, sequence, metadataKeys, new VisualArtifactSize(context.Layout.Size.Width, context.Layout.Size.Height));
+        MapSequence(envelope, sequence, metadataKeys, new VisualSize(context.Layout.Size.Width, context.Layout.Size.Height));
         envelope.Presentation = new VisualArtifactInterchangePresentation {
             Theme = MapTheme(context.Theme.Resolve(context.ThemeMode), context.Font.Family)
         };

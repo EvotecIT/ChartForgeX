@@ -13,7 +13,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     [BrowserTheory]
     [InlineData("node")]
     [InlineData("icon")]
-    public async Task ExplicitVariablesWithoutFallbackKeepStatusPixelsAndResolveInTheHost(string source) {
+    public async Task ExplicitVariablesKeepStatusFallbackPixelsAndResolveInTheHost(string source) {
         if (!Enabled) return;
         var (chart, options) = VariableNode(source, true);
         var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill;
@@ -53,9 +53,10 @@ public sealed partial class TopologyPaletteSelectionTests {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 180, 20)).Legend((TopologyLegend?)null).Theme(Theme())
             .AddArtworkNode("embedded", "Embedded", TopologyIconArtwork.Image("data:image/png;base64," + Convert.ToBase64String(png)), 40, 50, width: 100, height: 70)
             .AddArtworkNode("external", "External", TopologyIconArtwork.Image("/assets/owner.png"), 250, 50, width: 100, height: 70);
-        foreach (var node in chart.Nodes) { node.Color = "var(--custom)"; node.PaletteIndex = 1; node.Status = TopologyHealthStatus.Healthy; }
+        var status = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill;
+        foreach (var node in chart.Nodes) { node.Color = status.WithCssVariable("--custom"); node.PaletteIndex = 1; node.Status = TopologyHealthStatus.Healthy; }
         var options = Options(); options.SelectedNodeIds.Add("embedded"); options.SelectedNodeIds.Add("external");
-        var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill;
+        var prepared = chart.Prepare(options);
         var outlines = prepared.Visual.Scene.Nodes.OfType<VisualSceneMark>().Where(mark => mark.Role == "topology-node-artwork-selection").ToArray();
         var fallback = prepared.Visual.Scene.Nodes.OfType<VisualSceneMark>().Where(mark => mark.Role == "topology-icon-surface").ToArray();
         foreach (var node in chart.Nodes) node.PaletteIndex = null;
@@ -73,10 +74,12 @@ public sealed partial class TopologyPaletteSelectionTests {
         var chart = Diagram(ThemeMode.Light); var options = Options();
         chart.Nodes[0].Kind = TopologyNodeKind.Service; chart.Nodes[0].Status = TopologyHealthStatus.Healthy;
         chart.Nodes[0].PaletteIndex = palette ? 1 : null;
-        if (source == "node") chart.Nodes[0].Color = "var(--custom)";
+        // A variable colour always carries a fallback; the status colour keeps undefined variables painting as status.
+        var custom = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill.WithCssVariable("--custom");
+        if (source == "node") chart.Nodes[0].Color = custom;
         else {
             options.IconCatalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("variable", "Variable")
-                .AddIcon(new TopologyIconDefinition("variable", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = "var(--custom)" }));
+                .AddIcon(new TopologyIconDefinition("variable", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = custom }));
             chart.Nodes[0].IconId = "variable:owner";
         }
         return (chart, options);

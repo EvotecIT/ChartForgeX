@@ -14,7 +14,7 @@ internal sealed partial class VisualTopologyCompiler {
         return (color, SourcePaint(node.BorderColor, color, SvgColorRole.Any, HighlightFactor(active), _colors.Border));
     }
 
-    private static bool HasArtworkSurfacePolicy(TopologyNode node) => !string.IsNullOrWhiteSpace(node.BackgroundColor)
+    private static bool HasArtworkSurfacePolicy(TopologyNode node) => node.BackgroundColor != null
         || node.BorderColor != null || node.StrokeWidth.HasValue || node.SurfaceOpacity.HasValue || node.DashPattern.Count > 0 || node.CornerRadius.HasValue;
 
     private void BuildNodeSurface(TopologyNode node, TopologyNodeDisplayMode mode, ChartRect bounds, ChartColor fill, ChartColor accent,

@@ -90,7 +90,7 @@ public sealed class SequenceLayoutTypographyTests {
 
     [Fact]
     public void PolicyInputsGettersAndPreparedSnapshotsAreDetachedFromLaterNativeEdits() {
-        var style=new TextStyleOverride{FontSize=18,FontWeight="700"};var typography=new SequenceTypography(participant:style);
+        var style=new TextStyleOverride{FontSize=18,FontWeight=700};var typography=new SequenceTypography(participant:style);
         var model=SequencePolicyFixture.Basic();model.Typography=typography;style.FontSize=99;typography.Participant!.FontSize=88;
         var prepared=model.Prepare(SequencePolicyFixture.Context());var before=prepared.ToSvg();var json=prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeJson();
         SequencePolicyFixture.Capture("sequence-policy-detached",prepared);
@@ -181,7 +181,7 @@ public sealed class SequenceLayoutTypographyTests {
         var again=restored.Prepare(context);
         SequencePolicyFixture.Capture("sequence-weight-"+customized+"-first",first);
         SequencePolicyFixture.Capture("sequence-weight-"+customized+"-restored",again);
-        Assert.Equal(expectedWeight.ToString(CultureInfo.InvariantCulture),saved.Sequence!.Typography!.Participant!.FontWeight);
+        Assert.Equal(expectedWeight,saved.Sequence!.Typography!.Participant!.FontWeight);
         Assert.All(first.Scene.Nodes.OfType<VisualSceneText>().Where(text=>text.Role=="sequence-label"),
             text=>Assert.Equal(expectedWeight,text.Text.Style.Font.Weight));
         Assert.Equal(first.ToSvg(),again.ToSvg());Assert.Equal(first.ToPng(),again.ToPng());
@@ -196,8 +196,8 @@ internal static class SequencePolicyFixture {
         .AddMessage("A","B","Save").AddMessage("B","A","Ready",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return);
     internal static SequenceArtifact Styled() {
         var model=Basic();model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:132,participantMinimumHeight:72,participantSpacing:32,messageSpacing:24,noteSpacing:14,fragmentMargin:10,fragmentLabelPadding:6,activationWidth:14,wrapPadding:10);
-        model.Typography=new SequenceTypography(new TextStyleOverride{FontSize=18,FontWeight="700"},new TextStyleOverride{FontSize=20,FontWeight="500"},
-            new TextStyleOverride{FontSize=16,FontWeight="400"},new TextStyleOverride{FontSize=15,FontWeight="600"},new TextStyleOverride{FontSize=13,FontWeight="700"});
+        model.Typography=new SequenceTypography(new TextStyleOverride{FontSize=18,FontWeight=700},new TextStyleOverride{FontSize=20,FontWeight=500},
+            new TextStyleOverride{FontSize=16,FontWeight=400},new TextStyleOverride{FontSize=15,FontWeight=600},new TextStyleOverride{FontSize=13,FontWeight=700});
         model.Metadata["mermaid.autonumber"]="true";model.AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Note");model.Notes[0].StepIndex=1;
         model.AddBlock(SequenceArtifactBlockKind.Alt,"Accepted",0,1);model.AddActivation("B",true,0).AddActivation("B",false,2);return model;
     }
