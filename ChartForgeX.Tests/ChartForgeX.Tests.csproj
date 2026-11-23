@@ -33,6 +33,9 @@
     <PackageReference Include="HtmlTinkerX" Version="3.0.8" PrivateAssets="all" />
     <!-- The linked-views example tests run the examples' real CanopyX grid. -->
     <PackageReference Include="CanopyX.Html" Version="0.4.5" PrivateAssets="all" />
+    <!-- The examples' Roslyn reference needs these newer than the net8.0 framework copies. -->
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.10" PrivateAssets="all" />
+    <PackageReference Include="System.Reflection.Metadata" Version="10.0.10" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" PrivateAssets="all" />
     <PackageReference Include="xunit" Version="2.9.3" PrivateAssets="all" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" PrivateAssets="all">
