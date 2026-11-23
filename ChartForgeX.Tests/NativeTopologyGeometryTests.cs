@@ -206,7 +206,7 @@ public sealed class NativeTopologyGeometryTests {
     [Fact]
     public void AuthoredDisplacedLabelKeepsItsRouteAnchorAndNativeLeader() {
         var chart = InterGroup(TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        chart.UpdateEdge("request", e => e.LabelOffsetX(0).LabelOffsetY(125)).EdgeLabelAnchor("request", 355, 107.5);
+        chart.UpdateEdge("request", e => e.LabelOffsetX(0).LabelOffsetY(125)).UpdateEdge("request", edge => edge.LabelAnchor(new ChartPoint(355, 107.5)));
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, IncludeEdgeLabelLeaders = true, FitContentToViewport = true };
         var prepared = chart.Prepare(options);
         var document = XDocument.Parse(prepared.ToSvg());

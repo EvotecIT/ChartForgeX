@@ -44,7 +44,7 @@ internal static partial class TopologyVisualExamples {
             .UpdateEdge("domain-owner", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("domain-mx", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("domain-finding", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Left))
-            .EdgeRouteLane("domain-finding", 22)
+            .UpdateEdge("domain-finding", edge => edge.RouteLane(22))
             .UpdateEdge("cert-domain", e => e.LineStyle(TopologyEdgeLineStyle.Solid))
             .UpdateEdge("dns-domain", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
             .UpdateEdge("domain-ip1", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))

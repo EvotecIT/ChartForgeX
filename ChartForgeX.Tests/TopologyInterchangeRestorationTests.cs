@@ -81,7 +81,7 @@ public sealed class TopologyInterchangeRestorationTests {
         var chart = envelope.ToTopologyChart();
         Assert.Equal(authoredWaypoints, chart.Edges[0].Waypoints.Select(point => (point.X, point.Y)));
         Assert.DoesNotContain(chart.Edges[0].Waypoints, point => point.X == -123456);
-        chart.EdgeRouteLane(chart.Edges[0].Id, 17);
+        chart.UpdateEdge(chart.Edges[0].Id, edge => edge.RouteLane(17));
         var edited = chart.ToVisualArtifact().ToInterchangeEnvelope();
         Assert.Equal(17, edited.Edges[0].Topology!.RouteLane); Assert.Equal(0, envelope.Edges[0].Topology!.RouteLane);
         Assert.Equal(-123456, envelope.Edges[0].ResolvedRoute[0].X);
@@ -148,9 +148,9 @@ public sealed class TopologyInterchangeRestorationTests {
         var edge = new TopologyEdge { Id = "request", SourceNodeId = "source", TargetNodeId = "target", SourcePortId = "send",
             Kind = TopologyEdgeKind.Generic, Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal,
             Label = "Dispatch", StrokeWidth = 2.5, Opacity = .8, SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Arrow,
-            LabelAnchorNodeId = "source", LabelAnchorX = 290, LabelAnchorY = 150, HasLabelAnchorOverride = true };
+            LabelAnchorNodeId = "source", LabelAnchor = new ChartPoint(290, 150) };
         edge.DashPattern.AddRange(new[] { 6d, 2d }); edge.Waypoints.Add(new ChartPoint(310, 125)); edge.Waypoints.Add(new ChartPoint(350, 125));
-        edge.Metadata["route.fact"] = "opaque"; edge.Metrics["latency"] = "41"; chart.Edges.Add(edge); chart.EdgeRouteLane("request", 0);
+        edge.Metadata["route.fact"] = "opaque"; edge.Metrics["latency"] = "41"; chart.Edges.Add(edge); chart.UpdateEdge("request", edge => edge.RouteLane(0));
         chart.Legend = TopologyLegend.Create("Route key").AddNodeKind("Service", TopologyNodeKind.Server).AddEdgeKind("Request", TopologyEdgeKind.Generic);
         var scenario = new TopologyScenario { Id = "delivery", Label = "Delivery path", LoopPlayback = true, AutoPlay = false, Spotlight = true };
         scenario.Metadata["kind"] = "path"; scenario.Steps.Add(new TopologyScenarioStep { Id = "source", Kind = TopologyScenarioStepKind.Node });

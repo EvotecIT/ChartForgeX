@@ -41,7 +41,7 @@ internal static partial class SmokeTests {
         topology.EdgeStroke("replication", 2.5, 0.4, 6, 2);
         topology.EdgeWaypoints("replication", new ChartPoint(180, 120), new ChartPoint(220, 120));
         topology.UpdateEdge("replication", e => e.PreferredLength(260).MinimumRankSpan(2).RoutingPriority(0));
-        topology.EdgeRouteLane("replication", 0);
+        topology.UpdateEdge("replication", edge => edge.RouteLane(0));
         var scenario = new TopologyScenario {
             Id = "replication-review", Label = "Replication review", Description = "Inspect the primary route", Color = "#336699",
             PlaybackDelayMilliseconds = 1200, LoopPlayback = true, Spotlight = true

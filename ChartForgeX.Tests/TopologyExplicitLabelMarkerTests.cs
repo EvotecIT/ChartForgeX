@@ -19,7 +19,7 @@ public sealed class TopologyExplicitLabelMarkerTests {
         chart.AddEdge("handoff", "a", "b", "Review", direction: VisualLinkDirection.Bidirectional);
         var edge = chart.Edges[0]; edge.PathGeometry = new TopologyPathGeometry("M 200 195 C 300 25 440 25 540 195");
         edge.LabelPosition = new TopologyLabelPosition(new ChartPoint(370, 70), anchor);
-        edge.LabelAnchorX = 370; edge.LabelAnchorY = 100; edge.HasLabelAnchorOverride = true;
+        edge.LabelAnchor = new ChartPoint(370, 100);
         edge.SourceMarkerStyle = new TopologyMarkerStyle { Scale = 1.5, Offset = 2, StrokeWidth = 0 };
         edge.TargetMarkerStyle = new TopologyMarkerStyle { Scale = 2, Offset = 3, StrokeWidth = 0 };
         edge.TextStyle = new TextStyleOverride { FontSize = 18, FontWeight = "400" };

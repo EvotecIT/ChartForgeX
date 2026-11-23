@@ -679,7 +679,7 @@ internal static partial class TopologyLayoutEngine {
             for (var i = 0; i < ordered.Count; i++) {
                 var edge = ordered[i];
                 if (Math.Abs(edge.RouteLane) > 0.0001) continue;
-                edge.RouteLane = (i - (ordered.Count - 1) / 2.0) * 18;
+                edge.SetLayoutRouteLane((i - (ordered.Count - 1) / 2.0) * 18);
                 edge.LayoutInference |= TopologyEdgeLayoutInference.RouteLane;
             }
         }

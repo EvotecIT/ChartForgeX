@@ -477,8 +477,7 @@ public sealed partial class TopologyEdge {
     private double _routeLane;
     private double _labelOffsetX;
     private double _labelOffsetY;
-    private double _labelAnchorX;
-    private double _labelAnchorY;
+    private ChartPoint? _labelAnchor;
     private string? _labelAnchorNodeId;
     private TopologyEdgeLayoutInference _layoutInference = TopologyEdgeLayoutInference.None;
     private double? _strokeWidth;
@@ -642,16 +641,21 @@ public sealed partial class TopologyEdge {
     /// <summary>Gets or sets a caller-defined routing/rendering priority. Higher values render above lower values.</summary>
     public int RoutingPriority { get; set; }
 
-    /// <summary>Gets or sets the deterministic orthogonal route lane offset in pixels.</summary>
+    /// <summary>Gets or sets the deterministic orthogonal route lane offset in pixels. Setting it, including to zero,
+    /// fixes the lane so automatic lane assignment leaves this edge alone.</summary>
     public double RouteLane {
         get => _routeLane;
         set {
             TopologyModelGuards.Finite(value, nameof(value));
             _routeLane = value;
+            HasRouteLaneOverride = true;
         }
     }
 
     internal bool HasRouteLaneOverride { get; set; }
+
+    // Layout inference and mirroring move the lane without turning it into an authored one.
+    internal void SetLayoutRouteLane(double value) => _routeLane = value;
 
     /// <summary>Gets or sets the horizontal edge-label placement adjustment in pixels.</summary>
     public double LabelOffsetX {
@@ -671,28 +675,25 @@ public sealed partial class TopologyEdge {
         }
     }
 
-    /// <summary>Gets or sets the explicit horizontal point a displaced edge label should point to.</summary>
-    public double LabelAnchorX {
-        get => _labelAnchorX;
+    /// <summary>Gets or sets the canvas point a displaced edge label's leader points to, instead of the route.
+    /// Null points it back at the route. <see cref="LabelAnchorNodeId"/> takes precedence when both are set.</summary>
+    public ChartPoint? LabelAnchor {
+        get => _labelAnchor;
         set {
-            TopologyModelGuards.Finite(value, nameof(value));
-            _labelAnchorX = value;
+            if (value is { } point) {
+                TopologyModelGuards.Finite(point.X, nameof(value));
+                TopologyModelGuards.Finite(point.Y, nameof(value));
+            }
+            _labelAnchor = value;
         }
     }
 
-    /// <summary>Gets or sets the explicit vertical point a displaced edge label should point to.</summary>
-    public double LabelAnchorY {
-        get => _labelAnchorY;
-        set {
-            TopologyModelGuards.Finite(value, nameof(value));
-            _labelAnchorY = value;
-        }
-    }
+    internal bool HasLabelAnchorOverride => _labelAnchor.HasValue;
+    // Layout moves an authored anchor with its content; only called while an anchor is set.
+    internal double LabelAnchorX { get => _labelAnchor?.X ?? 0; set => _labelAnchor = new ChartPoint(value, LabelAnchorY); }
+    internal double LabelAnchorY { get => _labelAnchor?.Y ?? 0; set => _labelAnchor = new ChartPoint(LabelAnchorX, value); }
 
-    /// <summary>Gets or sets whether the edge label uses an explicit point anchor instead of the route midpoint.</summary>
-    public bool HasLabelAnchorOverride { get; set; }
-
-    /// <summary>Gets or sets an optional node id whose rendered boundary anchors the edge label leader.</summary>
+    /// <summary>Gets or sets the node whose rendered boundary anchors the edge label leader.</summary>
     public string? LabelAnchorNodeId { get => _labelAnchorNodeId; set => _labelAnchorNodeId = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
 
     /// <summary>Gets or sets which edge layout values were inferred during layout preparation.</summary>

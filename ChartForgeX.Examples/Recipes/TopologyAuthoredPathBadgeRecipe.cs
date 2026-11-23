@@ -21,7 +21,7 @@ public static class TopologyAuthoredPathBadgeRecipe {
         chart.Edges[0].LabelColor = "#F3FAFF"; chart.Edges[0].LabelBackgroundColor = "#193857";
         chart.Edges[0].LabelPosition = new TopologyLabelPosition(new ChartPoint(397, 70), TopologyLabelVerticalAnchor.TextBaseline);
         chart.Edges[0].TargetMarkerStyle = new TopologyMarkerStyle { Scale = 1.5, Offset = 1.2, StrokeWidth = 0 };
-        chart.Edges[0].LabelAnchorX = 397; chart.Edges[0].LabelAnchorY = 70; chart.Edges[0].HasLabelAnchorOverride = true;
+        chart.Edges[0].LabelAnchor = new ChartPoint(397, 70);
         return chart;
     }
     /// <summary>Returns the portable workflow capture for editing and restore in another process.</summary>

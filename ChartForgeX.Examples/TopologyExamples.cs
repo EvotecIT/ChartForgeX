@@ -225,10 +225,10 @@ internal static class TopologyExamples {
             .UpdateEdge("nyc-lon", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("lon-fra", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("fra-sin", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("fra-sin", 24)
+            .UpdateEdge("fra-sin", edge => edge.RouteLane(24))
             .UpdateEdge("sfo-sin", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("lon-sfo", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("lon-sfo", -24);
+            .UpdateEdge("lon-sfo", edge => edge.RouteLane(-24));
         foreach (var node in chart.Nodes.Where(node => node.Kind == TopologyNodeKind.Server)) {
             node.DisplayMode = TopologyNodeDisplayMode.Icon;
             node.Badge = node.Id.EndsWith("dc1", StringComparison.Ordinal) ? "1" : "2";
@@ -262,7 +262,7 @@ internal static class TopologyExamples {
             .UpdateEdge("amer-emea", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("emea-apac", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left))
             .UpdateEdge("apac-anz", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
-            .EdgeRouteLane("apac-anz", 18);
+            .UpdateEdge("apac-anz", edge => edge.RouteLane(18));
     }
 
     private static TopologyChart BuildGeographicTopologyChart() {

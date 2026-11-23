@@ -289,7 +289,7 @@ internal static class TopologySiblingGroupingLayout {
                 foreach (var edge in chart.Edges) {
                     if (edge.SourceNodeId != children[index].Id && edge.TargetNodeId != children[index].Id) continue;
                     if (edge.Routing != TopologyEdgeRouting.Orthogonal || edge.HasRouteLaneOverride) continue;
-                    edge.RouteLane = -sign * depth / 2; edge.HasRouteLaneOverride = true;
+                    edge.RouteLane = -sign * depth / 2;
                 }
             }
         }

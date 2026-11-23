@@ -77,7 +77,7 @@ internal static partial class SmokeTests {
             .AddNode("target", "Target", 330, 92, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 122, height: 64)
             .AddEdge("source-target", "source", "target", "publishes", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, "exports")
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-86))
-            .EdgeLabelAnchorNode("source-target", "target");
+            .UpdateEdge("source-target", edge => edge.LabelAnchorNodeId("target"));
 
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
         var svg = chart.ToSvg(options);
@@ -85,12 +85,12 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-label-leader=\"true\"", StringComparison.Ordinal), "Node-anchored displaced labels should render leader lines in relationship overview mode.");
         Assert(chart.ToPng(options).Length > 64, "PNG topology output should render node-anchored label leaders.");
 
-        chart.EdgeLabelAnchor("source-target", 270, 120);
+        chart.UpdateEdge("source-target", edge => edge.LabelAnchor(new ChartPoint(270, 120)));
         svg = chart.ToSvg(options);
         Assert(svg.Contains("data-label-anchor-override=\"true\"", StringComparison.Ordinal), "Displaced edge labels should expose explicit point anchors for annotation-style placement.");
         Assert(svg.Contains("data-label-anchor-x=\"270\"", StringComparison.Ordinal), "Explicit point anchors should drive SVG label-leader metadata.");
 
-        chart.ClearEdgeLabelAnchor("source-target");
+        chart.UpdateEdge("source-target", edge => edge.LabelAnchor(null).LabelAnchorNodeId(null));
         svg = chart.ToSvg(options);
         Assert(svg.Contains("data-label-anchor-override=\"false\"", StringComparison.Ordinal), "Clearing a label anchor should restore route-based leader placement.");
         Assert(!svg.Contains("data-label-anchor-node-id=\"target\"", StringComparison.Ordinal), "Clearing a label anchor should remove the node anchor metadata.");
@@ -105,7 +105,7 @@ internal static partial class SmokeTests {
             .AddNode("target", "Target", 180, 0, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 92, height: 54)
             .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-64))
-            .EdgeLabelAnchor("source-target", 100, 30);
+            .UpdateEdge("source-target", edge => edge.LabelAnchor(new ChartPoint(100, 30)));
 
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview);
         var shiftedSvg = shifted.ToSvg(options);
@@ -120,7 +120,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("target", "Target", TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 92, height: 54)
             .AddEdge("source-target", "source", "target", "observes", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .UpdateEdge("source-target", e => e.LabelOffsetX(0).LabelOffsetY(-64))
-            .EdgeLabelAnchor("source-target", 90, 120);
+            .UpdateEdge("source-target", edge => edge.LabelAnchor(new ChartPoint(90, 120)));
         mirrored.Nodes[0].Metadata["layer"] = "0";
         mirrored.Nodes[1].Metadata["layer"] = "1";
 

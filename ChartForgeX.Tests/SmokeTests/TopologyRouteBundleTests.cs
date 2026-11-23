@@ -43,8 +43,8 @@ internal static partial class SmokeTests {
             .AddEdge("bottom-top", "bottom", "top", "112 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .UpdateEdge("top-bottom", e => e.SourcePort(TopologyEdgePort.Bottom).TargetPort(TopologyEdgePort.Top))
             .UpdateEdge("bottom-top", e => e.SourcePort(TopologyEdgePort.Top).TargetPort(TopologyEdgePort.Bottom))
-            .EdgeRouteLane("top-bottom", -18)
-            .EdgeRouteLane("bottom-top", 18);
+            .UpdateEdge("top-bottom", edge => edge.RouteLane(-18))
+            .UpdateEdge("bottom-top", edge => edge.RouteLane(18));
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
             .MonitoringDashboardStyle();

@@ -881,9 +881,9 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithEdgeEmphasis` | `.UpdateEdge(edgeId, e => e.Emphasis(emphasis))` |
 | `WithEdgeEndpointLabels` | `.UpdateEdge(edgeId, e => e.SourceLabel(sourceLabel).TargetLabel(targetLabel))` |
 | `WithEdgeEvidence` | `.UpdateEdge(edgeId, e => e.Evidence(evidence).EvidenceText(text))` |
-| `WithEdgeLabelAnchor` | `.EdgeLabelAnchor(...)` |
-| `WithEdgeLabelAnchorNode` | `.EdgeLabelAnchorNode(...)` |
-| `WithEdgeLabelAnnotationOffset` | `.EdgeLabelAnnotationOffset(...)` |
+| `WithEdgeLabelAnchor` | `.UpdateEdge(id, e => e.LabelAnchor(point))` |
+| `WithEdgeLabelAnchorNode` | `.UpdateEdge(id, e => e.LabelAnchorNodeId(nodeId))` |
+| `WithEdgeLabelAnnotationOffset` | `.UpdateEdge(id, e => e.LabelOffsetX(x).LabelOffsetY(y).LabelAnchor(null))` |
 | `WithEdgeLabelOffset` | `.UpdateEdge(edgeId, e => e.LabelOffsetX(x).LabelOffsetY(y))` |
 | `WithEdgeLayoutHints` | `.UpdateEdge(edgeId, e => e.PreferredLength(preferredLength).MinimumRankSpan(minimumRankSpan).RoutingPriority(routingPriority))` |
 | `WithEdgeLineStyle` | `.UpdateEdge(edgeId, e => e.LineStyle(lineStyle))` |
@@ -892,7 +892,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithEdgeNamedPorts` | `.UpdateEdge(edgeId, e => e.SourcePortId(sourcePortId).TargetPortId(targetPortId))` |
 | `WithEdgePorts` | `.UpdateEdge(edgeId, e => e.SourcePort(sourcePort).TargetPort(targetPort))` |
 | `WithEdgeRouteBundle` | `.EdgeRouteBundle(...)` |
-| `WithEdgeRouteLane` | `.EdgeRouteLane(...)` |
+| `WithEdgeRouteLane` | `.UpdateEdge(id, e => e.RouteLane(...))` |
 | `WithEdgeStroke` | `.EdgeStroke(...)` |
 | `WithEdgeUplink` | `.UpdateEdge(edgeId, e => e.UplinkEnd(childEnd))` |
 | `WithEdgeWaypoints` | `.EdgeWaypoints(...)` |

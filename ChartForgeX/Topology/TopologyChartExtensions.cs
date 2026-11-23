@@ -197,27 +197,6 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>
-    /// Sets a deterministic orthogonal route lane offset for an edge.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="edgeId">The edge id.</param>
-    /// <param name="routeLane">The route lane offset in pixels.</param>
-    /// <returns>The current topology chart.</returns>
-    public static TopologyChart EdgeRouteLane(this TopologyChart chart, string edgeId, double routeLane) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        edgeId = RequiredText(edgeId, nameof(edgeId), "Topology edge ids");
-        ValidateFinite(routeLane, nameof(routeLane), "Topology edge route lanes");
-        foreach (var edge in chart.Edges) {
-            if (!string.Equals(edge.Id, edgeId, StringComparison.Ordinal)) continue;
-            edge.RouteLane = routeLane;
-            edge.HasRouteLaneOverride = true;
-            return chart;
-        }
-
-        throw new ArgumentException("Topology edge '" + edgeId + "' was not found.", nameof(edgeId));
-    }
-
-    /// <summary>
     /// Assigns centered orthogonal route lanes to a related set of edges.
     /// </summary>
     /// <param name="chart">The topology chart.</param>
@@ -233,7 +212,7 @@ public static partial class TopologyChartExtensions {
         if (edgeIds == null || edgeIds.Length == 0) throw new ArgumentException("Topology edge route bundles require at least one edge id.", nameof(edgeIds));
         for (var i = 0; i < edgeIds.Length; i++) {
             var lane = centerLane + (i - (edgeIds.Length - 1) / 2.0) * spacing;
-            chart.EdgeRouteLane(edgeIds[i], lane);
+            chart.UpdateEdge(edgeIds[i], edge => edge.RouteLane = lane);
         }
 
         return chart;
@@ -262,7 +241,6 @@ public static partial class TopologyChartExtensions {
             if (edges.Count < 2) continue;
             for (var i = 0; i < edges.Count; i++) {
                 edges[i].RouteLane = (i - (edges.Count - 1) / 2.0) * spacing;
-                edges[i].HasRouteLaneOverride = true;
             }
         }
 

@@ -65,7 +65,7 @@ public sealed partial class TopologyDenseGridContainmentTests {
         chart.AddNode("fixed-node", "Fixed card", pinned.X + (horizontal ? 10 : 20), pinned.Y + (horizontal ? 100 : 30),
                 groupId: "g0", width: 36, height: 24)
             .AddEdge("manual", "fixed-node", "g1-n0", "Manual", routing: TopologyEdgeRouting.Orthogonal)
-            .EdgeWaypoints("manual", center).EdgeLabelAnchor("manual", center).EdgeRouteLane("manual", 18);
+            .EdgeWaypoints("manual", center).UpdateEdge("manual", edge => edge.LabelAnchor(center)).UpdateEdge("manual", edge => edge.RouteLane(18));
         var options = new TopologyRenderOptions { IncludeLegend = false, CanvasSurfaceStyle = surface };
         var prepared = chart.Prepare(options); var facts = prepared.ToInterchangeEnvelope();
         CaptureReverse("reverse-manual-" + direction + (surface == TopologyCanvasSurfaceStyle.Plain ? "" : "-" + surface), prepared);

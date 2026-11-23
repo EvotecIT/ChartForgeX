@@ -100,7 +100,7 @@ internal static partial class TopologyLayoutEngine {
             if (!TryGetEdgeGroups(edge, nodes, groups, out _, out _)) continue;
             if (!affectedPairs.Contains(DenseGroupPairKey(edge, nodes))) continue;
             if ((edge.LayoutInference & TopologyEdgeLayoutInference.RouteLane) == 0) continue;
-            edge.RouteLane = 0;
+            edge.SetLayoutRouteLane(0);
             edge.LayoutInference &= ~TopologyEdgeLayoutInference.RouteLane;
         }
     }

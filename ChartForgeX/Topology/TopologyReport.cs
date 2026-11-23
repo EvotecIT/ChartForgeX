@@ -162,7 +162,7 @@ public static partial class TopologyChartExtensions {
             }
             edge.Waypoints.Clear();
             edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
-            edge.HasLabelAnchorOverride = false;
+            edge.LabelAnchor = null;
             edge.LabelAnchorNodeId = null;
             edge.LabelOffsetX = edge.LabelOffsetY = 0;
             pages[from - 1].Edges.Add(edge);

@@ -625,7 +625,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("left-node", "Left", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left")
             .AddAutoNode("right-node", "Right", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "right")
             .AddEdge("link", "left-node", "right-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .EdgeRouteLane("link", 24), options: new TopologyRenderOptions { IncludeLegend = false });
+            .UpdateEdge("link", edge => edge.RouteLane(24)), options: new TopologyRenderOptions { IncludeLegend = false });
         var bottomToTop = TopologyLayoutEngine.Prepare(TopologyChart.Create()
             .Id("btt-route-lane")
             .Viewport(new TopologyViewport(360, 620, 24))
@@ -636,7 +636,7 @@ internal static partial class SmokeTests {
             .AddAutoNode("top-node", "Top", TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "top")
             .AddAutoNode("bottom-node", "Bottom", TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "bottom")
             .AddEdge("link", "top-node", "bottom-node", null, TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Orthogonal)
-            .EdgeRouteLane("link", 18), options: new TopologyRenderOptions { IncludeLegend = false });
+            .UpdateEdge("link", edge => edge.RouteLane(18)), options: new TopologyRenderOptions { IncludeLegend = false });
 
         Assert(Math.Abs(rightToLeft.Edges.Single().RouteLane + 24) < 0.001, "Right-to-left mirroring should invert the route-lane sign for regenerated edge geometry.");
         Assert(Math.Abs(bottomToTop.Edges.Single().RouteLane + 18) < 0.001, "Bottom-to-top mirroring should invert the route-lane sign for regenerated edge geometry.");

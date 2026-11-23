@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
             .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
             .AddEdge("center", "left", "right", "center", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .EdgeRouteLane("center", 0);
+            .UpdateEdge("center", edge => edge.RouteLane(0));
 
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[0])) < 0.0001, "Explicit zero route lanes should stay centered instead of being replaced by inferred parallel offsets.");
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[1])) > 0.0001, "Unset duplicate route lanes should still infer a parallel offset.");

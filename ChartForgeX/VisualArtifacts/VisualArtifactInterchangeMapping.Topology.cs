@@ -166,9 +166,9 @@ public static partial class VisualArtifactInterchangeMapping {
         };
         if (edge.LabelAnchorNodeId != native.LabelAnchorNodeId)
             throw new NotSupportedException("Native topology label-anchor IDs cannot contain surrounding whitespace.");
-        if (native.RouteLane.HasValue) { edge.RouteLane = native.RouteLane.Value; edge.HasRouteLaneOverride = true; }
+        if (native.RouteLane.HasValue) edge.RouteLane = native.RouteLane.Value;
         if (native.LabelAnchor != null) {
-            edge.LabelAnchorX = native.LabelAnchor.X; edge.LabelAnchorY = native.LabelAnchor.Y; edge.HasLabelAnchorOverride = true;
+            edge.LabelAnchor = new ChartPoint(native.LabelAnchor.X, native.LabelAnchor.Y);
         }
         edge.DashPattern.AddRange(native.DashPattern);
         foreach (var point in native.Waypoints) edge.Waypoints.Add(new ChartPoint(point.X, point.Y));
