@@ -56,12 +56,12 @@ public sealed class TreeViewInterchangeTests {
         block.ShowIcons = true; block.RowIndent = 25; block.RowPadding = 7;
         block.Options.Accessibility.Name = "Native tree"; block.Options.Accessibility.Description = "Complete values";
         block.Options.Accessibility.Language = "pl"; block.Options.Accessibility.IsDecorative = true;
-        block.AddItem(new TreeViewItem("root", "Root/", kind: TreeViewItemKind.Directory, icon: TreeViewIcon.Folder));
+        block.AddItem(new TreeViewItem("root", "Root/", kind: TreeViewItemKind.Directory, icon: TreeViewIcons.Folder));
         block.AddItem(new TreeViewItem("auto", "Automatic.txt", "root", "", iconReference: null));
-        block.AddItem(new TreeViewItem("file", "Data<&\"😀.txt", "root", "A <complete> description", TreeViewItemKind.File, TreeViewIcon.File));
-        block.AddItem(new TreeViewItem("none", "Hidden icon", "root", icon: TreeViewIcon.None, iconReference: ""));
+        block.AddItem(new TreeViewItem("file", "Data<&\"😀.txt", "root", "A <complete> description", TreeViewItemKind.File, TreeViewIcons.File));
+        block.AddItem(new TreeViewItem("none", "Hidden icon", "root", icon: Icon.None, iconReference: ""));
         block.AddItem(new TreeViewItem("unknown", "External icon", "root", "Inert URL", TreeViewItemKind.File,
-            TreeViewIcon.Unknown, true, "https://example.invalid/icon.svg", classes));
+            Icon.Named("unknown"), true, "https://example.invalid/icon.svg", classes));
         classes.Clear(); block.NaturalSize(900, 400);
         var artifact = VisualArtifact.Create("typed-tree", VisualArtifactKind.VisualBlock, block);
         var envelope = artifact.ToInterchangeEnvelope(); block.AddItem("later", "Later.txt", "root");

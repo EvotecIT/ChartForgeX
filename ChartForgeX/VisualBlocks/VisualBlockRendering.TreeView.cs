@@ -75,7 +75,7 @@ internal static partial class VisualBlockRendering {
             depths.Add(item.Id, depth);
             var directory = item.Kind == TreeViewItemKind.Directory || item.Kind == TreeViewItemKind.Auto &&
                 (item.Label.EndsWith("/", StringComparison.Ordinal) || parents.Contains(item.Id));
-            var icon = item.Icon == TreeViewIcon.Auto ? block.ShowIcons ? directory ? TreeViewIcon.Folder : TreeViewIcon.File : TreeViewIcon.None : item.Icon;
+            var icon = TreeViewIcons.Glyph(item.Icon, block.ShowIcons, directory);
             var label = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = directory ? 700 : 400 }, FontSize = BodyFontSize(theme, 13), LineHeight = 1 };
             var description = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Italic = true }, FontSize = BodyFontSize(theme, 12), LineHeight = 1 };
             var iconSize = Math.Max(12, label.FontSize);

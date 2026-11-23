@@ -23,7 +23,7 @@ internal static partial class VisualArtifactInterchangeJson {
         foreach (var item in tree.Items) {
             writer.StartObject(); String(writer, "id", item.Id); String(writer, "label", item.Label);
             OptionalString(writer, "parentId", item.ParentId); String(writer, "description", item.Description);
-            String(writer, "kind", item.Kind.ToString()); String(writer, "icon", item.Icon.ToString());
+            String(writer, "kind", item.Kind.ToString()); String(writer, "icon", IconName(item.Icon));
             Boolean(writer, "highlighted", item.Highlighted); OptionalString(writer, "iconReference", item.IconReference);
             writer.Property("treeViewClasses"); writer.StartArray(); foreach (var name in item.Classes) writer.String(name);
             writer.EndArray(); writer.EndObject();
@@ -51,9 +51,19 @@ internal static partial class VisualArtifactInterchangeJson {
             foreach (var name in OptionalArray(item, "treeViewClasses")) classes.Add(name.AsString("tree-view class"));
             tree.Items.Add(new TreeViewItem(RequiredString(item, "id"), RequiredString(item, "label"),
                 OptionalString(item, "parentId"), RequiredStringAllowEmpty(item, "description"),
-                RequiredEnum<TreeViewItemKind>(item, "kind"), RequiredEnum<TreeViewIcon>(item, "icon"),
+                RequiredEnum<TreeViewItemKind>(item, "kind"), ReadTreeIcon(RequiredString(item, "icon")),
                 OptionalBool(item, "highlighted") ?? false, OptionalString(item, "iconReference"), classes));
         }
         return tree;
+    }
+
+    // Auto and None keep their names; other icons are written as their keys.
+    private static string IconName(Icon? icon) => icon == null ? "Auto" : icon.Value.IsEmpty ? "None" : icon.Value.Key;
+
+    private static Icon? ReadTreeIcon(string value) {
+        if (value == "Auto") return null;
+        if (value == "None") return Icon.None;
+        if (!Icon.TryParse(value, out var icon) || icon.IsEmpty) throw new ArgumentException("Tree-view icon '" + value + "' is not an icon key.");
+        return icon;
     }
 }

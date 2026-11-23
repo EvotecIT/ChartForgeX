@@ -67,7 +67,7 @@ public sealed class TreeViewNativeRowsTests {
     [Fact]
     public void ItemMetadataIsCopiedAndLongCaptionsKeepTheirFullSemanticText() {
         var names = new List<string> { "custom" }; var label = "Document " + new string('W', 160);
-        var item = new TreeViewItem("long", label, description: "Source description", classes: names, icon: TreeViewIcon.Unknown, iconReference: "pack:unknown");
+        var item = new TreeViewItem("long", label, description: "Source description", classes: names, icon: Icon.Named("pack:unknown"), iconReference: "pack:unknown");
         names.Clear(); Assert.Equal(new[] { "custom" }, item.Classes);
         var block = TreeViewBlock.Create().AddItem(item).NaturalSize(220);
         var xml = XDocument.Parse(block.ToSvg()); var row = Assert.Single(Roles(xml, "treeview-row"));
@@ -76,7 +76,6 @@ public sealed class TreeViewNativeRowsTests {
         Assert.Equal("custom", (string?)row.Attribute("data-source-classes"));
         Assert.Equal("pack:unknown", (string?)row.Attribute("data-icon-reference"));
         Assert.Single(Roles(xml, "treeview-unknown-icon"));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new TreeViewItem("id", "Label", icon: (TreeViewIcon)99));
         Assert.Throws<ArgumentOutOfRangeException>(() => block.RowIndent = double.NaN);
         Assert.Throws<ArgumentException>(() => new TreeViewItem(new string('x', 4097), "Label"));
     }

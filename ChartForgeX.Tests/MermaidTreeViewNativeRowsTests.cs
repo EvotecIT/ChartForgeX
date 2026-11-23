@@ -24,7 +24,7 @@ public sealed class MermaidTreeViewNativeRowsTests {
         Assert.Equal(new[] { "highlight" }, nodes[2].Classes); Assert.True(nodes[0].IsDirectory);
         Assert.Equal(9, nodes[2].Span.Line); Assert.Equal(9, nodes[2].Span.Column);
         var block = standard.Document!.ToTreeViewBlock(); Assert.Equal(5, block.Items.Count); Assert.True(block.ShowIcons);
-        Assert.True(block.Items[2].Highlighted); Assert.Equal(TreeViewIcon.None, block.Items[3].Icon);
+        Assert.True(block.Items[2].Highlighted); Assert.Equal(Icon.None, block.Items[3].Icon);
     }
 
     [Fact]

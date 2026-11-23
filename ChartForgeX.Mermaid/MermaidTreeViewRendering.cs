@@ -19,8 +19,9 @@ public static class MermaidTreeViewRendering {
         foreach (var node in document.Nodes) {
             if (!seen.Add(node)) throw new ArgumentException("Tree view rows must be distinct.", nameof(document));
             if (node.Parent != null && !seen.Contains(node.Parent)) throw new ArgumentException("Tree view parents must precede their children in the document.", nameof(document));
-            var icon = node.IconReference == null ? TreeViewIcon.Auto : node.IconReference == "" || node.IconReference == "none" ? TreeViewIcon.None
-                : node.IconReference == "file" ? TreeViewIcon.File : node.IconReference == "folder" ? TreeViewIcon.Folder : TreeViewIcon.Unknown;
+            var icon = node.IconReference == null ? (Icon?)null : node.IconReference == "" || node.IconReference == "none" ? Icon.None
+                : node.IconReference == "file" ? TreeViewIcons.File : node.IconReference == "folder" ? TreeViewIcons.Folder
+                : Icon.TryParse(node.IconReference, out var key) && !key.IsEmpty ? key : Icon.Named("unknown");
             var highlight = false; foreach (var name in node.Classes) if (name == "highlight") highlight = true;
             block.AddItem(new TreeViewItem(node.Id, node.Label, node.Parent?.Id, node.Description,
                 node.IsDirectory ? TreeViewItemKind.Directory : TreeViewItemKind.Auto, icon, highlight, node.IconReference, node.Classes));
