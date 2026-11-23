@@ -187,7 +187,7 @@ internal static partial class TopologyLayoutEngine {
     private static void RecedeHealthyDenseEdges(TopologyChart chart) {
         foreach (var edge in chart.Edges) {
             if (edge.Status == TopologyHealthStatus.Healthy && edge.Emphasis == TopologyEdgeEmphasis.Normal && !edge.IsMuted
-                && string.IsNullOrWhiteSpace(edge.Color) && !edge.PaletteIndex.HasValue) edge.Emphasis = TopologyEdgeEmphasis.Subtle;
+                && edge.Color == null && !edge.PaletteIndex.HasValue) edge.Emphasis = TopologyEdgeEmphasis.Subtle;
         }
     }
 

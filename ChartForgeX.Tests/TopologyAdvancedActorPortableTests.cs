@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyAdvancedActorPortableTests {
     [Fact]
     public void CustomGenericRouterIsCapturedAsFiniteNativeFactsAndRestoresWithoutItsProducerCatalog() {
-        var definition = new TopologyIconDefinition("tools", "gateway", "A custom router", TopologyNodeKind.Generic, TopologyIconShape.Router) { Symbol = "R", Color = "#2563EB" };
+        var definition = new TopologyIconDefinition("tools", "gateway", "A custom router", TopologyNodeKind.Generic, TopologyIconShape.Router) { Symbol = "R", Color = ChartColor.FromHex("#2563EB") };
         var pack = new TopologyIconPack("tools", "Finite test icons").AddIcon(definition);
         var catalog = new TopologyIconCatalog().AddPack(pack);
         var family = new MermaidFlowchartRenderOptions { Width = 640, Height = 360, FitContent = false, IconCatalog = catalog,
@@ -69,7 +69,7 @@ public sealed class TopologyAdvancedActorPortableTests {
         var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Id("native-glyph-policy").Viewport(new TopologyViewport(480, 320, 0)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("router", "Native router", 100, 60, width: 170, height: 140);
         var node = chart.Nodes[0]; node.Kind = TopologyNodeKind.Database; node.IconShape = TopologyIconShape.Router;
-        node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Icon; node.PreserveDisplayModeSize = true; node.Color = "#2563EB";
+        node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Icon; node.PreserveDisplayModeSize = true; node.Color = ChartColor.FromHex("#2563EB");
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false });
         var direct = chart.Prepare(); var svg = direct.ToSvg(); Assert.NotEmpty(Glyph(svg, "router"));
         Assert.Equal(TopologyIconShape.Router, Assert.Single(direct.ToInterchangeEnvelope().Nodes).Topology!.IconShape);

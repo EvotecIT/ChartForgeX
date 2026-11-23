@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,8 +18,8 @@ internal sealed class TopologySvgMarkerKeys {
     /// <summary>Numbers the explicit edge colours of <paramref name="chart"/> in edge order.</summary>
     public TopologySvgMarkerKeys(TopologyChart chart) {
         foreach (var edge in chart.Edges) {
-            if (edge.IsMuted || string.IsNullOrWhiteSpace(edge.Color)) continue;
-            var color = edge.Color!.Trim();
+            if (edge.IsMuted || edge.Color == null) continue;
+            var color = edge.Color.ToText()!;
             if (!_explicitColors.ContainsKey(color)) _explicitColors[color] = _explicitColors.Count + 1;
         }
     }
@@ -26,7 +27,7 @@ internal sealed class TopologySvgMarkerKeys {
     /// <summary>Returns the marker key of an edge of the chart the keys were built from.</summary>
     public string Key(TopologyEdge edge) {
         if (edge.IsMuted) return "muted";
-        if (string.IsNullOrWhiteSpace(edge.Color)) return TopologyRenderPrimitives.StatusMarkerToken(edge.Status);
-        return "color-" + _explicitColors[edge.Color!.Trim()].ToString(CultureInfo.InvariantCulture);
+        if (edge.Color == null) return TopologyRenderPrimitives.StatusMarkerToken(edge.Status);
+        return "color-" + _explicitColors[edge.Color.ToText()!].ToString(CultureInfo.InvariantCulture);
     }
 }

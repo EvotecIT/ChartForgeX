@@ -79,9 +79,9 @@ public sealed class FlowEditablePortableRestorationTests : IDisposable {
     }
     private static FlowArtifact Source() {
         var flow=FlowArtifact.Create("flow-restoration").Title("Source H").Subtitle("Source O").Width(900).Height(620).Padding(24)
-            .AddLane("lane_a","H",Tone.Success,"#287A5F").AddLane("lane_b","O",Tone.Warning,"#B58422")
+            .AddLane("lane_a","H",Tone.Success,ChartColor.FromHex("#287A5F")).AddLane("lane_b","O",Tone.Warning,ChartColor.FromHex("#B58422"))
             .AddStep("start","H",FlowArtifactStepKind.Start,"lane_a").AddStep("process","O",FlowArtifactStepKind.Process,"lane_a").AddStep("end","H",FlowArtifactStepKind.End,"lane_b")
-            .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,Tone.Success,"#245C86")
+            .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,Tone.Success,ChartColor.FromHex("#245C86"))
             .AddConnector("process","end","O",FlowArtifactConnectorKind.Flow,VisualLinkDirection.Bidirectional);
         flow.UpdateStep("start",step=>{step.Width=160;step.Height=74;step.FitLabelToContent=false;step.Metadata["step-key"]="step-value";});
         flow.UpdateStep("process",step=>{step.Width=200;step.Height=100;step.Subtitle="H";});flow.UpdateConnector(0,edge=>{edge.Id="source_edge";edge.Metadata["edge-key"]="edge-value";});

@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ internal static class TopologyEdgePresentationInterchange {
         if (edge.Evidence != TopologyEdgeEvidence.Unspecified) Set(extensions, EvidenceKey, edge.Evidence.ToString());
         if (!string.IsNullOrWhiteSpace(edge.EvidenceText)) Set(extensions, EvidenceTextKey, edge.EvidenceText!);
         if (edge.UplinkEnd != TopologyEdgeEnd.None) Set(extensions, UplinkKey, edge.UplinkEnd.ToString());
-        if (edge.Stripes.Count > 0) Set(extensions, StripesKey, Join(edge.Stripes.Select(stripe => new[] { stripe.Color, stripe.Label ?? string.Empty })));
+        if (edge.Stripes.Count > 0) Set(extensions, StripesKey, Join(edge.Stripes.Select(stripe => new[] { stripe.Color.ToText(), stripe.Label ?? string.Empty })));
         if (edge.Chips.Count > 0) Set(extensions, ChipsKey, Join(edge.Chips.Select(chip => new[] { chip.Text, chip.Tone.Name, chip.IconId ?? string.Empty })));
     }
 
@@ -27,7 +28,7 @@ internal static class TopologyEdgePresentationInterchange {
         if (Take(metadata, EvidenceTextKey) is { } text) edge.EvidenceText = text;
         if (Take(metadata, UplinkKey) is { } uplink) edge.UplinkEnd = Parse<TopologyEdgeEnd>(uplink, "edge uplink end");
         if (Take(metadata, StripesKey) is { } stripes)
-            foreach (var parts in Split(stripes, 2)) edge.Stripes.Add(new TopologyEdgeStripe { Color = parts[0], Label = parts[1].Length == 0 ? null : parts[1] });
+            foreach (var parts in Split(stripes, 2)) edge.Stripes.Add(new TopologyEdgeStripe { Color = ChartColorText.Parse(parts[0]) ?? ChartColor.Transparent, Label = parts[1].Length == 0 ? null : parts[1] });
         if (Take(metadata, ChipsKey) is { } chips)
             foreach (var parts in Split(chips, 3)) edge.Chips.Add(new TopologyEdgeChip { Text = parts[0], Tone = ParseTone(parts[1]), IconId = parts[2].Length == 0 ? null : parts[2] });
     }

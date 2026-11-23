@@ -79,7 +79,7 @@ public sealed class TopologyMotionTraversalTests {
             .AddNode("a", "First", 20, 80, width: 80, height: 60)
             .AddNode("b", "Second", 340, 80, width: 80, height: 60)
             .AddNode("c", "Other", 200, 210, width: 80, height: 60)
-            .AddEdge("route", "a", "b", routing: TopologyEdgeRouting.Straight, color: "#64748B");
+            .AddEdge("route", "a", "b", routing: TopologyEdgeRouting.Straight, color: ChartColor.FromHex("#64748B"));
         chart.Edges[0].Direction = VisualLinkDirection.Bidirectional;
         chart.AddScenario("traversal", "Traversal", scenario => {
             if (previous != null) scenario.AddNodeStep(previous);

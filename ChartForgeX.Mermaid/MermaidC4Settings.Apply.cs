@@ -30,8 +30,8 @@ internal sealed partial class MermaidC4Settings {
         for (var index = 0; index < chart.Nodes.Count; index++) {
             var node = chart.Nodes[index]; var element = document.Elements[index];
             if (_elements.TryGetValue(SourceType(element.Kind), out var style)) {
-                if (style.Fill != null) { node.BackgroundColor = style.Fill; node.LabelColor = "#FFFFFF"; }
-                if (style.Border != null) node.Color = style.Border;
+                if (style.Fill != null) { node.BackgroundColor = ChartColorText.Parse(style.Fill); node.LabelColor = ChartColor.FromHex("#FFFFFF"); }
+                if (style.Border != null) node.Color = ChartColorText.Parse(style.Border);
                 node.TextStyle = HostFont(style.Font, host);
             }
             if (geometry || node.TextStyle?.HasOverrides == true) {

@@ -275,15 +275,15 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var result = MermaidRenderer.Render("flowchart LR\n A[Escalation]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
         Assert.False(result.HasErrors);
         var node = Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes.Single(item => item.Id == "A");
-        Assert.Equal("#ef4444", node.LabelColor);
+        Assert.Equal(ChartColor.FromHex("#EF4444"), node.LabelColor);
         var svg = XDocument.Parse(result.Artifact!.ToSvg());
         var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
             .SelectMany(element => element.DescendantsAndSelf()).First(element => element.Name.LocalName == "text");
         Assert.Equal("#EF4444", (string?)label.Attribute("fill"));
         var envelope = result.Artifact.ToInterchangeEnvelope();
-        Assert.Equal("#ef4444", envelope.Nodes.Single(item => item.Label == "Escalation").LabelColor);
+        Assert.Equal("#EF4444", envelope.Nodes.Single(item => item.Label == "Escalation").LabelColor);
         var roundTrip = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson());
-        Assert.Equal("#ef4444", roundTrip.Nodes.Single(item => item.Label == "Escalation").LabelColor);
+        Assert.Equal("#EF4444", roundTrip.Nodes.Single(item => item.Label == "Escalation").LabelColor);
         Assert.NotEmpty(result.Artifact.ToPng());
     }
 
@@ -338,10 +338,10 @@ public sealed partial class ConsumerRenderingRegressionTests {
         chart.Nodes[2].DisplayMode = TopologyNodeDisplayMode.Icon;
         chart.Nodes[3].DisplayMode = TopologyNodeDisplayMode.Tile;
         chart.Nodes[4].Shape = TopologyNodeShape.Actor;
-        foreach (var node in chart.Nodes) node.LabelColor = "var(--host-label, #ef4444)";
+        foreach (var node in chart.Nodes) node.LabelColor = ChartColorText.Parse("var(--host-label, #EF4444)");
         var options = new TopologyRenderOptions {
             IncludeLegend = false, IncludeIconLabels = true, DimmedOpacity = .5,
-            SvgColorVariables = new SvgColorVariables().Add("--host-label", ChartColor.FromHex("#ef4444"), SvgColorRole.Text)
+            SvgColorVariables = new SvgColorVariables().Add("--host-label", ChartColor.FromHex("#EF4444"), SvgColorRole.Text)
         };
         options.HighlightNodeIds.Add("card");
         var svg = XDocument.Parse(chart.ToSvg(options));

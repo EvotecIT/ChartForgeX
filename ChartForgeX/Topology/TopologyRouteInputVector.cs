@@ -84,7 +84,7 @@ internal sealed class TopologyRouteInputVector : IEquatable<TopologyRouteInputVe
             t.Add(edge.PathGeometry?.PathData); Marker(edge.SourceMarkerStyle); Marker(edge.TargetMarkerStyle); Style(edge.TextStyle);
             n.Add((long?)edge.SourceMarker ?? -1); n.Add((long?)edge.TargetMarker ?? -1); n.Add((long)edge.Direction); n.Add((long)edge.Kind); n.Add((long)edge.Status);
             n.Add((long)edge.LineStyle); n.Add((long)edge.Emphasis); Optional(edge.StrokeWidth); Optional(edge.Opacity); n.Add(edge.IsMuted ? 1 : 0); n.Add(edge.PaletteIndex ?? -1);
-            t.Add(edge.Color); n.Add(edge.DashPattern.Count); foreach (var value in edge.DashPattern) Number(value);
+            t.Add(edge.Color.ToText()); n.Add(edge.DashPattern.Count); foreach (var value in edge.DashPattern) Number(value);
             Number(TopologyPreparedEdgePlan.Units(edge)); n.Add((recordedInputs ? edge.PreparedEdgePlan?.SelectedInput ?? false : options.SelectedEdgeIds.Contains(edge.Id)) ? 1 : 0);
             n.Add((recordedInputs ? edge.PreparedEdgePlan?.HighlightedInput ?? true : highlight.IsEdgeHighlighted(edge)) ? 1 : 0);
         }

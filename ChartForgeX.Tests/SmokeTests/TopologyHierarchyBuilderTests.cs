@@ -34,12 +34,12 @@ internal static partial class SmokeTests {
             .Viewport(new TopologyViewport(480, 300, 24))
             .Legend((TopologyLegend?)null)
             .AddHierarchy(new[] {
-                new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team, BackgroundColor = "#F5F3FF" },
-                new TopologyHierarchyItem("child", "Child", "root") { Kind = TopologyNodeKind.Person, BackgroundColor = "#DCFCE7" }
+                new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team, BackgroundColor = ChartColor.FromHex("#F5F3FF") },
+                new TopologyHierarchyItem("child", "Child", "root") { Kind = TopologyNodeKind.Person, BackgroundColor = ChartColor.FromHex("#DCFCE7") }
             });
 
-        Assert(chart.Nodes.Single(node => node.Id == "root").BackgroundColor == "#F5F3FF", "Hierarchy builders should copy caller root background colors.");
-        Assert(chart.Nodes.Single(node => node.Id == "child").BackgroundColor == "#DCFCE7", "Hierarchy builders should copy caller child background colors.");
+        Assert(chart.Nodes.Single(node => node.Id == "root").BackgroundColor == ChartColor.FromHex("#F5F3FF"), "Hierarchy builders should copy caller root background colors.");
+        Assert(chart.Nodes.Single(node => node.Id == "child").BackgroundColor == ChartColor.FromHex("#DCFCE7"), "Hierarchy builders should copy caller child background colors.");
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("data-node-background-color=\"#DCFCE7\"", StringComparison.Ordinal), "Hierarchy background colors should reach rendered SVG metadata.");
     }

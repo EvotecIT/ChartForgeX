@@ -55,7 +55,7 @@ internal static partial class SmokeTests {
             .AddNode("hub", "Hub", 60, 64, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 58, height: 46, symbol: "H")
             .AddNode("site", "Site", 230, 64, TopologyNodeKind.Branch, TopologyHealthStatus.Warning, width: 58, height: 46, symbol: "S")
             .AddEdge("dependency", "hub", "site", null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.None, TopologyEdgeRouting.Curved)
-            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color("#64748B"));
+            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color(ChartColor.FromHex("#64748B")));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
             .MonitoringDashboardStyle();

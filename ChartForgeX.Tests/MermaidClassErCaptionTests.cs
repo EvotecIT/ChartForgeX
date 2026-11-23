@@ -29,7 +29,7 @@ public sealed class MermaidClassErCaptionTests {
         var native = chart.Nodes.Single(node => node.Id == owner.Id);
         Assert.Equal("API\nservice & data", native.Label);
         Assert.Equal(owner.Label, native.Metadata["mermaid.source.label"]);
-        Assert.Equal("#dbeafe", native.BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#dbeafe"), native.BackgroundColor);
         Assert.Equal("Pair<K,List<V>>", document.Classes.Single(node => node.Id == "Pair").Label);
         Assert.Equal("Pair~K,List~V~~", chart.Nodes.Single(node => node.Id == "Pair").Metadata["mermaid.generic.source"]);
         Assert.Equal(TopologyMarkerKind.OpenDiamond, Assert.Single(chart.Edges).SourceMarker);
@@ -53,7 +53,7 @@ public sealed class MermaidClassErCaptionTests {
         Assert.Equal(identity, document.Relationships[1].TargetId);
         Assert.Single(document.Classes[0].Members);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
-        Assert.Equal("#dbeafe", chart.Nodes.Single(node => node.Id == identity).BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#dbeafe"), chart.Nodes.Single(node => node.Id == identity).BackgroundColor);
         Assert.Single(chart.Nodes, node => node.Shape == TopologyNodeShape.Circle);
         Assert.Equal(TopologyMarkerKind.OpenTriangle, chart.Edges[0].SourceMarker);
         Assert.Equal(TopologyMarkerKind.OpenTriangle, chart.Edges[0].TargetMarker);

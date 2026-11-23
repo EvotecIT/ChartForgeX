@@ -405,7 +405,7 @@ internal static partial class SmokeTests {
             .AddLane("ops", "Operations")
             .AddStep("start", "Start", FlowArtifactStepKind.Start, "ops", Tone.Success)
             .AddStep("review", "Review", FlowArtifactStepKind.Decision, "ops", Tone.Warning)
-            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, Tone.Success, "#EF4444");
+            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, Tone.Success, ChartColor.FromHex("#EF4444"));
 
         var artifact = flow.ToVisualArtifact();
         var svg = flow.ToSvg();

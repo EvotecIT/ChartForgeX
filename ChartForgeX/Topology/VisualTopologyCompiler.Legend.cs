@@ -18,8 +18,8 @@ internal sealed partial class VisualTopologyCompiler {
         using var markerGroup = _builder.PushGroup(null, "topology-legend-item", metadata);
         var fallback = item.Status.HasValue ? Status(item.Status.Value) : item.Evidence != TopologyEdgeEvidence.Unspecified ? Status(TopologyHealthStatus.Unknown) : _colors.Accent;
         var color = Color(item.Color, fallback);
-        var colorRole = !string.IsNullOrWhiteSpace(item.Color) ? SvgColorRole.Any : item.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Series;
-        var sourceColor = !string.IsNullOrWhiteSpace(item.Color) ? item.Color : item.Status.HasValue ? _svgTheme?.StatusColor(item.Status.Value)
+        var colorRole = item.Color != null ? SvgColorRole.Any : item.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Series;
+        var sourceColor = item.Color != null ? item.Color.ToText() : item.Status.HasValue ? _svgTheme?.StatusColor(item.Status.Value)
             : item.Evidence != TopologyEdgeEvidence.Unspecified ? _svgTheme?.StatusColor(TopologyHealthStatus.Unknown) : _svgTheme?.Accent;
         var colorPaint = SourcePaint(sourceColor, color, colorRole, fallback: fallback);
         var centerX = bounds.X + bounds.Width / 2; var centerY = bounds.Y + bounds.Height / 2;
@@ -28,7 +28,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && TopologyRenderPrimitives.ResolveNodeIcon(node, _options) == null)
                 throw new System.InvalidOperationException("Unresolved topology legend icon: " + node.IconId);
             _builder.Rect(bounds, Color(item.BackgroundColor, _colors.Surface), color, _context.Theme.AxisStrokeWidth,
-                _context.Theme.BarRadius, "topology-legend-node", paint: new VisualScenePaintBinding(SourcePaint(string.IsNullOrWhiteSpace(item.BackgroundColor) ? _svgTheme?.Card : item.BackgroundColor, Color(item.BackgroundColor, _colors.Surface), string.IsNullOrWhiteSpace(item.BackgroundColor) ? SvgColorRole.Surface : SvgColorRole.Any, fallback: _colors.Surface), colorPaint));
+                _context.Theme.BarRadius, "topology-legend-node", paint: new VisualScenePaintBinding(SourcePaint(item.BackgroundColor == null ? _svgTheme?.Card : item.BackgroundColor.ToText(), Color(item.BackgroundColor, _colors.Surface), item.BackgroundColor == null ? SvgColorRole.Surface : SvgColorRole.Any, fallback: _colors.Surface), colorPaint));
             BuildGlyph(node, centerX, centerY, color, System.Math.Min(bounds.Width, bounds.Height) / 26, colorRole, artworkOpacity: 1, sourceFallback: fallback);
         } else {
             using (PinnedState()) {

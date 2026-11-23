@@ -13,7 +13,7 @@ internal sealed partial class VisualTopologyCompiler {
         var content = DetailContent(detail);
         if (content.IsStructured) {
             var inlineRows = TopologyTextLayout.AuthoredRowCount(content.PlainText, _options.AllowMultilineNodeLabels);
-            var inlineAuthored = detail.TextStyle?.Color is ChartColor explicitColor ? explicitColor.ToHexRgba() : detail.Color;
+            var inlineAuthored = detail.TextStyle?.Color is ChartColor explicitColor ? explicitColor.ToHexRgba() : detail.Color.ToText();
             var inlineColor = Highlight(detail.TextStyle?.Color ?? Color(detail.Color, _colors.Foreground), active);
             InlineText(content, bounds, size * _scale, inlineColor, "topology-node-detail", inlineRows,
                 paint: SourcePaint(inlineAuthored ?? _svgTheme?.Foreground, inlineColor, string.IsNullOrWhiteSpace(inlineAuthored) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), detailPolicy: detail.TextStyle);
@@ -23,7 +23,7 @@ internal sealed partial class VisualTopologyCompiler {
         var color = Color(detail.Color, _colors.Foreground);
         if (detail.TextStyle == null || !detail.TextStyle.HasOverrides) {
             Text(value, bounds, size, Highlight(color, active), 400, "topology-node-detail", rows,
-                paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, Highlight(color, active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
+                paint: SourcePaint(detail.Color.ToText() ?? _svgTheme?.Foreground, Highlight(color, active), detail.Color == null ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
             return;
         }
 
@@ -44,7 +44,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (layout == null) return;
         style.FontSize = layout.Size;
         var baseline = bounds.Y + _builder.TextAscent(style);
-        var authored = detail.TextStyle.Color.HasValue ? detail.TextStyle.Color.Value.ToHexRgba() : detail.Color;
+        var authored = detail.TextStyle.Color.HasValue ? detail.TextStyle.Color.Value.ToHexRgba() : detail.Color.ToText();
         var paint = SourcePaint(authored ?? _svgTheme?.Foreground, style.Color,
             string.IsNullOrWhiteSpace(authored) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground);
         foreach (var line in layout.Lines) {

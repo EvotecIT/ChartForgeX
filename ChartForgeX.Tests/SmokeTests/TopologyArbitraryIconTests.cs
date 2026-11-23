@@ -10,19 +10,19 @@ internal static partial class SmokeTests {
         var pack = new TopologyIconPack("access-sample", "Access Sample Icons", vendor: "ChartForgeX sample")
             .AddIcon(new TopologyIconDefinition("access-sample", "client", "Client Device", TopologyNodeKind.Endpoint, TopologyIconShape.Desktop) {
                 Symbol = "DEV",
-                Color = "#334155",
+                Color = ChartColor.FromHex("#334155"),
                 DisplayMode = TopologyNodeDisplayMode.Tile,
                 Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"8\" y=\"10\" width=\"28\" height=\"18\" rx=\"3\" fill=\"#334155\"/><rect x=\"13\" y=\"15\" width=\"18\" height=\"8\" rx=\"1.5\" fill=\"#FFFFFF\"/><rect x=\"18\" y=\"31\" width=\"8\" height=\"3\" rx=\"1\" fill=\"#334155\"/>", "0 0 44 44")
             })
             .AddIcon(new TopologyIconDefinition("access-sample", "gateway", "Gateway", TopologyNodeKind.Gateway, TopologyIconShape.LoadBalancer) {
                 Symbol = "GW",
-                Color = "#0E7490",
+                Color = ChartColor.FromHex("#0E7490"),
                 DisplayMode = TopologyNodeDisplayMode.Pill,
                 Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"6\" y=\"13\" width=\"36\" height=\"18\" rx=\"9\" fill=\"#0E7490\"/><path d=\"M15 22 H31 M26 17 L32 22 L26 27\" fill=\"none\" stroke=\"#FFFFFF\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>", "0 0 48 44")
             })
             .AddIcon(new TopologyIconDefinition("access-sample", "destination", "Destination", TopologyNodeKind.Cloud, TopologyIconShape.Application) {
                 Symbol = "APP",
-                Color = "#6366F1",
+                Color = ChartColor.FromHex("#6366F1"),
                 DisplayMode = TopologyNodeDisplayMode.Card,
                 Artwork = TopologyIconArtwork.InlineSvg("<path d=\"M24 5 L40 14 V32 L24 41 L8 32 V14 Z\" fill=\"#6366F1\"/><path d=\"M24 15 L32 20 V28 L24 33 L16 28 V20 Z\" fill=\"#FFFFFF\" opacity=\"0.9\"/>", "0 0 48 48")
             });
@@ -35,9 +35,9 @@ internal static partial class SmokeTests {
             .Id("arbitrary-icon-topology")
             .Viewport(new TopologyViewport(640, 260, 20))
             .Legend(TopologyLegend.Create("Routes")
-                .AddNodeKind("Client", TopologyNodeKind.Endpoint, "#334155", "DEV", iconId: "access-sample:client")
-                .AddNodeKind("Gateway", TopologyNodeKind.Gateway, "#0E7490", "GW", iconId: "access-sample:gateway")
-                .AddEdgeKind("Policy tunnel", TopologyEdgeKind.AuthenticationPath, "#0E7490", TopologyEdgeLineStyle.Dashed))
+                .AddNodeKind("Client", TopologyNodeKind.Endpoint, ChartColor.FromHex("#334155"), "DEV", iconId: "access-sample:client")
+                .AddNodeKind("Gateway", TopologyNodeKind.Gateway, ChartColor.FromHex("#0E7490"), "GW", iconId: "access-sample:gateway")
+                .AddEdgeKind("Policy tunnel", TopologyEdgeKind.AuthenticationPath, ChartColor.FromHex("#0E7490"), TopologyEdgeLineStyle.Dashed))
             .AddNode("client", "Client", 44, 94, TopologyNodeKind.Endpoint, TopologyHealthStatus.Healthy, width: 94, height: 70, symbol: "DEV", iconId: "access-sample:client")
             .AddArtworkNode("backdrop", "Cloud Backdrop", backdropArtwork, 180, 42, TopologyNodeKind.Cloud, TopologyHealthStatus.Unknown, width: 260, height: 140, symbol: "CLD")
             .AddNode("gateway", "Tunnel Gateway", 252, 106, TopologyNodeKind.Gateway, TopologyHealthStatus.Healthy, width: 168, height: 34, symbol: "GW", iconId: "access-sample:gateway")

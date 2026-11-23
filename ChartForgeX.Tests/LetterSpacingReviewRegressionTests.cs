@@ -128,7 +128,7 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
         var chart = TopologyChart.Create().Id("tracking-external").Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(enlarge.HasValue ? enlarge.Value ? 1000 : 180 : 640, enlarge.HasValue ? enlarge.Value ? 700 : 140 : 400, 24))
             .Theme(VisualTheme.Graphite().WithFontFamily(Family)).LayoutMode(enlarge.HasValue ? TopologyLayoutMode.Layered : TopologyLayoutMode.Manual)
             .AddNode("node", "HOO HOO", 210, 150, width: 180, height: 90);
-        var node = chart.Nodes[0]; node.DisplayMode = mode; node.Shape = TopologyNodeShape.Rectangle; node.IconShape = TopologyIconShape.Router; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; node.Color = "#2563eb";
+        var node = chart.Nodes[0]; node.DisplayMode = mode; node.Shape = TopologyNodeShape.Rectangle; node.IconShape = TopologyIconShape.Router; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; node.Color = ChartColor.FromHex("#2563eb");
         node.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, FontWeight = 400, LetterSpacing = .8 };
         node.SubtitleTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 12, FontWeight = 400, LetterSpacing = .6 }; if (mode == TopologyNodeDisplayMode.Tile) node.Subtitle = "HOO";
         node.CaptionPlacement = TopologyCaptionPlacement.Top; node.CaptionGap = 8; node.CaptionSurface = TopologyCaptionSurface.Plate;

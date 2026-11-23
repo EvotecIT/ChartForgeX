@@ -54,11 +54,11 @@ public sealed class MarkupTopologyDocument {
         if (!string.IsNullOrWhiteSpace(Subtitle)) chart.Subtitle(Subtitle!);
 
         foreach (var group in Groups) {
-            chart.AddGroup(group.Id, group.Label, 0, 0, group.Width, group.Height, group.Status, group.Subtitle, color: group.Color, iconId: group.Icon);
+            chart.AddGroup(group.Id, group.Label, 0, 0, group.Width, group.Height, group.Status, group.Subtitle, color: ChartColorText.Parse(group.Color), iconId: group.Icon);
         }
 
         foreach (var node in Nodes) {
-            chart.AddAutoNode(node.Id, node.Label, node.Kind, node.Status, node.Group, node.Subtitle, width: node.Width, height: node.Height, symbol: node.Symbol, color: node.Color, iconId: node.Icon);
+            chart.AddAutoNode(node.Id, node.Label, node.Kind, node.Status, node.Group, node.Subtitle, width: node.Width, height: node.Height, symbol: node.Symbol, color: ChartColorText.Parse(node.Color), iconId: node.Icon);
             if (!string.IsNullOrWhiteSpace(node.Badge)) chart.UpdateNode(node.Id, n => n.Badge(node.Badge));
             if (node.Display.HasValue) chart.UpdateNode(node.Id, n => n.DisplayMode(node.Display.Value).Badge(null));
         }

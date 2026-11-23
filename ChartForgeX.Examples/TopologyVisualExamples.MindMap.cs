@@ -60,8 +60,8 @@ internal static partial class TopologyVisualExamples {
         new(id, label, parentId) {
             Kind = kind,
             IconId = iconId,
-            Color = color,
-            BackgroundColor = backgroundColor,
+            Color = ChartColor.Parse(color),
+            BackgroundColor = ChartColor.Parse(backgroundColor),
             Subtitle = subtitle
         };
 }

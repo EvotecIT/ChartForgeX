@@ -17,7 +17,7 @@ internal static partial class SmokeTests {
             .AddNodePort("api", "grpc", TopologyEdgePort.Right, 0.3, "gRPC")
             .AddNodePort("db", "writer", TopologyEdgePort.Left, 0.72, "Writer")
             .AddNodeDetail("api", "Region", "EU", TopologyHealthStatus.Healthy)
-            .AddNodeDetail("api", "Latency", "24 ms", TopologyHealthStatus.Warning, color: "red")
+            .AddNodeDetail("api", "Latency", "24 ms", TopologyHealthStatus.Warning, color: ChartColorText.Parse("red"))
             .AddEdge("api-db", "api", "db", "Queries", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .UpdateEdge("api-db", e => e.SourcePortId("grpc").TargetPortId("writer"))
             .EdgeStroke("api-db", width: 4, opacity: 0.58, dashPattern: new[] { 11.0, 3.0, 2.0, 3.0 })

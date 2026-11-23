@@ -37,7 +37,7 @@ public sealed class TopologyAuthoredPathBadgeBrowserTests {
             """);
         Assert.Equal(2, observed.GetProperty("badges").GetInt32());
         Assert.Contains(observed.GetProperty("labelSurfaces").EnumerateArray(), item => item.GetString() == "#193857");
-        Assert.Equal("#193857", restored.Edges[0].LabelBackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#193857"), restored.Edges[0].LabelBackgroundColor);
         Assert.Contains(observed.GetProperty("paths").EnumerateArray(), path => path.GetString()!.Contains('C'));
         Assert.Empty(observed.GetProperty("escaped").EnumerateArray()); Assert.Contains("Pending review", observed.GetProperty("text").GetString());
         Assert.Equal(0, observed.GetProperty("scripts").GetInt32()); Assert.False(observed.GetProperty("overflow").GetBoolean());

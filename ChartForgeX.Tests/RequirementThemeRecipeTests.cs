@@ -25,12 +25,12 @@ public sealed class RequirementThemeRecipeTests {
         Assert.DoesNotContain("ChartForgeX.Examples", program, StringComparison.Ordinal);
         Assert.Contains("ToInterchangeJson", program, StringComparison.Ordinal);
         var chart = Assert.IsType<TopologyChart>(artifact.Model); var node = chart.Nodes.Single(item => item.Id == "review");
-        Assert.Equal(dark ? "#382535" : "#F5DBE4", node.BackgroundColor);
-        Assert.Equal(dark ? "#F9EAF5" : "#28132B", node.LabelColor);
+        Assert.Equal(dark ? ChartColor.FromHex("#382535") : ChartColor.FromHex("#F5DBE4"), node.BackgroundColor);
+        Assert.Equal(dark ? ChartColor.FromHex("#F9EAF5") : ChartColor.FromHex("#28132B"), node.LabelColor);
         var imported = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();
         Assert.Equal(node.BackgroundColor, imported.Nodes.Single(item => item.Id == "review").BackgroundColor);
         Assert.Equal(chart.Edges.Single().LabelColor, imported.Edges.Single().LabelColor);
-        Assert.Equal(dark ? "#3B2755" : "#E7F2E9", chart.Edges.Single().LabelBackgroundColor);
+        Assert.Equal(dark ? ChartColor.FromHex("#3B2755") : ChartColor.FromHex("#E7F2E9"), chart.Edges.Single().LabelBackgroundColor);
         Assert.Equal(chart.Edges.Single().LabelBackgroundColor, imported.Edges.Single().LabelBackgroundColor);
         var parser = new MermaidVisualMarkupParser(new ChartForgeX.Mermaid.MermaidRenderOptions {
             Presentation = new ChartForgeX.Mermaid.MermaidPresentationOptions { ThemeMode = mode, FontFamily = BrowserProofFonts.Family },

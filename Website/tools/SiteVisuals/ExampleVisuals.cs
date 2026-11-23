@@ -31,7 +31,7 @@ internal static class ExampleVisuals {
         var estate = output.Pair("examples/interactive-topology", (_, dark) => Estate().ToGraphSvg(configure: options => {
             options.Width = 1180;
             options.Height = 640;
-            options.Theme = dark ? ThemeMode.Dark : ThemeMode.Light;
+            options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         }));
         output.Text("examples/interactive-topology.html", Estate().ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = HtmlGraphRenderBackend.Svg;

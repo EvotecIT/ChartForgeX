@@ -204,6 +204,8 @@ internal sealed partial class VisualTopologyCompiler {
         TopologyHealthStatus.Critical => _colors.Status.Critical.Fill, TopologyHealthStatus.Disabled => _colors.Status.Maintenance.Fill,
         _ => _colors.Status.Neutral.Fill
     };
+    // Scene colours carry the resolved channels; the CSS variable travels separately in the paint binding.
+    private static ChartColor Color(ChartColor? value, ChartColor fallback) => value is { } color ? ChartColor.FromRgba(color.R, color.G, color.B, color.A) : fallback;
     private static ChartColor Color(string? value, ChartColor fallback) =>
         TopologySurfacePaintRules.TryColor(value, fallback, out var resolved) ? resolved : ChartColor.Parse(value!);
     private ChartColor Highlight(ChartColor color, bool highlighted) => color.WithOpacity(color.A / 255d * (highlighted || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity));

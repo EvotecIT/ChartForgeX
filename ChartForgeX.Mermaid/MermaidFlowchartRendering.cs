@@ -81,9 +81,9 @@ public static partial class MermaidFlowchartRendering {
                 // fabricate a model caption to pass the visible-label convenience builder.
                 chart.Nodes.Add(new TopologyNode { Id = node.Id, Label = label, ShowLabel = false, Kind = TopologyNodeKind.Generic,
                     Status = TopologyHealthStatus.Unknown, GroupId = node.SubgraphId, Href = node.Href, Tooltip = node.Tooltip,
-                    Width = nodeWidth, Height = nodeHeight, Color = color, CssClass = cssClass });
+                    Width = nodeWidth, Height = nodeHeight, Color = ChartColorText.Parse(color), CssClass = cssClass });
             } else chart.AddAutoNode(node.Id, label, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown,
-                groupId: node.SubgraphId, href: node.Href, tooltip: node.Tooltip, width: nodeWidth, height: nodeHeight, color: color, cssClass: cssClass);
+                groupId: node.SubgraphId, href: node.Href, tooltip: node.Tooltip, width: nodeWidth, height: nodeHeight, color: ChartColorText.Parse(color), cssClass: cssClass);
 
             var target = chart.Nodes[chart.Nodes.Count - 1];
             target.LabelContent = MermaidInlineCaption.Content(sourceLabel);
@@ -99,8 +99,8 @@ public static partial class MermaidFlowchartRendering {
             target.DisplayMode = TopologyNodeDisplayMode.Card;
             target.PreserveDisplayModeSize = true;
             target.FitLabelToContent = options.FitContent && node.Shape != MermaidFlowchartNodeShape.Actor;
-            target.BackgroundColor = StyleValue(node.Styles, "fill");
-            target.LabelColor = StyleValue(node.Styles, "color");
+            target.BackgroundColor = ChartColorText.Parse(StyleValue(node.Styles, "fill"));
+            target.LabelColor = ChartColorText.Parse(StyleValue(node.Styles, "color"));
             target.Metadata["mermaid.id"] = node.Id;
             target.Metadata["mermaid.label"] = sourceLabel;
             target.Metadata["mermaid.shape"] = node.Shape.ToString();
@@ -142,7 +142,7 @@ public static partial class MermaidFlowchartRendering {
                 target.MinimumRankSpan = MermaidFlowchartOperators.MinimumRankSpan(edge.Operator);
             if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
-            if (!string.IsNullOrWhiteSpace(edgeColor)) target.Color = edgeColor;
+            if (!string.IsNullOrWhiteSpace(edgeColor)) target.Color = ChartColorText.Parse(edgeColor);
             if (edge.Styles.TryGetValue("stroke-dasharray", out var dashArray) && MermaidStyleValues.TryDash(dashArray, out var dashed))
                 target.LineStyle = dashed ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid;
             if (document.Kind == MermaidDiagramKind.UseCase && edge.Operator == "--|>") target.TargetMarker = TopologyMarkerKind.OpenTriangle;

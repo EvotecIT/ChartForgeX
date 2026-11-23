@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
@@ -49,8 +50,8 @@ public sealed class MermaidClassGenericStyleRegressionTests {
         Assert.Equal("+List~Item~ items", document.Classes[0].Members[0].Text);
         Assert.Equal("+List<Item> items", document.Classes[0].Members[0].DisplayText);
         var artifact = result.Artifact!; var chart = Assert.IsType<TopologyChart>(artifact.Model);
-        Assert.All(chart.Nodes.Take(2), node => { Assert.Equal("#fef9c3", node.BackgroundColor); Assert.Equal("marked", node.Metadata["mermaid.classes"]); });
-        Assert.Equal("#dcfce7", chart.Nodes[2].BackgroundColor); Assert.Equal("#15803d", chart.Nodes[2].Color);
+        Assert.All(chart.Nodes.Take(2), node => { Assert.Equal(ChartColor.FromHex("#fef9c3"), node.BackgroundColor); Assert.Equal("marked", node.Metadata["mermaid.classes"]); });
+        Assert.Equal(ChartColor.FromHex("#dcfce7"), chart.Nodes[2].BackgroundColor); Assert.Equal(ChartColor.FromHex("#15803d"), chart.Nodes[2].Color);
         Assert.Equal("Literal,Name~T~", chart.Nodes[2].Label);
         var svg = artifact.ToSvg(); var png = artifact.ToPng(); Assert.NotEmpty(png);
         var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics);
@@ -59,7 +60,7 @@ public sealed class MermaidClassGenericStyleRegressionTests {
         var facts = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         Assert.Equal("+List<Item> items", facts.Nodes[0].Details[0].Text);
         Assert.Equal("+List~Item~ items", facts.Nodes[0].Details[0].Extensions["mermaid.member.source"]);
-        Assert.Equal(chart.Nodes.Select(node => node.BackgroundColor), facts.Nodes.Select(node => node.BackgroundColor));
+        Assert.Equal(chart.Nodes.Select(node => node.BackgroundColor), facts.Nodes.Select(node => ChartColorText.Parse(node.BackgroundColor)));
     }
 
     [Fact]
@@ -83,10 +84,10 @@ public sealed class MermaidClassGenericStyleRegressionTests {
         var document = Assert.IsType<MermaidClassDocument>(result.Document); Assert.Empty(document.RawStatements);
         Assert.Equal(new[] { "Box", "Other", "Box,Other", "Pair" }, document.Classes.Select(node => node.Id));
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
-        Assert.Null(chart.Nodes[0].BackgroundColor); Assert.Equal("#172554", chart.Nodes[0].LabelColor);
+        Assert.Null(chart.Nodes[0].BackgroundColor); Assert.Equal(ChartColor.FromHex("#172554"), chart.Nodes[0].LabelColor);
         Assert.Null(chart.Nodes[1].BackgroundColor); Assert.Null(chart.Nodes[1].LabelColor);
-        Assert.Equal("#dbeafe", chart.Nodes[2].BackgroundColor); Assert.Null(chart.Nodes[2].LabelColor);
-        Assert.Equal(("Pair<K,V>", "#dbeafe", "#1e3a8a", "#172554"), (chart.Nodes[3].Label, chart.Nodes[3].BackgroundColor, chart.Nodes[3].Color, chart.Nodes[3].LabelColor));
+        Assert.Equal(ChartColor.FromHex("#dbeafe"), chart.Nodes[2].BackgroundColor); Assert.Null(chart.Nodes[2].LabelColor);
+        Assert.Equal(("Pair<K,V>", ChartColor.FromHex("#dbeafe"), ChartColor.FromHex("#1e3a8a"), ChartColor.FromHex("#172554")), (chart.Nodes[3].Label, chart.Nodes[3].BackgroundColor, chart.Nodes[3].Color, chart.Nodes[3].LabelColor));
         Assert.NotEmpty(result.Artifact.ToSvg()); Assert.NotEmpty(result.Artifact.ToPng());
     }
     [Fact]
@@ -95,7 +96,7 @@ public sealed class MermaidClassGenericStyleRegressionTests {
         var options = new MermaidRenderOptions { ParseOptions = new MermaidParseOptions { ResourceLimits = new MermaidResourceLimits { MaximumNestingDepth = 1 } } };
         var accepted = MermaidRenderer.Render(source, options); Assert.Empty(accepted.Diagnostics);
         var node = Assert.Single(Assert.IsType<TopologyChart>(accepted.Artifact!.Model).Nodes);
-        Assert.Equal(("Box<Item>", "#dbeafe", "#1e3a8a"), (node.Label, node.BackgroundColor, node.Color));
+        Assert.Equal(("Box<Item>", ChartColor.FromHex("#dbeafe"), ChartColor.FromHex("#1e3a8a")), (node.Label, node.BackgroundColor, node.Color));
         var rejected = MermaidRenderer.Render("classDiagram\nclass Box~List~Item~~", options); Assert.Null(rejected.Artifact);
         Assert.Contains(rejected.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ResourceLimitExceeded && item.Span.Line == 2);
         foreach (var malformed in new[] { "Pair~K,,V~", "Pair~K,V~~", "Pair~K+V~", "Pair~?~" }) {

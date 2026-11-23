@@ -29,7 +29,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
         var family=BrowserProofFonts.Family;
         var source="%%{init: {'c4':{'"+type+"FontFamily':'"+family+"','"+type+"FontSize':'18px','"+type+"FontWeight':500,'"+type+"_bg_color':'#123456','"+type+"_border_color':'#654321'}}}%%\nC4Context\n"+call+"(item, \"Observed caption\")";
         var chart=Parse(source).ToTopologyChart();chart.Theme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var node=Assert.Single(chart.Nodes);
-        Assert.Equal("#123456",node.BackgroundColor);Assert.Equal("#654321",node.Color);
+        Assert.Equal(ChartColor.FromHex("#123456"),node.BackgroundColor);Assert.Equal(ChartColor.FromHex("#654321"),node.Color);
         Assert.Equal(family,node.TextStyle!.FontFamily);Assert.Equal(18,node.TextStyle.FontSize);Assert.Equal(500,node.TextStyle.FontWeight);
         var prepared=chart.Prepare();var labels=prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text=>text.Role=="topology-node-label").ToArray();
         Assert.NotEmpty(labels);Assert.All(labels,text=>{Assert.Equal(family,text.Text.Style.Font.Family);Assert.True(text.Text.Size>=18-.001);});
@@ -40,7 +40,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
         var source="%%{init: {'c4':{'containerFontFamily':'Source font','containerFontSize':18,'container_bg_color':'#123456','container_border_color':'#654321'}}}%%\nC4Container\nContainer(api, \"API\")\nUpdateElementStyle(api,$bgColor=\"#abcdef\",$borderColor=\"#fedcba\")";
         var host=new MermaidPresentationOptions {FontFamily=BrowserProofFonts.Family,FontSize=22};
         var chart=Parse(source).ToTopologyChart(new MermaidTopologyRenderOptions {Presentation=host});chart.Theme(chart.Theme.WithFontFamily(BrowserProofFonts.Family));var node=Assert.Single(chart.Nodes);
-        Assert.Equal("#abcdef",node.BackgroundColor);Assert.Equal("#fedcba",node.Color);Assert.Equal(host.FontFamily,node.TextStyle!.FontFamily);Assert.Equal(22,node.TextStyle.FontSize);
+        Assert.Equal(ChartColor.FromHex("#abcdef"),node.BackgroundColor);Assert.Equal(ChartColor.FromHex("#fedcba"),node.Color);Assert.Equal(host.FontFamily,node.TextStyle!.FontFamily);Assert.Equal(22,node.TextStyle.FontSize);
     }
     [Fact]
     public void SourceGridSpacingUsesTheGenericImmutablePlannerAndExistingSourceRowLimits() {

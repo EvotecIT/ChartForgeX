@@ -38,7 +38,7 @@ public sealed class TopologyNestedHeaderSurfaceTests {
         Capture(prepared, "nested-header-surface-" + dark + "-" + translucent);
         AssertPaintGeometry(prepared);
         var savedSvg = prepared.ToSvg(); var savedPng = prepared.ToPng();
-        chart.Groups[1].LabelColor = "#7C3AED";
+        chart.Groups[1].LabelColor = ChartColor.FromHex("#7C3AED");
         Assert.All(Captions(chart.Prepare(options)).Where(text => Text(text) is "Order" or "records" or "All facts" or "retained"),
             text => Assert.Equal(ChartColor.Parse("#7C3AED"), text.Color));
         Assert.Equal(savedSvg, prepared.ToSvg()); Assert.Equal(savedPng, prepared.ToPng());
@@ -145,7 +145,7 @@ public sealed class TopologyNestedHeaderSurfaceTests {
             .AddNode("member", "Member", 100, 136, TopologyNodeKind.Generic, groupId: "orders", width: 80, height: 40)
             .AddNode("outside", "Outside", 570, 490, width: 40, height: 20)
             .AddEdge("relation", "member", "outside", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
-        chart.Groups[0].BackgroundColor = translucent ? "#DCFCE7C0" : "#DCFCE7"; chart.Groups[0].LabelColor = "#14532D";
+        chart.Groups[0].BackgroundColor = (translucent ? ChartColor.FromHex("#DCFCE7C0") : ChartColor.FromHex("#DCFCE7")); chart.Groups[0].LabelColor = ChartColor.FromHex("#14532D");
         chart.Groups[1].ParentGroupId = "domain";
         return chart;
     }

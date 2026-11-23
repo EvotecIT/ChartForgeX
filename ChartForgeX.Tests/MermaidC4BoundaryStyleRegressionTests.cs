@@ -28,13 +28,13 @@ public sealed class MermaidC4BoundaryStyleRegressionTests {
         var originalGroup = Assert.Single(baseline.Groups); var group = Assert.Single(styled.Groups);
         Assert.Equal(originalGroup.Color, group.Color);
         Assert.Equal(originalGroup.BackgroundColor, group.BackgroundColor);
-        Assert.Equal("#ff0000", group.BorderColor);
+        Assert.Equal(ChartColor.FromHex("#ff0000"), group.BorderColor);
         var original = baseline.Prepare(); var prepared = styled.Prepare();
         var originalSvg = original.ToSvg(); var svg = prepared.ToSvg();
         var originalSurface = Surface(originalSvg); var surface = Surface(svg);
         Assert.Equal((string?)originalSurface.Attribute("fill"), (string?)surface.Attribute("fill"));
         Assert.Equal("#ff0000", ((string?)surface.Attribute("stroke"))?.ToLowerInvariant());
-        Assert.Equal("#ff0000", Assert.Single(prepared.ToInterchangeEnvelope().Groups).BorderColor);
+        Assert.Equal("#FF0000", Assert.Single(prepared.ToInterchangeEnvelope().Groups).BorderColor);
         Assert.Equal((original.Width, original.Height), (prepared.Width, prepared.Height));
         foreach (var attribute in new[] { "x", "y", "width", "height", "rx", "stroke-width" })
             Assert.Equal((string?)originalSurface.Attribute(attribute), (string?)surface.Attribute(attribute));

@@ -39,16 +39,16 @@ public sealed class NativeTopologySourcePaintTests {
     private static (TopologyChart Chart, TopologyRenderOptions Options) Create(bool variables) {
         string Paint(string name, string fallback) => variables ? "var(--" + name + ", " + fallback + ")" : fallback;
         var icon = new TopologyIconDefinition("source-paint", "service", "Service", TopologyNodeKind.Service, TopologyIconShape.Application) {
-            Color = Paint("icon", "#22BB4480")
+            Color = ChartColorText.Parse(Paint("icon", "#22BB4480"))
         };
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("source-paint", "Source paint").AddIcon(icon));
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(920, 440, 20)).Legend((TopologyLegend?)null)
-            .AddGroup("region", "Region", 30, 30, 850, 350, color: Paint("group", "#2244CC80"))
+            .AddGroup("region", "Region", 30, 30, 850, 350, color: ChartColorText.Parse(Paint("group", "#2244CC80")))
             .AddNode("card", "Card", 60, 120, groupId: "region", width: 190, height: 110,
-                color: Paint("node", "#CC224480"), backgroundColor: Paint("background", "#11223380"))
-            .AddNodeDetail("card", "Status", "Ready", color: Paint("detail", "#4422CC80"))
+                color: ChartColorText.Parse(Paint("node", "#CC224480")), backgroundColor: ChartColorText.Parse(Paint("background", "#11223380")))
+            .AddNodeDetail("card", "Status", "Ready", color: ChartColorText.Parse(Paint("detail", "#4422CC80")))
             .AddNode("catalog", "Catalog", 290, 120, groupId: "region", width: 150, height: 80, iconId: "source-paint:service")
-            .AddNode("tinted", "Tinted", 480, 120, groupId: "region", width: 150, height: 80, color: Paint("tint", "#BB442280"))
+            .AddNode("tinted", "Tinted", 480, 120, groupId: "region", width: 150, height: 80, color: ChartColorText.Parse(Paint("tint", "#BB442280")))
             .AddNode("focus", "Focus", 700, 120, groupId: "region", width: 100, height: 60);
         var options = new TopologyRenderOptions { IncludeLegend = false, IconCatalog = catalog,
             NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, GroupSurfaceStyle = TopologyGroupSurfaceStyle.Tinted, DimmedOpacity = .5 };

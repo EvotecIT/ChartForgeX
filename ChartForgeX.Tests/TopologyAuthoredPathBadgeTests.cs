@@ -22,7 +22,7 @@ public sealed class TopologyAuthoredPathBadgeTests {
         var chart = Ordinary();
         const string path = "M 260.12345678901232 150 C 320.98765432109877 30 390 30 450 150";
         chart.Edges[0].PathGeometry = new TopologyPathGeometry(path); chart.Edges[0].StrokeWidth = 2;
-        chart.Edges[0].DashPattern.AddRange(new[] { 5d, 3d }); chart.Edges[0].Color = "#456789";
+        chart.Edges[0].DashPattern.AddRange(new[] { 5d, 3d }); chart.Edges[0].Color = ChartColor.FromHex("#456789");
         var style = new TopologyDetailBadgeStyle { Fill = ChartColor.FromHex("#EEF4FC"), Stroke = ChartColor.FromHex("#456789"), MinimumHeight = 30 };
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "Queued", BadgeStyle = style, TextStyle = new TextStyleOverride { FontSize = 16, Italic = true } });
         chart.Nodes[0].FitLabelToContent = true;

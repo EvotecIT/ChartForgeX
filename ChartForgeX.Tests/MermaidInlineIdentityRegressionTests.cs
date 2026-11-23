@@ -50,7 +50,7 @@ public sealed class MermaidInlineIdentityRegressionTests {
         var node = Assert.Single(result.Document!.Classes);
         Assert.Equal(("List", "List<T>"), (node.Id, node.Label));
         Assert.Equal("marked", Assert.Single(node.Classes));
-        Assert.Equal("#ff0000", Assert.Single(result.Document.ToTopologyChart().Nodes).BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#ff0000"), Assert.Single(result.Document.ToTopologyChart().Nodes).BackgroundColor);
     }
 
     [Theory]
@@ -73,8 +73,8 @@ public sealed class MermaidInlineIdentityRegressionTests {
         Assert.Equal(sourceStyled, document.Entities[0].Classes.Contains("marked"));
         Assert.Equal(targetStyled, document.Entities[1].Classes.Contains("marked"));
         var native = document.ToTopologyChart();
-        Assert.Equal(sourceStyled ? "#ff0000" : null, native.Nodes[0].BackgroundColor);
-        Assert.Equal(targetStyled ? "#ff0000" : null, native.Nodes[1].BackgroundColor);
+        Assert.Equal(sourceStyled ? ChartColor.FromHex("#ff0000") : null, native.Nodes[0].BackgroundColor);
+        Assert.Equal(targetStyled ? ChartColor.FromHex("#ff0000") : null, native.Nodes[1].BackgroundColor);
         Assert.Equal((sourceId, targetId, label), (native.Edges[0].SourceNodeId, native.Edges[0].TargetNodeId, native.Edges[0].Label ?? string.Empty));
     }
 

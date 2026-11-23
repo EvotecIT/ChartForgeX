@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -55,7 +56,7 @@ public sealed class TopologyIconSvgPackImportOptions {
     public TopologyIconShape DefaultShape { get; set; } = TopologyIconShape.Application;
 
     /// <summary>Gets or sets the default icon color used when a host falls back to renderer-owned glyphs.</summary>
-    public string DefaultColor { get; set; } = "#0078D4";
+    public ChartColor DefaultColor { get; set; } = ChartColor.FromHex("#0078D4");
 
     /// <summary>Gets or sets whether folders named SVG should be omitted from generated categories.</summary>
     public bool OmitSvgFolderFromCategory { get; set; } = true;

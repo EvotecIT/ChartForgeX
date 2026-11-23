@@ -15,6 +15,8 @@ internal static class TopologySurfacePaintRules {
         if (string.Equals(value!.Trim(), "none", StringComparison.OrdinalIgnoreCase)) { color = ChartColor.Transparent; return true; }
         return SvgRasterColor.TryParse(value, out color) || SvgPaint.TryCssVariable(value, fallback, out color, out _);
     }
+    internal static bool TryColor(ChartColor? value, ChartColor fallback, out ChartColor color) { color = value is { } v ? ChartColor.FromRgba(v.R, v.G, v.B, v.A) : fallback; return true; }
+    internal static string? BorderColorError(ChartColor? value) => null;
     internal static string? BorderColorError(string? value) => TryColor(value, ChartColor.Black, out _) ? null : "contour color must use an existing safe native color, none or CSS variable";
     internal static void Opacity(double? value,string parameter) {
         if(value.HasValue&&(double.IsNaN(value.Value)||double.IsInfinity(value.Value)||value.Value<0||value.Value>1))

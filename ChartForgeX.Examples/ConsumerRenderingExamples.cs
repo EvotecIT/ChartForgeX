@@ -203,7 +203,7 @@ public static class ConsumerRenderingExamples {
         labelColorModes.Nodes[2].DisplayMode = TopologyNodeDisplayMode.Icon;
         labelColorModes.Nodes[3].DisplayMode = TopologyNodeDisplayMode.Tile;
         labelColorModes.Nodes[4].Shape = TopologyNodeShape.Actor;
-        foreach (var node in labelColorModes.Nodes) node.LabelColor = "var(--host-label, #ef4444)";
+        foreach (var node in labelColorModes.Nodes) node.LabelColor = ChartColor.FromHex("#ef4444").WithCssVariable("--host-label");
         var labelColorOptions = new TopologyRenderOptions {
             IncludeLegend = false, IncludeIconLabels = true,
             SvgColorVariables = new SvgColorVariables().Add("--host-label", ChartColor.FromHex("#ef4444"), ChartForgeX.Themes.SvgColorRole.Text)

@@ -50,7 +50,7 @@ public sealed class MermaidSourceContourPaintCausalTests {
         var result = MermaidRenderer.Render(source, Options()); var chart = Capture(result, "source-unframed-icon-contour");
         Assert.Empty(result.Diagnostics); var node = Assert.Single(chart.Nodes);
         Assert.Equal(TopologyNodeDisplayMode.Icon, node.DisplayMode);
-        Assert.Equal("#0000ff", node.Color);
+        Assert.Equal(ChartColor.FromHex("#0000ff"), node.Color);
         Assert.Equal(0, node.SurfaceOpacity);
         Assert.All(OwnedMarks(chart.Prepare().Visual.Scene, "work"), mark => Assert.Equal(0, mark.Opacity));
         Assert.True(node.ShowLabel); Assert.Equal("Server", node.Label);

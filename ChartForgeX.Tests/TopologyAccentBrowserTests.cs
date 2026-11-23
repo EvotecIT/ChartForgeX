@@ -23,9 +23,9 @@ public sealed class TopologyAccentBrowserTests {
         for (var index = 0; index < displays.Length; index++) {
             chart.AddNode("implicit-" + index, displays[index].ToString(), 80 + index * 160, 100, status: TopologyHealthStatus.Critical,
                 iconId: "accent-proof:certificate").UpdateNode("implicit-" + index, n => n.DisplayMode(displays[index]).Badge(null));
-            chart.Nodes[index].Color = index % 2 == 0 ? "" : "   ";
+            chart.Nodes[index].Color = ChartColorText.Parse(index % 2 == 0 ? "" : "   ");
         }
-        chart.AddNode("explicit", "Authored white", 80, 300, color: "#713CA6", backgroundColor: "#ffffff")
+        chart.AddNode("explicit", "Authored white", 80, 300, color: ChartColor.FromHex("#713CA6"), backgroundColor: ChartColor.FromHex("#ffffff"))
             .UpdateNode("explicit", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
         var graph = chart.ToGraphScene(o => { o.AccentSource = source; o.IconCatalog = render.IconCatalog; });
         graph.Options.Enable(GraphSceneFeatures.LevelOfDetail);

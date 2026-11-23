@@ -88,7 +88,7 @@ public sealed class NativeTopologySizingTests {
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 24, Y = 64, Width = 120, Height = 64, PreserveDisplayModeSize = true });
         chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = targetX, Y = 64, Width = 120, Height = 64, PreserveDisplayModeSize = true });
         chart.Edges.Add(new TopologyEdge { Id = "route", SourceNodeId = "source", TargetNodeId = "target", Routing = TopologyEdgeRouting.Straight,
-            Color = "#ff0000", StrokeWidth = 4, SourceMarker = TopologyMarkerKind.None, TargetMarker = TopologyMarkerKind.None });
+            Color = ChartColor.FromHex("#ff0000"), StrokeWidth = 4, SourceMarker = TopologyMarkerKind.None, TargetMarker = TopologyMarkerKind.None });
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeNodeLabels = false, IncludeStatusBadges = false });
         return chart;
     }

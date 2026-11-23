@@ -11,7 +11,7 @@ internal sealed partial class VisualTopologyCompiler {
     private (ChartColor Fill, SvgPaint Paint, TopologyGroup? Group) LabelUnderlay(TopologyEdgeLabelLayout layout) {
         var group = EdgeLabelClearanceGroup(_chart, layout);
         if (group == null || !_options.IncludeGroups) return (_colors.Background, BackgroundPaint(_colors.Background), group);
-        if (!string.IsNullOrWhiteSpace(group.BackgroundColor)) {
+        if (group.BackgroundColor != null) {
             var authored = Color(group.BackgroundColor, _colors.Surface);
             return (authored, GroupFillPaint(group, authored, true, true), group);
         }

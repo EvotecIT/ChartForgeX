@@ -34,13 +34,13 @@ internal static partial class MermaidFlowchartAssets {
             var identity = Value(node, "icon")!; var icon = catalog.Resolve(identity);
             if (icon == null || !string.Equals(icon.QualifiedId, identity, StringComparison.Ordinal)) continue;
             target.IconId = identity; target.IconShape = icon.Shape; target.Kind = icon.NodeKind; target.Symbol = icon.Symbol;
-            target.Artwork = icon.Artwork?.Clone(); if (string.IsNullOrWhiteSpace(target.Color)) target.Color = icon.Color;
+            target.Artwork = icon.Artwork?.Clone(); if (target.Color == null) target.Color = icon.Color;
             target.DisplayMode = TopologyNodeDisplayMode.Icon; target.PreserveDisplayModeSize = true; target.FitLabelToContent = false;
             var size = Math.Max(width ?? 48, height ?? 48); target.Width = size; target.Height = size; target.GlyphScale = size / 26;
             var form = Value(node, "form");
             var authoredFill = MermaidNativeStyles.Paint(node.Styles, "fill");
             var authoredStroke = MermaidNativeStyles.Paint(node.Styles, "stroke");
-            target.BorderColor = authoredFill ?? chart.Theme.Resolve(chart.ThemeMode).Surface.ToHexRgba();
+            target.BorderColor = ChartColorText.Parse(authoredFill) ?? chart.Theme.Resolve(chart.ThemeMode).Surface;
             if (form == "circle") {
                 target.Shape = TopologyNodeShape.Circle;
                 var glyph = TopologyGlyphBounds.Measure(target, new TopologyRenderOptions { IconCatalog = catalog }, chart.Theme.AxisStrokeWidth, chart.Theme.BarRadius).Geometry;
@@ -52,9 +52,9 @@ internal static partial class MermaidFlowchartAssets {
             } else {
                 target.Shape = TopologyNodeShape.Rectangle;
                 // The source unframed form has no default contour. The native glyph remains its existing separate paint owner.
-                target.BorderColor = authoredStroke ?? "none";
+                target.BorderColor = ChartColorText.Parse(authoredStroke ?? "none");
                 if (authoredFill == null && authoredStroke == null) target.SurfaceOpacity = 0;
-                else if (authoredFill == null) target.BackgroundColor = "none";
+                else if (authoredFill == null) target.BackgroundColor = ChartColorText.Parse("none");
             }
             target.MaximumTextWidth = Math.Max(size, source.Configuration.Graph?.WrappingWidth ?? 120);
             Caption(target, node, chart.Theme.Typography.DataLabelSize);

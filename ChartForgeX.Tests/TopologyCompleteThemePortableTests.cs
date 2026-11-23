@@ -55,7 +55,7 @@ public sealed class TopologyCompleteThemePortableTests {
         var chart=TopologyChart.Create().Id("complete-theme").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","Review request",210,150,width:180,height:90);
         var node=chart.Nodes[0];node.DisplayMode=TopologyNodeDisplayMode.Icon;node.Shape=TopologyNodeShape.Rectangle;node.IconShape=TopologyIconShape.Router;
-        node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color="#2563eb";
+        node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color=ChartColor.FromHex("#2563eb");
         chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeTitle=false,IncludeIconLabels=false,FitContentToViewport=false});return chart;
     }
     private static VisualTheme Complete()=>VisualTheme.Graphite().Configure(theme=>{

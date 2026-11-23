@@ -53,11 +53,11 @@ public static partial class MermaidCynefinRendering {
             node.Shape = center ? TopologyNodeShape.Ellipse : TopologyNodeShape.Rectangle;
             node.PreserveDisplayModeSize = true;
             node.FitLabelToContent = true;
-            node.Color = "transparent"; node.BackgroundColor = "transparent";
-            node.LabelColor = settings?.Color("labelColor", colors.Foreground).ToHexRgba() ?? colors.Foreground.ToHexRgba();
+            node.Color = ChartColorText.Parse("transparent"); node.BackgroundColor = ChartColorText.Parse("transparent");
+            node.LabelColor = settings?.Color("labelColor", colors.Foreground) ?? colors.Foreground;
             if (descriptions) node.Subtitle = Description(name);
             if (document.Domains.TryGetValue(name, out var items)) foreach (var item in items)
-                node.Details.Add(new TopologyNodeDetail { Text = item, Color = settings?.Color("textColor", colors.Foreground).ToHexRgba() ?? colors.Foreground.ToHexRgba(),
+                node.Details.Add(new TopologyNodeDetail { Text = item, Color = settings?.Color("textColor", colors.Foreground) ?? colors.Foreground,
                     BadgeStyle = new TopologyDetailBadgeStyle {
                         Fill = DomainBackground(chart, settings, name, i, .95),
                         Stroke = settings?.Color("boundaryColor", colors.Border) ?? colors.Border
@@ -68,8 +68,8 @@ public static partial class MermaidCynefinRendering {
             var transition = document.Transitions[i];
             chart.AddEdge("transition-" + i, transition.SourceId, transition.TargetId, transition.Label, direction: VisualLinkDirection.Forward);
             var edge = chart.Edges[chart.Edges.Count - 1];
-            edge.Color = settings?.Color("arrowColor", colors.Axis).ToHexRgba() ?? colors.Axis.ToHexRgba();
-            edge.LabelColor = settings?.Color("textColor", colors.Foreground).ToHexRgba() ?? colors.Foreground.ToHexRgba();
+            edge.Color = settings?.Color("arrowColor", colors.Axis) ?? colors.Axis;
+            edge.LabelColor = settings?.Color("textColor", colors.Foreground) ?? colors.Foreground;
             edge.StrokeWidth = settings?.Number("arrowWidth", 2) ?? 2;
             ApplyTransitionTypography(edge, settings, options);
             ApplyTransitionPath(chart, edge);

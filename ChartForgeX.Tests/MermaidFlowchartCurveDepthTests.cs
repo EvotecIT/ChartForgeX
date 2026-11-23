@@ -53,7 +53,7 @@ public sealed class MermaidFlowchartCurveDepthTests {
         const string source = "flowchart LR\nA e@--> B\nlinkStyle default interpolate step\nB f@--> C\nlinkStyle default interpolate natural\nlinkStyle 0 stroke:#123456";
         var result = Observe("late-default", source); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         Assert.Empty(result.Diagnostics); Assert.Equal(TopologyEdgeInterpolation.Natural, chart.Edges[0].Interpolation);
-        Assert.Equal(TopologyEdgeInterpolation.Step, chart.Edges[1].Interpolation); Assert.Equal("#123456", chart.Edges[0].Color);
+        Assert.Equal(TopologyEdgeInterpolation.Step, chart.Edges[1].Interpolation); Assert.Equal(ChartColor.FromHex("#123456"), chart.Edges[0].Color);
         Assert.Equal("default", chart.Edges[0].Metadata["mermaid.curve.origin"]); Assert.Equal("creation-default", chart.Edges[1].Metadata["mermaid.curve.origin"]);
     }
 

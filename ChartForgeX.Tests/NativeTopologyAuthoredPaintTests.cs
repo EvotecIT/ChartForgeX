@@ -19,8 +19,8 @@ public sealed class NativeTopologyAuthoredPaintTests {
                 .AddNode("styled", "Title", 70, 80, subtitle: "Subcaption", width: 240, height: 160)
                 .AddNode("focus", "Focus", 470, 80);
             var node = chart.Nodes[0];
-            node.BackgroundColor = "#123456";
-            node.LabelColor = "var(--node-text, #fef3c780)";
+            node.BackgroundColor = ChartColor.FromHex("#123456");
+            node.LabelColor = ChartColorText.Parse("var(--node-text, #FEF3C780)");
             if (shape) { node.Shape = TopologyNodeShape.Rectangle; node.FitLabelToContent = true; }
             var options = new TopologyRenderOptions { IncludeLegend = false, IncludeStatusBadges = false, NodeDisplayMode = display,
                 IncludeTileSubtitles = true, CardSubtitleMode = chip ? TopologyCardSubtitleMode.Chip : TopologyCardSubtitleMode.Text,
@@ -33,7 +33,7 @@ public sealed class NativeTopologyAuthoredPaintTests {
             var svg = prepared.ToSvg(); var png = prepared.ToPng();
             var painted = Assert.Single(XDocument.Parse(svg).Descendants(), item => item.Name.LocalName == "text" && item.Value == "Subcaption");
             Assert.Contains("var(--node-text,", (string?)painted.Attribute("fill"));
-            node.LabelColor = "#fef3c780";
+            node.LabelColor = ChartColor.FromHex("#FEF3C780");
             Assert.Equal(chart.ToPng(options), png);
             node.LabelColor = null;
             var fallback = Assert.Single(chart.Prepare(options).Visual.Scene.Nodes.OfType<VisualSceneText>(), item =>
@@ -74,16 +74,16 @@ public sealed class NativeTopologyAuthoredPaintTests {
         Assert.Equal(literal.ToPng(literalOptions), prepared.ToPng());
         var originalSvg = prepared.ToSvg(); var originalPng = prepared.ToPng();
         var group = variable.Groups[0];
-        group.BackgroundColor = "#FF0000"; group.BorderColor = "#00FF00"; group.LabelColor = "#0000FF";
+        group.BackgroundColor = ChartColor.FromHex("#FF0000"); group.BorderColor = ChartColor.FromHex("#00FF00"); group.LabelColor = ChartColor.FromHex("#0000FF");
         Assert.Equal(originalSvg, prepared.ToSvg());
         Assert.Equal(originalPng, prepared.ToPng());
         var saved = Assert.Single(prepared.ToInterchangeEnvelope().Groups);
-        Assert.Equal(("#a855f7", "var(--group-fill, #bae6fd80)", "var(--group-border, #07598580)", "var(--group-text, #082f4980)"),
+        Assert.Equal(("#A855F7", "var(--group-fill, #BAE6FD80)", "var(--group-border, #07598580)", "var(--group-text, #082F4980)"),
             (saved.Color, saved.BackgroundColor, saved.BorderColor, saved.LabelColor));
         saved.BackgroundColor = "#000000";
-        Assert.Equal("var(--group-fill, #bae6fd80)", Assert.Single(prepared.ToInterchangeEnvelope().Groups).BackgroundColor);
+        Assert.Equal("var(--group-fill, #BAE6FD80)", Assert.Single(prepared.ToInterchangeEnvelope().Groups).BackgroundColor);
         var fitted = prepared.WithOutputSize(prepared.Width + 30, prepared.Height + 20);
-        Assert.Equal("var(--group-fill, #bae6fd80)", Assert.Single(fitted.ToInterchangeEnvelope().Groups).BackgroundColor);
+        Assert.Equal("var(--group-fill, #BAE6FD80)", Assert.Single(fitted.ToInterchangeEnvelope().Groups).BackgroundColor);
     }
 
     [Fact]
@@ -94,20 +94,20 @@ public sealed class NativeTopologyAuthoredPaintTests {
             .AddNode("a", "A", 60, 160, groupId: "region")
             .AddNode("b", "B", 380, 160, groupId: "region")
             .AddEdge("link", "a", "b", "Owns", routing: TopologyEdgeRouting.Straight);
-        chart.Groups[0].BackgroundColor = "#bae6fd";
+        chart.Groups[0].BackgroundColor = ChartColor.FromHex("#BAE6FD");
         var compartment = chart.Groups[1];
         compartment.ParentGroupId = "container";
         compartment.Presentation = TopologyGroupPresentation.Compartment;
-        compartment.BackgroundColor = "#FF0000";
+        compartment.BackgroundColor = ChartColor.FromHex("#FF0000");
         var options = new TopologyRenderOptions { IncludeLegend = false, VisualStyle = TopologyVisualStyle.MonitoringDashboard,
             IncludeEdgeLabelBackplates = false };
         var prepared = chart.Prepare(options);
         var surfaces = prepared.Visual.Scene.Nodes.OfType<VisualSceneRectangle>().Where(item => item.Role == "topology-group-surface").ToArray();
         Assert.Single(surfaces);
         var clearance = prepared.Visual.Scene.Nodes.OfType<VisualSceneRectangle>().Single(item => item.Role == "topology-edge-label-clearance");
-        Assert.Equal(ChartColor.Parse("#bae6fd").R, clearance.Fill!.Value.R);
-        Assert.Equal(ChartColor.Parse("#bae6fd").G, clearance.Fill!.Value.G);
-        Assert.Equal(ChartColor.Parse("#bae6fd").B, clearance.Fill!.Value.B);
+        Assert.Equal(ChartColor.Parse("#BAE6FD").R, clearance.Fill!.Value.R);
+        Assert.Equal(ChartColor.Parse("#BAE6FD").G, clearance.Fill!.Value.G);
+        Assert.Equal(ChartColor.Parse("#BAE6FD").B, clearance.Fill!.Value.B);
         Assert.Equal("container", (string?)XDocument.Parse(prepared.ToSvg()).Descendants().Single(item => item.Attribute("data-clearance-group-id") != null).Attribute("data-clearance-group-id"));
     }
 
@@ -117,9 +117,9 @@ public sealed class NativeTopologyAuthoredPaintTests {
             .AddNode("a", "A", 60, 80).AddNode("b", "B", 500, 80)
             .AddNode("c", "C", 60, 270).AddNode("d", "D", 500, 270)
             .AddEdge("focus", "c", "d", "Focus", routing: TopologyEdgeRouting.Straight)
-            .AddEdge("styled", "a", "b", "Primary", routing: TopologyEdgeRouting.Straight, color: "#123456");
+            .AddEdge("styled", "a", "b", "Primary", routing: TopologyEdgeRouting.Straight, color: ChartColor.FromHex("#123456"));
         var edge = chart.Edges.Single(item => item.Id == "styled");
-        edge.LabelColor = "var(--relationship-text, #7c2d1280)";
+        edge.LabelColor = ChartColorText.Parse("var(--relationship-text, #7C2D1280)");
         edge.SecondaryLabel = "Secondary"; edge.TertiaryLabel = "Tertiary";
         edge.SourceLabel = "One"; edge.TargetLabel = "Many";
         var options = new TopologyRenderOptions { IncludeLegend = false, DimmedOpacity = .5 };
@@ -131,21 +131,21 @@ public sealed class NativeTopologyAuthoredPaintTests {
         Assert.All(labels, label => Assert.Contains("var(--relationship-text,", (string?)label.Attribute("fill")));
         Assert.All(prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(item => item.Text.Lines.Any(line => new[] { "Primary", "Secondary", "Tertiary", "One", "Many" }.Contains(line.Text))),
             item => Assert.Equal(64, item.Color.A));
-        Assert.Equal(("#123456", "var(--relationship-text, #7c2d1280)"), (prepared.ToInterchangeEnvelope().Edges.Single(item => item.Id == "styled").Color,
+        Assert.Equal(("#123456", "var(--relationship-text, #7C2D1280)"), (prepared.ToInterchangeEnvelope().Edges.Single(item => item.Id == "styled").Color,
             prepared.ToInterchangeEnvelope().Edges.Single(item => item.Id == "styled").LabelColor));
-        edge.LabelColor = "#7c2d1280";
+        edge.LabelColor = ChartColor.FromHex("#7C2D1280");
         Assert.Equal(chart.ToPng(options), prepared.ToPng());
     }
 
     private static TopologyChart Diagram(ThemeMode mode, bool variables) {
         string Paint(string name, string fallback) => variables ? "var(--" + name + ", " + fallback + ")" : fallback;
         var chart = TopologyChart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(780, 380, 20)).Legend((TopologyLegend?)null)
-            .AddGroup("domain", "Domain", 20, 20, 520, 310, subtitle: "Native paints", color: "#a855f7")
+            .AddGroup("domain", "Domain", 20, 20, 520, 310, subtitle: "Native paints", color: ChartColor.FromHex("#A855F7"))
             .AddNode("member", "Member", 80, 130, groupId: "domain")
             .AddNode("focus", "Focus", 590, 130);
-        chart.Groups[0].BackgroundColor = Paint("group-fill", "#bae6fd80");
-        chart.Groups[0].BorderColor = Paint("group-border", "#07598580");
-        chart.Groups[0].LabelColor = Paint("group-text", "#082f4980");
+        chart.Groups[0].BackgroundColor = ChartColorText.Parse(Paint("group-fill", "#BAE6FD80"));
+        chart.Groups[0].BorderColor = ChartColorText.Parse(Paint("group-border", "#07598580"));
+        chart.Groups[0].LabelColor = ChartColorText.Parse(Paint("group-text", "#082F4980"));
         return chart;
     }
 }

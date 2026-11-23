@@ -21,7 +21,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
         Assert.Equal(source.Theme.ToJson(), mapped.Theme.ToJson());
         Assert.Equal(source.Edges.Single().Color, mapped.Edges.Single().Color);
         Assert.Equal(source.Edges.Single().LabelColor, mapped.Edges.Single().LabelColor);
-        Assert.Equal("#193857", mapped.Edges.Single().LabelBackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#193857"), mapped.Edges.Single().LabelBackgroundColor);
     }
 
     [Theory]
@@ -43,8 +43,8 @@ public sealed partial class MermaidRequirementThemeColorTests {
         var frozen = chart.Prepare(); var svg = frozen.ToSvg(); var png = frozen.ToPng();
         var saved = frozen.ToInterchangeEnvelope(); var json = saved.ToJson();
         var restored = VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();
-        Assert.Equal("#193857", chart.Edges.Single().LabelBackgroundColor);
-        Assert.Equal("#193857", restored.Edges.Single().LabelBackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#193857"), chart.Edges.Single().LabelBackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#193857"), restored.Edges.Single().LabelBackgroundColor);
         var restoredPrepared = restored.Prepare();
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); var path = Path.Combine(output, "requirement-label-background-source-portable-restored");
@@ -52,11 +52,11 @@ public sealed partial class MermaidRequirementThemeColorTests {
             File.WriteAllText(path + ".json", restoredPrepared.ToInterchangeEnvelope().ToJson());
         }
         Assert.Equal(png, restoredPrepared.ToPng());
-        chart.Edges.Single().LabelBackgroundColor = "#F2D8B5";
+        chart.Edges.Single().LabelBackgroundColor = ChartColor.FromHex("#F2D8B5");
         saved.Edges.Single().Topology!.LabelBackgroundColor = "#F2D8B5";
         Assert.Equal(svg, frozen.ToSvg()); Assert.Equal(png, frozen.ToPng());
         Assert.Equal(json, frozen.ToInterchangeEnvelope().ToJson());
-        restored.Edges.Single().LabelBackgroundColor = "#F2D8B5";
+        restored.Edges.Single().LabelBackgroundColor = ChartColor.FromHex("#F2D8B5");
         Assert.NotEqual(svg, restored.Prepare().ToSvg());
     }
 

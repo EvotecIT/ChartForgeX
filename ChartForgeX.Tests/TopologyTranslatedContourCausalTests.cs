@@ -33,7 +33,7 @@ public sealed class TopologyTranslatedContourCausalTests {
             .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
             .AddNode("node", "Node", 56, 199.95, width: 160, height: 64);
         var node = chart.Nodes[0]; node.Shape = shape; node.PreserveDisplayModeSize = true;
-        node.ShowLabel = false; node.ShowStatusBadge = false; node.BackgroundColor = "#ececff"; node.BorderColor = "#9370db";
+        node.ShowLabel = false; node.ShowStatusBadge = false; node.BackgroundColor = ChartColor.FromHex("#ececff"); node.BorderColor = ChartColor.FromHex("#9370db");
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = heading, IncludeLegend = false, FitContentToViewport = false });
         return chart;
     }

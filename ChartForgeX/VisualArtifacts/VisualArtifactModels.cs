@@ -213,5 +213,5 @@ public sealed class VisualArtifactLegendItem {
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets an optional color token.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 }

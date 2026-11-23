@@ -101,7 +101,7 @@ public sealed class TopologyHealthRingTests {
     private static TopologyChart Diagram(ThemeMode mode, TopologyHealthStatus status) {
         var chart = TopologyChart.Create().Id("health-ring").Viewport(new TopologyViewport(240, 200))
             .Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend((TopologyLegend?)null)
-            .AddNode("gateway", "Gateway service", 60, 50, width: 80, height: 80, color: "#673AB7", status: status)
+            .AddNode("gateway", "Gateway service", 60, 50, width: 80, height: 80, color: ChartColor.FromHex("#673AB7"), status: status)
             .UpdateNode("gateway", n => n.ShowHealthRing());
         chart.Nodes[0].Shape = TopologyNodeShape.Circle;
         chart.Nodes[0].DisplayMode = TopologyNodeDisplayMode.Icon;

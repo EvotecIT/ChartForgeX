@@ -19,6 +19,9 @@ internal sealed partial class VisualTopologyCompiler {
         Border = BorderPaint(_colors.Border), Foreground = ForegroundPaint(_colors.Foreground), MutedForeground = MutedPaint(_colors.MutedForeground)
     };
 
+    private static SvgColorRole AccentRole(ChartColor? authored) => authored == null ? SvgColorRole.Status : SvgColorRole.Any;
+    private static SvgPaint SourcePaint(ChartColor? source, ChartColor result, SvgColorRole role, double opacity = 1, ChartColor? fallback = null) =>
+        SourcePaint(source.ToText(), result, role, opacity, fallback);
     private static SvgColorRole AccentRole(string? authored) => string.IsNullOrWhiteSpace(authored) ? SvgColorRole.Status : SvgColorRole.Any;
 
     private double HighlightFactor(bool active) => active || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity;
@@ -34,15 +37,15 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private SvgPaint GroupAccentPaint(TopologyGroup group, ChartColor accent, bool active, double opacity = 1) =>
-        SourcePaint(group.Color ?? ResolveGroupIcon(group, _options)?.Color ?? _svgTheme.StatusColor(group.Status), accent, AccentRole(group.Color ?? ResolveGroupIcon(group, _options)?.Color), HighlightFactor(active) * opacity, Status(group.Status));
+        SourcePaint((group.Color ?? ResolveGroupIcon(group, _options)?.Color).ToText() ?? _svgTheme.StatusColor(group.Status), accent, AccentRole(group.Color ?? ResolveGroupIcon(group, _options)?.Color), HighlightFactor(active) * opacity, Status(group.Status));
 
     private SvgPaint GroupFillPaint(TopologyGroup group, ChartColor fill, bool active, bool neutral) =>
-        !string.IsNullOrWhiteSpace(group.BackgroundColor)
+        group.BackgroundColor != null
             ? SourcePaint(group.BackgroundColor, fill, SvgColorRole.Any, HighlightFactor(active), _colors.Surface)
             : neutral ? CardPaint(fill, HighlightFactor(active)) : GroupAccentPaint(group, fill, active, .06);
 
     private SvgPaint GroupBorderPaint(TopologyGroup group, ChartColor stroke, bool active, double defaultOpacity = .5) =>
-        !string.IsNullOrWhiteSpace(group.BorderColor)
+        group.BorderColor != null
             ? SourcePaint(group.BorderColor, stroke, SvgColorRole.Any, HighlightFactor(active), _colors.Border)
             : GroupAccentPaint(group, stroke, active, defaultOpacity);
 
@@ -55,23 +58,23 @@ internal sealed partial class VisualTopologyCompiler {
     private SvgPaint NodeSubtitlePaint(TopologyNode node, bool active) =>
         node.SubtitleTextStyle?.Color is ChartColor color
             ? SourcePaint(color.ToHexRgba(), NodeSubtitleColor(node, active), SvgColorRole.Any, HighlightFactor(active), _colors.MutedForeground)
-            : string.IsNullOrWhiteSpace(node.LabelColor)
+            : node.LabelColor == null
                 ? MutedPaint(NodeSubtitleColor(node, active), HighlightFactor(active))
                 : SourcePaint(node.LabelColor, NodeSubtitleColor(node, active), SvgColorRole.Any, HighlightFactor(active), _colors.MutedForeground);
 
     private SvgPaint EdgeLabelSurfacePaint(TopologyEdge edge, ChartColor color, double opacity, bool cardFallback) =>
-        !string.IsNullOrWhiteSpace(edge.LabelBackgroundColor)
+        edge.LabelBackgroundColor != null
             ? SourcePaint(edge.LabelBackgroundColor, color, SvgColorRole.Any, opacity, _colors.Surface)
             : cardFallback ? CardPaint(color, opacity) : BackgroundPaint(color, opacity);
 
     private SvgPaint EdgeTextPaint(TopologyEdge edge, ChartColor color, bool secondary = false) =>
-        !string.IsNullOrWhiteSpace(edge.LabelColor)
+        edge.LabelColor != null
             ? SourcePaint(edge.LabelColor, color, SvgColorRole.Any, EdgeLabelOpacity(edge), secondary ? _colors.MutedForeground : _colors.Foreground)
             : secondary ? MutedPaint(color, EdgeLabelOpacity(edge)) : ForegroundPaint(color, EdgeLabelOpacity(edge));
 
     private SvgPaint NodeFillPaint(TopologyNode node, ChartColor fill, ChartColor accent, SvgColorRole role, bool active) {
         var result = Highlight(fill, active);
-        if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) return SourcePaint(node.BackgroundColor, result, SvgColorRole.Any, HighlightFactor(active), _colors.Surface);
+        if (node.BackgroundColor != null) return SourcePaint(node.BackgroundColor, result, SvgColorRole.Any, HighlightFactor(active), _colors.Surface);
         if (EffectiveNodeSurfaceStyle(_options) == TopologyNodeSurfaceStyle.Card) return CardPaint(result, HighlightFactor(active));
         var source = NodeAccentPaint(node, accent, true);
         var background = BackgroundPaint(_colors.Background);

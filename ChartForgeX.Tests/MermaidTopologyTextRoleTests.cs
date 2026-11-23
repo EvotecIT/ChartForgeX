@@ -17,8 +17,8 @@ public sealed class MermaidTopologyTextRoleTests {
         var chart = Assert.IsType<TopologyChart>(artifact.Model); var prepared = chart.Prepare(); var restored = artifact.ToInterchangeEnvelope().ToTopologyChart().Prepare(); Capture(explicitHost + "-restored", restored.Visual.ToArtifact());
         var expectedForeground = options.Presentation!.Theme?.Resolve(chart.ThemeMode).Foreground ?? ChartColor.FromHex("#123456");
         Assert.Empty(result.Diagnostics); Assert.Equal(expectedForeground, chart.Theme.Resolve(chart.ThemeMode).Foreground);
-        Assert.Equal(ChartColor.FromHex("#654321"), ChartColor.Parse(Assert.Single(chart.Nodes, node => node.Id == "work").LabelColor!));
-        Assert.Equal(ChartColor.FromHex("#654321"), ChartColor.Parse(Assert.Single(chart.Edges).LabelColor!)); Assert.Equal(ChartColor.FromHex("#2468ac"), ChartColor.Parse(Assert.Single(chart.Groups).LabelColor!));
+        Assert.Equal(ChartColor.FromHex("#654321"), Assert.Single(chart.Nodes, node => node.Id == "work").LabelColor!.Value);
+        Assert.Equal(ChartColor.FromHex("#654321"), Assert.Single(chart.Edges).LabelColor!.Value); Assert.Equal(ChartColor.FromHex("#2468ac"), Assert.Single(chart.Groups).LabelColor!.Value);
         var heading = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneText>(), mark => mark.Text.Lines.Any(line => line.Text == "Source heading")); Assert.Equal(expectedForeground, heading.Color);
         Assert.Equal(artifact.ToPng(), restored.ToPng());
     }
@@ -26,7 +26,7 @@ public sealed class MermaidTopologyTextRoleTests {
     public void DirectNodeAndEdgeTextStylesKeepPrecedenceOverLiteralRoles() {
         var result = MermaidRenderer.Render(Source() + "\nstyle work color:#abcdef\nlinkStyle 0 color:#fedcba", MermaidTopologyPaletteRoleTests.Options());
         var artifact = Assert.IsType<VisualArtifact>(result.Artifact); Capture("direct-style", artifact); Assert.Empty(result.Diagnostics);
-        var chart = Assert.IsType<TopologyChart>(artifact.Model); Assert.Equal("#abcdef", Assert.Single(chart.Nodes, node => node.Id == "work").LabelColor); Assert.Equal("#fedcba", Assert.Single(chart.Edges).LabelColor); Assert.Equal(ChartColor.FromHex("#123456"), chart.Theme.Resolve(chart.ThemeMode).Foreground);
+        var chart = Assert.IsType<TopologyChart>(artifact.Model); Assert.Equal(ChartColor.FromHex("#abcdef"), Assert.Single(chart.Nodes, node => node.Id == "work").LabelColor); Assert.Equal(ChartColor.FromHex("#fedcba"), Assert.Single(chart.Edges).LabelColor); Assert.Equal(ChartColor.FromHex("#123456"), chart.Theme.Resolve(chart.ThemeMode).Foreground);
         var restored = artifact.ToInterchangeEnvelope().ToTopologyChart().Prepare(); Capture("direct-style-restored", restored.Visual.ToArtifact()); Assert.Equal(artifact.ToPng(), restored.ToPng());
     }
     private static string Source() => "---\ntitle: Source heading\n---\n%%{init: {\"theme\":\"default\",\"themeVariables\":{\"textColor\":\"#123456\",\"primaryTextColor\":\"#abcdef\",\"nodeTextColor\":\"#654321\",\"titleColor\":\"#2468ac\"}}}%%\nflowchart LR\nsubgraph scope[Scope]\nwork[Work] -->|Route| done[Done]\nend";

@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -102,7 +103,7 @@ public static partial class TopologyIconPackJson {
                 ParseNodeKind(iconObject.RequiredString("nodeKind")),
                 ParseIconShape(iconObject.OptionalString("shape") ?? "Auto")) {
                 Symbol = iconObject.OptionalString("symbol"),
-                Color = iconObject.OptionalString("color"),
+                Color = ChartColorText.Parse(iconObject.OptionalString("color")),
                 Category = iconObject.OptionalString("category"),
                 DisplayMode = ParseDisplayMode(iconObject.OptionalString("displayMode")),
                 Artwork = ParseArtwork(iconObject.OptionalObject("artwork"))
@@ -254,7 +255,7 @@ public static partial class TopologyIconPackJson {
             writer.WriteProperty("nodeKind", icon.NodeKind.ToString());
             writer.WriteProperty("shape", icon.Shape.ToString());
             writer.WriteOptionalProperty("symbol", icon.Symbol);
-            writer.WriteOptionalProperty("color", icon.Color);
+            writer.WriteOptionalProperty("color", icon.Color.ToText());
             writer.WriteOptionalProperty("category", icon.Category);
             if (icon.DisplayMode.HasValue) writer.WriteProperty("displayMode", icon.DisplayMode.Value.ToString());
             WriteArtwork(writer, icon.Artwork);

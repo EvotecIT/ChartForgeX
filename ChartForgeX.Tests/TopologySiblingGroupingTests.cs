@@ -84,7 +84,7 @@ public sealed class TopologySiblingGroupingTests {
             element => Role(element) == "topology-node" && (string?)element.Attribute("data-node-id") == "dc1");
 
         var shared = Site(3).SiblingGrouping(new TopologySiblingGrouping {  });
-        foreach (var index in new[] { 1, 2, 3 }) shared.AddEdgeStripe("e" + index, "#2563EB", "IP").AddEdgeStripe("e" + index, "#F97316", "SMTP").AddEdgeChip("e" + index, "cost 100")
+        foreach (var index in new[] { 1, 2, 3 }) shared.AddEdgeStripe("e" + index, ChartColor.FromHex("#2563EB"), "IP").AddEdgeStripe("e" + index, ChartColor.FromHex("#F97316"), "SMTP").AddEdgeChip("e" + index, "cost 100")
             .UpdateEdge("e" + index, e => e.SourceLabel(null).TargetLabel("bridgehead")).UpdateEdge("e" + index, e => e.UplinkEnd(TopologyEdgeEnd.Target));
         var aggregate = XDocument.Parse(shared.Prepare(Options()).ToSvg()).Descendants().Single(element => Role(element) == "topology-edge"
             && ((string?)element.Attribute("data-target-node-id"))!.EndsWith("~siblings", StringComparison.Ordinal));

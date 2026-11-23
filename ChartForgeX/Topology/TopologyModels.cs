@@ -254,7 +254,7 @@ public sealed partial class TopologyGroup {
     public string? IconId { get; set; }
 
     /// <summary>Gets or sets an optional group accent color. When set, this colors the group shell independently from health status.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets the preferred node arrangement policy for dense grouped layouts.</summary>
     public TopologyGroupLayoutPolicy LayoutPolicy {
@@ -416,13 +416,13 @@ public sealed partial class TopologyNode {
     public string? CssClass { get; set; }
 
     /// <summary>Gets or sets an optional node accent color. When set, this colors the node shell independently from health status.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets an optional node title and subtitle color independently from the node shell. Unset subtitles use the muted theme role.</summary>
-    public string? LabelColor { get; set; }
+    public ChartColor? LabelColor { get; set; }
 
     /// <summary>Gets or sets an optional node surface fill color. When unset, render options choose the card background.</summary>
-    public string? BackgroundColor { get; set; }
+    public ChartColor? BackgroundColor { get; set; }
 
     /// <summary>Gets or sets whether renderers may draw a health-status badge for this node.</summary>
     public bool ShowStatusBadge { get; set; } = true;
@@ -733,7 +733,7 @@ public sealed partial class TopologyEdge {
     public string? CssClass { get; set; }
 
     /// <summary>Gets or sets an optional edge color independent from health status.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets whether the edge should render as a quiet structural relationship instead of a status route.</summary>
     public bool IsMuted { get; set; }

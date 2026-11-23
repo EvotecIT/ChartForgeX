@@ -17,10 +17,10 @@ internal sealed partial class VisualTopologyCompiler {
             return Bounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
         });
         var content = ShapeCaptionBounds(node, label, size);
-        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        var labelColor = node.LabelColor == null ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
         Text(label, Bounds(content.X, content.Y, content.Width, content.Height), size, Highlight(labelColor, active), 600,
             "topology-node-label", _options.MaxNodeLabelLines, centered: true, id: node.Id + "-label", opacity: HighlightFactor(active),
-            paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), verticallyCentered: true);
+            paint: node.LabelColor == null ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), verticallyCentered: true);
     }
 
     private ChartRect ShapeCaptionBounds(TopologyNode node, string label, double size) {
@@ -52,9 +52,9 @@ internal sealed partial class VisualTopologyCompiler {
         var stroke = ChartForgeX.Rendering.ChartColorMath.WithOpacity(accent, .4);
         _builder.Rect(bounds, Highlight(_colors.Surface, active), stroke, _context.Theme.AxisStrokeWidth * _scale,
             _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(CardPaint(Highlight(_colors.Surface, active), HighlightFactor(active)), NodeAccentPaint(node, stroke, active, .4)));
-        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        var labelColor = node.LabelColor == null ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
         Text(node.LabelContent.IsStructured ? NodeCaptionContent(node) : TextContent.Plain(text), bounds, size, Highlight(labelColor, active), 700, "topology-node-label", centered: true, id: node.Id + "-label",
-            paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), opacity: HighlightFactor(active));
+            paint: node.LabelColor == null ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), opacity: HighlightFactor(active));
     }
 
     private void BuildDiagramCaption(TopologyNode node, bool active) {
@@ -79,8 +79,8 @@ internal sealed partial class VisualTopologyCompiler {
         var size = FitCaptionFontSize(lines, node.Width * .65, actorSize, 600, actorUnits);
         var lineHeight = Math.Max(14 * actorUnits * _scale, MeasurePolicyText("Ag", size * _scale, 600).LineHeight);
         var center = Point(new ChartPoint(node.X + node.Width / 2, DiagramNodeLabelCenterY(node)));
-        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
-        var paint = string.IsNullOrWhiteSpace(node.LabelColor)
+        var labelColor = node.LabelColor == null ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        var paint = node.LabelColor == null
             ? ForegroundPaint(Highlight(labelColor, active), HighlightFactor(active))
             : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground);
         for (var i = 0; i < lines.Count; i++) DrawPolicyText(lines[i], center.X,
@@ -97,8 +97,8 @@ internal sealed partial class VisualTopologyCompiler {
         var lineHeight = Math.Max(14 * _scale, content.IsStructured ? CaptionLineHeight(content, size * _scale)
             : MeasurePolicyText("Ag", size * _scale, 700).LineHeight);
         var origin = Point(new ChartPoint(node.X + node.Width / 2, node.Y + node.Height + 5));
-        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
-        var paint = string.IsNullOrWhiteSpace(node.LabelColor)
+        var labelColor = node.LabelColor == null ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        var paint = node.LabelColor == null
             ? ForegroundPaint(Highlight(labelColor, active), HighlightFactor(active))
             : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground);
         if (node.LabelContent.IsStructured) {

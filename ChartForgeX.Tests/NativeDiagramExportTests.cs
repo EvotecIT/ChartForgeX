@@ -15,7 +15,7 @@ public sealed class NativeDiagramExportTests {
         var chart = Sample();
         var options = chart.DefaultRenderOptions!.Clone(); options.CssClassPrefix = "report-network";
         chart.Nodes[0].CssClass = "selected-source";
-        chart.Nodes[0].BackgroundColor = "#DCFCE7";
+        chart.Nodes[0].BackgroundColor = ChartColor.FromHex("#DCFCE7");
         chart.Edges[0].CssClass = "relationship-source";
         chart.Nodes[0].Metadata["note"] = "\" onload=\"unsafe<&";
         options.IncludeDataAttributes = true;

@@ -17,7 +17,7 @@ public sealed class V2DiagramTests {
     [InlineData("#FF0000", .5, 128)]
     public void PreparedTopologyMultipliesSourceAlphaByExplicitEdgeOpacity(string color, double opacity, byte expectedAlpha) {
         var topology = Topology();
-        topology.Edges[0].Color = color;
+        topology.Edges[0].Color = ChartColorText.Parse(color);
         topology.Edges[0].Opacity = opacity;
         topology.Edges[0].Label = null;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
@@ -36,7 +36,7 @@ public sealed class V2DiagramTests {
         var shaftAlpha = Enumerable.Range(y - 1, 3).SelectMany(row => Enumerable.Range(x - 1, 3)
             .Select(column => image.Pixels[(row * image.Width + column) * 4 + 3])).Max();
         Assert.InRange(shaftAlpha, expectedAlpha - 1, expectedAlpha);
-        Assert.Equal(color, topology.Edges[0].Color);
+        Assert.Equal(ChartColorText.Parse(color), topology.Edges[0].Color);
         Assert.Equal(opacity, topology.Edges[0].Opacity);
     }
 

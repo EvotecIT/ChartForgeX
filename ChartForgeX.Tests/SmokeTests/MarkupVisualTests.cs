@@ -170,7 +170,7 @@ connect intake -> review ""handoff"" status=healthy color=#EF4444
         Assert(result.Document.Steps.Count == 2 && result.Document.Connectors.Count == 1, "Flow markup should preserve steps and connectors.");
         Assert(result.Document.Steps[1].Kind == FlowArtifactStepKind.Decision, "Flow markup should preserve flow-specific step kinds.");
         Assert(result.Document.Steps[0].LaneId == "ops" && result.Document.Steps[0].Tone == Tone.Success, "Flow markup should accept documented key=value step attributes.");
-        Assert(result.Document.Connectors[0].Color == "#EF4444" && result.Document.Connectors[0].Tone == Tone.Success, "Flow markup should accept documented key=value connector attributes.");
+        Assert(result.Document.Connectors[0].Color == ChartColor.FromHex("#EF4444") && result.Document.Connectors[0].Tone == Tone.Success, "Flow markup should accept documented key=value connector attributes.");
     }
 
     private static void VisualMarkupParserMapsFlowFencesToArtifacts() {

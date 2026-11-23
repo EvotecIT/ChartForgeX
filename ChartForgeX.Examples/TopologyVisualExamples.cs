@@ -7,9 +7,9 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
-    private const string AmerColor = "#16A34A";
-    private const string EmeaColor = "#2563EB";
-    private const string ApacColor = "#8B5CF6";
+    private static readonly ChartColor AmerColor = ChartColor.FromHex("#16A34A");
+    private static readonly ChartColor EmeaColor = ChartColor.FromHex("#2563EB");
+    private static readonly ChartColor ApacColor = ChartColor.FromHex("#8B5CF6");
 
     public static void Write(string target) {
         var artifacts = new List<VisualArtifact>();

@@ -89,6 +89,13 @@ The [fluent API map](fluent-api-map.md) lists every renamed method and moved pro
 | `VisualArtifactSize` | `VisualSize` |
 | `PreparedVisual.ToRgba`, `SvgRasterizer.ToImage`, `CapturedVisualLayer.ToImage`, `VisualMask.ToImage`, `ImageComposition.ToImage` | `ToRgbaImage` |
 | `PreparedVisual.ToSvg(idPrefix)`, `VisualSvgOptions.IdPrefix` | `ToSvg(idScope)`, `VisualSvgOptions.IdScope` |
+| `string` colours on topology nodes, groups, edges, details, stripes, legend items, hierarchy items and icons (`Color`, `BackgroundColor`, `BorderColor`, `LabelColor`, `LabelBackgroundColor`), on flow steps, lanes and connectors and artifact legend items, `TopologyIconSvgPackImportOptions.DefaultColor`, and the `color`/`backgroundColor` parameters of `AddNode`, `AddGroup`, `AddEdge`, `AddEdgeStripe`, `AddNodeDetail`, `AddLane`, `AddConnector`, `TopologyLegend.Add*` and `TopologyIconPack.AddIcon` | `ChartColor?` (`ChartColor` for stripes): `ChartColor.FromHex("#2563EB")`, `ChartColor.Transparent` for `none`, and `ChartColor.FromHex("#2563EB").WithCssVariable("--brand")` for `var(--brand, #2563EB)`. A CSS variable now always carries its fallback colour |
+| `ChartColor` equality through `ValueType.Equals` | `ChartColor` implements `IEquatable<ChartColor>`, `==`, `!=` and `ToString()` (its CSS form) |
+| `AddStateTimelineLane(name, segments, summary, group)`, `ChartSeries.CreateStateTimelineLane(id, name, segments, summary, group)` | `(…, group, summary)`, the same order as the Gantt lane methods |
+| `WardleyMapBlock.SetStages(...)` | `Stages(...)` |
+| `VisualStoryStyleOptions.MacOS(bool light)`, `Windows(bool light)`, `Linux(bool light)` | `MacOS(ThemeMode mode)` and so on |
+| `ChartForgeXMarkdown.ExtractTopologyBlocks(...)` | `VisualMarkupScanner.ExtractBlocks(...)` filtered to `VisualMarkupKind.Topology` |
+| `ChartAxis.Culture(Action<CultureInfo>)`, `ChartSeries.TrendLineConfiguration(Action)`, `HighlightStatuse(...)`, `HealthStatuse(...)` | `ChartAxis.Culture(culture)`, `ChartSeries.TrendLine(...)`, `HighlightStatus(...)`, `HealthStatus(...)` |
 | `SvgVisualBlockRenderer`, `PngVisualBlockRenderer`, `HtmlVisualBlockRenderer` and the grid, canvas, story, terminal and fact-block renderer classes | the `ToSvg`, `ToPng`, `ToRgbaImage`, `ToHtmlFragment` and `ToHtmlPage` extensions |
 
 ## Shared theme mode, tone and icon types

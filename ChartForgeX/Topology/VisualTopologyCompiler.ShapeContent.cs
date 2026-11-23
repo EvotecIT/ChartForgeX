@@ -189,11 +189,11 @@ internal sealed partial class VisualTopologyCompiler {
         }
         var y = text.Top;
         if (_options.IncludeNodeLabels && node.ShowLabel) {
-            var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+            var labelColor = node.LabelColor == null ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
             var title = Row(layout.TitleHeight);
             Text(node.LabelContent.IsStructured ? NodeCaptionContent(node) : ChartForgeX.Typography.TextContent.Plain(ShapeTitle(node)), Project(title), size, Highlight(labelColor, active), 600, "topology-node-label", layout.TitleRows,
                 centered: true, id: node.Id + "-label", opacity: HighlightFactor(active),
-                paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor,
+                paint: node.LabelColor == null ? null : SourcePaint(node.LabelColor,
                     Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
             if (!string.IsNullOrWhiteSpace(node.Subtitle)) {
                 var subtitle = Row(layout.SubtitleHeight);
@@ -226,7 +226,7 @@ internal sealed partial class VisualTopologyCompiler {
                     if (!string.IsNullOrWhiteSpace(detail.IconId)) {
                         var glyph = new TopologyNode { IconId = detail.IconId, Color = detail.Color, Status = detail.Status ?? TopologyHealthStatus.Unknown };
                         var fallback = detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground;
-                        var authored = detail.Color ?? ResolveNodeIcon(glyph, _options)?.Color;
+                        var authored = (detail.Color ?? ResolveNodeIcon(glyph, _options)?.Color).ToText();
                         BuildGlyph(glyph, row.X + reserve / 2, row.Y + row.Height / 2, Highlight(Color(authored, fallback), active),
                             .4 * factor, !string.IsNullOrWhiteSpace(authored) ? SvgColorRole.Any : detail.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Text,
                             artworkOpacity: HighlightFactor(active), sourceFallback: fallback);
@@ -234,7 +234,7 @@ internal sealed partial class VisualTopologyCompiler {
                     else using (PinnedState()) {
                         var center = Point(new ChartPoint(row.X + reserve / 2, row.Y + row.Height / 2));
                         _builder.Ellipse(center.X, center.Y, 2.5 * factor * _scale, 2.5 * factor * _scale, color, role: "topology-detail-status",
-                            paint: new VisualScenePaintBinding(SourcePaint(detail.Color ?? (detail.Status.HasValue ? _svgTheme?.StatusColor(detail.Status.Value) : _svgTheme?.Foreground),
+                            paint: new VisualScenePaintBinding(SourcePaint(detail.Color.ToText() ?? (detail.Status.HasValue ? _svgTheme?.StatusColor(detail.Status.Value) : _svgTheme?.Foreground),
                                 color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
                     }
                 }

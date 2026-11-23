@@ -32,12 +32,12 @@ public static class TopologySiteLinksRecipe {
         Site(chart, "tyo", "Tokyo", 1, "10.50.0.");
 
         chart.AddEdge("hub-par", "hub", "par", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
-            .AddEdgeStripe("hub-par", "#2563EB", "IP").AddEdgeStripe("hub-par", "#F97316", "SMTP")
+            .AddEdgeStripe("hub-par", ChartColor.FromHex("#2563EB"), "IP").AddEdgeStripe("hub-par", ChartColor.FromHex("#F97316"), "SMTP")
             .AddEdgeChip("hub-par", "cost 100").UpdateEdge("hub-par", e => e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText("Site link object DEFAULTIPSITELINK"));
         chart.AddEdge("hub-ber", "hub", "ber", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip("hub-ber", "cost 200").UpdateEdge("hub-ber", e => e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge("hub-nyc", "hub", "nyc", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
-            .AddEdgeStripe("hub-nyc", "#2563EB", "IP").AddEdgeStripe("hub-nyc", "#F97316", "SMTP")
+            .AddEdgeStripe("hub-nyc", ChartColor.FromHex("#2563EB"), "IP").AddEdgeStripe("hub-nyc", ChartColor.FromHex("#F97316"), "SMTP")
             .AddEdgeChip("hub-nyc", "cost 300").AddEdgeChip("hub-nyc", "lag 47m", Tone.Warning)
             .UpdateEdge("hub-nyc", e => e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge("hub-tyo", "hub", "tyo", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)

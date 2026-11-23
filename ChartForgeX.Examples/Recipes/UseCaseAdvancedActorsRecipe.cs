@@ -23,7 +23,7 @@ public static class UseCaseAdvancedActorsRecipe {
         }
         // Retain finite native geometry independently of the optional catalog id, including after save/load.
         chart.Nodes[5].IconId = "network:router"; chart.Nodes[5].IconShape = TopologyIconShape.Router;
-        chart.Nodes[5].Kind = TopologyNodeKind.Gateway; chart.Nodes[5].Symbol = "RTR"; chart.Nodes[5].Color = "#2563EB";
+        chart.Nodes[5].Kind = TopologyNodeKind.Gateway; chart.Nodes[5].Symbol = "RTR"; chart.Nodes[5].Color = ChartColor.FromHex("#2563EB");
         chart.AddAutoNode("Submit", "Submit request", width: 190, height: 100);
         chart.Nodes[6].Shape = TopologyNodeShape.BusinessEllipse; chart.Nodes[6].Kind = TopologyNodeKind.Generic; chart.Nodes[6].Subtitle = "«business action»";
         foreach (var node in chart.Nodes) { node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; }

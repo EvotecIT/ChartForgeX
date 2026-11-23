@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
             .AddNode("cdn", "CDN", 440, 92, TopologyNodeKind.Network, TopologyHealthStatus.Healthy, groupId: "edge", subtitle: "Ingress", symbol: "NET")
             .AddEdge("cdn-api", "cdn", "api", "routes", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
             .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, secondaryLabel: "32 ms");
-        topology.UpdateNode("api", n => n.Color("#0F766E")).UpdateNode("api", n => n.BackgroundColor("#CCFBF1")).UpdateEdge("cdn-api", e => e.Color("#7C3AED")).UpdateEdge("cdn-api", e => e.Emphasis(TopologyEdgeEmphasis.Strong));
+        topology.UpdateNode("api", n => n.Color(ChartColor.FromHex("#0F766E"))).UpdateNode("api", n => n.BackgroundColor(ChartColor.FromHex("#CCFBF1"))).UpdateEdge("cdn-api", e => e.Color(ChartColor.FromHex("#7C3AED"))).UpdateEdge("cdn-api", e => e.Emphasis(TopologyEdgeEmphasis.Strong));
         topology.Nodes[0].Metadata["owner"] = "identity";
         topology.Nodes[1].Metrics["latency"] = "32";
         topology.Edges[1].Metrics["transport"] = "tcp";

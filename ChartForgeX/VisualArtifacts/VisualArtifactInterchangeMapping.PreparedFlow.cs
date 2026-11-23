@@ -20,7 +20,7 @@ public static partial class VisualArtifactInterchangeMapping {
         for (var i = 0; i < flow.Lanes.Count; i++) {
             var source = flow.Lanes[i]; var group = envelope.Groups[i];
             group.Role = VisualArtifactInterchangeGroupRole.FlowLane; group.Kind = "FlowLane"; group.Topology = null;
-            group.Label = source.Label; group.Status = source.Tone.ToString(); group.Color = source.Color;
+            group.Label = source.Label; group.Status = source.Tone.ToString(); group.Color = source.Color.ToText();
             Copy(source.Metadata, group.Extensions);
         }
         for (var i = 0; i < flow.Steps.Count; i++) {
@@ -35,7 +35,7 @@ public static partial class VisualArtifactInterchangeMapping {
             var source = flow.Connectors[i]; var edge = envelope.Edges[i];
             edge.Role = VisualArtifactInterchangeEdgeRole.FlowConnector; edge.Kind = source.Kind.ToString(); edge.Topology = null;
             edge.Flow = new VisualArtifactInterchangeFlowEdge { Kind = source.Kind, Direction = source.Direction };
-            edge.Label = source.Label; edge.Status = source.Tone.ToString(); edge.Color = source.Color;
+            edge.Label = source.Label; edge.Status = source.Tone.ToString(); edge.Color = source.Color.ToText();
             // These empty placeholders belong to the generated topology, not the ordered Flow source model.
             // Restoration still rejects an envelope that actually authors unsupported secondary/tertiary captions.
             edge.SecondaryLabel = null; edge.TertiaryLabel = null;

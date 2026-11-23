@@ -188,7 +188,7 @@ public sealed partial class MarkupArchitectureParser {
         foreach (var (key, value, column) in Attributes(tokens, tokens.Count > 2 && tokens[2].Quoted ? 3 : 2)) {
             switch (key) {
                 case "status": group.Status = VisualMarkupFenceOptions.ParseEnum<TopologyHealthStatus>(value, "status"); break;
-                case "color": group.Color = value; break;
+                case "color": group.Color = ChartColorText.Parse(value); break;
                 case "icon": group.IconId = value; state.CheckIcon(value, line, column); break;
                 case "subtitle":
                 case "note": group.Subtitle = value; break;
@@ -233,7 +233,7 @@ public sealed partial class MarkupArchitectureParser {
         }
 
         if (!state.DeclareId(id, line, tokens[1].Column)) return;
-        state.Chart.AddAutoNode(id, label, kind, status, state.CurrentGroupId, subtitle, href, tooltip, symbol: symbol, color: color, iconId: icon);
+        state.Chart.AddAutoNode(id, label, kind, status, state.CurrentGroupId, subtitle, href, tooltip, symbol: symbol, color: ChartColorText.Parse(color), iconId: icon);
         var node = state.Chart.Nodes[state.Chart.Nodes.Count - 1];
         if (badge != null) node.Badge = badge;
         if (display.HasValue) node.DisplayMode = display.Value;

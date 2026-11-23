@@ -25,7 +25,7 @@ public static class UseCaseSourceDepthRecipe {
         chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = 500 };
         chart.Nodes[1].Subtitle = "«business action»";
         chart.AddEdge("request", "Operator", "Publish", "requests", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
-        var request = chart.Edges[0]; request.Color = "#2563EB"; request.LabelColor = "#0F766E";
+        var request = chart.Edges[0]; request.Color = ChartColor.FromHex("#2563EB"); request.LabelColor = ChartColor.FromHex("#0F766E");
         request.StrokeWidth = 2.5; request.Opacity = .8; request.LineStyle = TopologyEdgeLineStyle.Solid;
         request.DashPattern.AddRange(new[] { 6d, 3, 2, 6, 3, 2 });
         chart.AddEdge("include-validation", "Publish", "Validate", "<<include>>", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);

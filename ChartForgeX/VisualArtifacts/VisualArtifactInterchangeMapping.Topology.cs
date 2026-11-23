@@ -74,8 +74,8 @@ public static partial class VisualArtifactInterchangeMapping {
             Id = source.Id, LabelContent = native.LabelContent ?? ChartForgeX.Typography.TextContent.Plain(source.Label), Subtitle = source.Subtitle,
             X = TopologyBound(source.X, "group x"), Y = TopologyBound(source.Y, "group y"),
             Width = TopologyBound(source.Width, "group width"), Height = TopologyBound(source.Height, "group height"),
-            Href = source.Href, Tooltip = source.Tooltip, Color = source.Color,
-            BackgroundColor = source.BackgroundColor, BorderColor = source.BorderColor, LabelColor = source.LabelColor,
+            Href = source.Href, Tooltip = source.Tooltip, Color = ChartColorText.Parse(source.Color),
+            BackgroundColor = ChartColorText.Parse(source.BackgroundColor), BorderColor = ChartColorText.Parse(source.BorderColor), LabelColor = ChartColorText.Parse(source.LabelColor),
             ParentGroupId = native.ParentGroupId, Presentation = native.Presentation, LayoutDirection = native.LayoutDirection, ShowLabel = native.ShowLabel,
             Status = native.Status, LayoutPolicy = native.LayoutPolicy, AppliedLayoutPolicy = native.AppliedLayoutPolicy,
             Longitude = native.Longitude, Latitude = native.Latitude, IconId = native.IconId, Symbol = native.Symbol
@@ -92,7 +92,7 @@ public static partial class VisualArtifactInterchangeMapping {
         RequireTopologyToken(source.Kind, native.Kind.ToString(), "node kind");
         RequireTopologyToken(source.Status, native.Status.ToString(), "node status");
         var node = new TopologyNode {
-            BorderColor=native.BorderColor,
+            BorderColor=ChartColorText.Parse(native.BorderColor),
             CaptionPlacement=native.CaptionPlacement,CaptionSurface=native.CaptionSurface,CaptionGap=native.CaptionGap,
             GlyphScale=native.GlyphScale,CornerRadius=native.CornerRadius,CaptionTextStyle=native.CaptionTextStyle?.Clone(),
             PreparedNodeBasis = native.PreparedNodeBasis,
@@ -104,7 +104,7 @@ public static partial class VisualArtifactInterchangeMapping {
             X = TopologyBound(source.X, "node x"), Y = TopologyBound(source.Y, "node y"),
             Width = TopologyBound(source.Width, "node width"), Height = TopologyBound(source.Height, "node height"),
             IconId = source.IconId, Symbol = source.Symbol, Badge = source.Badge,
-            Color = source.Color, BackgroundColor = source.BackgroundColor, LabelColor = source.LabelColor,
+            Color = ChartColorText.Parse(source.Color), BackgroundColor = ChartColorText.Parse(source.BackgroundColor), LabelColor = ChartColorText.Parse(source.LabelColor),
             Href = source.Href, Tooltip = source.Tooltip, Kind = native.Kind, PaletteIndex = native.PaletteIndex,
             Status = native.Status, DisplayMode = native.DisplayMode, Shape = native.Shape, IconShape = native.IconShape,
             PreserveDisplayModeSize = true, FitLabelToContent = native.FitLabelToContent,
@@ -134,7 +134,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 StartsSection = sourceDetail.StartsSection,
                 Content = sourceDetail.Content ?? (sourceDetail.Text == null ? null : ChartForgeX.Typography.TextContent.Plain(sourceDetail.Text)), Label = sourceDetail.Label,
                 ValueContent = sourceDetail.ValueContent ?? ChartForgeX.Typography.TextContent.Plain(sourceDetail.Value), IconId = sourceDetail.IconId,
-                Status = status, Color = sourceDetail.Color, TextStyle = sourceDetail.TextStyle?.Clone(), BadgeStyle = sourceDetail.BadgeStyle?.Clone()
+                Status = status, Color = ChartColorText.Parse(sourceDetail.Color), TextStyle = sourceDetail.TextStyle?.Clone(), BadgeStyle = sourceDetail.BadgeStyle?.Clone()
             };
             RestoreTopologyMetadata(sourceDetail.Extensions, detail.Metadata); node.Details.Add(detail);
         }
@@ -155,7 +155,7 @@ public static partial class VisualArtifactInterchangeMapping {
             SourcePortId = source.SourcePortId, TargetPortId = source.TargetPortId,
             LabelContent = native.LabelContent ?? (source.Label == null ? null : ChartForgeX.Typography.TextContent.Plain(source.Label)), SecondaryLabel = source.SecondaryLabel, TertiaryLabel = source.TertiaryLabel,
             SourceLabel = source.SourceLabel, TargetLabel = source.TargetLabel, Href = source.Href, Tooltip = source.Tooltip,
-            Color = source.Color, LabelColor = source.LabelColor, LabelBackgroundColor = native.LabelBackgroundColor,
+            Color = ChartColorText.Parse(source.Color), LabelColor = ChartColorText.Parse(source.LabelColor), LabelBackgroundColor = ChartColorText.Parse(native.LabelBackgroundColor),
             Kind = native.Kind, PaletteIndex = native.PaletteIndex,
             Status = native.Status, Direction = native.Direction, SourcePort = native.SourcePort, TargetPort = native.TargetPort,
             LineStyle = native.LineStyle, Routing = native.Routing, Emphasis = native.Emphasis,

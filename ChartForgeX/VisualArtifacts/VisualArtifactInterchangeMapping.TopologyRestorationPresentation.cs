@@ -28,7 +28,7 @@ public static partial class VisualArtifactInterchangeMapping {
         var legend = TopologyLegend.Create(source.Legend.Title);
         foreach (var item in source.Legend.Items) legend.Items.Add(new TopologyLegendItem {
             Label = item.Label, Kind = item.Kind, Status = item.Status, NodeKind = item.NodeKind, EdgeKind = item.EdgeKind,
-            Symbol = item.Symbol, IconId = item.IconId, Color = item.Color, BackgroundColor = item.BackgroundColor, LineStyle = item.LineStyle
+            Symbol = item.Symbol, IconId = item.IconId, Color = ChartColorText.Parse(item.Color), BackgroundColor = ChartColorText.Parse(item.BackgroundColor), LineStyle = item.LineStyle
         });
         chart.Legend = legend;
     }

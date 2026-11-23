@@ -27,9 +27,9 @@ public sealed class MermaidClassEntityStyleTests {
         Assert.Equal(facts.GetProperty("nodeClasses").EnumerateObject().Select(item => item.Name), chart.Nodes.Select(node => node.Id));
         foreach (var node in chart.Nodes) {
             var paint = facts.GetProperty("nodeStyles").GetProperty(node.Id);
-            Assert.Equal(paint.GetProperty("fill").GetString(), node.BackgroundColor);
-            Assert.Equal(paint.GetProperty("stroke").GetString(), node.Color);
-            Assert.Equal(paint.GetProperty("color").GetString(), node.LabelColor);
+            Assert.Equal(ChartColorText.Parse(paint.GetProperty("fill").GetString()), node.BackgroundColor);
+            Assert.Equal(ChartColorText.Parse(paint.GetProperty("stroke").GetString()), node.Color);
+            Assert.Equal(ChartColorText.Parse(paint.GetProperty("color").GetString()), node.LabelColor);
             Assert.All(node.Details, detail => Assert.Equal(node.LabelColor, detail.Color));
             Assert.Equal(string.Join(",", facts.GetProperty("nodeClasses").GetProperty(node.Id).EnumerateArray().Select(item => item.GetString())), node.Metadata["mermaid.classes"]);
         }
@@ -47,9 +47,9 @@ public sealed class MermaidClassEntityStyleTests {
             Assert.True(Count(png.Pixels, ChartColor.Parse(color)) > 20, "Both authored node surfaces must be visible in native PNG.");
         }
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
-        Assert.Equal(chart.Nodes.Select(node => node.BackgroundColor), envelope.Nodes.Select(node => node.BackgroundColor));
-        Assert.Equal(chart.Nodes.Select(node => node.LabelColor), envelope.Nodes.Select(node => node.LabelColor));
-        Assert.Equal(chart.Nodes.SelectMany(node => node.Details).Select(detail => detail.Color), envelope.Nodes.SelectMany(node => node.Details).Select(detail => detail.Color));
+        Assert.Equal(chart.Nodes.Select(node => node.BackgroundColor), envelope.Nodes.Select(node => ChartColorText.Parse(node.BackgroundColor)));
+        Assert.Equal(chart.Nodes.Select(node => node.LabelColor), envelope.Nodes.Select(node => ChartColorText.Parse(node.LabelColor)));
+        Assert.Equal(chart.Nodes.SelectMany(node => node.Details).Select(detail => detail.Color), envelope.Nodes.SelectMany(node => node.Details).Select(detail => ChartColorText.Parse(detail.Color)));
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {
             Directory.CreateDirectory(captures);
@@ -135,13 +135,13 @@ public sealed class MermaidClassEntityStyleTests {
         var item = new MermaidClassNode("A", new MermaidSourceSpan(2, 1, 1));
         item.Classes.Add("marked");
         classes.Classes.Add(item);
-        Assert.Equal("#fef9c3", Assert.Single(classes.ToTopologyChart().Nodes).BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#fef9c3"), Assert.Single(classes.ToTopologyChart().Nodes).BackgroundColor);
         var entities = new MermaidEntityRelationshipDocument();
         entities.ClassDefinitions.Add(definition);
         var entity = new MermaidEntityNode("A", new MermaidSourceSpan(2, 1, 1));
         entity.Classes.Add("marked");
         entities.Entities.Add(entity);
-        Assert.Equal("#fef9c3", Assert.Single(entities.ToTopologyChart().Nodes).BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#fef9c3"), Assert.Single(entities.ToTopologyChart().Nodes).BackgroundColor);
     }
 
     private static int Count(byte[] pixels, ChartColor color) {

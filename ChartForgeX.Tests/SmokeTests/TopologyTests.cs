@@ -285,8 +285,8 @@ internal static partial class SmokeTests {
             .AddNode("sql", "SQL", 270, 130, TopologyNodeKind.Database, TopologyHealthStatus.Warning, "tier")
             .AddEdge("api-sql", "api", "sql", "42 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, cssClass: "critical:path odd$class", tertiaryLabel: "p95")
             .UpdateGroup("tier", g => g.Symbol("region"))
-            .UpdateGroup("tier", g => g.Color("#7C3AED"))
-            .UpdateNode("sql", n => n.Color("#2563EB"))
+            .UpdateGroup("tier", g => g.Color(ChartColor.FromHex("#7C3AED")))
+            .UpdateNode("sql", n => n.Color(ChartColor.FromHex("#2563EB")))
             .UpdateEdge("api-sql", e => e.LineStyle(TopologyEdgeLineStyle.Dotted))
             .UpdateEdge("api-sql", e => e.Muted());
 

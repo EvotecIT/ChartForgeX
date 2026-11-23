@@ -114,7 +114,7 @@ public sealed partial class MarkupArchitectureParser {
                 }
 
                 try {
-                    Chart.AddEdge(id, connection.From, connection.To, connection.Label, connection.Kind, connection.Status, connection.Direction, color: connection.Color);
+                    Chart.AddEdge(id, connection.From, connection.To, connection.Label, connection.Kind, connection.Status, connection.Direction, color: ChartColorText.Parse(connection.Color));
                     Chart.Edges[Chart.Edges.Count - 1].LineStyle = connection.LineStyle;
                 } catch (ArgumentException ex) {
                     Error(connection.Line, connection.FromColumn, MarkupArchitectureDiagnosticCodes.InvalidValue, ex.Message);

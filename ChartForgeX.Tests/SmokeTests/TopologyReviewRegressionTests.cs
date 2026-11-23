@@ -277,7 +277,7 @@ internal static partial class SmokeTests {
     private static void TopologyEdgeLabelClearanceTintsAnyGroupColourAndUsesBackgroundWhenGroupsAreHidden() {
         (ChartColor Fill, string? SvgFill, byte[] Png) Clearance(string color, bool includeGroups) {
             var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).Viewport(new TopologyViewport(600, 360, 20)).Legend((TopologyLegend?)null)
-                .AddGroup("services", "Services", 10, 10, 560, 320, color: color)
+                .AddGroup("services", "Services", 10, 10, 560, 320, color: ChartColorText.Parse(color))
                 .AddNode("source", "Source", 70, 150, groupId: "services")
                 .AddNode("target", "Target", 350, 150, groupId: "services")
                 .AddEdge("connection", "source", "target", label: "Connection", routing: TopologyEdgeRouting.Straight);

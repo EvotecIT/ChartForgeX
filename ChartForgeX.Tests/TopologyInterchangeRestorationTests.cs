@@ -108,7 +108,7 @@ public sealed class TopologyInterchangeRestorationTests {
         var source = TopologyChart.Create().Viewport(new TopologyViewport(1000, 500));
         source.Groups.Add(new TopologyGroup { Id = "outer", Label = "Transaction", X = 20, Y = 20, Width = 700, Height = 280 });
         source.Groups.Add(new TopologyGroup { Id = "before", Label = "Before", ParentGroupId = "outer", Presentation = TopologyGroupPresentation.Compartment,
-            LayoutDirection = TopologyLayoutDirection.LeftToRight, X = 25, Y = 60, Width = 340, Height = 230, BackgroundColor = "#EEF2FF", BorderColor = "#2563EB" });
+            LayoutDirection = TopologyLayoutDirection.LeftToRight, X = 25, Y = 60, Width = 340, Height = 230, BackgroundColor = ChartColor.FromHex("#EEF2FF"), BorderColor = ChartColor.FromHex("#2563EB") });
         source.Groups.Add(new TopologyGroup { Id = "after", Label = "After", ParentGroupId = "outer", Presentation = TopologyGroupPresentation.Compartment,
             X = 365, Y = 60, Width = 340, Height = 230 });
         source.Groups[1].Metadata["compartment"] = "raw value";
@@ -119,7 +119,7 @@ public sealed class TopologyInterchangeRestorationTests {
         Assert.Equal(3, imported.Groups.Count); Assert.Equal("outer", imported.Groups[1].ParentGroupId);
         Assert.Equal(TopologyGroupPresentation.Compartment, imported.Groups[1].Presentation);
         Assert.Equal(TopologyLayoutDirection.LeftToRight, imported.Groups[1].LayoutDirection);
-        Assert.Equal(envelope.Groups[1].BackgroundColor, imported.Groups[1].BackgroundColor);
+        Assert.Equal(ChartColorText.Parse(envelope.Groups[1].BackgroundColor), imported.Groups[1].BackgroundColor);
         Assert.Equal("raw value", imported.Groups[1].Metadata["compartment"]);
         Assert.Equal("before", imported.Edges[0].SourceNodeId); Assert.Equal("after", imported.Edges[0].TargetNodeId);
         imported.Groups[1].Metadata["compartment"] = "edited"; Assert.Equal("raw value", envelope.Groups[1].Extensions["compartment"]);
@@ -132,7 +132,7 @@ public sealed class TopologyInterchangeRestorationTests {
             .Viewport(new TopologyViewport(width, 520)).DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = true, WrapNodeLabels = true });
         chart.Accessibility.Name = "Imported request graph"; chart.Accessibility.Language = "en";
         chart.Groups.Add(new TopologyGroup { Id = "region", Label = "Service region", X = 24, Y = 30, Width = 640, Height = 240,
-            Color = "#2563EB", Status = TopologyHealthStatus.Healthy });
+            Color = ChartColor.FromHex("#2563EB"), Status = TopologyHealthStatus.Healthy });
         chart.Groups[0].Metadata["raw.group"] = "<opaque>";
         var node = new TopologyNode { Id = "source", Label = "Request source", Kind = TopologyNodeKind.Server,
             X = 48, Y = 85, Width = 210, Height = 110, GroupId = "region", Status = TopologyHealthStatus.Healthy,

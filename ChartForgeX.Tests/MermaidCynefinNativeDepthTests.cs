@@ -42,8 +42,8 @@ public sealed class MermaidCynefinNativeDepthTests {
         Assert.Equal(ChartColor.FromHex("#445566"), fold.Stroke);
         Assert.Equal(ChartColor.FromHex("#112233").WithOpacity(.4), chart.PathDecorations[0].Fill);
         Assert.Equal(ChartColor.FromHex("#778899"), chart.PathDecorations.Single(path => path.Id == "cynefin-cliff").Stroke);
-        Assert.Equal("#aabbccff", chart.Edges[0].Color, ignoreCase: true); Assert.Equal(3, chart.Edges[0].StrokeWidth);
-        Assert.Equal("#123456ff", chart.Nodes[0].Details[0].Color, ignoreCase: true);
+        Assert.Equal(ChartColor.FromHex("#aabbccff"), chart.Edges[0].Color); Assert.Equal(3, chart.Edges[0].StrokeWidth);
+        Assert.Equal(ChartColor.FromHex("#123456ff"), chart.Nodes[0].Details[0].Color);
         var changed = MermaidRenderer.Render(init.Replace("'boundaryAmplitude':0", "'boundaryAmplitude':8") + Body);
         Assert.NotEqual(fold.PathData, Assert.IsType<TopologyChart>(changed.Artifact!.Model).PathDecorations.Single(path => path.Id == "cynefin-fold").PathData);
     }

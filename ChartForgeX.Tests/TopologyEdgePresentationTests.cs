@@ -58,7 +58,7 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void StripesTileTheRouteInEveryColourWithLegendEntries() {
         var chart = Sites();
-        chart.AddEdgeStripe("link", "#2563EB", "IP").AddEdgeStripe("link", "#F97316", "SMTP").AddEdgeStripe("link", "#16A34A");
+        chart.AddEdgeStripe("link", ChartColor.FromHex("#2563EB"), "IP").AddEdgeStripe("link", ChartColor.FromHex("#F97316"), "SMTP").AddEdgeStripe("link", ChartColor.FromHex("#16A34A"));
         chart.Legend(TopologyLegend.Create("Legend"));
         var prepared = chart.Prepare(Options());
         var document = XDocument.Parse(prepared.ToSvg());
@@ -82,7 +82,7 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void AssumedStripesKeepAGapAfterEveryBand() {
         var chart = Sites();
-        chart.AddEdgeStripe("link", "#2563EB").AddEdgeStripe("link", "#F97316").UpdateEdge("link", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText(null));
+        chart.AddEdgeStripe("link", ChartColor.FromHex("#2563EB")).AddEdgeStripe("link", ChartColor.FromHex("#F97316")).UpdateEdge("link", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText(null));
         var document = XDocument.Parse(chart.Prepare(Options()).ToSvg());
         Assert.All(Edge(document, "link").Descendants().Where(element => Role(element) == "topology-edge-stripe"),
             stripe => Assert.Equal("8 16", (string?)stripe.Attribute("stroke-dasharray")));
@@ -152,7 +152,7 @@ public sealed class TopologyEdgePresentationTests {
 
     [Fact]
     public void EdgePresentationSurvivesAnInterchangeRoundTrip() {
-        var chart = Sites().AddEdgeStripe("link", "#2563EB", "IP, primary").AddEdgeStripe("link", "rgb(249, 115, 22)")
+        var chart = Sites().AddEdgeStripe("link", ChartColor.FromHex("#2563EB"), "IP, primary").AddEdgeStripe("link", ChartColorText.Parse("rgb(249, 115, 22)")!.Value)
             .AddEdgeChip("link", "cost 100|a", Tone.Warning, "server").UpdateEdge("link", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText("KCC, inferred"))
             .UpdateEdge("link", e => e.UplinkEnd(TopologyEdgeEnd.Target));
         chart.Edges[0].Metadata["owner"] = "ops";
@@ -161,7 +161,7 @@ public sealed class TopologyEdgePresentationTests {
         Assert.Equal(TopologyEdgeEvidence.Assumed, edge.Evidence);
         Assert.Equal("KCC, inferred", edge.EvidenceText);
         Assert.Equal(TopologyEdgeEnd.Target, edge.UplinkEnd);
-        Assert.Equal(new[] { "#2563EB|IP, primary", "rgb(249, 115, 22)|" }, edge.Stripes.Select(stripe => stripe.Color + "|" + stripe.Label));
+        Assert.Equal(new[] { "#2563EB|IP, primary", "#F97316|" }, edge.Stripes.Select(stripe => stripe.Color + "|" + stripe.Label));
         var chip = Assert.Single(edge.Chips);
         Assert.Equal(("cost 100|a", Tone.Warning, "server"), (chip.Text, chip.Tone, chip.IconId));
         Assert.Equal(new[] { "owner" }, edge.Metadata.Keys.Where(key => !key.StartsWith("layout.", StringComparison.Ordinal)));

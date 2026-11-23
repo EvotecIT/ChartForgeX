@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using System;
 using System.Collections.Generic;
 using ChartForgeX.VisualBlocks;
@@ -150,7 +151,7 @@ public sealed partial class FlowArtifact {
     public static FlowArtifact Create(string id) => new() { Id = id };
 
     /// <summary>Adds a flow lane.</summary>
-    public FlowArtifact AddLane(string id, string label, Tone tone = default, string? color = null) {
+    public FlowArtifact AddLane(string id, string label, Tone tone = default, ChartColor? color = null) {
         if (ContainsLane(id)) throw new ArgumentException("Flow lane ids must be unique.", nameof(id));
         _lanes.Add(new FlowArtifactLane(id, label) { Tone = tone, Color = color });
         return this;
@@ -174,7 +175,7 @@ public sealed partial class FlowArtifact {
     }
 
     /// <summary>Adds a flow connector.</summary>
-    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, Tone tone = default, string? color = null) {
+    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, Tone tone = default, ChartColor? color = null) {
         if (!ContainsStep(sourceId)) throw new ArgumentException("Flow connector source step does not exist: " + sourceId + ".", nameof(sourceId));
         if (!ContainsStep(targetId)) throw new ArgumentException("Flow connector target step does not exist: " + targetId + ".", nameof(targetId));
         var id = sourceId + "-" + targetId + "-" + (_connectors.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -250,7 +251,7 @@ public sealed class FlowArtifactLane {
     public Tone Tone { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets lane metadata for host adapters and exporters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
@@ -295,7 +296,7 @@ public sealed class FlowArtifactStep {
     public string? Symbol { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets an optional badge.</summary>
     public string? Badge { get; set; }
@@ -361,7 +362,7 @@ public sealed class FlowArtifactConnector {
     public Tone Tone { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
-    public string? Color { get; set; }
+    public ChartColor? Color { get; set; }
 
     internal FlowArtifactConnector Clone() {
         var copy = new FlowArtifactConnector(Id, SourceId, TargetId) {

@@ -39,7 +39,7 @@ public sealed class TopologyRoundedContourAttachmentTests {
         chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source", X = 100, Y = 100,
             Width = width, Height = height, Shape = shape, PreserveDisplayModeSize = true,
             FitLabelToContent = false, ShowLabel = false, ShowStatusBadge = false,
-            BackgroundColor = "#E53935", Color = "#E53935" });
+            BackgroundColor = ChartColor.FromHex("#E53935"), Color = ChartColor.FromHex("#E53935") });
         chart.AddNode("target", "Target", 150, 0, width: 40, height: 40);
         chart.Nodes[1].ShowLabel = false; chart.Nodes[1].ShowStatusBadge = false;
         chart.AddEdge("route", reversed ? "target" : "source", reversed ? "source" : "target",

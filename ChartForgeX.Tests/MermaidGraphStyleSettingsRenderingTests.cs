@@ -18,8 +18,8 @@ public sealed class MermaidGraphStyleSettingsRenderingTests {
         var envelope=artifact.ToInterchangeEnvelope();
         Assert.Equal(envelope.ToJson(),VisualArtifactInterchangeEnvelope.FromUtf8Json(envelope.ToUtf8Json()).ToJson());
         var chart=Assert.IsType<TopologyChart>(artifact.Model);var group=Assert.Single(chart.Groups);var edge=Assert.Single(chart.Edges);
-        Assert.Equal(new[]{"work","done"},chart.Nodes.Select(node=>node.Id));Assert.Equal("#e9f0fa",group.BackgroundColor);
-        Assert.Equal("#345678",group.BorderColor);Assert.Equal("#234567",group.LabelColor);Assert.Equal("framed",group.Metadata["mermaid.classes"]);
+        Assert.Equal(new[]{"work","done"},chart.Nodes.Select(node=>node.Id));Assert.Equal(ChartColor.FromHex("#e9f0fa"),group.BackgroundColor);
+        Assert.Equal(ChartColor.FromHex("#345678"),group.BorderColor);Assert.Equal(ChartColor.FromHex("#234567"),group.LabelColor);Assert.Equal("framed",group.Metadata["mermaid.classes"]);
         Assert.Equal("reads",edge.Id);Assert.Equal(3,edge.StrokeWidth);Assert.Equal(.6,edge.Opacity);
         Assert.Equal(new double[]{9,4,2,9,4,2},edge.DashPattern);Assert.Equal("association",edge.Metadata["mermaid.classes"]);
         Assert.Equal(44,chart.Viewport.Padding);Assert.Equal(75,chart.DefaultRenderOptions!.LayeredNodeSpacing);Assert.Equal(140,chart.DefaultRenderOptions.LayeredRankSpacing);
@@ -52,7 +52,7 @@ public sealed class MermaidGraphStyleSettingsRenderingTests {
     [InlineData("agentflow-beta\nclass missing marked\na:::external-box --> b\nclassDef external-box fill:#ffeedd")]
     public void AgentflowInlineClassesKeepTheFamilyIdentityAndUnknownClassNoop(string source) {
         var rendered=MermaidRenderer.Render(source);Assert.Empty(rendered.Diagnostics);
-        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);Assert.Equal(new[]{"a","b"},chart.Nodes.Select(node=>node.Id));Assert.Equal("#ffeedd",chart.Nodes[0].BackgroundColor);
+        var chart=Assert.IsType<TopologyChart>(rendered.Artifact!.Model);Assert.Equal(new[]{"a","b"},chart.Nodes.Select(node=>node.Id));Assert.Equal(ChartColor.FromHex("#ffeedd"),chart.Nodes[0].BackgroundColor);
     }
 
     internal static string Fixture(string family)=>File.ReadAllText(Path.Combine(TestRepository.Root,"tests","mermaid-conformance","fixtures",family+"-style-settings.mmd"));

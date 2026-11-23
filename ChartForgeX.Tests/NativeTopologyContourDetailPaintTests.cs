@@ -15,7 +15,7 @@ public sealed class NativeTopologyContourDetailPaintTests {
     [InlineData(TopologyNodeShape.CollapsedContainer, false)] [InlineData(TopologyNodeShape.CollapsedContainer, true)]
     public void ExplicitContourInkExcludesFixedShapeDetailsAndRestoresThroughTheSameUnitOwner(TopologyNodeShape shape, bool fitted) {
         var chart = Source(shape, fitted); var node = chart.Nodes[0];
-        node.BorderColor = "#0000ff"; node.StrokeWidth = 7; node.SurfaceOpacity = .25; node.DashPattern.AddRange(new[] { 9d, 3d });
+        node.BorderColor = ChartColor.FromHex("#0000ff"); node.StrokeWidth = 7; node.SurfaceOpacity = .25; node.DashPattern.AddRange(new[] { 9d, 3d });
         var before = Prepare(chart, fitted); var facts = before.ToArtifact().ToInterchangeEnvelope();
         var restored = VisualArtifactInterchangeEnvelope.FromJson(facts.ToJson()).ToTopologyChart().Prepare();
         Capture(shape + "-" + fitted + "-direct", before); Capture(shape + "-" + fitted + "-restored", restored.Visual);
@@ -44,7 +44,7 @@ public sealed class NativeTopologyContourDetailPaintTests {
     private static TopologyChart Source(TopologyNodeShape shape, bool fitted) {
         var chart = TopologyChart.Create().Id("contour-details").Title("").Viewport(new TopologyViewport(360, 260, 16)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Hidden", Shape = shape, X = fitted ? 1400 : 90, Y = 70, Width = 180, Height = 120,
-            Color = "#123456", BackgroundColor = "#ffeedd", ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true }); return chart;
+            Color = ChartColor.FromHex("#123456"), BackgroundColor = ChartColor.FromHex("#ffeedd"), ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true }); return chart;
     }
     private static PreparedVisual Prepare(TopologyChart chart, bool fitted) => chart.Prepare(
         new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 16), frame: new VisualFrame(showLegend: false, transparentBackground: true)),

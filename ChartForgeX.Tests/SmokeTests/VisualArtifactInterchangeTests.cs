@@ -60,8 +60,8 @@ internal static partial class SmokeTests {
         topology.Groups[0].LayoutPolicy = TopologyGroupLayoutPolicy.PairRows;
         source.Artwork = TopologyIconArtwork.InlineSvg("<path d=\"M0 0h24v24H0z\"/>");
         topology.Legend = TopologyLegend.Create("Directory key")
-            .AddNodeKind("Domain controller", TopologyNodeKind.Server, "#336699", "DC", "#ffffff", "microsoft-ad:server")
-            .AddEdgeKind("Replication", TopologyEdgeKind.Replication, "#8844aa", TopologyEdgeLineStyle.Dashed);
+            .AddNodeKind("Domain controller", TopologyNodeKind.Server, ChartColor.FromHex("#336699"), "DC", ChartColor.FromHex("#ffffff"), "microsoft-ad:server")
+            .AddEdgeKind("Replication", TopologyEdgeKind.Replication, ChartColor.FromHex("#8844aa"), TopologyEdgeLineStyle.Dashed);
 
         var artifact = topology.ToVisualArtifact();
         artifact.Metadata["owner"] = "directory-team";

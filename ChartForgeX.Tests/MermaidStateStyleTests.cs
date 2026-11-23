@@ -32,12 +32,12 @@ public sealed class MermaidStateStyleTests {
         Assert.Equal(new[] { "first", "inline", "last" }, document.States.Single(state => state.Id == "A").Classes);
         Assert.Equal(new[] { "default", "first", "first", "inline", "shell", "last" }, document.ClassDefinitions.Select(item => item.Name));
         var a = chart.Nodes.Single(node => node.Id == "A");
-        Assert.Equal(("#86efac", "#d97706", "#14532d"), (a.BackgroundColor, a.Color, a.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#86EFAC"), ChartColor.FromHex("#D97706"), ChartColor.FromHex("#14532D")), (a.BackgroundColor, a.Color, a.LabelColor));
         var b = chart.Nodes.Single(node => node.Id == "B");
-        Assert.Equal(("#fef9c3", "#d97706", "#111827"), (b.BackgroundColor, b.Color, b.LabelColor));
-        Assert.Equal("#dbeafe", chart.Nodes.Single(node => node.Id == "Done").BackgroundColor);
+        Assert.Equal((ChartColor.FromHex("#FEF9C3"), ChartColor.FromHex("#D97706"), ChartColor.FromHex("#111827")), (b.BackgroundColor, b.Color, b.LabelColor));
+        Assert.Equal(ChartColor.FromHex("#DBEAFE"), chart.Nodes.Single(node => node.Id == "Done").BackgroundColor);
         var shell = chart.Groups.Single(group => group.Id == "Active");
-        Assert.Equal(("#fce7f3", "#be185d", "#831843"), (shell.BackgroundColor, shell.BorderColor, shell.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#FCE7F3"), ChartColor.FromHex("#BE185D"), ChartColor.FromHex("#831843")), (shell.BackgroundColor, shell.BorderColor, shell.LabelColor));
         Assert.Equal("shell", shell.Metadata["mermaid.classes"]);
         Assert.Equal(2, chart.Groups.Count(group => group.Presentation == TopologyGroupPresentation.Compartment));
         Assert.All(chart.Groups.Where(group => group.Presentation == TopologyGroupPresentation.Compartment), group => {
@@ -60,14 +60,14 @@ public sealed class MermaidStateStyleTests {
         Assert.Equal(chart.Prepare().ToSvg(), chart.Prepare().ToSvg());
         var xml = XDocument.Parse(svg);
         var pixels = RasterImageDecoder.Decode(png);
-        foreach (var color in new[] { "#86efac", "#fef9c3", "#fce7f3" }) {
+        foreach (var color in new[] { "#86EFAC", "#FEF9C3", "#FCE7F3" }) {
             Assert.Contains(xml.Descendants(), element => string.Equals((string?)element.Attribute("fill"), color, StringComparison.OrdinalIgnoreCase));
             Assert.True(Count(pixels.Pixels, ChartColor.Parse(color)) > 20, "Authored state and composite paints must reach the native PNG.");
         }
         var facts = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
-        Assert.Equal(chart.Nodes.Select(node => node.BackgroundColor), facts.Nodes.Select(node => node.BackgroundColor));
-        Assert.Equal("#fce7f3", facts.Groups.Single(group => group.Id == "Active").BackgroundColor);
-        Assert.Equal("#be185d", facts.Groups.Single(group => group.Id == "Active").BorderColor);
+        Assert.Equal(chart.Nodes.Select(node => node.BackgroundColor), facts.Nodes.Select(node => ChartColorText.Parse(node.BackgroundColor)));
+        Assert.Equal("#FCE7F3", facts.Groups.Single(group => group.Id == "Active").BackgroundColor);
+        Assert.Equal("#BE185D", facts.Groups.Single(group => group.Id == "Active").BorderColor);
         Assert.Equal("#831843", facts.Groups.Single(group => group.Id == "Active").LabelColor);
         Assert.Equal("first,inline,last", facts.Nodes.Single(node => node.Id == "A").Extensions["mermaid.classes"]);
         Save(svg, png, facts, direction, dark, width);
@@ -86,8 +86,8 @@ public sealed class MermaidStateStyleTests {
         Assert.Null(plain.BorderColor);
         Assert.Null(plain.LabelColor);
         var styled = chart.Groups.Single(group => group.Id == "Styled");
-        Assert.Equal(("#dcfce7", "#be185d", "#166534"), (styled.BackgroundColor, styled.BorderColor, styled.LabelColor));
-        Assert.All(chart.Nodes, node => Assert.Equal("#dbeafe", node.BackgroundColor));
+        Assert.Equal((ChartColor.FromHex("#DCFCE7"), ChartColor.FromHex("#BE185D"), ChartColor.FromHex("#166534")), (styled.BackgroundColor, styled.BorderColor, styled.LabelColor));
+        Assert.All(chart.Nodes, node => Assert.Equal(ChartColor.FromHex("#DBEAFE"), node.BackgroundColor));
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public sealed class MermaidStateStyleTests {
         Assert.Equal("Display: intact", document.States[1].Label);
         Assert.Equal("accepted: detail", Assert.Single(document.Transitions).Label);
         Assert.All(document.States.SelectMany(state => state.Classes), name => Assert.DoesNotContain(":", name));
-        Assert.Equal(new[] { "#fecaca", "#bfdbfe" }, document.ToTopologyChart().Nodes.Select(node => node.BackgroundColor));
+        Assert.Equal(new ChartColor?[] { ChartColor.FromHex("#FECACA"), ChartColor.FromHex("#BFDBFE") }, document.ToTopologyChart().Nodes.Select(node => node.BackgroundColor));
     }
 
     [Theory]
@@ -183,15 +183,15 @@ public sealed class MermaidStateStyleTests {
         var span = new MermaidSourceSpan(1, 1, 1);
         var document = new MermaidStateDocument();
         var definition = new MermaidStyleDefinition("marked", span);
-        definition.Styles["fill"] = "#fef9c3";
-        definition.Styles["stroke"] = "#92400e";
+        definition.Styles["fill"] = "#FEF9C3";
+        definition.Styles["stroke"] = "#92400E";
         document.ClassDefinitions.Add(definition);
         var state = new MermaidStateNode("A", span);
         state.Classes.Add("marked");
         state.Styles["color"] = "#111827";
         document.States.Add(state);
         var node = Assert.Single(document.ToTopologyChart().Nodes);
-        Assert.Equal(("#fef9c3", "#92400e", "#111827"), (node.BackgroundColor, node.Color, node.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#FEF9C3"), ChartColor.FromHex("#92400E"), ChartColor.FromHex("#111827")), (node.BackgroundColor, node.Color, node.LabelColor));
     }
 
     [Theory]

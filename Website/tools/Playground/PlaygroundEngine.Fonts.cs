@@ -1,3 +1,4 @@
+using ChartForgeX.Rendering;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;

@@ -17,8 +17,8 @@ public static class TopologyAuthoredPathBadgeRecipe {
             BadgeStyle = new TopologyDetailBadgeStyle { Fill = ChartColor.FromHex("#E8F5E9"), Stroke = ChartColor.FromHex("#376947") } });
         chart.AddEdge("dispatch", "gateway", "worker", "Dispatch", direction: VisualLinkDirection.Forward);
         chart.Edges[0].PathGeometry = new TopologyPathGeometry("M 284 190 C 350 42 444 42 510 190");
-        chart.Edges[0].Color = "#315A87"; chart.Edges[0].StrokeWidth = 2;
-        chart.Edges[0].LabelColor = "#F3FAFF"; chart.Edges[0].LabelBackgroundColor = "#193857";
+        chart.Edges[0].Color = ChartColor.FromHex("#315A87"); chart.Edges[0].StrokeWidth = 2;
+        chart.Edges[0].LabelColor = ChartColor.FromHex("#F3FAFF"); chart.Edges[0].LabelBackgroundColor = ChartColor.FromHex("#193857");
         chart.Edges[0].LabelPosition = new TopologyLabelPosition(new ChartPoint(397, 70), TopologyLabelVerticalAnchor.TextBaseline);
         chart.Edges[0].TargetMarkerStyle = new TopologyMarkerStyle { Scale = 1.5, Offset = 1.2, StrokeWidth = 0 };
         chart.Edges[0].LabelAnchor = new ChartPoint(397, 70);

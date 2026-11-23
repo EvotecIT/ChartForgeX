@@ -34,7 +34,7 @@ public static partial class VisualArtifactInterchangeMapping {
             if (group.Role != VisualArtifactInterchangeGroupRole.FlowLane || group.Topology != null || group.Kind != "FlowLane"
                 || group.Subtitle != null || group.BackgroundColor != null || group.BorderColor != null || group.LabelColor != null || group.Href != null || group.Tooltip != null)
                 throw new NotSupportedException("Editable Flow lanes require their native lane facts without unsupported paint/navigation fields.");
-            flow.AddLane(group.Id, group.Label, Status(group.Status), group.Color);
+            flow.AddLane(group.Id, group.Label, Status(group.Status), ChartColorText.Parse(group.Color));
             Copy(group.Extensions, flow.Lanes[flow.Lanes.Count - 1].Metadata);
         }
         foreach (var node in envelope.Nodes) {
@@ -45,7 +45,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 throw new NotSupportedException("Editable Flow steps require their native kind and supported source fields.");
             flow.AddStep(node.Id, node.Label, source.Kind, node.GroupId, Status(node.Status));
             flow.UpdateStep(node.Id, step => {
-                step.Subtitle = node.Subtitle; step.Icon = node.IconId; step.Symbol = node.Symbol; step.Color = node.Color; step.Badge = node.Badge;
+                step.Subtitle = node.Subtitle; step.Icon = node.IconId; step.Symbol = node.Symbol; step.Color = ChartColorText.Parse(node.Color); step.Badge = node.Badge;
                 step.Width = source.AuthoredWidth ?? Bound(node.Width, "flow step width"); step.Height = source.AuthoredHeight ?? Bound(node.Height, "flow step height");
                 step.FitLabelToContent = source.FitLabelToContent; Copy(node.Extensions, step.Metadata);
             });
@@ -58,7 +58,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 || edge.Kind != source.Kind.ToString() || edge.SecondaryLabel != null || edge.TertiaryLabel != null || edge.SourceLabel != null || edge.TargetLabel != null
                 || edge.SourcePortId != null || edge.TargetPortId != null || edge.LabelColor != null || edge.Href != null || edge.Tooltip != null || edge.Metrics.Count != 0)
                 throw new NotSupportedException("Editable Flow connectors require their native ordered source fields.");
-            flow.AddConnector(edge.SourceId, edge.TargetId, edge.Label ?? string.Empty, source.Kind, source.Direction, Status(edge.Status), edge.Color);
+            flow.AddConnector(edge.SourceId, edge.TargetId, edge.Label ?? string.Empty, source.Kind, source.Direction, Status(edge.Status), ChartColorText.Parse(edge.Color));
             flow.UpdateConnector(flow.Connectors.Count - 1, connector => { connector.Id = edge.Id; Copy(edge.Extensions, connector.Metadata); });
         }
         var theme = envelope.Presentation?.Theme is {} captured ? RestoreCompleteTopologyTheme(captured) : VisualTheme.Graphite();

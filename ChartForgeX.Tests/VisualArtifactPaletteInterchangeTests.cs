@@ -13,9 +13,9 @@ public sealed class VisualArtifactPaletteInterchangeTests {
     public void NativePaletteSlotsRoundTripWithoutReplacingExplicitColors(int nodeIndex, int edgeIndex) {
         var chart = Diagram();
         chart.Nodes[0].PaletteIndex = nodeIndex;
-        chart.Nodes[0].Color = "#123456";
+        chart.Nodes[0].Color = ChartColor.FromHex("#123456");
         chart.Edges[0].PaletteIndex = edgeIndex;
-        chart.Edges[0].Color = "#654321";
+        chart.Edges[0].Color = ChartColor.FromHex("#654321");
 
         var envelope = chart.ToVisualArtifact().ToInterchangeEnvelope();
         Assert.Equal(nodeIndex, envelope.Nodes.Single(node => node.Id == "source").Topology!.PaletteIndex);

@@ -28,7 +28,7 @@ public static partial class VisualArtifactInterchangeMapping {
         var mapped=new VisualArtifactInterchangeTopologyNode {
             CaptionPlacement=node.CaptionPlacement,CaptionSurface=node.CaptionSurface,CaptionGap=node.CaptionGap,
             GlyphScale=node.GlyphScale,CornerRadius=node.CornerRadius,CaptionTextStyle=node.CaptionTextStyle?.Clone(),
-            BorderColor=node.BorderColor,StrokeWidth=node.StrokeWidth,Opacity=node.Opacity,SurfaceOpacity=node.SurfaceOpacity,
+            BorderColor=node.BorderColor.ToText(),StrokeWidth=node.StrokeWidth,Opacity=node.Opacity,SurfaceOpacity=node.SurfaceOpacity,
             PreparedNodeBasis = TopologyPreparedNodeBasis.Resolve(node),
             SurfaceElementAppearance = TopologySurfaceElementAppearance.Resolve(node),
             Kind = node.Kind,
@@ -57,7 +57,7 @@ public static partial class VisualArtifactInterchangeMapping {
 
     private static VisualArtifactInterchangeTopologyEdge MapEdgePresentation(TopologyEdge edge, InterchangeIdScope ids) {
         var mapped = new VisualArtifactInterchangeTopologyEdge {
-            LabelBackgroundColor = edge.LabelBackgroundColor,
+            LabelBackgroundColor = edge.LabelBackgroundColor.ToText(),
             LabelContent = edge.LabelContent?.IsStructured == true ? edge.LabelContent : null,
             Kind = edge.Kind,
             PathGeometry = edge.PathGeometry, Interpolation = edge.Interpolation, InterpolationCornerBlendLength = edge.InterpolationCornerBlendLength, PreparedEdgePlan = edge.PreparedEdgePlan,
@@ -128,8 +128,8 @@ public static partial class VisualArtifactInterchangeMapping {
                 EdgeKind = item.EdgeKind,
                 Symbol = item.Symbol,
                 IconId = item.IconId,
-                Color = item.Color,
-                BackgroundColor = item.BackgroundColor,
+                Color = item.Color.ToText(),
+                BackgroundColor = item.BackgroundColor.ToText(),
                 // Edge items carry the style the renderers draw, so a consumer does not have to resolve Auto itself.
                 LineStyle = item.Kind == TopologyLegendItemKind.Edge ? TopologyRenderPrimitives.LegendLineStyle(chart, item) : item.LineStyle
             });

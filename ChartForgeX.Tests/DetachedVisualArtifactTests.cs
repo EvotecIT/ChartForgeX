@@ -31,7 +31,7 @@ public sealed class DetachedVisualArtifactTests {
         };
         region.Metadata.Add("state", "original");
         source.Regions.Add(region);
-        source.Legend.Add(new VisualArtifactLegendItem { Id = "legend", Label = "Original legend", Color = "#123456" });
+        source.Legend.Add(new VisualArtifactLegendItem { Id = "legend", Label = "Original legend", Color = ChartColor.FromHex("#123456") });
 
         var copy = source.Clone();
         Assert.NotSame(source, copy);

@@ -37,13 +37,13 @@ internal sealed class MermaidRequirementThemeSettings {
     }
 
     internal void Apply(TopologyNode node) {
-        if (_colors.TryGetValue("requirementBackground", out var fill)) node.BackgroundColor = fill;
-        if (_colors.TryGetValue("requirementBorderColor", out var border)) node.Color = border;
-        if (_colors.TryGetValue("requirementTextColor", out var text)) node.LabelColor = text;
+        if (_colors.TryGetValue("requirementBackground", out var fill)) node.BackgroundColor = ChartColorText.Parse(fill);
+        if (_colors.TryGetValue("requirementBorderColor", out var border)) node.Color = ChartColorText.Parse(border);
+        if (_colors.TryGetValue("requirementTextColor", out var text)) node.LabelColor = ChartColorText.Parse(text);
     }
     internal void Apply(TopologyEdge edge) {
-        if (_colors.TryGetValue("relationColor", out var line)) edge.Color = line;
-        if (_colors.TryGetValue("relationLabelColor", out var text)) edge.LabelColor = text;
-        if (_colors.TryGetValue("relationLabelBackground", out var fill)) edge.LabelBackgroundColor = fill;
+        if (_colors.TryGetValue("relationColor", out var line)) edge.Color = ChartColorText.Parse(line);
+        if (_colors.TryGetValue("relationLabelColor", out var text)) edge.LabelColor = ChartColorText.Parse(text);
+        if (_colors.TryGetValue("relationLabelBackground", out var fill)) edge.LabelBackgroundColor = ChartColorText.Parse(fill);
     }
 }

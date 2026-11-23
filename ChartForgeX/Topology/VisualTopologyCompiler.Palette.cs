@@ -11,7 +11,7 @@ internal sealed partial class VisualTopologyCompiler {
         return opacity == 1 ? paint : paint.WithOpacity(result, opacity);
     }
 
-    private string? NodeAccentSource(TopologyNode node) => TopologyNodeAccent.Authored(node, TopologyRenderPrimitives.ResolveNodeIcon(node, _options), GlyphAccentSource(node));
+    private string? NodeAccentSource(TopologyNode node) => TopologyNodeAccent.Authored(node, TopologyRenderPrimitives.ResolveNodeIcon(node, _options), GlyphAccentSource(node)).ToText();
     private bool NodeUsesPalette(TopologyNode node) => TopologyNodeAccent.UsesPalette(node, GlyphAccentSource(node));
 
     // Group, legend and detail glyphs are synthetic nodes and keep their own authored paint contract.

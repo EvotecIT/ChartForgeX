@@ -17,7 +17,7 @@ public sealed class MermaidCynefinFontPaintDepthTests {
         Assert.All(chart.Nodes, node => {
             Assert.Equal(22, node.TextStyle!.FontSize); Assert.Equal(14, node.SubtitleTextStyle!.FontSize);
             Assert.Equal(ChartColor.FromHex("#123456"), node.SubtitleTextStyle!.Color);
-            Assert.Equal(15, node.Details[0].TextStyle!.FontSize); Assert.Equal("#653412ff", node.LabelColor, ignoreCase: true);
+            Assert.Equal(15, node.Details[0].TextStyle!.FontSize); Assert.Equal(ChartColor.FromHex("#653412ff"), node.LabelColor);
         });
         Assert.Equal(14, chart.Edges[0].TextStyle!.FontSize);
         var saved = chart.Prepare().ToInterchangeEnvelope(); var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();

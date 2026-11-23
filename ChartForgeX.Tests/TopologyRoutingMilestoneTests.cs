@@ -232,7 +232,7 @@ public sealed class TopologyRoutingMilestoneTests {
     [Fact]
     public void TrunksRetainDistinctInkAndSelectionStates() {
         var chart = FanIn(false);
-        chart.Edges[1].Color = "#dc2626";
+        chart.Edges[1].Color = ChartColor.FromHex("#dc2626");
         var options = Options();
         options.ShareIncomingTrunks = true;
         options.SelectedEdgeIds.Add("e2");

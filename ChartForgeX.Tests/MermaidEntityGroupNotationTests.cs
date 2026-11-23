@@ -26,10 +26,10 @@ public sealed class MermaidEntityGroupNotationTests {
         Assert.DoesNotContain(chart.Nodes, node => node.Id == "Domain" || node.Id == "Orders");
         var domain = chart.Groups.Single(group => group.Id == "Domain");
         Assert.Equal(("Data domain", TopologyLayoutDirection.TopToBottom), (domain.Label, domain.LayoutDirection));
-        Assert.Equal(("#bae6fd", "#075985", "#082f49"), (domain.BackgroundColor, domain.BorderColor, domain.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#bae6fd"), ChartColor.FromHex("#075985"), ChartColor.FromHex("#082f49")), (domain.BackgroundColor, domain.BorderColor, domain.LabelColor));
         var orders = chart.Groups.Single(group => group.Id == "Orders");
         Assert.Equal(("Domain", TopologyLayoutDirection.BottomToTop), (orders.ParentGroupId, orders.LayoutDirection));
-        Assert.Equal(("#dcfce7", "#166534", "#052e16"), (orders.BackgroundColor, orders.BorderColor, orders.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#dcfce7"), ChartColor.FromHex("#166534"), ChartColor.FromHex("#052e16")), (orders.BackgroundColor, orders.BorderColor, orders.LabelColor));
         // The inner group closes first in Mermaid's grammar and owns referenced entities.
         Assert.Equal("Orders", chart.Nodes.Single(node => node.Id == "C").GroupId);
         Assert.Equal("Orders", chart.Nodes.Single(node => node.Id == "O").GroupId);
@@ -52,7 +52,7 @@ public sealed class MermaidEntityGroupNotationTests {
         Assert.Equal(png, Assert.Single(fence.Artifacts).ToPng());
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(result.Artifact.ToInterchangeJson());
         var saved = envelope.Groups.Single(group => group.Id == "Domain");
-        Assert.Equal((domain.BackgroundColor, domain.BorderColor, domain.LabelColor), (saved.BackgroundColor, saved.BorderColor, saved.LabelColor));
+        Assert.Equal((domain.BackgroundColor, domain.BorderColor, domain.LabelColor), (ChartColorText.Parse(saved.BackgroundColor), ChartColorText.Parse(saved.BorderColor), ChartColorText.Parse(saved.LabelColor)));
         var savedOrders = envelope.Groups.Single(group => group.Id == "Orders");
         Assert.Equal("Domain", Assert.IsType<VisualArtifactInterchangeTopologyGroup>(savedOrders.Topology).ParentGroupId);
         Capture("er-groups" + (dark ? "-dark" : "-light"), svgText, png);
@@ -71,7 +71,7 @@ public sealed class MermaidEntityGroupNotationTests {
             Assert.Null(group.BorderColor);
             Assert.Null(group.LabelColor);
         });
-        Assert.All(chart.Nodes, node => Assert.Equal("#fef9c3", node.BackgroundColor));
+        Assert.All(chart.Nodes, node => Assert.Equal(ChartColor.FromHex("#fef9c3"), node.BackgroundColor));
     }
 
     [Theory]
@@ -98,7 +98,7 @@ public sealed class MermaidEntityGroupNotationTests {
             (diagnostic.Code, diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
         var group = Assert.Single(Assert.IsType<TopologyChart>(result.Artifact!.Model).Groups);
         Assert.Null(group.BackgroundColor);
-        Assert.Equal("#123456", group.BorderColor);
+        Assert.Equal(ChartColor.FromHex("#123456"), group.BorderColor);
         Assert.Equal("url(https://example.invalid/pattern)", group.Metadata["mermaid.style.fill"]);
         Assert.DoesNotContain(XDocument.Parse(result.Artifact.ToSvg()).Descendants().Attributes("fill"), attribute => attribute.Value.StartsWith("url(", StringComparison.OrdinalIgnoreCase));
     }

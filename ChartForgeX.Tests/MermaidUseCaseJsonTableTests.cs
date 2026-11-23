@@ -74,7 +74,7 @@ public sealed class MermaidUseCaseJsonTableTests {
         const string source = "usecase-beta\nclassDef marked fill:#F1F5F9,stroke:#2563EB\njson Data @ {\"zero\":0}:::marked\nstyle Data color:#0F766E\nA --> Data";
         var result = MermaidRenderer.Render(source); Assert.Empty(result.Diagnostics);
         var node = Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes.Single(item => item.Id == "Data");
-        Assert.Equal(("#F1F5F9", "#2563EB", "#0F766E"), (node.BackgroundColor, node.Color, node.LabelColor));
+        Assert.Equal((ChartColor.FromHex("#F1F5F9"), ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#0F766E")), (node.BackgroundColor, node.Color, node.LabelColor));
         Assert.Equal("0", node.TableContent!.Rows[0].Cells[1].DisplayText);
     }
     [Theory]

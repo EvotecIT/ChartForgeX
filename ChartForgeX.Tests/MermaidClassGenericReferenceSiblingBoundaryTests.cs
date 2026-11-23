@@ -13,7 +13,7 @@ public sealed class MermaidClassGenericReferenceSiblingBoundaryTests {
         var warning = Assert.Single(result.Diagnostics); Assert.Equal((MermaidDiagnosticCodes.ApproximateMapping, 5, 1), (warning.Code, warning.Span.Line, warning.Span.Column));
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Assert.Equal(new[] { "Pair", "Other" }, chart.Nodes.Select(node => node.Id));
         Assert.Equal(("Pair<K,V>", "Pair~K,V~"), (chart.Nodes[0].Label, chart.Nodes[0].Metadata["mermaid.generic.source"]));
-        Assert.All(chart.Nodes, node => Assert.Equal("#fff", node.BackgroundColor));
+        Assert.All(chart.Nodes, node => Assert.Equal(ChartColor.FromHex("#fff"), node.BackgroundColor));
         var strict = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
         Assert.Null(strict.Artifact); Assert.Single(strict.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ApproximateMapping);
         Assert.Single(strict.Diagnostics, item => item.Code == MermaidDiagnosticCodes.RejectedWarning);
@@ -22,7 +22,7 @@ public sealed class MermaidClassGenericReferenceSiblingBoundaryTests {
         var nodes = Assert.IsType<TopologyChart>(atomic.Artifact!.Model).Nodes;
         Assert.Equal(new[] { "Pair", "Other", "Pair~K,V~,Other" }, nodes.Select(node => node.Id));
         Assert.All(nodes.Take(2), node => Assert.Null(node.BackgroundColor));
-        Assert.Equal(("Literal list identity", "#fff"), (nodes[2].Label, nodes[2].BackgroundColor)); Assert.False(nodes[2].Metadata.ContainsKey("mermaid.generic.source"));
+        Assert.Equal(("Literal list identity", ChartColor.FromHex("#fff")), (nodes[2].Label, nodes[2].BackgroundColor)); Assert.False(nodes[2].Metadata.ContainsKey("mermaid.generic.source"));
     }
 
     [Fact]

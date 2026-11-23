@@ -20,7 +20,7 @@ public sealed class TopologyActorFrameStrokeRegressionTests {
     public void CapturedPaddingKeepsTheActualFrameAndFittedActorGlyphPixels(double padding) {
         var family = new MermaidFlowchartRenderOptions { Width = 640, Height = 360, Padding = padding, FitContent = false,
             IconCatalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("tools", "Finite test icons")
-                .AddIcon(new TopologyIconDefinition("tools", "gateway", "Router", TopologyNodeKind.Generic, TopologyIconShape.Router) { Symbol = "R", Color = "#2563EB" })),
+                .AddIcon(new TopologyIconDefinition("tools", "gateway", "Router", TopologyNodeKind.Generic, TopologyIconShape.Router) { Symbol = "R", Color = ChartColor.FromHex("#2563EB") })),
             Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, TopologySizing = MermaidTopologySizing.FixedViewport }
         };
         var chart = new MermaidParser().ParseFlowchart("usecase-beta\nactor Gateway @{icon:'tools:gateway'} <<external system>>").Document!.ToTopologyChart(family);

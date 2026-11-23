@@ -76,7 +76,7 @@ internal static class RendererGeometryFixture {
         topology.AddEdge("route", "a", "b", null, TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
         if (family == "halo" || family.StartsWith("geo-", StringComparison.Ordinal)) {
             topologyTheme = topologyTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#FFFFFF80"); });
-            topology.Edges[0].Color = "#1E50AA80";
+            topology.Edges[0].Color = ChartColor.FromHex("#1E50AA80");
             topology.Edges[0].Opacity = 0.5;
         }
         if (family.StartsWith("geo-", StringComparison.Ordinal)) {
@@ -89,7 +89,7 @@ internal static class RendererGeometryFixture {
             if (family.Contains("theme")) topologyTheme = topologyTheme.Configure(builder => { var status = builder.Light.Status; status.Neutral = new VisualTokenColor(ChartColor.FromHex("#0000FF80"), status.Neutral.Ink); });
             else foreach (var id in new[] { "a", "b", "c" }) {
                 if (family.Contains("catalog")) topology.NodeIcon(id, "sample:" + id, TopologyOptions(family, density).IconCatalog);
-                else topology.UpdateNode(id, n => n.Color("#0000FF80"));
+                else topology.UpdateNode(id, n => n.Color(ChartColor.FromHex("#0000FF80")));
             }
         }
         return topology.Theme(topologyTheme);
@@ -104,9 +104,9 @@ internal static class RendererGeometryFixture {
             options.ArrowMarkerStyle = Enum.Parse<TopologyArrowMarkerStyle>(family.Substring(family.IndexOf('-') + 1));
         if (family.Contains("catalog")) {
             var pack = new TopologyIconPack("sample", "Sample")
-                .AddIcon("a", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", "#0000FF80")
-                .AddIcon("b", "Queue", TopologyNodeKind.Queue, TopologyIconShape.Badge, "Q", "#0000FF80")
-                .AddIcon("c", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CL", "#0000FF80");
+                .AddIcon("a", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", ChartColor.FromHex("#0000FF80"))
+                .AddIcon("b", "Queue", TopologyNodeKind.Queue, TopologyIconShape.Badge, "Q", ChartColor.FromHex("#0000FF80"))
+                .AddIcon("c", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CL", ChartColor.FromHex("#0000FF80"));
             options.IconCatalog = TopologyIconCatalog.Default().AddPack(pack);
         }
         return options;

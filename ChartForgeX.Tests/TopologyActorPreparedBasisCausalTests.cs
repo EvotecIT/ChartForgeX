@@ -52,7 +52,7 @@ public sealed class TopologyActorPreparedBasisCausalTests {
             .LayoutMode(TopologyLayoutMode.Layered).AddNode("actor", "Native participant", 40, 30, width: shrink ? 920 : 220, height: shrink ? 720 : 140);
         var node = chart.Nodes[0]; node.Shape = shape; node.IconShape = shape == TopologyNodeShape.ActorIcon ? glyph : null;
         node.Kind = TopologyNodeKind.Generic; node.DisplayMode = mode; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
-        node.Color = "#2563EB"; node.Subtitle = "A native caption";
+        node.Color = ChartColor.FromHex("#2563EB"); node.Subtitle = "A native caption";
         node.TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family };
         node.SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = 500 };
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });

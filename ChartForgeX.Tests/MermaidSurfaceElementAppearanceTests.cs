@@ -47,7 +47,7 @@ public sealed class MermaidSurfaceElementAppearanceTests {
         var source = MermaidRenderer.Render(Source(shape), Options()).Artifact!;
         var chart = VisualArtifactInterchangeEnvelope.FromJson(source.ToInterchangeJson()).ToTopologyChart();
         var node = Assert.Single(chart.Nodes); node.X += 13; node.Y += 9;
-        node.BackgroundColor = "#00ff00"; node.BorderColor = "#000000";
+        node.BackgroundColor = ChartColor.FromHex("#00ff00"); node.BorderColor = ChartColor.FromHex("#000000");
         var edited = chart.ToVisualArtifact(); Assert.True(HasCapture(edited.ToInterchangeJson()));
         var marks = MermaidSourceContourPaintCausalTests.OwnedMarks(chart.Prepare().Visual.Scene, "work");
         Assert.Equal(ChartColor.FromHex("#00ff00"), marks[0].Fill);
@@ -68,7 +68,7 @@ public sealed class MermaidSurfaceElementAppearanceTests {
     public void NativeDefaultAndExplicitNullPreserveExistingBytes(TopologyNodeShape shape) {
         var chart = TopologyChart.Create().Id("ordinary-elements").Title("").Viewport(new TopologyViewport(320, 240, 16)).Legend((TopologyLegend?)null);
         var node = new TopologyNode { Id = "work", Shape = shape, X = 60, Y = 60, Width = 160, Height = 100,
-            ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true, BackgroundColor = "#ff0000", BorderColor = "#0000ff" };
+            ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true, BackgroundColor = ChartColor.FromHex("#ff0000"), BorderColor = ChartColor.FromHex("#0000ff") };
         chart.Nodes.Add(node); var before = chart.ToVisualArtifact();
         var svg = before.ToSvg(); var png = before.ToPng(); var json = before.ToInterchangeJson(); Assert.False(HasCapture(json));
         node.SurfaceOpacity = null; node.Shape = shape; node.TableContent = null;

@@ -227,10 +227,10 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(topology.Groups.Count == 1 && topology.Groups[0].Id == "cluster", "Mermaid flowchart conversion should map subgraphs to topology groups.");
         Assert(topology.Nodes[0].GroupId == "cluster", "Mermaid flowchart conversion should preserve subgraph membership on nodes.");
         Assert(topology.Nodes[0].Href == "https://example.com/api" && topology.Nodes[0].Tooltip == "Open API", "Mermaid flowchart conversion should map click links to topology node links.");
-        Assert(topology.Nodes[0].BackgroundColor == "#fee" && topology.Nodes[0].Color == "#c00", "Mermaid flowchart conversion should map class styles to node colors.");
+        Assert(topology.Nodes[0].BackgroundColor == ChartColor.FromHex("#fee") && topology.Nodes[0].Color == ChartColor.FromHex("#c00"), "Mermaid flowchart conversion should map class styles to node colors.");
         Assert(topology.Nodes[0].Metadata["mermaid.classes"] == "alert", "Mermaid flowchart conversion should preserve class metadata.");
-        Assert(topology.Nodes[1].BackgroundColor == "#eef" && topology.Nodes[1].Color == "#00c", "Mermaid flowchart conversion should map direct node styles.");
-        Assert(topology.Edges[0].Color == "#f00" && topology.Edges[0].LineStyle == TopologyEdgeLineStyle.Dashed, "Mermaid flowchart conversion should map linkStyle to edge styling.");
+        Assert(topology.Nodes[1].BackgroundColor == ChartColor.FromHex("#eef") && topology.Nodes[1].Color == ChartColor.FromHex("#00c"), "Mermaid flowchart conversion should map direct node styles.");
+        Assert(topology.Edges[0].Color == ChartColor.FromHex("#f00") && topology.Edges[0].LineStyle == TopologyEdgeLineStyle.Dashed, "Mermaid flowchart conversion should map linkStyle to edge styling.");
 
         var artifact = document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "styled-flow" });
         Assert(artifact.Metadata["mermaid.subgraphs"] == "1", "Mermaid flowchart artifacts should expose subgraph counts.");

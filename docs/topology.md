@@ -148,8 +148,8 @@ Edge labels are planned deterministically from the edge midpoint plus any caller
 `TopologyEdge.LabelColor` controls relationship and endpoint text. `LabelBackgroundColor` independently controls their backplates; `IncludeEdgeLabelBackplates` still controls whether those surfaces are visible. A null fill uses the current native theme. Both paints survive portable version-2 restoration without recoloring the relationship line.
 
 ```csharp
-chart.Edges[0].LabelColor = "#F3FAFF";
-chart.Edges[0].LabelBackgroundColor = "#193857";
+chart.Edges[0].LabelColor = ChartColor.FromHex("#F3FAFF");
+chart.Edges[0].LabelBackgroundColor = ChartColor.FromHex("#193857");
 ```
 
 Use `TopologyView` to render a focused perspective from the same source model. A view can select groups, nodes, or edges, override title/subtitle text, and keep connected edges between visible nodes. This is intended for dashboard cards such as "selected region", "critical paths", or "affected links" without duplicating topology data.
@@ -162,7 +162,7 @@ Use `TopologyScenario` when the full architecture should remain visible but a us
 using ChartForgeX.Interactivity.Html;
 
 chart.AddScenario("client-request-europe", "Europe request", scenario => scenario
-    .Color("#2563EB")
+    .Color(ChartColor.FromHex("#2563EB"))
     .Metadata("request.type", "client")
     .AddNodeStep("fra-dc1", "Origin")
     .AddEdgeStep("fra-lon", "Route", configure: step => step.Metadata("transport", "WAN"))
@@ -346,10 +346,10 @@ var vendorCatalog = TopologyIconCatalog.Default()
     .AddPack(new TopologyIconPack("veeam", "Veeam", vendor: "Veeam")
         .Metadata("website", "https://www.veeam.com")
         .AddTags("backup", "vendor")
-        .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", "#00B336", "Backup")
+        .AddIcon("backup-server", "Backup Server", TopologyNodeKind.Server, TopologyIconShape.Server, "VBR", ChartColor.FromHex("#00B336"), "Backup")
         .AddIcon(new TopologyIconDefinition("veeam", "repository", "Repository", TopologyNodeKind.Storage, TopologyIconShape.Storage) {
             Symbol = "REPO",
-            Color = "#007A5A",
+            Color = ChartColor.FromHex("#007A5A"),
             Category = "Backup"
         }
         .Artwork(TopologyIconArtwork.InlineSvg("<rect x=\"8\" y=\"8\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/><rect x=\"8\" y=\"20\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#00B336\"/><rect x=\"8\" y=\"32\" width=\"28\" height=\"8\" rx=\"2\" fill=\"#007A5A\"/>", "0 0 44 48"))
@@ -358,8 +358,8 @@ var vendorCatalog = TopologyIconCatalog.Default()
 
 var manifestJson = new TopologyIconPack("fortinet", "Fortinet", vendor: "Fortinet")
     .AddTags("network", "security", "vendor")
-    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", "#DA291C", "Security")
-    .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", "#DA291C", "Network")
+    .AddIcon("firewall", "FortiGate Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FG", ChartColor.FromHex("#DA291C"), "Security")
+    .AddIcon("switch", "FortiSwitch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "FSW", ChartColor.FromHex("#DA291C"), "Network")
     .ToJsonManifest();
 
 var manifestCatalog = TopologyIconCatalog.Default().AddJsonPack(manifestJson);
@@ -567,18 +567,18 @@ A chart can carry the options it was designed for: `.DefaultRenderOptions(option
 - When monitoring-style edge label backplates are enabled, they render as lightweight visible plates in SVG and PNG. Multi-line monitoring labels reserve extra no-plate clearance from their own route and draw a subtle route mask behind stacked text. Masks are surface-aware, so a label inside a tinted group panel uses that group fill instead of painting a white patch over the panel. Label placement is priority-aware so selected/critical labels reserve readable lanes before subtle context labels.
 - Monitoring edge labels use wider fallback candidates and a larger reserved gap around labels already placed. This keeps dense replication metrics from stacking into unreadable clusters when several routes share the same natural midpoint.
 - Groups can carry a short `Symbol`; the built-in `region` / `globe` symbol renders a small geographic mark in the group header.
-- Groups can set `.UpdateGroup("group-id", g => g.Color("#8B5CF6"))` to keep region or product identity color independent from health status; the health remains in `data-cfx-status`.
-- Nodes can set `.UpdateNode("node-id", n => n.Color("#2563EB"))` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes.
+- Groups can set `.UpdateGroup("group-id", g => g.Color(ChartColor.FromHex("#8B5CF6")))` to keep region or product identity color independent from health status; the health remains in `data-cfx-status`.
+- Nodes can set `.UpdateNode("node-id", n => n.Color(ChartColor.FromHex("#2563EB")))` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes.
 - Render options can set `.SelectedGroupId("region-id")`, `.SelectedNodeId("node-id")`, and `.SelectedEdgeId("edge-id")` when a static export should show the currently selected site, region, or path without filtering or dimming other elements. SVG emits `data-cfx-selected` and selected classes; PNG renders matching selected outlines.
 - `NodeSurfaceStyle` can render neutral cards, subtle tinted cards, or accent-band cards. Nodes can also set `BackgroundColor`, for example with `.UpdateNode(id, n => n.BackgroundColor(...))`, when a host needs a particular relationship card fill while keeping icons, labels, and exports deterministic.
-- Node kinds can be styled in one reusable pass with `.UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"))`. Use `.NodesOfKindStyle(..., color: "#2563EB", backgroundColor: "#EFF6FF", iconId: "common:certificate")` when a host wants accent, fill, and icon assignment to be applied together without caring about helper call order. This is useful for relationship cards where certificates, owners, endpoints, services, organizations, or other host-mapped concepts need stable visual identity across several topology diagrams.
+- Node kinds can be styled in one reusable pass with `.UpdateNodes(TopologyNodeKind.Certificate, n => n.Color(ChartColor.FromHex("#2563EB")).BackgroundColor(ChartColor.FromHex("#EFF6FF")))`. Use `.NodesOfKindStyle(..., color: ChartColor.FromHex("#2563EB"), backgroundColor: ChartColor.FromHex("#EFF6FF"), iconId: "common:certificate")` when a host wants accent, fill, and icon assignment to be applied together without caring about helper call order. This is useful for relationship cards where certificates, owners, endpoints, services, organizations, or other host-mapped concepts need stable visual identity across several topology diagrams.
 - Edges can set `.UpdateEdge("edge-id", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))` or `Dotted` when relationship type should control line style separately from health status. Use `.UpdateEdge(id, e => e.Color(...))` or the `color` argument on `AddEdge(...)` when relationship type should control route color independently from health status.
-- Legend node entries can use `AddNodeKind(..., symbol: "TLS", backgroundColor: "#EFF6FF", iconId: "common:certificate")`, and legend edge entries can use `AddEdgeKind(..., lineStyle: TopologyEdgeLineStyle.Dotted)`, so "verified", "observed", and "inferred" legend keys match the actual markers and route styles instead of always showing generic symbols. An edge entry without a line style follows the edges of its kind: dashed or dotted when every edge of that kind is drawn that way, solid otherwise (including when the edges differ, for example by status).
+- Legend node entries can use `AddNodeKind(..., symbol: "TLS", backgroundColor: ChartColor.FromHex("#EFF6FF"), iconId: "common:certificate")`, and legend edge entries can use `AddEdgeKind(..., lineStyle: TopologyEdgeLineStyle.Dotted)`, so "verified", "observed", and "inferred" legend keys match the actual markers and route styles instead of always showing generic symbols. An edge entry without a line style follows the edges of its kind: dashed or dotted when every edge of that kind is drawn that way, solid otherwise (including when the edges differ, for example by status).
 - Auto, enriched, and merged legends infer shared node-kind accent/background colors, icon ids, edge-kind colors, and edge-kind line styles when every item in that inferred legend bucket uses the same explicit styling. Enrich mode preserves explicit legend labels/order and fills missing marker details from inferred data without adding unrelated inferred rows; merge mode also appends missing inferred rows. Reusable calls such as `.UpdateNodes(kind, ...)`, `.NodesOfKindIcon(...)`, `.NodesOfKindStyle(...)`, and `.UpdateEdges(kind, ...)` keep the legend aligned without hand-building per-chart legend entries.
 - `ArrowMarkerStyle` supports triangle, chevron, diamond, and circular endpoint markers for static SVG/PNG relationship maps where different arrow treatments better match a compact dashboard or evidence-flow view.
 - `EdgeCornerStyle = TopologyEdgeCornerStyle.Rounded` renders orthogonal routes with rounded bends in SVG and PNG while keeping the same deterministic edge points, route diagnostics, labels, and hit metadata.
 - Edges can set `.UpdateEdge("edge-id", e => e.Emphasis(TopologyEdgeEmphasis.Subtle))` when they should preserve health color but recede behind primary paths in SVG and PNG output, such as replication fan fabric or backup route context. Use `.UpdateEdge("edge-id", e => e.Muted())` for quiet internal structure that should become neutral/gray, such as hub-to-branch hierarchy lines.
-- Edge kinds can be styled in one reusable pass with `.UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color("#64748B"))`, which is useful for map spokes, dependency fabric, ownership routes, risk links, or any relationship class that should stay visually consistent across projects.
+- Edge kinds can be styled in one reusable pass with `.UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Emphasis(TopologyEdgeEmphasis.Subtle).Color(ChartColor.FromHex("#64748B")))`, which is useful for map spokes, dependency fabric, ownership routes, risk links, or any relationship class that should stay visually consistent across projects.
 - Edges can set `.UpdateEdge("edge-id", e => e.LabelOffsetX(x).LabelOffsetY(y))` to tune label placement in dense panel-like diagrams while preserving route geometry and SVG/PNG parity.
 - SVG and PNG render routes by visual priority instead of declaration order: subtle dependency fabric draws first, critical/strong routes draw later, and selected routes draw last. SVG emits `data-edge-render-order` so hosts can validate layering deterministically.
 - `EdgeLabelMetricKey`, `EdgeSecondaryLabelMetricKey`, and `EdgeTertiaryLabelMetricKey` allow hosts to switch route labels from default edge text to metrics such as `transport`, `cost`, `lag`, `queue`, `owner`, or `lastSuccess`; `.IncludeEdgeLabels().EdgeLabelMetricKey("lag").EdgeSecondaryLabelMetricKey("queue").EdgeTertiaryLabelMetricKey("transport")` sets the stacked metric label keys.

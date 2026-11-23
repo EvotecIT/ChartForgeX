@@ -77,8 +77,8 @@ internal static partial class TopologyVisualExamples {
             .UpdateEdge("sin-local", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))
             .UpdateGroup("HQ-NYC", g => g.Color(EmeaColor))
             .UpdateGroup("LON-LON", g => g.Color(ApacColor))
-            .UpdateGroup("FRA-FRA", g => g.Color("#F97316"))
-            .UpdateGroup("SFO-SFO", g => g.Color("#0891B2"))
+            .UpdateGroup("FRA-FRA", g => g.Color(ChartColor.FromHex("#F97316")))
+            .UpdateGroup("SFO-SFO", g => g.Color(ChartColor.FromHex("#0891B2")))
             .UpdateGroup("SIN-SIN", g => g.Color(ApacColor))
             .UpdateGroup("HQ-NYC", g => g.Symbol("globe"))
             .UpdateGroup("LON-LON", g => g.Symbol("globe"))
@@ -89,8 +89,8 @@ internal static partial class TopologyVisualExamples {
         foreach (var node in chart.Nodes) chart.UpdateNode(node.Id, n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null));
         foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "HQ-NYC", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color(EmeaColor));
         foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "LON-LON", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color(ApacColor));
-        foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "FRA-FRA", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color("#F97316"));
-        foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "SFO-SFO", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color("#0891B2"));
+        foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "FRA-FRA", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color(ChartColor.FromHex("#F97316")));
+        foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "SFO-SFO", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color(ChartColor.FromHex("#0891B2")));
         foreach (var node in chart.Nodes.Where(node => string.Equals(node.GroupId, "SIN-SIN", StringComparison.Ordinal))) chart.UpdateNode(node.Id, n => n.Color(ApacColor));
         foreach (var edge in chart.Edges) {
             edge.Metrics["lag"] = edge.Label ?? string.Empty;
@@ -131,13 +131,13 @@ internal static partial class TopologyVisualExamples {
             .Subtitle("Compact hub view with dense site markers and critical replication paths.")
             .Viewport(new TopologyViewport(1240, 610, 28))
             .Legend(TopologyLegend.Create("Connection Health")
-                .AddEdgeKind("Healthy", TopologyEdgeKind.Replication, "#16A34A")
-                .AddEdgeKind("Warning", TopologyEdgeKind.Replication, "#F97316")
-                .AddEdgeKind("Critical", TopologyEdgeKind.Replication, "#EF4444")
-                .AddEdgeKind("Unknown", TopologyEdgeKind.Replication, "#64748B"))
+                .AddEdgeKind("Healthy", TopologyEdgeKind.Replication, ChartColor.FromHex("#16A34A"))
+                .AddEdgeKind("Warning", TopologyEdgeKind.Replication, ChartColor.FromHex("#F97316"))
+                .AddEdgeKind("Critical", TopologyEdgeKind.Replication, ChartColor.FromHex("#EF4444"))
+                .AddEdgeKind("Unknown", TopologyEdgeKind.Replication, ChartColor.FromHex("#64748B")))
             .AddNode("cloud", "Inter-Forest", 594, 286, TopologyNodeKind.Cloud, TopologyHealthStatus.Healthy, null, symbol: "CL", width: 56, height: 56)
             .UpdateNode("cloud", n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null))
-            .UpdateNode("cloud", n => n.Color("#60A5FA"))
+            .UpdateNode("cloud", n => n.Color(ChartColor.FromHex("#60A5FA")))
             .AddGroup("HQ", "HQ-NYC (32 DCs)", 430, 92, 356, 128, TopologyHealthStatus.Healthy, symbol: "globe")
             .AddGroup("LON", "LON-London (12 DCs)", 72, 260, 314, 128, TopologyHealthStatus.Healthy, symbol: "globe")
             .AddGroup("SFO", "SFO-SanFrancisco (11 DCs)", 838, 260, 330, 128, TopologyHealthStatus.Healthy, symbol: "globe")

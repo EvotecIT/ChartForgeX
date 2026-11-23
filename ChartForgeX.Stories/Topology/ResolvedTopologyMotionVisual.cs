@@ -16,14 +16,14 @@ internal sealed class ResolvedTopologyMotionVisual {
         Background = new MotionPaint(geometry.Background, SvgColorRole.Surface, geometry);
         var walked = 0d;
         Routes = plan.Entries.Select(entry => {
-            var route = new MotionRoute(entry, Paint(entry.Edge.Color, entry.Edge.Status), walked, plan.TotalLength);
+            var route = new MotionRoute(entry, Paint(entry.Edge.Color.ToText(), entry.Edge.Status), walked, plan.TotalLength);
             walked += entry.Length;
             return route;
         }).ToArray();
         TotalLength = plan.TotalLength;
         Nodes = plan.NodeIds.Select(id => geometry.Chart.Nodes.FirstOrDefault(node => node.Id == id))
             .OfType<TopologyNode>().Where(node => geometry.NodeCenters.ContainsKey(node.Id))
-            .Select(node => new MotionNode(node.Id, geometry.NodeCenters[node.Id], Paint(node.Color, node.Status))).ToArray();
+            .Select(node => new MotionNode(node.Id, geometry.NodeCenters[node.Id], Paint(node.Color.ToText(), node.Status))).ToArray();
 
         MotionPaint Paint(string? authored, TopologyHealthStatus status) {
             var selected = motion.MarkerColor ?? plan.Color ?? authored;

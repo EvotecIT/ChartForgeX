@@ -100,21 +100,21 @@ internal static class TopologyExamples {
                 .AddTags("azure", "cloud", "vendor", "sample")
                 .AddIcon(new TopologyIconDefinition("azure-example", "data-factory", "Data Factory", TopologyNodeKind.Process, TopologyIconShape.Application) {
                     Symbol = "ADF",
-                    Color = "#0078D4",
+                    Color = ChartColor.FromHex("#0078D4"),
                     Category = "Azure",
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"10\" width=\"13\" height=\"28\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"6\" width=\"13\" height=\"32\" rx=\"2\" fill=\"#50E6FF\"/><path d=\"M20 17 H28 M20 31 H28\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"17\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"34.5\" cy=\"29\" r=\"2.6\" fill=\"#FFFFFF\"/>", "0 0 48 48")
                 }.AddTags("data-factory", "pipeline", "etl"))
                 .AddIcon(new TopologyIconDefinition("azure-example", "key-vault", "Key Vault", TopologyNodeKind.Certificate, TopologyIconShape.Certificate) {
                     Symbol = "KV",
-                    Color = "#0078D4",
+                    Color = ChartColor.FromHex("#0078D4"),
                     Category = "Security",
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Artwork = TopologyIconArtwork.InlineSvg("<circle cx=\"24\" cy=\"16\" r=\"9\" fill=\"#50E6FF\"/><rect x=\"13\" y=\"21\" width=\"22\" height=\"18\" rx=\"3\" fill=\"#0078D4\"/><path d=\"M20 21 v-5 a4 4 0 0 1 8 0 v5\" fill=\"none\" stroke=\"#243A5E\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"24\" cy=\"30\" r=\"3\" fill=\"#FFFFFF\"/><path d=\"M24 33 v4\" stroke=\"#FFFFFF\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>", "0 0 48 48")
                 }.AddTags("key-vault", "secret", "certificate"))
                 .AddIcon(new TopologyIconDefinition("azure-example", "resource-group", "Resource Group", TopologyNodeKind.Group, TopologyIconShape.Network) {
                     Symbol = "RG",
-                    Color = "#0078D4",
+                    Color = ChartColor.FromHex("#0078D4"),
                     Category = "Azure",
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Artwork = TopologyIconArtwork.InlineSvg("<rect x=\"7\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#0078D4\"/><rect x=\"28\" y=\"8\" width=\"13\" height=\"13\" rx=\"2\" fill=\"#50E6FF\"/><rect x=\"17\" y=\"27\" width=\"14\" height=\"13\" rx=\"2\" fill=\"#7FBA00\"/><path d=\"M20 14.5 H28 M24 21 V27\" stroke=\"#243A5E\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>", "0 0 48 48")

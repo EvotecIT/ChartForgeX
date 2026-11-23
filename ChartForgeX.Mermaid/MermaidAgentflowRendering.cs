@@ -48,7 +48,7 @@ public static class MermaidAgentflowRendering {
             } else {
                 chart.AddAutoGroup(flow.Id, flow.Label ?? flow.Id);
                 var group = chart.Groups[chart.Groups.Count - 1]; group.ParentGroupId = flow.ParentId;
-                group.BackgroundColor = "transparent";
+                group.BackgroundColor = ChartColorText.Parse("transparent");
                 group.LayoutDirection = flow.Direction == null ? null : Direction(flow.Direction);
                 Copy(flow.Metadata, group.Metadata);
                 MermaidNativeStyles.Group(group,flow.Classes,flow.Styles);

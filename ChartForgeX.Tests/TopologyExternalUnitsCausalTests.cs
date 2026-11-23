@@ -60,7 +60,7 @@ public sealed class TopologyExternalUnitsCausalTests {
             .Viewport(new TopologyViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0)).LayoutMode(TopologyLayoutMode.Layered);
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Native participant", Subtitle = "A native caption", X = 40, Y = 30,
             Width = shrink ? 920 : 220, Height = shrink ? 720 : 140, Shape = TopologyNodeShape.Rounded, IconShape = glyph,
-            Kind = TopologyNodeKind.Generic, DisplayMode = mode, PreserveDisplayModeSize = true, ShowStatusBadge = false, Color = "#2563EB",
+            Kind = TopologyNodeKind.Generic, DisplayMode = mode, PreserveDisplayModeSize = true, ShowStatusBadge = false, Color = ChartColor.FromHex("#2563EB"),
             TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family },
             SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = 500 }
         });

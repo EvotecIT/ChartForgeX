@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
@@ -164,7 +165,7 @@ public static class TopologyIconPaletteExtensions {
 
     private static string? PackIconId(IReadOnlyList<TopologyIconDefinition> icons) => icons.Count == 0 ? null : icons[0].QualifiedId;
 
-    private static string? PackColor(IReadOnlyList<TopologyIconDefinition> icons) => icons.FirstOrDefault(icon => !string.IsNullOrWhiteSpace(icon.Color))?.Color;
+    private static ChartColor? PackColor(IReadOnlyList<TopologyIconDefinition> icons) => icons.FirstOrDefault(icon => icon.Color != null)?.Color;
 
     private static string PackSymbol(TopologyIconPack pack) {
         var words = pack.Label.Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries);

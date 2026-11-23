@@ -49,7 +49,7 @@ internal sealed partial class VisualTopologyCompiler {
         var groupSurfaces = new Dictionary<string, GroupCaptionSurface>(StringComparer.Ordinal);
         if (_options.IncludeGroups) foreach (var group in TopologyGroupEndpoints.InPaintOrder(_chart)) {
             using var textPolicy = UseTextPolicy(group.TextStyle);
-            if (group.TextStyle?.Color is ChartColor authoredTextColor) group.LabelColor = authoredTextColor.ToHexRgba();
+            if (group.TextStyle?.Color is ChartColor authoredTextColor) group.LabelColor = authoredTextColor;
             var headerParts = new List<ChartRect>();
             _groupHeaderParts.Add(group.Id, headerParts);
             var active = _highlight.IsGroupHighlighted(group);
@@ -69,15 +69,15 @@ internal sealed partial class VisualTopologyCompiler {
             using (Host(group.Href, group.Tooltip, group.Id, "topology-group-host"))
             using (_builder.PushGroup(group.Id, "topology-group", GroupMetadata(group),opacity:group.Opacity??1)) {
                 var neutral = _options.GroupSurfaceStyle == TopologyGroupSurfaceStyle.Neutral;
-                var fill = Highlight(string.IsNullOrWhiteSpace(group.BackgroundColor)
+                var fill = Highlight(group.BackgroundColor == null
                     ? neutral ? _colors.Surface : ChartColorMath.WithOpacity(baseAccent, .06)
                     : Color(group.BackgroundColor, _colors.Surface), active);
                 var fillPaint = GroupFillPaint(group, fill, active, neutral);
                 var captionFactor=(group.Opacity??1)*(group.SurfaceOpacity??1);
                 var captionFill=captionFactor==1?fill:fill.WithOpacity(fill.A/255d*captionFactor);
-                var captionSurface=parentSurface.Over(captionFill,captionFactor==1?fillPaint:fillPaint.WithOpacity(captionFill,captionFactor),!string.IsNullOrWhiteSpace(group.BackgroundColor));
+                var captionSurface=parentSurface.Over(captionFill,captionFactor==1?fillPaint:fillPaint.WithOpacity(captionFill,captionFactor),group.BackgroundColor != null);
                 groupSurfaces[group.Id] = captionSurface;
-                var stroke = string.IsNullOrWhiteSpace(group.BorderColor) ? ChartColorMath.WithOpacity(accent, .5) : Highlight(Color(group.BorderColor, _colors.Border), active);
+                var stroke = group.BorderColor == null ? ChartColorMath.WithOpacity(accent, .5) : Highlight(Color(group.BorderColor, _colors.Border), active);
                 SurfaceRectangle(bounds,fill,stroke,SurfaceStrokeWidth(group.StrokeWidth,_options.SelectedGroupIds.Contains(group.Id)?2.4:0)*_scale,_context.Theme.BarRadius*_scale,"topology-group-surface",
                     SurfaceDash(group.DashPattern),new VisualScenePaintBinding(fillPaint,GroupBorderPaint(group,stroke,active)),group.SurfaceOpacity??1);
                 BuildCompartmentSeparators(group);
@@ -99,13 +99,13 @@ internal sealed partial class VisualTopologyCompiler {
                         var fitTitle = group.TextStyle?.HasOverrides != true && titleRows == 1 && ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize), titleBounds.Height, 600);
                         var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && _options.ResolvedMinimumReadableTextSize <= 0 && ShouldFitHeaderLine(TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options), TopologyGroupHeader.SubtitleHeight);
                         var titleColor = Highlight(Color(group.LabelColor, GroupCaptionInk(captionSurface, _colors.Foreground)), active);
-                        var titlePaint = string.IsNullOrWhiteSpace(group.LabelColor)
+                        var titlePaint = group.LabelColor == null
                             ? GroupCaptionPaint(captionSurface, titleColor, active, false) : GroupLabelPaint(group, titleColor, active);
                         CaptureCaption(Text(group.LabelContent, Bounds(titleBounds.X, titleBounds.Y, titleBounds.Width, titleBounds.Height), TextPolicySize(_context.Theme.Typography.DataLabelSize), titleColor, 600, "topology-group-label", opacity: HighlightFactor(active), paint: titlePaint, maxLines: titleRows, fitSingleLine: fitTitle));
                         if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
                             var subtitleBounds = TopologyGroupHeader.SubtitleBounds(group, _options, fitTitle || fitSubtitle, titleLineHeight, subtitleLineHeight);
                             var subtitleColor = Highlight(Color(group.LabelColor, GroupCaptionInk(captionSurface, _colors.MutedForeground)), active);
-                            var subtitlePaint = string.IsNullOrWhiteSpace(group.LabelColor)
+                            var subtitlePaint = group.LabelColor == null
                                 ? GroupCaptionPaint(captionSurface, subtitleColor, active, true) : GroupLabelPaint(group, subtitleColor, active, true);
                             CaptureCaption(Text(group.Subtitle!, Bounds(subtitleBounds.X, subtitleBounds.Y, subtitleBounds.Width, subtitleBounds.Height), TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options), subtitleColor, 400, "topology-group-subtitle", paint: subtitlePaint, maxLines: subtitleRows, fitSingleLine: fitSubtitle));
                         }
@@ -157,7 +157,7 @@ internal sealed partial class VisualTopologyCompiler {
             using var group = _builder.PushGroup(callout.Group.Id + "-callout", "topology-group", CalloutMetadata(callout));
             var bounds = Bounds(callout.X, callout.Y, callout.Width, callout.Height);
             var active = _highlight.IsGroupHighlighted(callout.Group);
-            var accent = Highlight(Color(callout.Group.Color ?? ResolveGroupIcon(callout.Group, _options)?.Color ?? callout.AccentColor, Status(callout.Group.Status)), active);
+            var accent = Highlight(Color((callout.Group.Color ?? ResolveGroupIcon(callout.Group, _options)?.Color).ToText() ?? callout.AccentColor, Status(callout.Group.Status)), active);
             var accentRole = AccentRole(callout.Group.Color);
             var anchor = Point(new ChartPoint(callout.AnchorX, callout.AnchorY));
             _builder.Ellipse(anchor.X, anchor.Y, TopologyGeographicCalloutPrimitives.AnchorHaloRadius * _scale,
@@ -175,12 +175,12 @@ internal sealed partial class VisualTopologyCompiler {
                 role: "topology-geographic-callout-leader", dash: new[] { leaderStyle.Dash * _scale, leaderStyle.Gap * _scale },
                 paint: new VisualScenePaintBinding(stroke: GroupAccentPaint(callout.Group, leaderInk, active, leaderStyle.StrokeOpacity)));
             var calloutFill = Color(callout.Group.BackgroundColor, _colors.Surface);
-            var calloutBorder = string.IsNullOrWhiteSpace(callout.Group.BorderColor) ? accent : Highlight(Color(callout.Group.BorderColor, _colors.Border), active);
+            var calloutBorder = callout.Group.BorderColor == null ? accent : Highlight(Color(callout.Group.BorderColor, _colors.Border), active);
             _builder.Rect(bounds, calloutFill, calloutBorder, _context.Theme.AxisStrokeWidth * _scale, _context.Theme.BarRadius * _scale, "topology-callout", paint: new VisualScenePaintBinding(GroupFillPaint(callout.Group, calloutFill, true, true), GroupBorderPaint(callout.Group, calloutBorder, active, 1)));
             BuildCalloutPreview(callout, accent, accentRole);
             if (callout.Group.ShowLabel) {
-                Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), TextPolicySize(_context.Theme.Typography.DataLabelSize), Color(callout.Group.LabelColor, _colors.Foreground), 600, "topology-callout-title", paint: string.IsNullOrWhiteSpace(callout.Group.LabelColor) ? null : GroupLabelPaint(callout.Group, Color(callout.Group.LabelColor, _colors.Foreground), true), fitSingleLine: ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize), 24, 600));
-                Text(callout.Subtitle, Bounds(callout.X + 12, callout.Y + 32, callout.Width - 80, 18), TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85, Color(callout.Group.LabelColor, _colors.MutedForeground), 400, "topology-callout-subtitle", paint: string.IsNullOrWhiteSpace(callout.Group.LabelColor) ? MutedPaint(_colors.MutedForeground) : GroupLabelPaint(callout.Group, Color(callout.Group.LabelColor, _colors.MutedForeground), true, true), fitSingleLine: ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85, 18));
+                Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), TextPolicySize(_context.Theme.Typography.DataLabelSize), Color(callout.Group.LabelColor, _colors.Foreground), 600, "topology-callout-title", paint: callout.Group.LabelColor == null ? null : GroupLabelPaint(callout.Group, Color(callout.Group.LabelColor, _colors.Foreground), true), fitSingleLine: ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize), 24, 600));
+                Text(callout.Subtitle, Bounds(callout.X + 12, callout.Y + 32, callout.Width - 80, 18), TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85, Color(callout.Group.LabelColor, _colors.MutedForeground), 400, "topology-callout-subtitle", paint: callout.Group.LabelColor == null ? MutedPaint(_colors.MutedForeground) : GroupLabelPaint(callout.Group, Color(callout.Group.LabelColor, _colors.MutedForeground), true, true), fitSingleLine: ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85, 18));
             }
             var counts = new[] { callout.HealthyCount, callout.WarningCount, callout.CriticalCount, callout.UnknownCount + callout.DisabledCount };
             var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown };

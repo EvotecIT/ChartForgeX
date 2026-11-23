@@ -1,3 +1,4 @@
+using ChartForgeX.Primitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyRenderPrimitives {
@@ -13,5 +14,5 @@ internal static partial class TopologyRenderPrimitives {
 
     /// <summary>The authored node background, or the theme card; tinted surfaces are resolved from parsed colours by the scene compiler.</summary>
     public static string NodeFill(TopologyNode node, TopologyPaint theme) =>
-        string.IsNullOrWhiteSpace(node.BackgroundColor) ? theme.Card : node.BackgroundColor!.Trim();
+        node.BackgroundColor == null ? theme.Card : node.BackgroundColor.ToText()!;
 }
