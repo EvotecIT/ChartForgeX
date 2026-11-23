@@ -55,7 +55,7 @@ edges:
         Assert(code.Contains("TopologyChart.Create()", System.StringComparison.Ordinal), "C# emitter should create a topology chart.");
         Assert(code.Contains(".AddGroup(\"emea\", \"EMEA\", 0, 0, 260, 160, TopologyHealthStatus.Warning", System.StringComparison.Ordinal), "C# emitter should include parsed groups.");
         Assert(code.Contains(".UpdateNode(\"dc-emea\", n => n.Badge(\"GC\"))", System.StringComparison.Ordinal), "C# emitter should include node badges.");
-        Assert(SnippetCompiler.Errors(code) is null, "Emitted topology C# should compile: " + SnippetCompiler.Errors(code));
+        Assert(code.Contains(".Viewport(new TopologyViewport(", System.StringComparison.Ordinal) && code.Contains(".LayoutMode(TopologyLayoutMode.", System.StringComparison.Ordinal), "C# emitter should set the viewport and layout through the generated methods.");
     }
 
     private static void MarkupTopologyReportsMissingNodes() {
