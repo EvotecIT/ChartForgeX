@@ -6,32 +6,56 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets the text style used for chart titles.
     /// </summary>
-    public TextStyleOverride TitleStyle { get; internal set; } = new();
+    public TextStyleOverride TitleStyle {
+        get => _titleStyle;
+        set => _titleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _titleStyle = new();
 
     /// <summary>
     /// Gets the text style used for chart subtitles.
     /// </summary>
-    public TextStyleOverride SubtitleStyle { get; internal set; } = new();
+    public TextStyleOverride SubtitleStyle {
+        get => _subtitleStyle;
+        set => _subtitleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _subtitleStyle = new();
 
     /// <summary>
     /// Gets the text style used for axis titles.
     /// </summary>
-    public TextStyleOverride AxisTitleStyle { get; internal set; } = new();
+    public TextStyleOverride AxisTitleStyle {
+        get => _axisTitleStyle;
+        set => _axisTitleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _axisTitleStyle = new();
 
     /// <summary>
     /// Gets the text style used for axis tick and category labels.
     /// </summary>
-    public TextStyleOverride TickLabelStyle { get; internal set; } = new();
+    public TextStyleOverride TickLabelStyle {
+        get => _tickLabelStyle;
+        set => _tickLabelStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _tickLabelStyle = new();
 
     /// <summary>
     /// Gets the text style used for legend labels.
     /// </summary>
-    public TextStyleOverride LegendStyle { get; internal set; } = new();
+    public TextStyleOverride LegendStyle {
+        get => _legendStyle;
+        set => _legendStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _legendStyle = new();
 
     /// <summary>
     /// Gets the text style used for data labels.
     /// </summary>
-    public TextStyleOverride DataLabelStyle { get; internal set; } = new();
+    public TextStyleOverride DataLabelStyle {
+        get => _dataLabelStyle;
+        set => _dataLabelStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _dataLabelStyle = new();
 
     /// <summary>
     /// Gets the text style for the requested role.

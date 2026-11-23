@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Represents one named series of chart data.
 /// </summary>
+[Fluent]
 public sealed partial class ChartSeries {
     private double _strokeWidth = 3;
     internal bool HasExplicitStrokeWidth { get; private set; }
@@ -157,7 +159,11 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets the series-specific data-label style. When empty, the chart-level data-label style is used.
     /// </summary>
-    public TextStyleOverride DataLabelStyle { get; private set; } = new();
+    public TextStyleOverride DataLabelStyle {
+        get => _dataLabelStyle;
+        set => _dataLabelStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _dataLabelStyle = new();
 
     /// <summary>
     /// Gets or sets the primary or secondary value axis. Horizontal charts use the X axis; vertical and radial charts use the Y axis.

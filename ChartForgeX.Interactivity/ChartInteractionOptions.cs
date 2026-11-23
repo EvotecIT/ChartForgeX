@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Holds host-neutral interaction settings that can be consumed by HTML, desktop, or future interactive adapters.
 /// </summary>
+[Fluent]
 public sealed class ChartInteractionOptions {
     private string? _chartId;
     private string? _groupName;

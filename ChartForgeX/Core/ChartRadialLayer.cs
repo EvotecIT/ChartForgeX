@@ -1,11 +1,13 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Describes one independently styled radial arc layer.
 /// </summary>
+[Fluent]
 public sealed class ChartRadialLayer {
     private string _name;
     private double _value;

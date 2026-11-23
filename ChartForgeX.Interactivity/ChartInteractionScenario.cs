@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes a named interactive path, flow, or alternate analytical state for a chart adapter.
 /// </summary>
+[Fluent]
 public sealed class ChartInteractionScenario {
     private string _id = string.Empty;
     private string _label = string.Empty;
@@ -71,6 +73,7 @@ public sealed class ChartInteractionScenario {
 /// <summary>
 /// Describes one target reference inside a host-neutral interaction scenario.
 /// </summary>
+[Fluent]
 public sealed class ChartInteractionScenarioStep {
     private string _targetKind = string.Empty;
     private string _targetId = string.Empty;

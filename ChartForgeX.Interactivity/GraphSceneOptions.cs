@@ -1,8 +1,10 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Holds host-neutral graph exploration settings that browser, native, and static adapters can share.
 /// </summary>
+[Fluent]
 public sealed class GraphSceneOptions {
     /// <summary>Gets or sets the enabled graph explorer feature flags.</summary>
     public GraphSceneFeatures Features { get; set; } = GraphSceneFeatures.Explorer | GraphSceneFeatures.DragNodes;

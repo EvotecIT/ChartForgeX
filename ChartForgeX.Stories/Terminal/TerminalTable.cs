@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Terminal;
 
@@ -18,6 +19,7 @@ public enum TerminalColumnAlignment {
 /// <summary>
 /// Models a compact monospace table within a terminal story.
 /// </summary>
+[Fluent]
 public sealed class TerminalTable {
     private readonly List<string> _columns = new();
     private readonly List<TerminalColumnAlignment> _alignments = new();

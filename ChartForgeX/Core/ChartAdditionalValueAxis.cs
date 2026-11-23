@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -14,6 +15,7 @@ namespace ChartForgeX.Core;
 /// unless its grid style asks for them. Its captions, rule and title use <see cref="Color"/>, or the colour of the
 /// first bound series, so the reader can match the axis to its series.
 /// </remarks>
+[Fluent]
 public sealed class ChartAdditionalValueAxis {
     private string _title;
 

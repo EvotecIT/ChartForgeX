@@ -4,12 +4,14 @@ using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Describes a dependency-free small-multiple report made from multiple charts.
 /// </summary>
+[Fluent]
 public sealed partial class ChartGrid {
     private readonly List<Chart> _charts = new();
     private readonly List<ChartGridPanelSpan> _panelSpans = new();

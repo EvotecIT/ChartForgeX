@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Accessibility;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -93,6 +94,7 @@ public enum SequenceArtifactBlockKind {
 /// <summary>
 /// Describes a reusable product-neutral sequence or interaction diagram artifact.
 /// </summary>
+[Fluent]
 public sealed partial class SequenceArtifact {
     /// <summary>Gets accessible naming for static sequence previews.</summary>
     public VisualAccessibility Accessibility { get; } = new();

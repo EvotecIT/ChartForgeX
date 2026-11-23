@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A deterministic visual block for product-neutral commit and branch graphs.
 /// </summary>
+[Fluent]
 public sealed partial class GitGraphBlock : VisualBlock<GitGraphBlock> {
     private readonly List<GitGraphBranch> _branches = new();
     private readonly List<GitGraphCommit> _commits = new();

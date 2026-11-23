@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes reusable clustering behavior for graph adapters that can collapse, summarize, or derive large-scene communities.
 /// </summary>
+[Fluent]
 public sealed class GraphClusterOptions {
     /// <summary>Gets or sets how adapters should interpret clusters when the scene is rendered.</summary>
     public GraphClusterMode Mode { get; set; } = GraphClusterMode.Explicit;

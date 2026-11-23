@@ -43,7 +43,14 @@ public sealed partial class ChartAxis {
     /// <summary>Gets the number of minor ticks between adjacent major ticks. Zero, the default, draws none.</summary>
     /// <remarks>Axes draw no tick marks, so minor ticks show as lighter grid lines wherever the axis draws grid lines.
     /// They divide each major interval evenly in data units.</remarks>
-    public int MinorTickCount => _minorTickCount;
+    public int MinorTickCount {
+        get => _minorTickCount;
+        set {
+            if (value < 0 || value > MaximumMinorTickCount)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Minor tick count must be from zero through " + MaximumMinorTickCount + ".");
+            _minorTickCount = value;
+        }
+    }
 
     /// <summary>Gets or sets this axis's grid styling, or null to use the chart grid style.</summary>
     public ChartAxisGridStyle? Grid { get => _grid; set => _grid = value; }
@@ -109,14 +116,8 @@ public sealed partial class ChartAxis {
         _minimumTickSpacing = minimum; _maximumTickSpacing = maximum; return this;
     }
 
-    /// <summary>Divides every major interval with evenly spaced minor ticks, shown as lighter grid lines.</summary>
-    /// <param name="count">Minor ticks between adjacent major ticks, from zero (none) through <see cref="MaximumMinorTickCount"/>.</param>
-    /// <returns>The current axis.</returns>
-    public ChartAxis WithMinorTicks(int count) {
-        if (count < 0 || count > MaximumMinorTickCount)
-            throw new ArgumentOutOfRangeException(nameof(count), count, "Minor tick count must be from zero through " + MaximumMinorTickCount + ".");
-        _minorTickCount = count; return this;
-    }
+    /// <summary>Migration shim removed by the fluent rewrite.</summary>
+    public ChartAxis WithMinorTicks(int count) { MinorTickCount = count; return this; }
 
     /// <summary>Clears the fixed step, explicit values and spacing bounds so the axis chooses its ticks again.</summary>
     /// <returns>The current axis. Minor ticks and grid styling are kept.</returns>

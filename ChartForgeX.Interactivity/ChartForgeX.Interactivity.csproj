@@ -40,4 +40,7 @@
     <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />
     <None Include="..\assets\ChartForgeX.png" Pack="true" PackagePath="\" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PowerForge.Generators" Version="$(PowerForgeGeneratorsVersion)" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

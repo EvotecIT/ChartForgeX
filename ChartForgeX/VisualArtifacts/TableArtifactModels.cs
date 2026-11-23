@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.VisualBlocks;
 using ChartForgeX.Core;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -58,6 +59,7 @@ public enum TableArtifactColumnType {
 /// <summary>
 /// Describes one reusable table artifact for static rendering and native-host interaction.
 /// </summary>
+[Fluent]
 public sealed class TableArtifact {
     /// <summary>Gets or sets whether native table output separates rows and columns with grid lines.</summary>
     public bool ShowGridLines { get; set; }

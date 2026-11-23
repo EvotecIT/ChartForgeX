@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A deterministic static Wardley map visual.
 /// </summary>
+[Fluent]
 public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     private readonly List<string> _stages = new();
     private IReadOnlyList<double> _stageBoundaries = Array.Empty<double>();
@@ -62,10 +64,10 @@ public sealed class WardleyMapBlock : VisualBlock<WardleyMapBlock> {
     public bool ShowGrid { get; set; }
 
     /// <summary>Gets immutable optional paint overrides. Null retains every ordinary theme role.</summary>
-    public WardleyMapStyle? Style { get; private set; }
+    public WardleyMapStyle? Style { get; set; }
 
     /// <summary>Gets the optional normalized origin of the numbered annotation legend.</summary>
-    public WardleyMapAnnotationBox? AnnotationsBox { get; private set; }
+    public WardleyMapAnnotationBox? AnnotationsBox { get; set; }
 
     /// <summary>Sets or clears immutable paint overrides without changing geometry or the shared theme.</summary>
     public WardleyMapBlock WithStyle(WardleyMapStyle? style) { Style = style; return this; }

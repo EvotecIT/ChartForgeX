@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Configures how GeoJSON features are converted into map regions and geographic observations.
 /// </summary>
+[Fluent]
 public sealed class ChartMapGeoJsonOptions {
     private string[] _codePropertyNames = new[] { "NUTS_ID", "nuts_id", "id", "code", "CODE", "ISO_A2", "iso_a2", "GEOID", "geoid" };
     private string[] _namePropertyNames = new[] { "NUTS_NAME", "NAME_LATN", "name", "NAME", "nam_en", "label", "LABEL" };

@@ -4,12 +4,14 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Represents a renderer-independent chart definition.
 /// </summary>
+[Fluent]
 public sealed partial class Chart {
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
@@ -60,6 +62,7 @@ public sealed partial class Chart {
     /// <summary>
     /// Gets the chart options.
     /// </summary>
+    [FluentInline]
     public ChartOptions Options { get; private set; } = new();
 
     /// <summary>

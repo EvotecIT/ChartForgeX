@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A deterministic grid-based block layout with optional directed edges.
 /// </summary>
+[Fluent]
 public sealed partial class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
     private readonly List<BlockLayoutItem> _items = new();
     private readonly List<BlockLayoutEdge> _edges = new();

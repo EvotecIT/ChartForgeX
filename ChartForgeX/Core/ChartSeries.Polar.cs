@@ -4,7 +4,11 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets this source-ordered Polar series' form, curve, run closure and outline policy.</summary>
-    public ChartPolarOptions Polar { get; private set; } = new();
+    public ChartPolarOptions Polar {
+        get => _polar;
+        set => _polar = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartPolarOptions _polar = new();
 
     /// <summary>Configures a detached Polar option copy; a throwing callback leaves the current options unchanged.</summary>
     /// <param name="configure">The configuration callback.</param>

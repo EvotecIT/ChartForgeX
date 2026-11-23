@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 namespace ChartForgeX.Core;
 
 /// <summary>Configures legend keys, entry text and custom entries. Placement and density stay on <see cref="ChartOptions"/>.</summary>
+[PowerForge.Fluent.Fluent(Copy = nameof(Clone))]
 public sealed class ChartLegendOptions {
     private ChartLegendKeyShape _keyShape;
     private double? _keySize;

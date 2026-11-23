@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>Controls deterministic hierarchy stages used by static and interactive graph adapters.</summary>
+[Fluent]
 public sealed class GraphSceneStageOptions {
     private string? _rootNodeId;
 

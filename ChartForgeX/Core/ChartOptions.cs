@@ -2,12 +2,14 @@ using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Defines renderer-independent options for a chart.
 /// </summary>
+[Fluent]
 public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
     private ChartPadding _padding = ChartPadding.All(24);

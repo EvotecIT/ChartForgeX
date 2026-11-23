@@ -620,7 +620,7 @@ public static class TopologyRenderOptionsExtensions {
         if (!options.HighlightStatuses.Contains(status)) options.HighlightStatuses.Add(status);
     }
 
-    private static string RequiredScenarioToken(string? value, string parameterName) {
+    internal static string RequiredScenarioToken(string? value, string parameterName) {
         if (value == null) throw new ArgumentNullException(parameterName);
         var trimmed = value.Trim();
         if (trimmed.Length == 0) throw new ArgumentException("Active scenario id cannot be empty.", parameterName);

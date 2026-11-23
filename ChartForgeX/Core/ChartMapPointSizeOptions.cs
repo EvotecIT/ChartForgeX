@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls one dotted-map dataset's independent weight domain and logical marker radius range.</summary>
+[Fluent]
 public sealed class ChartMapPointSizeOptions {
     private double? _minimumRadius, _maximumRadius;
     internal bool IsConfigured { get; private set; }

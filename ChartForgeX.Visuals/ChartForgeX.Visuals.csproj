@@ -45,4 +45,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PowerForge.Generators" Version="$(PowerForgeGeneratorsVersion)" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes adapter-neutral graph node styling hints, including common vis-network node option concepts.
 /// </summary>
+[Fluent]
 public sealed class GraphNodeStyle {
     /// <summary>Gets or sets the node fill color.</summary>
     public string? BackgroundColor { get; set; }
@@ -32,6 +34,7 @@ public sealed class GraphNodeStyle {
 /// <summary>
 /// Describes adapter-neutral graph edge styling hints, including common vis-network edge option concepts.
 /// </summary>
+[Fluent]
 public sealed class GraphEdgeStyle {
     /// <summary>Gets or sets the edge stroke color.</summary>
     public string? Color { get; set; }

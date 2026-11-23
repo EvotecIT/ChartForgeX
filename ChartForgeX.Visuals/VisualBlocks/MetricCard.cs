@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A compact KPI or metric card visual block.
 /// </summary>
+[Fluent]
 public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     private readonly List<MetricCardDetail> _details = new();
     private readonly List<double> _miniBars = new();

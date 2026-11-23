@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A compact horizontal date or period selector strip for dashboards and report snapshots.
 /// </summary>
+[Fluent]
 public sealed class DateStripBlock : FactualVisualBlock<DateStripBlock> {
     private readonly List<DateStripItem> _items = new();
     private string _header = string.Empty;

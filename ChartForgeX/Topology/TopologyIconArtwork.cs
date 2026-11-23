@@ -27,7 +27,11 @@ public sealed partial class TopologyIconArtwork {
     public string? ImageHref { get; set; }
 
     /// <summary>Gets or sets the preserveAspectRatio value used when rendering SVG or image artwork.</summary>
-    public string PreserveAspectRatio { get; set; } = "xMidYMid meet";
+    public string PreserveAspectRatio {
+        get => _preserveAspectRatio;
+        set => _preserveAspectRatio = RequiredText(value, nameof(value));
+    }
+    private string _preserveAspectRatio = "xMidYMid meet";
 
     /// <summary>Gets whether this artwork defines an inline SVG fragment.</summary>
     public bool HasSvgBody => !string.IsNullOrWhiteSpace(SvgBody);

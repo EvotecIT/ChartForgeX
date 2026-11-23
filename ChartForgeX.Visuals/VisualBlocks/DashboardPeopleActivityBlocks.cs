@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A dashboard card for people, workload, or ranked rows with avatar slots and progress rails.
 /// </summary>
+[Fluent]
 public sealed class WorkloadListBlock : FactualVisualBlock<WorkloadListBlock> {
     private readonly List<WorkloadListRow> _rows = new();
 
@@ -115,6 +117,7 @@ public enum ActivityTimelineItemKind {
 /// <summary>
 /// A dashboard activity feed with section labels, status nodes, connectors, and nested checklist rows.
 /// </summary>
+[Fluent]
 public sealed class ActivityTimelineBlock : FactualVisualBlock<ActivityTimelineBlock> {
     private readonly List<ActivityTimelineItem> _items = new();
 

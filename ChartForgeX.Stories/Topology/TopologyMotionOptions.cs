@@ -17,13 +17,25 @@ public sealed class TopologyMotionOptions {
     public List<string> EdgeIds { get; } = new();
 
     /// <summary>Gets or sets the animation duration in seconds.</summary>
-    public double DurationSeconds { get; set; } = 4;
+    public double DurationSeconds {
+        get => _durationSeconds;
+        set => _durationSeconds = RequiredPositiveFinite(value, nameof(value), "Topology motion duration must be a positive finite number.");
+    }
+    private double _durationSeconds = 4;
 
     /// <summary>Gets or sets the sampled frame rate used by animated raster exports.</summary>
-    public double FramesPerSecond { get; set; } = 12;
+    public double FramesPerSecond {
+        get => _framesPerSecond;
+        set => _framesPerSecond = RequiredPositiveFinite(value, nameof(value), "Topology motion frame rate must be a positive finite number.");
+    }
+    private double _framesPerSecond = 12;
 
     /// <summary>Gets or sets the maximum number of frames sampled by animated raster exports.</summary>
-    public int MaximumRasterFrames { get; set; } = 240;
+    public int MaximumRasterFrames {
+        get => _maximumRasterFrames;
+        set => _maximumRasterFrames = value > 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Topology motion raster frame limit must be greater than zero.");
+    }
+    private int _maximumRasterFrames = 240;
 
     /// <summary>Gets or sets whether the animation loops.</summary>
     public bool Loop { get; set; } = true;
@@ -32,7 +44,11 @@ public sealed class TopologyMotionOptions {
     public double Progress { get; set; }
 
     /// <summary>Gets or sets the moving route marker radius.</summary>
-    public double MarkerRadius { get; set; } = 5.5;
+    public double MarkerRadius {
+        get => _markerRadius;
+        set => _markerRadius = RequiredPositiveFinite(value, nameof(value), "Topology motion marker radius must be a positive finite number.");
+    }
+    private double _markerRadius = 5.5;
 
     /// <summary>Gets or sets the optional moving route marker color. When unset, the scenario or edge color is used.</summary>
     public string? MarkerColor { get => _markerColor; set => _markerColor = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }

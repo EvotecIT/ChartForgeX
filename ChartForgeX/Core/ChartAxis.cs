@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Rendering;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -26,7 +27,16 @@ public enum ChartScaleKind {
 /// <summary>
 /// Defines renderer-neutral bounds, scale, ticks, labels, and visibility for one chart axis.
 /// </summary>
+[Fluent]
 public sealed partial class ChartAxis {
+    private string _title = string.Empty;
+
+    /// <summary>Gets or sets the axis title. An empty title draws none.</summary>
+    public string Title {
+        get => _title;
+        set => _title = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
     private double? _minimum;
     private double? _maximum;
     private ChartScaleKind _scale;

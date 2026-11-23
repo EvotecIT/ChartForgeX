@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -24,6 +25,7 @@ public enum SegmentedMetricStyle {
 /// <summary>
 /// A generic segmented metric block for progress rows, part-to-whole strips, and distribution rows.
 /// </summary>
+[Fluent]
 public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlock> {
     private readonly List<SegmentedMetricItem> _items = new();
     private string _label = string.Empty;
@@ -146,6 +148,7 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
 /// <summary>
 /// One item in a segmented metric block.
 /// </summary>
+[Fluent]
 public sealed class SegmentedMetricItem {
     private string _label;
     private string _delta = string.Empty;

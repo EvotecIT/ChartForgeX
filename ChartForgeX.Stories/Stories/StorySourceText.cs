@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Terminal;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Stories;
 
@@ -77,6 +78,7 @@ public readonly struct StorySourceSpan {
 /// Keeps exact source text together with optional dependency-free syntax spans.
 /// Tokenizers live in adapters and map their language-specific tokens into this model.
 /// </summary>
+[Fluent]
 public sealed class StorySourceText {
     private readonly List<StorySourceSpan> _spans = new();
     private string _language = string.Empty;
@@ -89,19 +91,22 @@ public sealed class StorySourceText {
     /// <summary>Gets the exact source text, including whitespace.</summary>
     public string Text { get; }
 
-    /// <summary>Gets the optional language identifier.</summary>
-    public string Language => _language;
+    /// <summary>Gets or sets the optional language identifier used by hosts and accessibility output. Blank values clear it; values are trimmed.</summary>
+    public string Language {
+        get => _language;
+        set => _language = string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
 
     /// <summary>Gets ordered, non-overlapping syntax spans.</summary>
     public IReadOnlyList<StorySourceSpan> Spans => _spans;
 
     /// <summary>Creates source text without language-specific dependencies.</summary>
     public static StorySourceText Create(string text, string? language = null) =>
-        new StorySourceText(text).WithLanguage(language);
+        new StorySourceText(text) { Language = language ?? string.Empty };
 
     /// <summary>Sets an optional language identifier used by hosts and accessibility output.</summary>
     public StorySourceText WithLanguage(string? language) {
-        _language = string.IsNullOrWhiteSpace(language) ? string.Empty : language!.Trim();
+        Language = language ?? string.Empty;
         return this;
     }
 

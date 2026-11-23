@@ -1,9 +1,11 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures transient HTML emphasis without changing native SVG or PNG paint.</summary>
+[Fluent]
 public sealed class HtmlChartHighlightOptions {
     /// <summary>
     /// Gets or sets the emphasis mode. Root-branch emphasis applies to Sunburst node targets;
@@ -45,6 +47,7 @@ public enum HtmlChartHighlightMode {
 }
 
 /// <summary>Sparse overrides for HTML highlight paint; null retains the preceding style.</summary>
+[Fluent]
 public sealed class HtmlChartHighlightStyle {
     private double? _strokeWidth;
     private double? _opacity;

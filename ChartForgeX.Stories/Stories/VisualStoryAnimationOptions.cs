@@ -1,36 +1,73 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Stories;
 
 /// <summary>Configures animated raster export for a generic visual story.</summary>
+[Fluent]
 public sealed class VisualStoryAnimationOptions {
     internal const double DefaultTransitionSeconds = 0.24;
     internal const double DefaultEndHoldSeconds = 1.5;
 
-    /// <summary>Gets the requested frame rate.</summary>
-    public int FramesPerSecond { get; private set; } = 6;
+    private int _framesPerSecond = 6;
+    private double _endHoldSeconds = DefaultEndHoldSeconds;
+    private int _outputScale = 1;
+    private int _maximumFrames = 240;
+    private double _transitionSeconds = DefaultTransitionSeconds;
 
-    /// <summary>Gets whether the animation repeats.</summary>
-    public bool Loop { get; private set; } = true;
+    /// <summary>Gets or sets the requested frame rate, from 2 to 30.</summary>
+    public int FramesPerSecond {
+        get => _framesPerSecond;
+        set {
+            if (value < 2 || value > 30) throw new ArgumentOutOfRangeException(nameof(value));
+            _framesPerSecond = value;
+        }
+    }
 
-    /// <summary>Gets the completed-state hold time.</summary>
-    public double EndHoldSeconds { get; private set; } = DefaultEndHoldSeconds;
+    /// <summary>Gets or sets whether the animation repeats.</summary>
+    public bool Loop { get; set; } = true;
 
-    /// <summary>Gets the raster output density multiplier.</summary>
-    public int OutputScale { get; private set; } = 1;
+    /// <summary>Gets or sets how long the completed scene remains visible, from 0 to 10 seconds.</summary>
+    public double EndHoldSeconds {
+        get => _endHoldSeconds;
+        set {
+            FiniteRange(value, 0, 10, nameof(value));
+            _endHoldSeconds = value;
+        }
+    }
 
-    /// <summary>Gets the maximum sampled frame count; export produces frames one at a time.</summary>
-    public int MaximumFrames { get; private set; } = 240;
+    /// <summary>Gets or sets the raster output density multiplier, from 1 to 4.</summary>
+    public int OutputScale {
+        get => _outputScale;
+        set {
+            if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value));
+            _outputScale = value;
+        }
+    }
 
-    /// <summary>Gets the cross-fade duration between scenes.</summary>
-    public double TransitionSeconds { get; private set; } = DefaultTransitionSeconds;
+    /// <summary>Gets or sets the maximum sampled frame count, from 2 to 600; export produces frames one at a time.</summary>
+    public int MaximumFrames {
+        get => _maximumFrames;
+        set {
+            if (value < 2 || value > 600) throw new ArgumentOutOfRangeException(nameof(value));
+            _maximumFrames = value;
+        }
+    }
+
+    /// <summary>Gets or sets the cross-fade duration between scenes, from 0 to 1 second.</summary>
+    public double TransitionSeconds {
+        get => _transitionSeconds;
+        set {
+            FiniteRange(value, 0, 1, nameof(value));
+            _transitionSeconds = value;
+        }
+    }
 
     /// <summary>Creates options with documentation and Discord-friendly defaults.</summary>
     public static VisualStoryAnimationOptions Create() => new();
 
     /// <summary>Sets the requested frame rate.</summary>
     public VisualStoryAnimationOptions WithFramesPerSecond(int framesPerSecond) {
-        if (framesPerSecond < 2 || framesPerSecond > 30) throw new ArgumentOutOfRangeException(nameof(framesPerSecond));
         FramesPerSecond = framesPerSecond;
         return this;
     }
@@ -43,28 +80,24 @@ public sealed class VisualStoryAnimationOptions {
 
     /// <summary>Sets how long the completed scene remains visible.</summary>
     public VisualStoryAnimationOptions WithEndHold(double seconds) {
-        FiniteRange(seconds, 0, 10, nameof(seconds));
         EndHoldSeconds = seconds;
         return this;
     }
 
     /// <summary>Sets the raster output density multiplier.</summary>
     public VisualStoryAnimationOptions WithOutputScale(int scale) {
-        if (scale < 1 || scale > 4) throw new ArgumentOutOfRangeException(nameof(scale));
         OutputScale = scale;
         return this;
     }
 
     /// <summary>Sets the maximum sampled frame count.</summary>
     public VisualStoryAnimationOptions WithMaximumFrames(int maximumFrames) {
-        if (maximumFrames < 2 || maximumFrames > 600) throw new ArgumentOutOfRangeException(nameof(maximumFrames));
         MaximumFrames = maximumFrames;
         return this;
     }
 
     /// <summary>Sets the cross-fade duration between scenes.</summary>
     public VisualStoryAnimationOptions WithTransition(double seconds) {
-        FiniteRange(seconds, 0, 1, nameof(seconds));
         TransitionSeconds = seconds;
         return this;
     }

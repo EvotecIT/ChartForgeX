@@ -2,7 +2,8 @@
   <PropertyGroup>
     <ChartForgeXProductVersion>5.0.0</ChartForgeXProductVersion>
     <!-- Build-time generator for the shared ThemeMode, Tone and Icon vocabulary; never shipped. -->
-    <PowerForgeGeneratorsVersion>3.0.195</PowerForgeGeneratorsVersion>
+    <PowerForgeGeneratorsVersion>3.0.195.1</PowerForgeGeneratorsVersion>
+    <RestoreAdditionalProjectSources>$(HOME)/Developer/Scratch/fluent-generator/feed</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'ChartForgeX' Or '$(MSBuildProjectName)' == 'ChartForgeX.Visuals' Or '$(MSBuildProjectName)' == 'ChartForgeX.Stories' Or '$(MSBuildProjectName)' == 'ChartForgeX.Interactivity' Or '$(MSBuildProjectName)' == 'ChartForgeX.Interactivity.Html' Or '$(MSBuildProjectName)' == 'ChartForgeX.Markup' Or '$(MSBuildProjectName)' == 'ChartForgeX.Mermaid' Or '$(MSBuildProjectName)' == 'ChartForgeX.Markup.Mermaid' Or '$(MSBuildProjectName)' == 'ChartForgeX.Markup.Cli'">

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -16,6 +17,7 @@ public enum RailroadRuleComparison {
 /// <remarks>Native layout accepts up to 512 rules, 32768 expression occurrences and 128 nesting levels.
 /// References and repetition counts remain symbolic. Measure or call WithNaturalSize after changing
 /// rules, padding or typography; a smaller explicit frame is rejected instead of clipping grammar.</remarks>
+[Fluent]
 public sealed class RailroadDiagramBlock : VisualBlock<RailroadDiagramBlock> {
     private readonly List<RailroadRule> _rules = new();
     private readonly IReadOnlyList<RailroadRule> _view;

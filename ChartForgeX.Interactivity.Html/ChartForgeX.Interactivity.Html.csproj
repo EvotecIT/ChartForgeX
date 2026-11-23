@@ -134,4 +134,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.39-patch-validation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.40-api.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PowerForge.Generators" Version="$(PowerForgeGeneratorsVersion)" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

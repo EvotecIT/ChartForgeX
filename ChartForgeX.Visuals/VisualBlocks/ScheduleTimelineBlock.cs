@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A dense dashboard schedule timeline with time-of-day axis, grid lines, lanes, and event pills.
 /// </summary>
+[Fluent]
 public sealed class ScheduleTimelineBlock : FactualVisualBlock<ScheduleTimelineBlock> {
     private readonly List<ScheduleTimelineEvent> _events = new();
     private readonly List<string> _headerActions = new();

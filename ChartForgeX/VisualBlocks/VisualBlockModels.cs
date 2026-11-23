@@ -5,6 +5,7 @@ using ChartForgeX.Accessibility;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -110,6 +111,7 @@ public interface IVisualBlock : ChartForgeX.Rendering.IStaticVisualSource {
 /// Base class for fluent visual block models.
 /// </summary>
 /// <typeparam name="TSelf">The concrete visual block type.</typeparam>
+[Fluent]
 public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBlock<TSelf> {
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
@@ -127,6 +129,7 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
     }
 
     /// <summary>Gets shared rendering options.</summary>
+    [FluentInline]
     public VisualBlockOptions Options { get; } = new();
 
     /// <summary>Gets a concise accessibility label.</summary>

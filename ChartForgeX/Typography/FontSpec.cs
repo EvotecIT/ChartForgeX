@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Typography;
 
 /// <summary>
 /// Identifies a font without depending on a platform drawing framework.
 /// </summary>
+[Fluent]
 public sealed partial class FontSpec {
     private string _family = "system-ui, sans-serif";
     private string? _filePath;

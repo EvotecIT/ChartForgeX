@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures HTML tooltip anchoring, ordered placement fallback, and screen offsets.</summary>
+[Fluent]
 public sealed class HtmlChartTooltipPositionOptions {
     private HtmlChartTooltipAnchor _anchor;
     private ReadOnlyCollection<HtmlChartTooltipPlacement> _placements = Array.AsReadOnly(new[] {

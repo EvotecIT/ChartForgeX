@@ -714,6 +714,78 @@ public static partial class TopologyChartExtensions {
         return chart;
     }
 
+    /// <summary>Configures the node with the given id.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <param name="nodeId">The node id.</param>
+    /// <param name="configure">Configures the node in place.</param>
+    /// <returns>The same chart.</returns>
+    /// <exception cref="ArgumentException">No node has the id.</exception>
+    public static TopologyChart UpdateNode(this TopologyChart chart, string nodeId, Action<TopologyNode> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(RequiredNode(chart, nodeId));
+        return chart;
+    }
+
+    /// <summary>Configures every node of the given kind.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <param name="kind">The node kind to match.</param>
+    /// <param name="configure">Configures each matching node in place.</param>
+    /// <returns>The same chart.</returns>
+    public static TopologyChart UpdateNodes(this TopologyChart chart, TopologyNodeKind kind, Action<TopologyNode> configure) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        foreach (var node in chart.Nodes) {
+            if (node.Kind == kind) configure(node);
+        }
+
+        return chart;
+    }
+
+    /// <summary>Configures the edge with the given id.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <param name="edgeId">The edge id.</param>
+    /// <param name="configure">Configures the edge in place.</param>
+    /// <returns>The same chart.</returns>
+    /// <exception cref="ArgumentException">No edge has the id.</exception>
+    public static TopologyChart UpdateEdge(this TopologyChart chart, string edgeId, Action<TopologyEdge> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(RequiredEdge(chart, edgeId));
+        return chart;
+    }
+
+    /// <summary>Configures every edge of the given kind.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <param name="kind">The edge kind to match.</param>
+    /// <param name="configure">Configures each matching edge in place.</param>
+    /// <returns>The same chart.</returns>
+    public static TopologyChart UpdateEdges(this TopologyChart chart, TopologyEdgeKind kind, Action<TopologyEdge> configure) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ValidateEnum(typeof(TopologyEdgeKind), kind, nameof(kind), "Topology edge kinds");
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        foreach (var edge in chart.Edges) {
+            if (edge.Kind == kind) configure(edge);
+        }
+
+        return chart;
+    }
+
+    /// <summary>Configures the group with the given id.</summary>
+    /// <param name="chart">The chart.</param>
+    /// <param name="groupId">The group id.</param>
+    /// <param name="configure">Configures the group in place.</param>
+    /// <returns>The same chart.</returns>
+    /// <exception cref="ArgumentException">No group has the id.</exception>
+    public static TopologyChart UpdateGroup(this TopologyChart chart, string groupId, Action<TopologyGroup> configure) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var group = chart.Groups.FirstOrDefault(candidate => string.Equals(candidate.Id, groupId, StringComparison.Ordinal))
+            ?? throw new ArgumentException("Topology group '" + groupId + "' was not found.", nameof(groupId));
+        configure(group);
+        return chart;
+    }
+
     private static void ValidateCoordinate(double longitude, double latitude) {
         if (double.IsNaN(longitude) || double.IsInfinity(longitude)) throw new ArgumentOutOfRangeException(nameof(longitude), longitude, "Longitude must be a finite number.");
         if (double.IsNaN(latitude) || double.IsInfinity(latitude)) throw new ArgumentOutOfRangeException(nameof(latitude), latitude, "Latitude must be a finite number.");

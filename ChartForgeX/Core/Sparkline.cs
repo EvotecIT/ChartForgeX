@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -15,6 +16,7 @@ public enum SparklineStyle {
 }
 
 /// <summary>A compact chart over the shared Cartesian compiler, with explicit missing-observation semantics.</summary>
+[Fluent]
 public sealed class Sparkline : IVisualRenderable {
     private SparklineStyle _style;
 

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Terminal;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Stories;
 
@@ -120,6 +121,7 @@ public sealed class VisualStoryOutcome {
 /// <summary>
 /// Models a resolved, deterministic visual story. Execution and tokenization belong to optional adapters.
 /// </summary>
+[Fluent]
 public sealed partial class VisualStory {
     private readonly List<VisualStoryScene> _scenes = new();
     private readonly List<VisualStoryOutcome> _outcomes = new();
@@ -131,25 +133,44 @@ public sealed partial class VisualStory {
     /// <summary>Gets the story title.</summary>
     public string Title { get; }
 
-    /// <summary>Gets the optional story description.</summary>
-    public string Description { get; private set; } = string.Empty;
+    private string _description = string.Empty;
+    private int _width = 1200;
+    private int _height = 675;
 
-    /// <summary>Gets the logical output width.</summary>
-    public int Width { get; private set; } = 1200;
+    /// <summary>Gets or sets the accessible story description.</summary>
+    public string Description {
+        get => _description;
+        set => _description = VisualStorySurface.RequireText(value, nameof(value));
+    }
 
-    /// <summary>Gets the logical output height.</summary>
-    public int Height { get; private set; } = 675;
+    /// <summary>Gets or sets the logical output width, from 480 to 3840.</summary>
+    public int Width {
+        get => _width;
+        set {
+            if (value < 480 || value > 3840) throw new ArgumentOutOfRangeException(nameof(value));
+            _width = value;
+        }
+    }
 
-    /// <summary>Gets whether split panels stack in a portrait viewport.</summary>
-    public bool ReflowPanels { get; private set; }
+    /// <summary>Gets or sets the logical output height, from 320 to 2160.</summary>
+    public int Height {
+        get => _height;
+        set {
+            if (value < 320 || value > 2160) throw new ArgumentOutOfRangeException(nameof(value));
+            _height = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether split panels stack in a portrait viewport without changing explicit stacked layouts.</summary>
+    public bool ReflowPanels { get; set; }
 
     /// <summary>Sets a sharing format. Authoring stays in logical units; raster scale controls pixel density.</summary>
     public VisualStory WithFormat(VisualStoryFormat format, int shortSide = 720) {
         if (!Enum.IsDefined(typeof(VisualStoryFormat), format)) throw new ArgumentOutOfRangeException(nameof(format));
         if (shortSide < 480 || shortSide > 1215) throw new ArgumentOutOfRangeException(nameof(shortSide));
         var longSide = (int)Math.Round(shortSide * 16d / 9);
-        WithSize(format == VisualStoryFormat.Widescreen ? longSide : shortSide,
-            format == VisualStoryFormat.Portrait ? longSide : shortSide);
+        Width = format == VisualStoryFormat.Widescreen ? longSide : shortSide;
+        Height = format == VisualStoryFormat.Portrait ? longSide : shortSide;
         ReflowPanels = true; return this;
     }
 
@@ -174,7 +195,7 @@ public sealed partial class VisualStory {
 
     /// <summary>Sets the accessible story description.</summary>
     public VisualStory WithDescription(string description) {
-        Description = VisualStorySurface.RequireText(description, nameof(description));
+        Description = description;
         return this;
     }
 

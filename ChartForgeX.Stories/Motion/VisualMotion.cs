@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Motion;
 
@@ -39,6 +40,7 @@ public enum VisualMotionEasing {
 }
 
 /// <summary>Describes one deterministic motion cue for a named target.</summary>
+[Fluent]
 public sealed class VisualMotionCue {
     private string _targetId;
     private VisualMotionEffect _effect;

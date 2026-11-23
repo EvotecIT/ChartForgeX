@@ -97,10 +97,18 @@ public sealed class TopologyRenderOptions {
     public bool WrapNodeLabels { get; set; }
 
     /// <summary>Gets or sets the maximum number of rendered title rows for card, compact-card, tile, and icon-label node text.</summary>
-    public int MaxNodeLabelLines { get; set; } = 2;
+    public int MaxNodeLabelLines {
+        get => _maxNodeLabelLines;
+        set => _maxNodeLabelLines = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), "Maximum node label lines must be at least 1.");
+    }
+    private int _maxNodeLabelLines = 2;
 
     /// <summary>Gets or sets the maximum number of rendered subtitle rows for card and tile node text.</summary>
-    public int MaxNodeSubtitleLines { get; set; } = 2;
+    public int MaxNodeSubtitleLines {
+        get => _maxNodeSubtitleLines;
+        set => _maxNodeSubtitleLines = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), "Maximum node subtitle lines must be at least 1.");
+    }
+    private int _maxNodeSubtitleLines = 2;
 
     /// <summary>Gets or sets how card and compact-card node subtitles should be rendered.</summary>
     public TopologyCardSubtitleMode CardSubtitleMode { get; set; } = TopologyCardSubtitleMode.Text;
@@ -144,6 +152,22 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether rendered topology content should be uniformly fitted to the requested viewport.</summary>
     public bool FitContentToViewport { get; set; }
 
+    private TopologyHtmlOptions _html = new();
+
+    /// <summary>Gets or sets the interactive HTML page controls, panels and content security settings.</summary>
+    public TopologyHtmlOptions Html {
+        get => _html;
+        set => _html = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    private TopologyGeographyOptions _geography = new();
+
+    /// <summary>Gets or sets the geographic callouts and region hulls drawn on geographic layouts.</summary>
+    public TopologyGeographyOptions Geography {
+        get => _geography;
+        set => _geography = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
     /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions. Defaults to static, script-free HTML.</summary>
     public bool EnableHtmlInteractions { get; set; }
 
@@ -178,7 +202,14 @@ public sealed class TopologyRenderOptions {
     public bool EnableHtmlScenarioControls { get; set; } = true;
 
     /// <summary>Gets or sets how interactive HTML pages should render scenario controls.</summary>
-    public TopologyHtmlScenarioControlMode HtmlScenarioControlMode { get; set; } = TopologyHtmlScenarioControlMode.Buttons;
+    public TopologyHtmlScenarioControlMode HtmlScenarioControlMode {
+        get => _htmlScenarioControlMode;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _htmlScenarioControlMode = value;
+        }
+    }
+    private TopologyHtmlScenarioControlMode _htmlScenarioControlMode = TopologyHtmlScenarioControlMode.Buttons;
 
     /// <summary>Gets or sets whether interactive HTML pages should render a compact scenario detail panel when scenarios are present.</summary>
     public bool EnableHtmlScenarioPanel { get; set; } = true;
@@ -193,13 +224,34 @@ public sealed class TopologyRenderOptions {
     public bool EnableHtmlFullscreenControl { get; set; }
 
     /// <summary>Gets or sets where viewport, fullscreen, and export controls are placed in interactive HTML output.</summary>
-    public TopologyHtmlControlPlacement HtmlControlPlacement { get; set; } = TopologyHtmlControlPlacement.TopLeft;
+    public TopologyHtmlControlPlacement HtmlControlPlacement {
+        get => _htmlControlPlacement;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _htmlControlPlacement = value;
+        }
+    }
+    private TopologyHtmlControlPlacement _htmlControlPlacement = TopologyHtmlControlPlacement.TopLeft;
 
     /// <summary>Gets or sets the view an interactive HTML topology with viewport controls opens at.</summary>
-    public TopologyHtmlOpeningView HtmlOpeningView { get; set; } = TopologyHtmlOpeningView.Readable;
+    public TopologyHtmlOpeningView HtmlOpeningView {
+        get => _htmlOpeningView;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _htmlOpeningView = value;
+        }
+    }
+    private TopologyHtmlOpeningView _htmlOpeningView = TopologyHtmlOpeningView.Readable;
 
     /// <summary>Gets or sets how the mouse wheel acts on an interactive HTML topology with viewport controls.</summary>
-    public TopologyHtmlWheelZoom HtmlWheelZoom { get; set; } = TopologyHtmlWheelZoom.Always;
+    public TopologyHtmlWheelZoom HtmlWheelZoom {
+        get => _htmlWheelZoom;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _htmlWheelZoom = value;
+        }
+    }
+    private TopologyHtmlWheelZoom _htmlWheelZoom = TopologyHtmlWheelZoom.Always;
 
     /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
     public bool EnableHtmlScenarioUrlState { get; set; }
@@ -213,7 +265,12 @@ public sealed class TopologyRenderOptions {
     public string? HtmlNonce { get; set; }
 
     /// <summary>Gets or sets the optional scenario id to activate when an interactive HTML page loads.</summary>
-    public string? ActiveScenarioId { get; set; }
+    /// <remarks>Ids are trimmed and may contain only letters, digits, dots, underscores and hyphens; null clears the selection.</remarks>
+    public string? ActiveScenarioId {
+        get => _activeScenarioId;
+        set => _activeScenarioId = value == null ? null : TopologyRenderOptionsExtensions.RequiredScenarioToken(value, nameof(value));
+    }
+    private string? _activeScenarioId;
 
     /// <summary>Gets or sets whether geographic topology layouts should render map callout summaries for coordinated groups.</summary>
     public bool IncludeGeographicCallouts { get; set; }
@@ -343,10 +400,21 @@ public sealed class TopologyRenderOptions {
     public bool UseForceGraphPresentation { get; set; }
 
     /// <summary>Gets or sets the deterministic force-directed solver profile.</summary>
-    public TopologyForceLayoutProfile ForceLayoutProfile { get; set; } = TopologyForceLayoutProfile.Balanced;
+    public TopologyForceLayoutProfile ForceLayoutProfile {
+        get => _forceLayoutProfile;
+        set {
+            TopologyModelGuards.EnumDefined(value, nameof(value));
+            _forceLayoutProfile = value;
+        }
+    }
+    private TopologyForceLayoutProfile _forceLayoutProfile = TopologyForceLayoutProfile.Balanced;
 
     /// <summary>Gets or sets an optional force-directed solver iteration override.</summary>
-    public int? ForceLayoutIterations { get; set; }
+    public int? ForceLayoutIterations {
+        get => _forceLayoutIterations;
+        set => _forceLayoutIterations = value is null || value.Value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), "Force layout iterations must be greater than zero.");
+    }
+    private int? _forceLayoutIterations;
 
     /// <summary>Gets or sets an optional root node id for relationship-radial layouts.</summary>
     public string? RelationshipRootNodeId { get; set; }
@@ -445,6 +513,8 @@ public sealed class TopologyRenderOptions {
     public TopologyRenderOptions Clone() {
         var snapshot = (TopologyRenderOptions)MemberwiseClone();
         snapshot._edgeVisualStyle = _edgeVisualStyle?.Clone();
+        snapshot._html = _html.Clone();
+        snapshot._geography = _geography.Clone();
         snapshot.View = View?.Clone();
         snapshot.IconCatalog = IconCatalog?.Clone();
         snapshot.SvgColorVariables = SvgColorVariables?.Clone();

@@ -4,10 +4,18 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets the canonical marker configuration for numeric point glyphs. Dotted maps support only the existing radius override.</summary>
-    public ChartMarkerOptions Markers { get; private set; } = new();
+    public ChartMarkerOptions Markers {
+        get => _markers;
+        set => _markers = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartMarkerOptions _markers = new();
 
     /// <summary>Gets the radar form, fill and outline configuration for this series.</summary>
-    public ChartRadarOptions Radar { get; private set; } = new();
+    public ChartRadarOptions Radar {
+        get => _radar;
+        set => _radar = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartRadarOptions _radar = new();
 
     /// <summary>Configures marker geometry, visibility and paint without changing the source observations.</summary>
     /// <param name="configure">The configuration callback.</param>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.VisualBlocks;
 using ChartForgeX.Core;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -86,6 +87,7 @@ public enum FlowArtifactConnectorKind {
 /// <summary>
 /// Represents a product-neutral workflow or process flow artifact.
 /// </summary>
+[Fluent]
 public sealed partial class FlowArtifact {
     private string _id = string.Empty;
     private string _title = string.Empty;

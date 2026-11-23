@@ -101,7 +101,6 @@ public static class ChartInteractionScenarioExtensions {
     /// <summary>Controls whether the route highlights targets or spotlights them by dimming other data marks.</summary>
     public static ChartInteractionScenario WithFocusMode(this ChartInteractionScenario scenario, ChartInteractionScenarioFocusMode focusMode) {
         if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        if (!Enum.IsDefined(typeof(ChartInteractionScenarioFocusMode), focusMode)) throw new ArgumentOutOfRangeException(nameof(focusMode));
         scenario.FocusMode = focusMode;
         return scenario;
     }

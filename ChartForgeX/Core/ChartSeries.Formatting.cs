@@ -12,26 +12,26 @@ public sealed partial class ChartSeries {
     private IReadOnlyList<string?>? _preparedRelationshipLabels;
     private IReadOnlyList<string?>? _preparedRelationshipTooltips;
 
-    /// <summary>Sets the per-observation data-label formatter. Null clears the callback.</summary>
+    /// <summary>Gets or sets the per-observation data-label formatter. Null clears the callback.</summary>
     /// <remarks>Prepare invokes the callback once per authored observation and relationship link, including hidden captions.
     /// A null result retains the authored label or family default; an empty result suppresses the caption.
     /// Prepared exports reuse captured strings. Exceptions propagate from Prepare without changing authored labels.
     /// Keep callbacks pure and captured configuration immutable.</remarks>
-    /// <param name="formatter">The formatter, or null to restore authored labels and family defaults.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithDataLabelFormatter(Func<ChartValueContext, string?>? formatter) {
-        _dataLabelFormatter = formatter; return this;
-    }
+    [PowerForge.Fluent.Fluent("DataLabelBy")]
+    public Func<ChartValueContext, string?>? DataLabelFormatter { get => _dataLabelFormatter; set => _dataLabelFormatter = value; }
 
-    /// <summary>Sets the per-observation plain-text tooltip formatter. Null clears the callback.</summary>
+    /// <summary>Gets or sets the per-observation plain-text tooltip formatter. Null clears the callback.</summary>
     /// <remarks>Prepare invokes the callback once per authored observation and relationship link. Null retains the existing tooltip;
     /// empty suppresses it. Captured text is escaped by static SVG export and reused by the optional HTML adapter.
     /// The formatter does not change raw values, accessible labels or observation identity.</remarks>
-    /// <param name="formatter">The formatter, or null to restore existing tooltip behavior.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithTooltipFormatter(Func<ChartValueContext, string?>? formatter) {
-        _tooltipFormatter = formatter; return this;
-    }
+    [PowerForge.Fluent.Fluent("TooltipBy")]
+    public Func<ChartValueContext, string?>? TooltipFormatter { get => _tooltipFormatter; set => _tooltipFormatter = value; }
+
+    /// <summary>Migration shim removed by the fluent rewrite.</summary>
+    public ChartSeries WithDataLabelFormatter(Func<ChartValueContext, string?>? formatter) { DataLabelFormatter = formatter; return this; }
+
+    /// <summary>Migration shim removed by the fluent rewrite.</summary>
+    public ChartSeries WithTooltipFormatter(Func<ChartValueContext, string?>? formatter) { TooltipFormatter = formatter; return this; }
 
     internal bool HasFormatters => _dataLabelFormatter != null || _tooltipFormatter != null;
     internal IReadOnlyList<string?> PreparedLabels => _preparedLabels ?? PointLabels;

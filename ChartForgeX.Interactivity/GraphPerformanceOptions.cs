@@ -1,8 +1,10 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes graph explorer performance budgets that adapters can enforce before interaction becomes expensive.
 /// </summary>
+[Fluent]
 public sealed class GraphPerformanceOptions {
     /// <summary>Gets or sets the desired frame budget in milliseconds for interactive graph work.</summary>
     public int FrameBudgetMilliseconds { get; set; } = 16;

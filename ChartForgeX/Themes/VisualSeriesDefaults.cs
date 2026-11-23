@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Themes;
 
@@ -14,6 +15,7 @@ namespace ChartForgeX.Themes;
 /// Chart-level data-label styling and an authored bar corner radius also take precedence over these defaults.
 /// A theme snapshots its defaults, so later edits to this instance do not change an existing theme.
 /// </remarks>
+[Fluent]
 public sealed class VisualSeriesDefaults {
     private double? _strokeWidth, _cornerRadius;
     private ChartInterpolation? _interpolation;

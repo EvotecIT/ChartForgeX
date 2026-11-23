@@ -1,9 +1,11 @@
 using System;
 using ChartForgeX.Interactivity;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Controls script-free SVG and PNG graph output.</summary>
+[Fluent]
 public sealed class GraphSceneStaticRenderOptions {
     /// <summary>Gets or sets the output width in pixels.</summary>
     public int Width { get; set; } = 1600;
@@ -30,6 +32,7 @@ public sealed class GraphSceneStaticRenderOptions {
 }
 
 /// <summary>Controls a set of deterministic graph stage image files.</summary>
+[Fluent]
 public sealed class GraphSceneStageImageOptions {
     /// <summary>Gets hierarchy stage planning options.</summary>
     public GraphSceneStageOptions Stages { get; } = new();

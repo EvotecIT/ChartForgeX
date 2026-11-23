@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Defines reusable visual tokens for bar and horizontal-bar marks.
 /// </summary>
+[Fluent]
 public sealed class ChartBarVisualStyle {
     private ChartBarStyle _kind = ChartBarStyle.Flat;
     private double _bodyOpacity = 0.18;

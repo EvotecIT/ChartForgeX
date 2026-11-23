@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A deterministic packet-layout visual block made of contiguous labeled bit fields.
 /// </summary>
+[Fluent]
 public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
     private readonly List<PacketLayoutField> _fields = new();
     private int _bitsPerRow = 32;

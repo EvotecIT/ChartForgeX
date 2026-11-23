@@ -2,6 +2,7 @@ using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Terminal;
 
@@ -114,6 +115,7 @@ public sealed class TerminalStoryStep {
 /// <summary>
 /// Models a deterministic, script-free animated terminal presentation.
 /// </summary>
+[Fluent]
 public sealed partial class TerminalStory {
     private const int MaximumTabTitleLength = 256;
     private const string DefaultTabId = "main";
@@ -144,31 +146,82 @@ public sealed partial class TerminalStory {
     /// <summary>Gets the tab that will be active when the completed story is shown.</summary>
     public string ActiveTabId => _activeTabId;
 
-    /// <summary>Gets the terminal theme.</summary>
-    public VisualTheme Theme => InitialTab.Theme;
-    /// <summary>Gets the explicit initial-tab appearance.</summary>
-    public ThemeMode ThemeMode => InitialTab.ThemeMode;
+    /// <summary>Gets or sets the initial-tab terminal theme. Set it before timeline authoring.</summary>
+    public VisualTheme Theme {
+        get => FirstTab.Theme;
+        set {
+            EnsureInitialConfiguration();
+            FirstTab.Theme = value ?? throw new ArgumentNullException(nameof(value));
+        }
+    }
+    /// <summary>Gets or sets the explicit initial-tab light or dark appearance. Set it before timeline authoring.</summary>
+    public ThemeMode ThemeMode {
+        get => FirstTab.ThemeMode;
+        set {
+            EnsureInitialConfiguration();
+            FirstTab.ThemeMode = value;
+        }
+    }
     /// <summary>Gets the initial-tab cursor and title-bar styling.</summary>
-    public TerminalStyleOptions Style => InitialTab.Style;
-    internal ResolvedTerminalStyle ResolvedStyle => InitialTab.ResolvedStyle;
+    /// <remarks>Setting the style stores a copy and must happen before timeline authoring.</remarks>
+    public TerminalStyleOptions Style {
+        get => FirstTab.Style;
+        set {
+            EnsureInitialConfiguration();
+            FirstTab.Style = (value ?? throw new ArgumentNullException(nameof(value))).Clone();
+        }
+    }
+    internal ResolvedTerminalStyle ResolvedStyle => FirstTab.ResolvedStyle;
 
-    /// <summary>Gets the visible terminal window chrome.</summary>
-    public TerminalWindowStyle WindowStyle { get; private set; } = TerminalWindowStyle.MacOS;
+    private TerminalWindowStyle _windowStyle = TerminalWindowStyle.MacOS;
+    private int _width = 886;
+    private double _initialDelaySeconds = 0.35;
+    private double _charactersPerSecond = 42;
+    private double _lineDelaySeconds = 0.08;
+    private double _tabHoldSeconds = 1.2;
+    private int _pngOutputScale = 2;
 
-    /// <summary>Gets the title-bar text.</summary>
-    public string Title => InitialTab.Title;
+    /// <summary>Gets or sets the visible terminal window chrome independently of colors and command syntax.</summary>
+    public TerminalWindowStyle WindowStyle {
+        get => _windowStyle;
+        set {
+            TerminalWindowChrome.Validate(value);
+            _windowStyle = value;
+        }
+    }
 
-    /// <summary>Gets the working directory shown in prompts.</summary>
-    public string WorkingDirectory => InitialTab.WorkingDirectory;
+    /// <summary>Gets or sets the initial-tab title-bar text. Set it before timeline authoring.</summary>
+    public string Title {
+        get => FirstTab.Title;
+        set {
+            EnsureInitialConfiguration();
+            FirstTab.Title = TabTitle(value, nameof(value));
+        }
+    }
+
+    /// <summary>Gets or sets the working directory shown in initial-tab prompts. Set it before timeline authoring.</summary>
+    public string WorkingDirectory {
+        get => FirstTab.WorkingDirectory;
+        set {
+            EnsureInitialConfiguration();
+            FirstTab.WorkingDirectory = OneLine(value, nameof(value), allowEmpty: false);
+        }
+    }
 
     /// <summary>Gets the prompt dialect.</summary>
-    public TerminalDialect Dialect => InitialTab.Dialect;
+    public TerminalDialect Dialect => FirstTab.Dialect;
 
     /// <summary>Gets the explicit custom prompt, when configured.</summary>
-    public string CustomPrompt => InitialTab.CustomPrompt;
+    public string CustomPrompt => FirstTab.CustomPrompt;
 
-    /// <summary>Gets the logical SVG width.</summary>
-    public int Width { get; private set; } = 886;
+    /// <summary>Gets or sets the logical SVG width, from 480 to 1800.</summary>
+    public int Width {
+        get => _width;
+        set {
+            if (value < 480 || value > 1800) throw new ArgumentOutOfRangeException(nameof(value), "Terminal story width must be between 480 and 1800.");
+            _width = value;
+        }
+    }
 
     /// <summary>Gets the terminal font size.</summary>
     public double FontSize { get; private set; } = 14;
@@ -176,31 +229,60 @@ public sealed partial class TerminalStory {
     /// <summary>Gets the terminal line height.</summary>
     public double LineHeight { get; private set; } = 16.8;
 
-    /// <summary>Gets the initial animation delay.</summary>
-    public double InitialDelaySeconds { get; private set; } = 0.35;
+    /// <summary>Gets or sets the initial animation delay, from 0 to 10 seconds.</summary>
+    public double InitialDelaySeconds {
+        get => _initialDelaySeconds;
+        set {
+            FiniteRange(value, 0, 10, nameof(value));
+            _initialDelaySeconds = value;
+        }
+    }
 
-    /// <summary>Gets the simulated typing speed.</summary>
-    public double CharactersPerSecond { get; private set; } = 42;
+    /// <summary>Gets or sets the simulated typing speed, from 5 to 200 characters per second.</summary>
+    public double CharactersPerSecond {
+        get => _charactersPerSecond;
+        set {
+            FiniteRange(value, 5, 200, nameof(value));
+            _charactersPerSecond = value;
+        }
+    }
 
-    /// <summary>Gets the delay between output lines.</summary>
-    public double LineDelaySeconds { get; private set; } = 0.08;
+    /// <summary>Gets or sets the delay between output lines, from 0 to 3 seconds.</summary>
+    public double LineDelaySeconds {
+        get => _lineDelaySeconds;
+        set {
+            FiniteRange(value, 0, 3, nameof(value));
+            _lineDelaySeconds = value;
+        }
+    }
 
-    /// <summary>Gets the minimum time completed tab content remains visible before the next tab switch.</summary>
-    public double TabHoldSeconds { get; private set; } = 1.2;
+    /// <summary>Gets or sets the minimum reading time (0 to 10 seconds) after new content appears and before the active tab changes.</summary>
+    public double TabHoldSeconds {
+        get => _tabHoldSeconds;
+        set {
+            FiniteRange(value, 0, 10, nameof(value));
+            _tabHoldSeconds = value;
+        }
+    }
 
-    /// <summary>Gets whether a final prompt and cursor are shown.</summary>
-    public bool ShowFinalPrompt { get; private set; } = true;
+    /// <summary>Gets or sets whether the completed story shows a final prompt and cursor.</summary>
+    public bool ShowFinalPrompt { get; set; } = true;
 
-    /// <summary>Gets the PNG output scale.</summary>
-    public int PngOutputScale { get; private set; } = 2;
+    /// <summary>Gets or sets the PNG output density multiplier, from 1 to 4.</summary>
+    public int PngOutputScale {
+        get => _pngOutputScale;
+        set {
+            if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value));
+            _pngOutputScale = value;
+        }
+    }
 
     /// <summary>Creates an empty terminal story.</summary>
     public static TerminalStory Create() => new();
 
     /// <summary>Sets the terminal title.</summary>
     public TerminalStory WithTitle(string title) {
-        EnsureInitialConfiguration();
-        InitialTab.Title = TabTitle(title, nameof(title));
+        Title = title;
         return this;
     }
 
@@ -210,36 +292,32 @@ public sealed partial class TerminalStory {
         ValidateEnum(dialect, nameof(dialect));
         var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
         if (dialect == TerminalDialect.Custom && normalizedPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
-        InitialTab.Dialect = dialect;
-        InitialTab.CustomPrompt = normalizedPrompt;
+        FirstTab.Dialect = dialect;
+        FirstTab.CustomPrompt = normalizedPrompt;
         return this;
     }
 
     /// <summary>Sets the working directory used by shell prompts.</summary>
     public TerminalStory WithWorkingDirectory(string workingDirectory) {
-        EnsureInitialConfiguration();
-        InitialTab.WorkingDirectory = OneLine(workingDirectory, nameof(workingDirectory), allowEmpty: false);
+        WorkingDirectory = workingDirectory;
         return this;
     }
 
     /// <summary>Sets the terminal theme.</summary>
     public TerminalStory WithTheme(VisualTheme theme, ThemeMode? mode = null) {
-        EnsureInitialConfiguration();
-        InitialTab.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue) InitialTab.ThemeMode = mode.Value;
+        Theme = theme;
+        if (mode.HasValue) ThemeMode = mode.Value;
         return this;
     }
 
     /// <summary>Sets the visible terminal window chrome independently of colors and command syntax.</summary>
     public TerminalStory WithWindowStyle(TerminalWindowStyle style) {
-        TerminalWindowChrome.Validate(style);
         WindowStyle = style;
         return this;
     }
 
     /// <summary>Sets the logical SVG width.</summary>
     public TerminalStory WithWidth(int width) {
-        if (width < 480 || width > 1800) throw new ArgumentOutOfRangeException(nameof(width), "Terminal story width must be between 480 and 1800.");
         Width = width;
         return this;
     }
@@ -255,9 +333,6 @@ public sealed partial class TerminalStory {
 
     /// <summary>Sets automatic animation timing.</summary>
     public TerminalStory WithTiming(double initialDelaySeconds, double charactersPerSecond, double lineDelaySeconds) {
-        FiniteRange(initialDelaySeconds, 0, 10, nameof(initialDelaySeconds));
-        FiniteRange(charactersPerSecond, 5, 200, nameof(charactersPerSecond));
-        FiniteRange(lineDelaySeconds, 0, 3, nameof(lineDelaySeconds));
         InitialDelaySeconds = initialDelaySeconds;
         CharactersPerSecond = charactersPerSecond;
         LineDelaySeconds = lineDelaySeconds;
@@ -301,7 +376,6 @@ public sealed partial class TerminalStory {
 
     /// <summary>Sets the minimum reading time after new content appears and before the active tab changes.</summary>
     public TerminalStory WithTabHold(double seconds) {
-        FiniteRange(seconds, 0, 10, nameof(seconds));
         TabHoldSeconds = seconds;
         return this;
     }
@@ -314,7 +388,6 @@ public sealed partial class TerminalStory {
 
     /// <summary>Sets the PNG output density multiplier.</summary>
     public TerminalStory WithPngOutputScale(int scale) {
-        if (scale < 1 || scale > 4) throw new ArgumentOutOfRangeException(nameof(scale));
         PngOutputScale = scale;
         return this;
     }
@@ -445,7 +518,7 @@ public sealed partial class TerminalStory {
         return Output("[" + bar + "] " + (fraction * 100).ToString("0", CultureInfo.InvariantCulture) + "%  " + OneLine(label, nameof(label), false), TerminalTextTone.Success);
     }
 
-    internal string Prompt() => InitialTab.Prompt();
+    internal string Prompt() => FirstTab.Prompt();
 
     internal TerminalTab GetTab(string id) => _tabsById[id];
 
@@ -529,7 +602,7 @@ public sealed partial class TerminalStory {
         return normalized;
     }
 
-    private TerminalTab InitialTab => _tabs[0];
+    private TerminalTab FirstTab => _tabs[0];
 
     private void EnsureInitialConfiguration() {
         if (_steps.Count != 0) throw new InvalidOperationException("Configure the initial terminal tab before adding story steps.");

@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A deterministic cause-and-effect fishbone diagram.
 /// </summary>
+[Fluent]
 public sealed class FishboneDiagramBlock : VisualBlock<FishboneDiagramBlock> {
     private readonly List<FishboneCause> _causes = new();
     private string _effect = string.Empty;

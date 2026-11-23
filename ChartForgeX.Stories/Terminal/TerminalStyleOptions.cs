@@ -36,11 +36,11 @@ internal sealed partial class ResolvedTerminalStyle {
 public sealed partial class TerminalStory {
     /// <summary>Chooses the initial tab's explicit light or dark appearance before timeline authoring.</summary>
     public TerminalStory WithThemeMode(ThemeMode mode) {
-        EnsureInitialConfiguration(); InitialTab.ThemeMode = mode; return this;
+        ThemeMode = mode; return this;
     }
     /// <summary>Sets independent cursor and title-bar options before timeline authoring.</summary>
     public TerminalStory WithStyle(TerminalStyleOptions style) {
-        EnsureInitialConfiguration(); InitialTab.Style = (style ?? throw new ArgumentNullException(nameof(style))).Clone(); return this;
+        Style = style; return this;
     }
 }
 

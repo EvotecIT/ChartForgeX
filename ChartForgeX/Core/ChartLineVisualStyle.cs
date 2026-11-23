@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Defines reusable visual tokens for line, area boundary, trend, and slope strokes.
 /// </summary>
+[Fluent]
 public sealed class ChartLineVisualStyle {
     private double _ambientHaloOpacity;
     private double _ambientHaloStrokeExtra;

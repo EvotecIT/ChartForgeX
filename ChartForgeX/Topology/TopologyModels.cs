@@ -20,8 +20,17 @@ public sealed partial class TopologyChart {
     /// <returns>A new topology chart.</returns>
     public static TopologyChart Create() => new();
 
-    /// <summary>Gets or sets a stable chart identifier.</summary>
-    public string? Id { get; set; }
+    /// <summary>Gets or sets a stable chart identifier. Ids are trimmed and must not be empty.</summary>
+    public string? Id {
+        get => _id;
+        set {
+            if (value == null) { _id = null; return; }
+            var trimmed = value.Trim();
+            if (trimmed.Length == 0) throw new ArgumentException("Topology chart ids must not be empty.", nameof(value));
+            _id = trimmed;
+        }
+    }
+    private string? _id;
 
     /// <summary>Gets or sets the chart title.</summary>
     public string? Title { get; set; }
@@ -94,6 +103,19 @@ public sealed class TopologyViewport {
     private double _width = 1200;
     private double _height = 700;
     private double _padding = 24;
+
+    /// <summary>Creates a viewport with the default 1200 by 700 size and 24 pixel padding.</summary>
+    public TopologyViewport() { }
+
+    /// <summary>Creates a viewport with the given size and padding.</summary>
+    /// <param name="width">The viewport width; must be positive.</param>
+    /// <param name="height">The viewport height; must be positive.</param>
+    /// <param name="padding">The viewport padding; must be zero or greater.</param>
+    public TopologyViewport(double width, double height, double padding = 24) {
+        Width = width;
+        Height = height;
+        Padding = padding;
+    }
 
     /// <summary>Gets or sets the viewport width.</summary>
     public double Width {
@@ -541,16 +563,34 @@ public sealed partial class TopologyEdge {
     }
 
     /// <summary>Gets or sets an optional named port id on the source node.</summary>
-    public string? SourcePortId { get; set; }
+    /// <remarks>Blank ids are stored as null; others are trimmed.</remarks>
+    public string? SourcePortId { get => _sourcePortId; set => _sourcePortId = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
+    private string? _sourcePortId;
 
     /// <summary>Gets or sets an optional named port id on the target node.</summary>
-    public string? TargetPortId { get; set; }
+    /// <remarks>Blank ids are stored as null; others are trimmed.</remarks>
+    public string? TargetPortId { get => _targetPortId; set => _targetPortId = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
+    private string? _targetPortId;
 
     /// <summary>Gets or sets an optional source endpoint marker. Null derives the marker from <see cref="Direction"/>.</summary>
-    public TopologyMarkerKind? SourceMarker { get; set; }
+    public TopologyMarkerKind? SourceMarker {
+        get => _sourceMarker;
+        set {
+            if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            _sourceMarker = value;
+        }
+    }
+    private TopologyMarkerKind? _sourceMarker;
 
     /// <summary>Gets or sets an optional target endpoint marker. Null derives the marker from <see cref="Direction"/>.</summary>
-    public TopologyMarkerKind? TargetMarker { get; set; }
+    public TopologyMarkerKind? TargetMarker {
+        get => _targetMarker;
+        set {
+            if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            _targetMarker = value;
+        }
+    }
+    private TopologyMarkerKind? _targetMarker;
 
     /// <summary>Gets or sets an optional edge-specific stroke width in pixels.</summary>
     public double? StrokeWidth {

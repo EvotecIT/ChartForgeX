@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Enables host-accepted progress editing without changing a source chart from browser paint.</summary>
+[Fluent]
 public sealed class HtmlChartProgressEditingOptions {
     private double _stepRatio = .01;
     /// <summary>Gets or sets whether identified progress rows expose editing gestures when connected to native preparation. Default: false.</summary>

@@ -1,9 +1,11 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures browser motion in interactive HTML. Static SVG and PNG output never animates.</summary>
 /// <remarks>Readers who ask for reduced motion see every change immediately.</remarks>
+[Fluent]
 public sealed class HtmlChartMotionOptions {
     private int _durationMilliseconds = 300;
 

@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>Controls a bounded, deterministic neighborhood of a graph node.</summary>
+[Fluent]
 public sealed class GraphSceneNeighborhoodOptions {
     /// <summary>Gets or sets the maximum undirected relationship distance from the root. Defaults to one hop.</summary>
     public int Hops { get; set; } = 1;

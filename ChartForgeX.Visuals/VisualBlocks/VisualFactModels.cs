@@ -5,6 +5,7 @@ using ChartForgeX.Accessibility;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -57,6 +58,7 @@ public enum MetricCardMicroVisualSurface {
 /// <summary>
 /// A structured, themeable table visual block.
 /// </summary>
+[Fluent]
 public sealed class ChartTable : FactualVisualBlock<ChartTable> {
     private readonly List<ChartTableColumn> _columns = new();
     private readonly List<ChartTableRow> _rows = new();
@@ -205,6 +207,7 @@ public sealed class ChartTableRow {
 /// <summary>
 /// Describes one chart table cell.
 /// </summary>
+[Fluent]
 public sealed partial class ChartTableCell {
     private string _text;
     private TextAlignment? _alignment;
@@ -248,6 +251,7 @@ public sealed partial class ChartTableCell {
 /// <summary>
 /// A themeable list visual block.
 /// </summary>
+[Fluent]
 public sealed class ChartList : FactualVisualBlock<ChartList> {
     private readonly List<ChartListItem> _items = new();
     private VisualListMarker _marker = VisualListMarker.Bullet;
@@ -331,6 +335,7 @@ public sealed class ChartListItem {
 /// <summary>
 /// A KPI card with one or more radial progress layers around a central metric.
 /// </summary>
+[Fluent]
 public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     private readonly List<ChartRadialLayer> _layers = new();
     private string _label = string.Empty;
@@ -397,6 +402,7 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
 /// <summary>
 /// A neutral composition surface for charts and visual blocks.
 /// </summary>
+[Fluent]
 public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     private readonly List<VisualGridItem> _items = new();
     private string _title = string.Empty;

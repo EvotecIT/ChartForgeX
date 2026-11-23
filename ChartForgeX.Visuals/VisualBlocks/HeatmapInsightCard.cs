@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// Dashboard heatmap card with an optional right-side insight rail and color key.
 /// </summary>
+[Fluent]
 public sealed class HeatmapInsightCard : FactualVisualBlock<HeatmapInsightCard> {
     private readonly List<string> _columns = new();
     private readonly List<HeatmapInsightRow> _rows = new();
