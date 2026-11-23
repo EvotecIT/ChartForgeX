@@ -274,6 +274,7 @@ public sealed partial class ChartAxis {
     /// <remarks>Supported vertical Cartesian series share this immutable domain. Closed gaps have no width;
     /// observations and source annotation anchors must belong to included sessions. Raw viewport bounds may lie
     /// in closures when the window still contains included time. Y/XY compression and market-calendar inference are not provided.</remarks>
+    [NoFluent]
     public ChartTimeSessionDomain? TimeSessions {
         get => _timeSessions;
         set {
@@ -286,6 +287,7 @@ public sealed partial class ChartAxis {
     /// <summary>Gets or sets ordinal or calendar-band spacing, or null for continuous elapsed time.</summary>
     /// <remarks>Requires a time scale and cannot be combined with TimeSessions. Captured domains contain at most 100,000 entries.
     /// Unit spacing preserves missing bands and rejects multiple observations from one series in the same band.</remarks>
+    [NoFluent]
     public ChartTimeSpacing? TimeSpacing {
         get => _timeSpacing;
         set {
