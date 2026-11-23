@@ -24,7 +24,7 @@ internal static partial class Program {
         series.ReplaceFlowData(Array.Empty<ChartNode>(), Array.Empty<ChartFlowLink>());
         PackageAssertions.Require(visual.ToSvg("packed-chord") == svg && visual.ToPng().SequenceEqual(png),
             "Packed Chord source/options edits changed detached geometry or native exports.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
         Console.WriteLine("Packed Chord ordering, tension, identities and detached exports passed.");
     }
 }

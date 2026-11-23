@@ -20,6 +20,6 @@ internal static partial class Program {
             && restored.Annotations[0].TargetId == "facts" && !ReferenceEquals(copy, table), "Packed native table content lost typed identity or detached source facts.");
         table.Rows[0].Cells[1].DisplayText = "changed"; node.TableContent = null;
         PackageAssertions.Require(svg == prepared.ToSvg() && png.SequenceEqual(prepared.ToPng()), "Packed table scene retained mutable source models.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
     }
 }

@@ -26,6 +26,6 @@ internal static partial class Program {
             "Schedule reversal rewrote raw source endpoints.");
         first.UpdateGanttItem(0, new ChartGanttItem(2, 5, .75));
         PackageAssertions.Require(svg == prepared.ToSvg() && png.SequenceEqual(prepared.ToPng()), "A source schedule edit changed a detached export.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
     }
 }

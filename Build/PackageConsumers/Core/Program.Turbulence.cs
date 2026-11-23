@@ -24,7 +24,7 @@ internal static partial class Program {
             "Native procedural preparation lost the retained raw-seed normalization policy.");
         PackageAssertions.Require(prepared.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)).Contains("feTurbulence"),
             "Native procedural SVG profile lost its finite source.");
-        PackageAssertions.Raster(prepared.ToPng());
+        PackageAssertions.Png(prepared.ToPng());
         var saved=prepared.ToArtifact("package-noise").ToInterchangeJson();
         var envelope=VisualArtifactInterchangeEnvelope.FromJson(saved);
         var restored=envelope.PrepareTurbulenceSource(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(32,24),0),
@@ -38,7 +38,7 @@ internal static partial class Program {
             policy.Type,policy.StitchTiles,policy.ColorSpace);
         var edited=envelope.PrepareTurbulenceSource(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(32,24),0),
             frame:new VisualFrame(transparentBackground:true)));
-        PackageAssertions.Raster(edited.ToPng());
+        PackageAssertions.Png(edited.ToPng());
         PackageAssertions.Require(edited.ToArtifact().ToInterchangeEnvelope().Presentation!.TurbulenceSource!.Seed==14,
             "Ordinary portable source edit was not retained by the current native producer.");
         const string affineSource = "<svg xmlns='http://www.w3.org/2000/svg' width='64' height='48'><defs>" +
@@ -48,7 +48,7 @@ internal static partial class Program {
         var affine = SvgRasterizer.Rasterize(affineSource, strict: true, filters: new SvgRasterFilterOptions());
         PackageAssertions.Require(affine.Diagnostics.Count == 0 && affine.Image.Pixels.Where((_, index) => index % 4 == 3).Any(alpha => alpha > 0),
             "Finite affine procedural source did not reach native pixels through the public importer.");
-        PackageAssertions.Raster(affine.Image.ToPng());
+        PackageAssertions.Png(affine.Image.ToPng());
 
     }
 }

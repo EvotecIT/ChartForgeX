@@ -18,6 +18,6 @@ internal static partial class Program {
                 && child.Y!.Value + child.Height!.Value <= parent.Y!.Value + parent.Height!.Value, "Packed nested responsibility shell escaped its actual parent.");
         var restored = saved.ToTopologyChart(); PackageAssertions.Require(restored.Groups.Single(group => group.Id == "API").ParentGroupId == "Product",
             "Packed nested Swimlane portable restoration lost parentage.");
-        PackageAssertions.Require(artifact.ToSvg() == fenced.Artifacts[0].ToSvg(), "Packed nested Swimlane direct and fence scenes diverged."); PackageAssertions.Raster(artifact.ToPng());
+        PackageAssertions.Require(artifact.ToSvg() == fenced.Artifacts[0].ToSvg(), "Packed nested Swimlane direct and fence scenes diverged."); PackageAssertions.Png(artifact.ToPng());
     }
 }

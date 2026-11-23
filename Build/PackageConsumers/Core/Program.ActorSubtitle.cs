@@ -48,6 +48,6 @@ internal static partial class Program {
             "Packed Actor subtitle was not retained as a source fact.");
         actor.Subtitle = "changed"; actor.TextStyle.FontSize = 60; chart.Edges.Clear(); chart.Nodes.Clear();
         PackageAssertions.Require(prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png), "Packed Actor exports retained a mutable model or typography dependency.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
     }
 }

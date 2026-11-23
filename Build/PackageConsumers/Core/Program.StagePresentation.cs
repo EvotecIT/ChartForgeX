@@ -17,9 +17,9 @@ internal static partial class Program {
         PackageAssertions.Require(document.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "funnel-stage") == 3,
             "Packed stage presentation lost a zero source stage.");
         PackageAssertions.Require(document.Descendants().Any(node => node.Attribute("stroke-dasharray") != null), "Packed connector outline lost its dash policy.");
-        PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(chart.ToPng());
         var pyramid = Chart.Create().DataLabels().XLabels("Services", "Platform").AddPyramid("Allocation", new[] { new ChartPoint(1, 3), new ChartPoint(2, 2) })
             .Pyramid(options => { options.LabelContent = ChartStageLabelContent.Separate; options.PartitionOutline = new ChartStrokeStyle(width: 2); });
-        PackageAssertions.Require(PackageAssertions.Contains(pyramid.ToSvg(), "pyramid-category-label"), "Packed independent Pyramid captions are missing."); PackageAssertions.Raster(pyramid.ToPng());
+        PackageAssertions.Require(PackageAssertions.Contains(pyramid.ToSvg(), "pyramid-category-label"), "Packed independent Pyramid captions are missing."); PackageAssertions.Png(pyramid.ToPng());
     }
 }

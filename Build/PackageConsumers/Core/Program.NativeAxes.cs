@@ -21,7 +21,7 @@ internal static partial class Program {
                 "Packed authored signed logarithm lost its base, equal geometric steps or source inverse.");
             var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.Options.YAxis.LogarithmBase = 2;
             PackageAssertions.Require(svg == prepared.ToSvg() && png.SequenceEqual(prepared.ToPng()), "Packed signed-log export retained a live source policy.");
-            PackageAssertions.Raster(png);
+            PackageAssertions.Png(png);
         }
         var january = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         foreach (var ordinal in new[] { false, true }) {
@@ -50,7 +50,7 @@ internal static partial class Program {
             }
             var before = chart.Series[0].Points.Select(point => point.X).ToArray();
             PackageAssertions.Require(before.SequenceEqual(dates.Select(date => date.ToOADate())), "Packed time spacing rewrote authored instants.");
-            PackageAssertions.Raster(prepared.ToPng());
+            PackageAssertions.Png(prepared.ToPng());
         }
         var mixed = Chart.Create().Size(600, 360).Legend(false)
             .AddHorizontalBar("Counts", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) })
@@ -65,7 +65,7 @@ internal static partial class Program {
             && window.XProjection!.Minimum == 0 && window.XProjection.Maximum == 40 && window.YProjection!.Minimum == 1.25
             && Math.Abs(window.SecondaryXProjection.Unproject(window.SecondaryXProjection.Project(300)) - 300) < 1e-7
             && mixed.Prepare(context, null).ToSvg() == full.ToSvg(), "Packed horizontal mixture confused physical secondary X with vertical Y or reset domains.");
-        PackageAssertions.Raster(window.ToPng());
+        PackageAssertions.Png(window.ToPng());
         var fitted = Chart.Create().Size(600, 360).Legend(false)
             .AddLine("Counts", new[] { new ChartPoint(0, 0), new ChartPoint(10, 100) })
             .AddLine("Duration", new[] { new ChartPoint(0, 100), new ChartPoint(10, 200) });
@@ -79,7 +79,7 @@ internal static partial class Program {
             && visibleFit.YProjection.FullMinimum == fullFit.YProjection.FullMinimum
             && fitted.Series.All(series => series.SourcePointCount == 2),
             "Packed visible-category preparation lost crossing-segment extents, independent secondary auto-domains or full source facts.");
-        PackageAssertions.Raster(visibleFit.ToPng());
+        PackageAssertions.Png(visibleFit.ToPng());
         var uncertainty = Chart.Create().Size(600, 360).Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateErrorBar(new ChartSeriesId("estimate"), "Estimate", new[] {
                 new ChartErrorBar(5, 5, new ChartErrorBounds(1, 9), new ChartErrorBounds(2, 8))
@@ -98,7 +98,7 @@ internal static partial class Program {
         var fact = errorSvg.Descendants().Single(node => (string?)node.Attribute("data-cfx-observation-id") == "sample");
         PackageAssertions.Require((string?)fact.Attribute("data-cfx-x-lower") == "1" && (string?)fact.Attribute("data-cfx-y-upper") == "8",
             "Packed uncertainty export lost complete independently authored intervals.");
-        PackageAssertions.Raster(errors.ToPng());
+        PackageAssertions.Png(errors.ToPng());
         PackedCalendarWindowBoundary();
         Console.WriteLine("Packed signed logarithms, Unit/Ordinal time, physical secondary windows and independent X/Y uncertainty passed.");
     }
@@ -135,7 +135,7 @@ internal static partial class Program {
                 && (string?)node.Attribute("data-cfx-visible") != "false");
         PackageAssertions.Require(upperVisible(included) && !upperVisible(excluded),
             "Packed authored inclusive boundary and explicit exclusive boundary did not select different source bands.");
-        PackageAssertions.Raster(viewed.ToPng()); PackageAssertions.Raster(included.ToPng());
+        PackageAssertions.Png(viewed.ToPng()); PackageAssertions.Png(included.ToPng());
     }
 
 }

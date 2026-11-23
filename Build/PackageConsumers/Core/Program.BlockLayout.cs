@@ -21,6 +21,6 @@ internal static partial class Program {
         var edge = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "block-layout-edge");
         PackageAssertions.Require((string?)edge.Attribute("data-source-id") == "b" && (string?)edge.Attribute("data-target-id") == "outside",
             "Packed cross-boundary connector lost its source identity.");
-        PackageAssertions.Raster(block.ToPng());
+        PackageAssertions.Png(block.ToPng());
     }
 }

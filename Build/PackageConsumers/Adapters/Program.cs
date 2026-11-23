@@ -157,12 +157,12 @@ internal static partial class Program {
         if (treemap.HasErrors || treemap.Document is null) throw new InvalidOperationException("Packed treemap parser rejected grouped magnitudes.");
         var treemapChart = treemap.Document.ToChart();
         if (treemapChart.Series[0].HierarchyItems[1].Value != 1234.5 || !treemapChart.ToSvg().Contains("data-cfx-role=\"treemap-label\"", StringComparison.Ordinal)) throw new InvalidOperationException("Packed treemap values or native captions were lost.");
-        PackageAssertions.Raster(treemapChart.ToPng());
+        PackageAssertions.Png(treemapChart.ToPng());
         var hiddenTreemap = RenderFixture("---\nconfig:\n  treemap:\n    showValues: false\n---\ntreemap-beta\n\"Storage\"\n  \"Documents\": 7\n  \"Media\": 3\n");
         if (hiddenTreemap.HasErrors || hiddenTreemap.Artifact?.Model is not ChartForgeX.Core.Chart hiddenChart || hiddenChart.Options.Treemap.ShowValues) throw new InvalidOperationException("Packed treemap source visibility was lost.");
         var hostTreemap = new MermaidParser().ParseTreemap(hiddenTreemap.Document!.SourceText).Document!.ToChart(new MermaidTreemapRenderOptions { ShowValues = true });
         if (!hostTreemap.Options.Treemap.ShowValues || hostTreemap.Series[0].HierarchyItems[1].Value != 7) throw new InvalidOperationException("Packed treemap host visibility or semantic values were lost.");
-        PackageAssertions.Raster(hiddenTreemap.Artifact.ToPng());
+        PackageAssertions.Png(hiddenTreemap.Artifact.ToPng());
         if (VisualArtifactInterchangeEnvelope.FromJson(useCaseJson).ToJson() != useCaseJson) throw new InvalidOperationException("Mermaid source package interchange failed.");
 
         const string packetSource = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n    bitOrder: descending\n    bitWidth: 24\n    rowHeight: 40\n    paddingX: 3\n    paddingY: 7\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"";
@@ -171,7 +171,7 @@ internal static partial class Program {
         var packetBlock = packet.Document.ToPacketLayoutBlock();
         PackageAssertions.Require(packetBlock.BitsPerRow == 16 && !packetBlock.ShowBitNumbers && packetBlock.BitOrder == PacketBitOrder.Descending,
             "Packet source configuration did not reach the native package model.");
-        PackageAssertions.Raster(packetBlock.ToPng());
+        PackageAssertions.Png(packetBlock.ToPng());
         PackageAssertions.Require(packetBlock.BitWidth == 24 && packetBlock.RowHeight == 40 && packetBlock.FieldGap == 3 && packetBlock.RowGap == 7,
             "Packet geometry settings did not reach the native package model.");
         var packetMarkup = CreateFixtureParser(new MermaidRenderOptions {
@@ -191,7 +191,7 @@ internal static partial class Program {
         var tableArtifact = tableMarkup.Artifacts[0];
         if (tableArtifact.Model is not TableArtifact || !tableArtifact.ToSvg().Contains("Ready", StringComparison.Ordinal))
             throw new InvalidOperationException("Markup table producer failed.");
-        PackageAssertions.Raster(tableArtifact.ToPng());
+        PackageAssertions.Png(tableArtifact.ToPng());
         PackageAssertions.References(typeof(VisualMarkupParser).Assembly, "ChartForgeX", "ChartForgeX.Visuals");
         PackageAssertions.Payload("ChartForgeX", "ChartForgeX.Visuals", "ChartForgeX.Interactivity",
             "ChartForgeX.Interactivity.Html", "ChartForgeX.Markup", "ChartForgeX.Mermaid", "ChartForgeX.Markup.Mermaid");
@@ -206,9 +206,9 @@ internal static partial class Program {
         var artifact = rendered.Artifact ?? throw new InvalidOperationException("Packed flowchart did not produce an artifact.");
         var topology = artifact.Model as TopologyChart
             ?? throw new InvalidOperationException("Packed flowchart did not produce the native topology model.");
-        PackageAssertions.Require(topology.Nodes.All(node => node.BackgroundColor == "#dbeafe"),
+        PackageAssertions.Require(topology.Nodes.All(node => node.BackgroundColor == ChartColor.FromHex("#dbeafe")),
             "Packed default Mermaid classes did not apply to every node.");
-        PackageAssertions.Raster(artifact.ToPng());
+        PackageAssertions.Png(artifact.ToPng());
         var invalid = RenderFixture("gitGraph\ncommit type: BAD");
         PackageAssertions.Require(invalid.HasErrors && invalid.Artifact == null
             && invalid.Diagnostics.All(item => item.Code == MermaidDiagnosticCodes.InvalidStatement),
@@ -231,7 +231,7 @@ internal static partial class Program {
         PackageAssertions.Require(journeyArtifact.ToSvg() == fencedJourney.Artifacts[0].ToSvg()
             && journeyArtifact.ToPng().SequenceEqual(fencedJourney.Artifacts[0].ToPng()),
             "Packed Journey direct and Markdown exports disagree.");
-        PackageAssertions.Raster(journeyArtifact.ToPng());
+        PackageAssertions.Png(journeyArtifact.ToPng());
     }
 
     private static void NativeViewportSection() {
@@ -255,7 +255,7 @@ internal static partial class Program {
         PackageAssertions.Require(full.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)
             .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)),
             "Packed viewport changed the full-data Y domain.");
-        PackageAssertions.Raster(narrowed.PreparedVisual.ToPng());
+        PackageAssertions.Png(narrowed.PreparedVisual.ToPng());
         PackageAssertions.Require(renderer.PrepareSection(chart, null).Html == full.Html && chart.Options.XAxis.Min == 0 && chart.Options.XAxis.Max == 10,
             "Packed native reset did not recover the full section or mutated authored bounds.");
     }
@@ -324,7 +324,7 @@ internal static partial class Program {
         PackageAssertions.Require(annotations.Count == 0 && window.PreparedVisual.ToSvg() == windowSvg
             && PackageAssertions.Contains(edited.Html, "data-cfx-label=\"Reviewed\""),
             "Packed keyed removal changed an earlier native or HTML snapshot.");
-        PackageAssertions.Raster(edited.PreparedVisual.ToPng());
+        PackageAssertions.Png(edited.PreparedVisual.ToPng());
         Console.WriteLine("HTML authoring facts: canonical full/X/Y/XY scenes agree with Core; plain-null reset and keyed/anonymous annotation snapshots passed.");
 #if CFX_PACKAGE_BROWSER
         PackageBrowserProbe.RunNativeChartAsync(initialHtml, window.Html, edited.Html, reset.Html).GetAwaiter().GetResult();
@@ -342,6 +342,6 @@ internal static partial class Program {
         var markup = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!markup.HasErrors && markup.Artifacts.Count == 1
             && markup.Artifacts[0].ToSvg() == parsed.Document!.ToVisualArtifact(new MermaidRadarRenderOptions { Presentation = FixtureOptions().Presentation }).ToSvg(), "Packed radar fence changed source paint.");
-        PackageAssertions.Raster(markup.Artifacts[0].ToPng());
+        PackageAssertions.Png(markup.Artifacts[0].ToPng());
     }
 }

@@ -21,6 +21,6 @@ internal static partial class Program {
             && section.Html.Contains("data-cfx-hierarchy-node=\"engineering\"", StringComparison.Ordinal), "Packed organization adapter manufactured numeric axes or lost branch controls.");
         var png = section.PreparedVisual.ToPng(); source.Nodes.Clear(); source.Edges.Clear();
         PackageAssertions.Require(png.SequenceEqual(section.PreparedVisual.ToPng()), "Packed organization source mutation changed prepared pixels.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
     }
 }

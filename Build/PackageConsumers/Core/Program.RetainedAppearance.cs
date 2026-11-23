@@ -34,6 +34,6 @@ internal static partial class Program {
             "Source viewport was silently rebased to outward captured pixels.");
         PackageAssertions.Require(restored.Bounds.Equals(capture.Bounds) && restored.ToRgbaImage().Pixels.SequenceEqual(capture.ToRgbaImage().Pixels),
             "Terminal replay lost its actual output frame or pixels.");
-        PackageAssertions.Raster(restored.Visual.ToPng());
+        PackageAssertions.Png(restored.Visual.ToPng());
     }
 }

@@ -19,6 +19,6 @@ internal static partial class Program {
         PackageAssertions.Require(envelope.Version==2&&restored.Theme.ToJson()==theme.ToJson()&&restored.Typography?.Participant?.FontSize==18,"Sequence policy snapshot changed.");
         PackageAssertions.Require(original==restored.Prepare(context).ToSvg(),"Sequence restore reapplied presentation or changed geometry.");
         model.Messages[0].Text="Later";model.Typography!.Participant!.FontSize=77;PackageAssertions.Require(original==prepared.ToSvg(),"Sequence capture retained mutable owners.");
-        PackageAssertions.Raster(prepared.ToPng());
+        PackageAssertions.Png(prepared.ToPng());
     }
 }

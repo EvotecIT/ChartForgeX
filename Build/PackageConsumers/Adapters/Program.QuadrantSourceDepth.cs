@@ -32,7 +32,7 @@ internal static partial class Program {
         var svg = artifact.ToSvg();
         PackageAssertions.Require(svg == fenced.Artifacts[0].ToSvg() && !svg.Contains("<script", StringComparison.OrdinalIgnoreCase)
             && !svg.Contains("<foreignObject", StringComparison.OrdinalIgnoreCase), "Packed Quadrant direct/fence static output diverged.");
-        PackageAssertions.Raster(artifact.ToPng());
+        PackageAssertions.Png(artifact.ToPng());
         var portable = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         PackageAssertions.Require(portable.Extensions["mermaid.quadrant.sourceFacts"].Contains("stroke-width", StringComparison.Ordinal),
             "Packed Quadrant portable facts discarded source style declarations.");
@@ -48,7 +48,7 @@ internal static partial class Program {
         });
         PackageAssertions.Require(points.GetPointMarkers(0)!.Radius == 7 && points.GetPointMarkers(1)!.Radius == 6,
             "Packed keyed edits detached source marker presentation from surviving identities.");
-        PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(chart.ToPng());
         Console.WriteLine("Packed shared-source Quadrant styles, native endpoint captions, portable facts and keyed marker edits passed.");
     }
 }

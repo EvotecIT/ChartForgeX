@@ -12,6 +12,6 @@ internal static partial class Program {
         var block = parsed.Document!.ToBlockLayoutBlock(); var svg = XDocument.Parse(block.ToSvg());
         PackageAssertions.Require(block.Items.Single(item => item.Id == "a").ParentId == "group" &&
             svg.Descendants().Any(node => string.Equals((string?)node.Attribute("fill"), "#bbf7d0", StringComparison.OrdinalIgnoreCase)), "Packed block source lost hierarchy or native class paint.");
-        PackageAssertions.Raster(block.ToPng());
+        PackageAssertions.Png(block.ToPng());
     }
 }

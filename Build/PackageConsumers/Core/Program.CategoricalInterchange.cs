@@ -27,6 +27,6 @@ internal static partial class Program {
         var edited = journeyEnvelope.ToJourneyDiagramBlock();
         PackageAssertions.Require(edited.Tasks[0].Score == 1 && importedJourney.Tasks[0].Score == 2 && journey.Tasks[0].Score == 2, "Packed categorical editing retained mutable source aliases.");
         PackageAssertions.Require(importedTimeline.Direction == TimelineDiagramDirection.TopToBottom && importedTimeline.Periods[0].Label == "Before launch" && importedTimeline.Periods[0].Events.Count == 2, "Packed categorical chronology was replaced by inferred dates or reordered events.");
-        PackageAssertions.Raster(edited.ToPng()); PackageAssertions.Raster(importedTimeline.ToPng());
+        PackageAssertions.Png(edited.ToPng()); PackageAssertions.Png(importedTimeline.ToPng());
     }
 }

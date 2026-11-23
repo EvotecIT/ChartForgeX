@@ -34,9 +34,9 @@ internal static partial class Program {
         PackageAssertions.Require(((string)path.Attribute("d")!).Count(character => character == 'M') == 2,
             "Packed slopes bridged an explicit missing interval.");
         var captured = prepared.ToSvg("packed-stages");
-        series.Points.Clear(); PackageAssertions.Raster(chart.ToPng());
+        series.Points.Clear(); PackageAssertions.Png(chart.ToPng());
         series.Points.Add(new ChartPoint(1, 10)); series.Points.Add(new ChartPoint(4, 90));
         PackageAssertions.Require(prepared.ToSvg("packed-stages") == captured, "Packed slope refill changed a prepared export.");
-        PackageAssertions.Raster(prepared.ToPng()); PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(prepared.ToPng()); PackageAssertions.Png(chart.ToPng());
     }
 }

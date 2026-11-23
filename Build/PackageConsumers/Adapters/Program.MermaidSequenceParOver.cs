@@ -26,10 +26,10 @@ internal static partial class Program {
         var ordinary = RenderFixture(source.Replace("par_over ", "par ", StringComparison.Ordinal));
         PackageAssertions.Require(!ordinary.HasErrors && ordinary.Artifact != null && artifact.ToSvg() == ordinary.Artifact.ToSvg(),
             "Packed par_over must reuse the measured parallel scene.");
-        PackageAssertions.Raster(artifact.ToPng());
+        PackageAssertions.Png(artifact.ToPng());
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Count == 1 && artifact.ToSvg() == fenced.Artifacts[0].ToSvg(),
             "Packed fenced par_over diverged from the shared native scene.");
-        PackageAssertions.Raster(fenced.Artifacts[0].ToPng());
+        PackageAssertions.Png(fenced.Artifacts[0].ToPng());
     }
 }

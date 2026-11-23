@@ -33,8 +33,8 @@ internal static partial class Program {
             "Core inset capture changed the original frame.");
         PackageAssertions.Require(retainedInner.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters))
             .IndexOf("operator=\"atop\"", StringComparison.Ordinal) >= 0, "Native inset filter lost SourceAtop.");
-        PackageAssertions.Raster(inner.Visual.ToPng());
-        PackageAssertions.Raster(outline.Visual.ToPng());
+        PackageAssertions.Png(inner.Visual.ToPng());
+        PackageAssertions.Png(outline.Visual.ToPng());
         var glowPolicy = new VisualDropShadow(ChartForgeX.Primitives.ChartColor.FromRgb(37, 123, 219),
             0, 0, 3, spread: 1, orderedDither: false, opacity: .6);
         var glow = prepared.CaptureLayer(glowPolicy, new VisualRenderOptions(supersampling: 1));
@@ -46,6 +46,6 @@ internal static partial class Program {
         PackageAssertions.Require(System.Linq.Enumerable.SequenceEqual(glow.ToRgbaImage().Pixels, replayedGlow.ToRgbaImage().Pixels),
             "The typed shadow recipe did not replay its native pixels.");
         PackageAssertions.Require(retainedGlow.Size.Equals(prepared.Size), "Fixed-root glow silently expanded its source viewport.");
-        PackageAssertions.Raster(glow.Visual.ToPng());
+        PackageAssertions.Png(glow.Visual.ToPng());
     }
 }

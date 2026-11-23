@@ -20,7 +20,7 @@ internal static partial class Program {
             && document.Descendants().Any(node => (string?)node.Attribute("data-cfx-value") == "2.5")
             && document.Descendants().Any(node => (string?)node.Attribute("data-cfx-fill-direction") == "BottomToTop"),
             "Packed pictorial artwork lost detached pixels, raw value or its declared partial direction.");
-        PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(chart.ToPng());
         var fallback = Chart.Create().Size(420, 260).ShowHeader(false).Legend(false)
             .Pictorial(p => p.SvgPath("M0 0H24V24H0Z M8 8V16H16V8Z"))
             .AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 2.5) });

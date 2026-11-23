@@ -82,7 +82,7 @@ internal static partial class Program {
             double.Parse(category.Attribute("y")!.Value, CultureInfo.InvariantCulture)
                 - double.Parse(total.Attribute("y")!.Value, CultureInfo.InvariantCulture) >= 10)),
             "Packed reversed stacks put category captions in the total-label lane.");
-        PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(chart.ToPng());
     }
 
     private static void ThemeSnapshots() {
@@ -141,7 +141,7 @@ internal static partial class Program {
             && actual.ObservationIds.Count == 0 && actual.PointColors.Count == 0 && actual.PointLabels.Count == 0,
             "Typed replacement retained stale observation metadata or configuration-slot counts.");
         PackageAssertions.Require(prepared.ToSvg() == capturedSvg, "Typed replacement changed an already prepared artifact.");
-        PackageAssertions.Raster(prepared.ToPng()); PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(prepared.ToPng()); PackageAssertions.Png(chart.ToPng());
     }
 
     private static void NumericOwnershipAndWindowDimensions() {
@@ -159,14 +159,14 @@ internal static partial class Program {
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartCartesianViewport(x: new ChartAxisWindow(origin + 2, origin + 8)));
         PackageAssertions.Require(prepared.XProjection != null && prepared.XProjection.Scale == ChartScaleKind.Time
             && prepared.XProjection.Minimum == origin + 2, "Packed time/Bubble window lost its native projection.");
-        PackageAssertions.Raster(prepared.ToPng());
+        PackageAssertions.Png(prepared.ToPng());
         var derived = ChartSeries.CreateTrendLine(new ChartSeriesId("fit"), "Fit", readings.Points);
         PackageAssertions.Require(derived.Points.IsReadOnly, "Packed derived points permit provenance-changing mutation.");
         var radar = Chart.Create().AddRadar("Categories", new[] { new ChartPoint(1, 3), new ChartPoint(2, 3), new ChartPoint(3, 3) })
             .AddRadar("Observed", new[] { new ChartPoint(1, 2), new ChartPoint(3, 4) })
             .XLabels("First", "Missing", "Third");
         radar.Series[1].Radar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
-        PackageAssertions.Raster(radar.ToPng());
+        PackageAssertions.Png(radar.ToPng());
     }
 
     private static void CallbackOwnership() {
@@ -201,6 +201,6 @@ internal static partial class Program {
         chart.SvgColorVariables(new SvgColorVariables().Add("--outline", red, SvgColorRole.Series));
         var outline = XDocument.Parse(chart.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "radar-outline");
         PackageAssertions.Require((string?)outline.Attribute("stroke") == "#DC2626", "Packed radar outline lost literal paint provenance.");
-        PackageAssertions.Raster(chart.ToPng());
+        PackageAssertions.Png(chart.ToPng());
     }
 }

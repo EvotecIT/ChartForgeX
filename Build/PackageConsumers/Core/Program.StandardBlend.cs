@@ -12,7 +12,7 @@ internal static partial class Program {
             var value = SvgRasterizer.Rasterize(source, strict: true, filters: new SvgRasterFilterOptions());
             PackageAssertions.Require(value.Diagnostics.Count == 0 && value.Image.Pixels[(16 * 32 + 16) * 4 + 3] > 0,
                 "A standard explicit sRGB source mode was lost.");
-            PackageAssertions.Raster(value.Image.ToPng());
+            PackageAssertions.Png(value.Image.ToPng());
         }
     }
 }

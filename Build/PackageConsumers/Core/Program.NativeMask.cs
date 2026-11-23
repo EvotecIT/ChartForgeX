@@ -25,6 +25,6 @@ internal static partial class Program {
         var getter = mask.ToRgbaImage(); Array.Clear(getter.Pixels, 0, getter.Pixels.Length);
         PackageAssertions.Require(mask.ToRgbaImage().Pixels.Any(value => value > 0), "Mask exposed mutable snapshot pixels.");
         var again = layer.WithMask(mask); PackageAssertions.Require(again.Bounds.Equals(layer.Bounds), "Mask changed captured bounds.");
-        PackageAssertions.Raster(layer.Visual.ToPng());
+        PackageAssertions.Png(layer.Visual.ToPng());
     }
 }

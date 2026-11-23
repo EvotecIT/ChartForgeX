@@ -15,6 +15,6 @@ internal static partial class Program {
         PackageAssertions.Require(before.SequenceEqual(image.ToRgbaImage().Pixels), "Zero coverage changed the explicit backdrop.");
         image.Outline(new VisualOutline(ChartColor.Black, 1)).Bloom(new VisualBloom(1, .1, .4));
         PackageAssertions.Require(!before.SequenceEqual(image.ToRgbaImage().Pixels), "Explicit appearance composition painted no effect.");
-        PackageAssertions.Raster(image.ToPng());
+        PackageAssertions.Png(image.ToPng());
     }
 }

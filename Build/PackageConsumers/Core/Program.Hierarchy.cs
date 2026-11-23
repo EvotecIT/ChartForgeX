@@ -26,7 +26,7 @@ internal static partial class Program {
                 PackageAssertions.Require(xml.Descendants().Any(node => (string?)node.Attribute("data-cfx-node") == "team"
                     && (string?)node.Attribute("data-cfx-sector-gap") == "6" && (string?)node.Attribute("data-cfx-paint-inner-radius") == "0"),
                     "Packed Sunburst options did not use native inset geometry for the selected root.");
-            PackageAssertions.Raster(view.ToPng());
+            PackageAssertions.Png(view.ToPng());
         }
     }
 }

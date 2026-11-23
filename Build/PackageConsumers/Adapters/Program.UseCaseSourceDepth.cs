@@ -29,6 +29,6 @@ internal static partial class Program {
         var portable = VisualArtifactInterchangeEnvelope.FromJson(direct.Artifact.ToInterchangeJson());
         PackageAssertions.Require(portable.Extensions["mermaid.source"] == source && portable.Edges.Any(item => item.Id == "request") && portable.Annotations.Count == 1,
             "Packed portable UseCase facts lost raw source, named association or note.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
     }
 }

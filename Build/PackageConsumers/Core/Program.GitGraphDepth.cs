@@ -19,7 +19,7 @@ internal static partial class Program {
             PackageAssertions.Require(graph.Commits[3].ParentIds.SequenceEqual(new[] { "next", "work" }) && graph.Commits.Count == 4,
                 "Packed Git graph rewrote source ancestry.");
             graph.RotateCommitLabels(); PackageAssertions.Require(PackageAssertions.Contains(graph.ToSvg(), "rotate(-45"), "Packed Git graph caption policy is absent.");
-            PackageAssertions.Raster(graph.ToPng());
+            PackageAssertions.Png(graph.ToPng());
         }
         Console.WriteLine("Packed native Git graph direction, parent-depth placement and static SVG/PNG passed.");
     }

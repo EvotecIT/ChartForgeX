@@ -35,7 +35,7 @@ internal static partial class Program {
             "Packed inner external captions lost their source-owned overlay leader.");
         PackageAssertions.Require(calloutXml.Descendants().Any(node => (string?)node.Attribute("data-cfx-slice-offset-ratio") == "0.12"),
             "Packed multiring explosion lost its source displacement fact.");
-        PackageAssertions.Raster(callouts.ToPng());
+        PackageAssertions.Png(callouts.ToPng());
         inner.ShowDataLabels = false;
         var ordinary = Chart.Create().Size(520, 340).ShowHeader(false).Legend(false)
             .AddDonut("Ordinary", new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) });
@@ -45,6 +45,6 @@ internal static partial class Program {
         ordinary.Series[0].RadialBand((ChartRadialBand?)null);
         PackageAssertions.Require(ordinary.ToSvg() == defaultSvg && ordinary.ToPng().SequenceEqual(defaultPng),
             "Clearing a packed explicit band did not recover the ordinary single-series output.");
-        PackageAssertions.Raster(png);
+        PackageAssertions.Png(png);
     }
 }

@@ -24,7 +24,7 @@ internal static partial class Program {
         PackageAssertions.Require(svg.Contains("sequence-block-background", StringComparison.Ordinal)
             && HasNativeSequenceNumber(svg, "Resume", "6") && HasNativeSequenceNumber(svg, "Next", "11"),
             "Packed background or occurrence numbering did not reach the shared scene.");
-        PackageAssertions.Raster(artifact.ToPng());
+        PackageAssertions.Png(artifact.ToPng());
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         PackageAssertions.Require(envelope.Annotations.Single(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceBlock)
             .Extensions.ContainsKey("chartforgex.sequence.background") && envelope.Edges[2].Extensions["mermaid.autonumber.visible"] == "false",
@@ -32,6 +32,6 @@ internal static partial class Program {
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,
             "Packed fenced authored rect/numbering source was rejected.");
-        PackageAssertions.Raster(fenced.Artifacts[0].ToPng());
+        PackageAssertions.Png(fenced.Artifacts[0].ToPng());
     }
 }

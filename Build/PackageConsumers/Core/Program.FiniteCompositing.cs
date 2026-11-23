@@ -14,6 +14,6 @@ internal static partial class Program {
         var offset = (16 * result.Image.Width + 16) * 4;
         PackageAssertions.Require(result.Diagnostics.Count == 0 && result.Image.Pixels[offset] == 255 && result.Image.Pixels[offset + 3] == 64,
             "Core finite source-in composition did not use the source/backdrop alpha contract.");
-        PackageAssertions.Raster(result.Image.ToPng());
+        PackageAssertions.Png(result.Image.ToPng());
     }
 }

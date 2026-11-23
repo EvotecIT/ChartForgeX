@@ -22,6 +22,6 @@ internal static partial class Program {
             && restored.Nodes[0].Artwork!.PreserveAspectRatio == "xMidYMid slice", "Packed portrait identity or crop was lost in interchange.");
         chart.Nodes[0].Artwork = null;
         PackageAssertions.Require(prepared.ToSvg() == svg, "Changing a source portrait changed its prepared export.");
-        PackageAssertions.Raster(prepared.ToPng()); PackageAssertions.Raster(restored.ToPng(new TopologyRenderOptions { IncludeLegend = false }));
+        PackageAssertions.Png(prepared.ToPng()); PackageAssertions.Png(restored.ToPng(new TopologyRenderOptions { IncludeLegend = false }));
     }
 }
