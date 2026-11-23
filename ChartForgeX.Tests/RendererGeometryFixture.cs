@@ -60,7 +60,7 @@ internal static class RendererGeometryFixture {
             return map;
         }
         if (family is "fork" or "flame" or "droplet") {
-            var icon = family == "fork" ? Icons.ForkKnife : family == "flame" ? Icons.Flame : Icons.Droplet;
+            var icon = family == "fork" ? MetricCardIcons.ForkKnife : family == "flame" ? MetricCardIcons.Flame : MetricCardIcons.Droplet;
             var card = MetricCard.Create().Metric("Meals", 12).Size(200, 140).Theme(theme).ShowCard(false).TransparentBackground().Icon(icon).PngOutputScale(density);
             return card;
         }

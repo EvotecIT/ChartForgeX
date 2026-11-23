@@ -333,7 +333,7 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     /// <summary>Gets or sets the center value.</summary>
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets an optional icon rendered above the center metric. <see cref="Icons"/> lists the keys drawn; another key draws the default mark.</summary>
+    /// <summary>Gets or sets an optional icon rendered above the center metric. <see cref="MetricCardIcons"/> lists the keys drawn; another key draws the default mark.</summary>
     public Icon Icon { get => _icon; set => _icon = value; }
 
     /// <summary>Gets a concise accessibility label.</summary>

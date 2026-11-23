@@ -116,10 +116,10 @@ public sealed class MetricCardCompactLayoutTests {
         var card = Compact(55).Metric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" :
                 kind == "top-right-unit-narrow" ? new string('i', 17) : "68", unit: "%")
             .Status(Tone.Success);
-        if (kind == "top-left") card.Icon(Icons.Lightning).BadgePlacement(MetricCardBadgePlacement.TopLeft);
+        if (kind == "top-left") card.Icon(MetricCardIcons.Lightning).BadgePlacement(MetricCardBadgePlacement.TopLeft);
         else if (kind == "top-right-long" || kind == "top-right-unit-narrow") card.Symbol("RAM").BadgePlacement(MetricCardBadgePlacement.TopRight);
         else if (kind == "inset-symbol") card.Symbol("RAM").MicroVisualSurface(MetricCardMicroVisualSurface.Inset);
-        else card.Icon(Icons.Lightning).MicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+        else card.Icon(MetricCardIcons.Lightning).MicroVisualSurface(MetricCardMicroVisualSurface.Inset);
         var elements = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = Assert.Single(elements, element => (string?)element.Attribute("data-cfx-role") ==
             (inset ? "metric-value-surface-badge" : "metric-symbol-badge"));

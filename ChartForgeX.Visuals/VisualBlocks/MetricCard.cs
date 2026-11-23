@@ -140,7 +140,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         }
     }
 
-    /// <summary>Gets or sets an optional icon rendered as a badge. <see cref="Icons"/> lists the keys drawn; another key draws the default mark.</summary>
+    /// <summary>Gets or sets an optional icon rendered as a badge. <see cref="MetricCardIcons"/> lists the keys drawn; another key draws the default mark.</summary>
     public Icon Icon { get => _icon; set => _icon = value; }
 
     /// <summary>Gets or sets the metric status.</summary>

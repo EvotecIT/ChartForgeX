@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>The icon keys that metric and radial metric cards draw. Any other key draws the default mark.</summary>
-public static class Icons {
+public static class MetricCardIcons {
     /// <summary>Food or intake: <c>fork-knife</c>.</summary>
     public static Icon ForkKnife { get; } = Icon.Named("fork-knife");
 

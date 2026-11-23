@@ -15,7 +15,7 @@ internal static partial class SmokeTests {
 
         var metric = MetricCard.Create().Theme(VisualTheme.Graphite())
             .Metric("Coverage", 0.982, "P1")
-            .Icon(Icons.Lightning)
+            .Icon(MetricCardIcons.Lightning)
             .BadgePlacement(MetricCardBadgePlacement.TopLeft)
             .Trend("+2.4 pp")
             .Caption("since previous run")
@@ -50,7 +50,7 @@ internal static partial class SmokeTests {
 
         var valueSurfaceMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
             .Metric("Litres of water", "4.5", unit: "Litres")
-            .Icon(Icons.Droplet)
+            .Icon(MetricCardIcons.Droplet)
             .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .Size(300, 140);
         var valueSurfaceSvg = valueSurfaceMetric.ToSvg("visual-block-metric-value-surface");

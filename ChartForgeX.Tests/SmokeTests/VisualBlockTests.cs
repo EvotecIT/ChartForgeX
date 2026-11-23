@@ -67,7 +67,7 @@ internal static partial class SmokeTests {
 
         var radialMetric = RadialMetricCard.Create().Theme(VisualTheme.Graphite())
             .Metric("Capacity left", "42%")
-            .Icon(Icons.Flame)
+            .Icon(MetricCardIcons.Flame)
             .AddLayer("Track", 100, color: ChartColor.FromHex("#E2E8F0"), configure: layer => layer.RadiusRatio(1).StrokeRatio(0.16).LineCap(ChartRadialLayerCap.Butt))
             .AddLayer("Current", 42, color: ChartColor.FromHex("#F97316"), configure: layer => layer.RadiusRatio(1).StrokeRatio(0.12));
         var radialSvg = radialMetric.ToSvg("visual-block-radial-metric");

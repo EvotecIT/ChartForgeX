@@ -72,7 +72,7 @@ AssertPng(grid.ToPng(), "Grid PNG render failed.");
 
 var metric = MetricCard.Create()
     .Metric("Coverage", 0.982, "P1")
-    .Icon(Icons.Lightning)
+    .Icon(MetricCardIcons.Lightning)
     .Trend("+2.4 pp")
     .Status(Tone.Success)
     .Theme(VisualTheme.Graphite())

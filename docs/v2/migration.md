@@ -64,7 +64,7 @@ ChartForgeX now uses the `ThemeMode`, `Tone` and `Icon` types that every Evotec 
 | `TopologyTone.Good`, `Warn`, `Bad` | `Tone.Success`, `Tone.Warning`, `Tone.Danger` |
 | `TopologyTone.Info`, `TopologyTone.Neutral` | `Tone.Info`, `Tone.Neutral` |
 | `VisualIcon.None` | `Icon.None` |
-| `VisualIcon.ForkKnife`, `Flame`, `Lightning`, `Droplet`, `Runner`, `Bicycle`, `Person` | `Icons.ForkKnife`, `Icons.Flame`, `Icons.Lightning`, `Icons.Droplet`, `Icons.Runner`, `Icons.Bicycle`, `Icons.Person` |
+| `VisualIcon.ForkKnife`, `Flame`, `Lightning`, `Droplet`, `Runner`, `Bicycle`, `Person` | `MetricCardIcons.ForkKnife`, `MetricCardIcons.Flame`, `MetricCardIcons.Lightning`, `MetricCardIcons.Droplet`, `MetricCardIcons.Runner`, `MetricCardIcons.Bicycle`, `MetricCardIcons.Person` |
 
 What behaves differently:
 
@@ -72,7 +72,7 @@ What behaves differently:
 - `Tone` and `Icon` are value types, so `switch` statements over them become comparisons or a `switch` on `Tone.Name` and `Icon.Key`. A tone property is never null; `Tone.None` means unset.
 - Visual blocks paint `Tone.Muted` with the muted text colour. A named tone such as `Tone.Named("accent")` or `Tone.Named("maintenance")` uses the theme colour role of that name (`VisualThemeColorToken`); a name the theme does not define paints as neutral. Topology rings, relationships and edge chips follow the same rules and keep their `tone-good`, `tone-warn` and `tone-bad` classes.
 - `AddEdgeChip(edgeId, text, tone, iconId)` takes a `Tone?`; leaving it out still gives a neutral chip.
-- Metric and radial metric cards draw the keys listed in `Icons.All`. Any other key, such as `Icon.Named("tabler:server")`, draws a small default ring instead of the lightning bolt the old enum fell back to.
+- Metric and radial metric cards draw the keys listed in `MetricCardIcons.All`. Any other key, such as `Icon.Named("tabler:server")`, draws a small default ring instead of the lightning bolt the old enum fell back to.
 - Interchange documents and topology metadata store tones by their lowercase name: table rows and cells, flow steps, lanes and connectors write `success` and `danger` where they wrote `Positive` and `Negative`, and `chartforgex.region.tone` holds `success`, `warning` or `danger` where it held `Good`, `Warn` or `Bad`. Documents written by earlier versions keep the old spellings: flow documents with them are rejected, and table statuses and topology tones read them as unknown named tones that paint neutral. Regenerate such documents from the model. Theme modes keep their enum names (`Light`, `Dark`) and accept `Auto`.
 - The markup language accepts `auto` for `theme` and `themeMode`, and `danger` and `muted` as table and flow statuses.
 

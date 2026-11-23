@@ -69,12 +69,12 @@ public sealed class SharedVocabularyTests {
             return marks.Count == 0 ? "" : (string)marks.Single().Attribute("data-cfx-icon")!;
         }
 
-        Assert.Equal("flame", IconOf(Icons.Flame));
+        Assert.Equal("flame", IconOf(MetricCardIcons.Flame));
         Assert.Equal("lightning", IconOf(Icon.Parse("LIGHTNING")));
         Assert.Equal("default", IconOf(Icon.Named("tabler:server")));
         Assert.Equal("default", IconOf(Icon.Named("rocket")));
         Assert.Equal("", IconOf(Icon.None));
-        Assert.Equal(Icons.All.Count, Icons.All.Select(icon => IconOf(icon)).Distinct().Count());
-        Assert.DoesNotContain("default", Icons.All.Select(icon => IconOf(icon)));
+        Assert.Equal(MetricCardIcons.All.Count, MetricCardIcons.All.Select(icon => IconOf(icon)).Distinct().Count());
+        Assert.DoesNotContain("default", MetricCardIcons.All.Select(icon => IconOf(icon)));
     }
 }

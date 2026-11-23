@@ -111,7 +111,7 @@ internal static class WellnessDashboardExamples {
             .Title("Calories left")
             .Size(360, 438)
             .Theme(WellnessTheme())
-            .Icon(Icons.Lightning)
+            .Icon(MetricCardIcons.Lightning)
             .Metric("Calories left", "1240 kcal")
             .AddLayer("Available area", 100, color: Track, configure: layer => layer
                 .RadiusRatio(1.00).StrokeRatio(0.18)
@@ -126,7 +126,7 @@ internal static class WellnessDashboardExamples {
         var eaten = MetricCard.Create()
             .Size(360, 210)
             .Theme(WellnessTheme())
-            .Icon(Icons.ForkKnife)
+            .Icon(MetricCardIcons.ForkKnife)
             .Metric("Eaten calories", "1750 kcal")
             .MiniBars(new[] { 42d, 56d, 49d, 64d, 71d }, maximum: 100, color: Orange, mutedColor: Muted.WithAlpha(72))
             .Caption("Logged intake");
@@ -134,7 +134,7 @@ internal static class WellnessDashboardExamples {
         var burned = MetricCard.Create()
             .Size(360, 210)
             .Theme(WellnessTheme())
-            .Icon(Icons.Flame)
+            .Icon(MetricCardIcons.Flame)
             .Metric("Burned calories", "510 kcal")
             .MiniBars(new[] { 22d, 34d, 39d, 32d, 46d }, maximum: 60, color: Green, mutedColor: Muted.WithAlpha(72))
             .Caption("Activity estimate");
@@ -358,7 +358,7 @@ internal static class WellnessDashboardExamples {
         var water = MetricCard.Create()
             .Size(360, 140)
             .Theme(theme)
-            .Icon(Icons.Droplet)
+            .Icon(MetricCardIcons.Droplet)
             .BadgePlacement(MetricCardBadgePlacement.TopLeft)
             .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .Metric("Litres of water", "4.5", unit: "Litres");
@@ -366,7 +366,7 @@ internal static class WellnessDashboardExamples {
         var calories = MetricCard.Create()
             .Size(360, 140)
             .Theme(warmTheme)
-            .Icon(Icons.Flame)
+            .Icon(MetricCardIcons.Flame)
             .BadgePlacement(MetricCardBadgePlacement.TopLeft)
             .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .Metric("Calories", "2.3k", unit: "Kcal");
