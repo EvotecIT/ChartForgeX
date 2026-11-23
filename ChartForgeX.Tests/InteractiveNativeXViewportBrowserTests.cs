@@ -136,8 +136,8 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var renderer = new HtmlInteractiveChartRenderer();
         var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), Configure);
         var initial = renderer.PrepareSection(chart, configure: Configure);
-        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
+            + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.FeatureScript + "</script><script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await OpenAsync(html, width, 680);
         var page = session.Page; await ControlledConnectionAsync(page);
         await page.Locator(Root).HoverAsync();
@@ -206,9 +206,9 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             return _renderer.PrepareSection(chart, configure: ConfigureSection).Html;
         }
         internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartCartesianViewport(x: new ChartAxisWindow(minimum, maximum)), ConfigureSection).Html;
-        internal string Page(params NativeHost[] peers) => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+        internal string Page(params NativeHost[] peers) => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
             + "</style></head><body style='margin:12px'>" + Initial + string.Concat(peers.Select(peer => peer.Initial))
-            + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + "<script>" + HtmlInteractiveChartRenderer.FeatureScript + "</script><script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         private void ConfigureSection(HtmlChartInteractionOptions options) {
             Configure(options); options.Interaction.ChartId = Id;
             options.XNavigation.Enabled = _navigation;

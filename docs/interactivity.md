@@ -85,8 +85,8 @@ tooltip reader never carries any:
 | `hierarchy` | A Treemap or Sunburst series | 8 KiB | 3 KiB |
 
 Topology and graph Explorer pages inline their own runtimes, measured from
-`HtmlInteractiveTopologyRenderer.BuildInteractionScript()` and
-`HtmlGraphExplorerRenderer.BuildInteractionScript()`. Their stylesheets, which
+`HtmlInteractiveTopologyRenderer.Script()` and
+`HtmlGraphExplorerRenderer.Script`. Their stylesheets, which
 carry the owned font payloads, are not counted:
 
 | Runtime | Raw budget | Gzip budget |
@@ -103,13 +103,13 @@ after the first paint skips the entry animation rather than replaying it.
 For shared external assets, pass the same runtime and feature union to
 `HtmlInteractiveAssetFiles.Charts(runtime, features)` as to the page options;
 the list includes the feature bundles. Hosts that register
-`BuildInteractionScript()` themselves add `BuildFeatureScript()` (or the
+`Script` themselves add `FeatureScript` (or the
 `HtmlInteractiveAssetFiles.ChartFeatureScripts` files) beside it.
 
 Migration: the context menu, data export, saved-page hierarchy drill and plot
 isolation moved out of the runtimes. A host page that registers only
-`BuildInteractionScript()` keeps hover, selection, zoom and legends, and adds
-`BuildFeatureScript()` to keep those four.
+`Script` keeps hover, selection, zoom and legends, and adds
+`FeatureScript` to keep those four.
 
 ## Standalone report viewports
 
@@ -757,7 +757,7 @@ native PNG retain their default paint path; `VisualSvgOptions.WithPatternTiles()
 also makes that SVG representation available to other hosts.
 `compressLayouts: true` compresses the layout payload and needs DecompressionStream.
 The host exposes `cfxResponsiveReady` and `cfxResponsive.dispose()` for asynchronous
-preparation and removal. Hosts inserting inert markup load `InitializationScript`
+preparation and removal. Hosts inserting inert markup load `Script`
 once; `ChartForgeXResponsive.mount(scope)` and the shared insertion observer mount
 those drawings without executing scripts from templates. The interactive adapter's Fit and Adaptive modes retain
 their existing behavior.

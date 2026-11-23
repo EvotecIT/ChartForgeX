@@ -38,7 +38,7 @@ public sealed class ExternalAssetTests {
         Assert.Contains("<script src=\"assets/" + script.FileName + "\" nonce=\"n0nce\" data-cfx-features=", page, StringComparison.Ordinal);
         Assert.Contains("<script src=\"assets/" + script.FileName + "\" nonce=\"d4sh\" data-cfx-features=", dashboard, StringComparison.Ordinal);
         Assert.Contains("assets/" + HtmlInteractiveAssetFiles.ChartFeatureScripts[0].FileName, page, StringComparison.Ordinal);
-        Assert.Equal(HtmlInteractiveChartRenderer.BuildInteractionScript(), script.Content);
+        Assert.Equal(HtmlInteractiveChartRenderer.Script, script.Content);
         Assert.True(page.Length < CreateChart().ToInteractiveHtmlPage().Length - script.Content.Length / 2);
     }
 

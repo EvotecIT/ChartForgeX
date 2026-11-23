@@ -223,8 +223,8 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
             var chart = Model();
             _snapshots.Add("initial", new Snapshot(_renderer.PrepareSection(chart, configure: ConfigureForHost), chart.Annotations.ToArray()));
         }
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + _snapshots["initial"].Section.Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + _snapshots["initial"].Section.Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal HtmlChartSection Section(string basis) { lock (_snapshots) return _snapshots[basis].Section; }
         internal void ReplaceProducerOffset(double offset) { lock (_snapshots) _producerOffset = offset; }
         internal object External() {

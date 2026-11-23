@@ -48,7 +48,7 @@ public sealed class InteractiveBundleTests {
         });
         Assert.Contains(asset.Content, page);
         Assert.DoesNotContain("<script src=", page);
-        if (runtime == HtmlChartRuntime.Full) Assert.Equal(HtmlInteractiveChartRenderer.BuildInteractionScript(), asset.Content);
+        if (runtime == HtmlChartRuntime.Full) Assert.Equal(HtmlInteractiveChartRenderer.Script, asset.Content);
         if (runtime == HtmlChartRuntime.Standalone && features == ChartInteractionFeatures.Tooltips) {
             Assert.DoesNotContain("ChartForgeX.nativeTextExport", asset.Content);
             Assert.DoesNotContain("connectNative", asset.Content);
@@ -112,8 +112,8 @@ public sealed class InteractiveBundleTests {
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
         var topology = TopologyChart.Create().Id("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
         var (script, page) = runtime == "topology"
-            ? (HtmlInteractiveTopologyRenderer.BuildInteractionScript(), topology.ToInteractiveHtmlPage())
-            : (HtmlGraphExplorerRenderer.BuildInteractionScript(), topology.ToGraphExplorerHtmlPage());
+            ? (HtmlInteractiveTopologyRenderer.Script(), topology.ToInteractiveHtmlPage())
+            : (HtmlGraphExplorerRenderer.Script, topology.ToGraphExplorerHtmlPage());
         var bytes = Encoding.UTF8.GetBytes(script);
         using var output = new MemoryStream();
         using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);

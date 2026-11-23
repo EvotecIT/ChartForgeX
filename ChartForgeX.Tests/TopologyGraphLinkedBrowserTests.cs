@@ -113,7 +113,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
         var page = session.Page;
         Assert.Equal(2, await page.Locator("[data-cfx-interactive=true][data-cfx-runtime-bound=true]").CountAsync());
         for (var registration = 0; registration < 3; registration++)
-            await page.AddScriptTagAsync(new PageAddScriptTagOptions { Content = HtmlInteractiveTopologyRenderer.BuildInteractionScript(Options(first)) });
+            await page.AddScriptTagAsync(new PageAddScriptTagOptions { Content = HtmlInteractiveTopologyRenderer.Script(Options(first)) });
         await page.EvaluateAsync("()=>window.mixedTopologyEvents=[]");
         foreach (var prefix in new[] { first, last }) {
             var id = "late-" + prefix;

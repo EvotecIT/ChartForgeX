@@ -161,10 +161,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         }).Html;
 
     private static string NativeLinkedPage(string source, string? peer, bool dark) =>
-        "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body style='background:"
+        "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style></head><body style='background:"
         + (dark ? "#0b0d0f" : "#f3f4f6") + "'><output id='native-filter' style='color:" + (dark ? "white" : "black")
         + "'></output><div id='native-source'>" + source + "</div>" + (peer == null ? "" : "<div id='native-peer'>" + peer + "</div>")
-        + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
 
     private static Task BindNativeLinkedProbeAsync(Microsoft.Playwright.IPage page, bool selected) => page.EvaluateAsync("""
         selected=>{

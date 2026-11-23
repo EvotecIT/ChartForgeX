@@ -132,24 +132,24 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/> once, unless the host already supplies matching fonts.
     /// NativeContours needs no font stylesheet. Explicitly registered families require matching host-provided browser CSS.</remarks>
     /// <example><code>
-    /// var css = ChartFontAssets.StyleSheet + HtmlInteractiveChartRenderer.BuildFragmentStyle();
+    /// var css = ChartFontAssets.StyleSheet + HtmlInteractiveChartRenderer.StyleSheet;
     /// var fragment = renderer.RenderFragmentWithoutAssets(chart, options =&gt; options.TextPresentation = HtmlChartTextPresentation.Browser);
-    /// // Register css and BuildInteractionScript() once outside the asset-free fragments.
+    /// // Register css and Script once outside the asset-free fragments.
     /// </code></example>
-    public static string BuildFragmentStyle() => InteractiveFragmentStyle;
+    public static string StyleSheet => InteractiveFragmentStyle;
 
     /// <summary>
     /// Builds the JavaScript runtime used by embeddable interactive chart fragments.
     /// </summary>
     /// <returns>JavaScript ready to register once in a host document.</returns>
-    public static string BuildInteractionScript() => InteractiveScript;
+    public static string Script => InteractiveScript;
 
     /// <summary>
     /// Builds the optional feature bundles (motion, data export and context menu, series isolation and hierarchy drill)
-    /// for hosts that register <see cref="BuildInteractionScript"/> themselves.
+    /// for hosts that register <see cref="Script"/> themselves.
     /// </summary>
     /// <returns>JavaScript to register once, before or after the runtime.</returns>
-    public static string BuildFeatureScript() => string.Join(";\n", Array.ConvertAll(HtmlInteractiveAssets.FeatureBundles, bundle => HtmlInteractiveAssets.FeatureScript(bundle.Name)));
+    public static string FeatureScript => string.Join(";\n", Array.ConvertAll(HtmlInteractiveAssets.FeatureBundles, bundle => HtmlInteractiveAssets.FeatureScript(bundle.Name)));
 
     internal static string InteractiveStyle => HtmlInteractiveAssets.Style;
 

@@ -43,7 +43,7 @@ public sealed class AutoThemeBindingTests {
     public void AutoRegionStatusPropertiesFollowTheSharedRoles() {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(860, 500, 20)).LayoutMode(TopologyLayoutMode.Regions)
             .AddAutoGroup("r", "Region").AddAutoNode("a", "A", groupId: "r");
-        var css = TopologyHtmlRenderer.BuildAutoThemeStyle(chart)!;
+        var css = TopologyHtmlRenderer.AutoThemeStyleSheet(chart)!;
         Assert.Contains("--cfx-good:var(--cfx-auto-color-outcome-pass-fill,", css, StringComparison.Ordinal);
         Assert.DoesNotMatch("--cfx-good:#", css);
     }

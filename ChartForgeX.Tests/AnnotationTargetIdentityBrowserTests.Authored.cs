@@ -112,9 +112,9 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
                 options.Interaction.GroupName = index == 3 ? "other-thresholds" : "thresholds";
                 if (index != 4) options.Interaction.Features |= ChartInteractionFeatures.SynchronizedCharts;
             }));
-        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
             + "</style></head><body>" + string.Join("\n", fragments) + "<script>"
-            + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await OpenAsync(html, dark ? 390 : 900, 980);
         var page = session.Page;
         var shared = await page.EvaluateAsync<JsonElement>("""

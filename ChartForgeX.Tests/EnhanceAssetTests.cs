@@ -23,7 +23,7 @@ public sealed class EnhanceAssetTests {
         Assert.True(core <= 12 * 1024, "Core enhance runtime is " + core + " bytes gzip.");
         Assert.True(Gzip(HtmlEnhanceAssets.Module("cfx-enhance.behaviours.js")) <= 4 * 1024, "Built-in behaviours exceed 4 KB gzip.");
         Assert.True(Gzip(HtmlEnhanceAssets.Module("cfx-link.js")) <= 2 * 1024, "The linked-views helper exceeds 2 KB gzip.");
-        Assert.True(Gzip(HtmlEnhanceAssets.Style) <= 2 * 1024, "The enhance stylesheet exceeds 2 KB gzip.");
+        Assert.True(Gzip(HtmlEnhanceAssets.StyleSheet) <= 2 * 1024, "The enhance stylesheet exceeds 2 KB gzip.");
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class EnhanceAssetTests {
     public void Files_AreContentAddressedAndReferenced() {
         var assets = new HtmlAssetReferences("assets/") { IncludeIntegrity = true };
         var markup = HtmlEnhanceAssets.ReferenceMarkup(assets);
-        Assert.Contains("href=\"assets/" + HtmlEnhanceAssets.StyleFile.FileName + "\"", markup, StringComparison.Ordinal);
+        Assert.Contains("href=\"assets/" + HtmlEnhanceAssets.StyleSheetFile.FileName + "\"", markup, StringComparison.Ordinal);
         Assert.Contains("src=\"assets/" + HtmlEnhanceAssets.ScriptFile.FileName + "\"", markup, StringComparison.Ordinal);
         Assert.Contains(HtmlEnhanceAssets.ScriptFile.Integrity, markup, StringComparison.Ordinal);
         Assert.Equal(HtmlEnhanceAssets.Script, HtmlEnhanceAssets.ScriptFile.Content);

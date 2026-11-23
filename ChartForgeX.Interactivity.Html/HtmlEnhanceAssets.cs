@@ -23,13 +23,13 @@ public static class HtmlEnhanceAssets {
     private static readonly Lazy<string> ScriptBundle = new(() => Join(ScriptModules));
     private static readonly Lazy<string> StyleBundle = new(() => Join(StyleModules));
     private static readonly Lazy<HtmlAssetFile> ScriptAsset = new(() => new HtmlAssetFile("cfx-enhance", "js", Script));
-    private static readonly Lazy<HtmlAssetFile> StyleAsset = new(() => new HtmlAssetFile("cfx-enhance", "css", Style));
+    private static readonly Lazy<HtmlAssetFile> StyleAsset = new(() => new HtmlAssetFile("cfx-enhance", "css", StyleSheet));
 
     /// <summary>Gets the complete enhance script: shared parts, core runtime, built-in behaviours and the linked-views helper.</summary>
     public static string Script => ScriptBundle.Value;
 
     /// <summary>Gets the complete enhance stylesheet: interaction states, tooltip and legend affordances.</summary>
-    public static string Style => StyleBundle.Value;
+    public static string StyleSheet => StyleBundle.Value;
 
     /// <summary>Gets one source module by file name, for hosts that bundle the parts themselves.</summary>
     /// <param name="name">One of the module names listed in the remarks of <see cref="HtmlEnhanceAssets"/>.</param>
@@ -44,17 +44,17 @@ public static class HtmlEnhanceAssets {
     public static HtmlAssetFile ScriptFile => ScriptAsset.Value;
 
     /// <summary>Gets the stylesheet as a content-addressed shared file.</summary>
-    public static HtmlAssetFile StyleFile => StyleAsset.Value;
+    public static HtmlAssetFile StyleSheetFile => StyleAsset.Value;
 
     /// <summary>Returns the files a bundle writes with <see cref="HtmlInteractiveAssetFiles.WriteTo"/>.</summary>
-    public static IReadOnlyList<HtmlAssetFile> Files() => new[] { StyleFile, ScriptFile };
+    public static IReadOnlyList<HtmlAssetFile> Files() => new[] { StyleSheetFile, ScriptFile };
 
     /// <summary>Returns an inline <c>&lt;style&gt;</c> and <c>&lt;script&gt;</c> pair. Emit it once per document.</summary>
     /// <param name="nonce">An optional CSP nonce for both elements.</param>
     /// <returns>HTML markup.</returns>
     public static string InlineMarkup(string? nonce = null) {
         var attribute = NonceAttribute(nonce);
-        return "<style" + attribute + ">" + Style + "</style>\n<script" + attribute + ">" + Script.Replace("</", "<\\/") + "</script>\n";
+        return "<style" + attribute + ">" + StyleSheet + "</style>\n<script" + attribute + ">" + Script.Replace("</", "<\\/") + "</script>\n";
     }
 
     /// <summary>Returns a stylesheet link and a deferred script element that reference the shared files.</summary>
@@ -65,7 +65,7 @@ public static class HtmlEnhanceAssets {
         if (assets == null) throw new ArgumentNullException(nameof(assets));
         string Integrity(HtmlAssetFile file) => assets.IncludeIntegrity
             ? " integrity=\"" + file.Integrity + "\" crossorigin=\"anonymous\"" : string.Empty;
-        return "<link rel=\"stylesheet\" href=\"" + WebUtility.HtmlEncode(assets.Href(StyleFile)) + "\"" + Integrity(StyleFile) + ">\n"
+        return "<link rel=\"stylesheet\" href=\"" + WebUtility.HtmlEncode(assets.Href(StyleSheetFile)) + "\"" + Integrity(StyleSheetFile) + ">\n"
             + "<script defer src=\"" + WebUtility.HtmlEncode(assets.Href(ScriptFile)) + "\"" + Integrity(ScriptFile) + NonceAttribute(nonce) + "></script>\n";
     }
 

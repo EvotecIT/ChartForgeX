@@ -25,8 +25,8 @@ public sealed class RadialAreaEncodingBrowserTests {
         var first = renderer.PrepareSection(chart, configure: Fit); var next = renderer.PrepareSection(Model(dark, width, true), configure: Fit);
         var emptyChart = Model(dark, width, true); emptyChart.ClearSeries(); var empty = renderer.PrepareSection(emptyChart, configure: Fit);
         Assert.Null(first.PreparedVisual.XProjection); Assert.Null(first.PreparedVisual.PolarProjection);
-        var body = "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + first.Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        var body = "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + first.Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         await using var session = await BrowserProofFonts.OpenAsync(body, width, 650); var page = session.Page;
         await page.EvaluateAsync("() => { window.areaController=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart')); window.areaSelections=[]; areaController.root.addEventListener('cfxselect',e=>areaSelections.push(e.detail.target)); }");
         var mark = NumericRadialSeriesTests.Marks(first.PreparedVisual.Scene)[0]; var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;

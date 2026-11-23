@@ -118,8 +118,8 @@ public sealed class NativeLayeredValueMotionBrowserTests {
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, HtmlChartSection> _snapshots = new();
         internal LayerHost(int width, bool dark) { _width = width; _dark = dark; _snapshots.Add("initial", PrepareSection(20)); }
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + Section("initial").Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + Section("initial").Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal HtmlChartSection Section(string basis) => _snapshots[basis];
         internal HtmlChartSection Midpoint() => PrepareSection(50);
         internal Reply External(double value) {

@@ -19,8 +19,8 @@ var payload = renderer.PrepareNativeTransitionJson(final, new HtmlNativeTransiti
 var replay = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));const play=()=>chart.presentInitial("
     + JsonSerializer.Serialize(payload) + ",{sceneRevision:chart.sceneRevision,motion:{duration:650}});document.querySelector('#replay').onclick=play;play();";
 var page = "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>"
-    + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body><button id='replay' type='button'>Replay initial fade</button>" + final.Html
-    + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script><script>" + replay + "</script></body></html>";
+    + HtmlInteractiveChartRenderer.StyleSheet + "</style></head><body><button id='replay' type='button'>Replay initial fade</button>" + final.Html
+    + "<script>" + HtmlInteractiveChartRenderer.Script + "</script><script>" + replay + "</script></body></html>";
 Directory.CreateDirectory("output"); File.WriteAllText("output/visual.html", page); File.WriteAllText("output/visual.svg", final.PreparedVisual.ToSvg());
 File.WriteAllBytes("output/visual.png", final.PreparedVisual.ToPng()); File.WriteAllText("output/visual.transition.json", payload);
 

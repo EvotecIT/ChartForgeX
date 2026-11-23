@@ -23,7 +23,7 @@ public sealed class ResponsiveChartStreamingTests {
         await using var session = await InteractiveChartBrowser.OpenAsync("<html><body></body></html>",
             configurePage: page => page.PageError += (_, error) => pageErrors.Add(error));
         await session.Page.EvaluateAsync("html=>{document.open();document.write(html);}",
-            "<html><body style='width:320px'><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>" + fragment[..split]);
+            "<html><body style='width:320px'><script>" + HtmlResponsiveChartRenderer.Script + "</script>" + fragment[..split]);
         // Flush the observer while the parser is still inside the layout-data script.
         await session.Page.EvaluateAsync("()=>new Promise(resolve=>setTimeout(resolve,0))");
         Assert.Equal("loading", await session.Page.EvaluateAsync<string>("()=>document.readyState"));

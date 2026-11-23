@@ -33,7 +33,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>");
         writer.Append(Text(title));
         writer.Append("</title>");
-        if (options.ExternalAssets == null) writer.Append("<style>").Append(BuildFragmentStyle()).Append("</style>");
+        if (options.ExternalAssets == null) writer.Append("<style>").Append(StyleSheet).Append("</style>");
         else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteStylesheet(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerStyle, graphExplorer: true)));
         writer.Append("</head><body class=\"cfx-graph-shell");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
@@ -57,7 +57,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var options = BuildOptions(configure);
         var writer = new StringBuilder();
         writer.Append("<style data-cfx-graph-assets=\"true\">");
-        writer.Append(BuildFragmentStyle());
+        writer.Append(StyleSheet);
         writer.Append("</style>");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
@@ -70,13 +70,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
     /// Gets the scoped graph explorer CSS that hosts can register once.
     /// </summary>
     /// <returns>The raw graph explorer CSS.</returns>
-    public static string BuildFragmentStyle() => HtmlGraphExplorerAssets.Style;
+    public static string StyleSheet => HtmlGraphExplorerAssets.Style;
 
     /// <summary>
     /// Gets the raw dependency-free graph explorer browser runtime.
     /// </summary>
     /// <returns>The raw JavaScript graph explorer runtime.</returns>
-    public static string BuildInteractionScript() => HtmlGraphExplorerAssets.Script;
+    public static string Script => HtmlGraphExplorerAssets.Script;
 
     private static HtmlGraphExplorerOptions BuildOptions(Action<HtmlGraphExplorerOptions>? configure) {
         var options = new HtmlGraphExplorerOptions();
@@ -620,7 +620,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("</script>");
     }
 
-    internal static string WrappedInteractionScript() => "(() => {\n" + BuildInteractionScript() + "})();";
+    internal static string WrappedInteractionScript() => "(() => {\n" + Script + "})();";
 
     private static string ExternalAssetMarkup(Action<ChartForgeX.Html.HtmlMarkupWriter> write) {
         var markup = new ChartForgeX.Html.HtmlMarkupWriter();

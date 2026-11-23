@@ -98,8 +98,8 @@ public sealed class InteractiveBrowserCompatibilityTests {
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Export);
         }
         var initial = renderer.PrepareSection(chart, configure: WindowOptions);
-        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
-            + "</style></head><body>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
+            + "</style></head><body>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await OpenAsync(html, width, 720);
         Assert.Equal(Engine.ToString().ToLowerInvariant(), session.Browser?.BrowserType.Name);
         var page = session.Page;

@@ -24,8 +24,8 @@ public sealed class PictorialArtworkBrowserTests {
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareSection(chart, configure: Options);
         chart.Pictorial(p => p.FillDirection(ChartPictorialFillDirection.BottomToTop)); chart.Series[0].Points[0] = new(1, 1.25);
         var next = renderer.PrepareSection(chart, configure: Options);
-        await using var session = await BrowserProofFonts.OpenAsync("<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>"
-            + first.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>", width + 24, 700);
+        await using var session = await BrowserProofFonts.OpenAsync("<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>"
+            + first.Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>", width + 24, 700);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => window.pictorialArtwork = ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart'))");
         const string target = "[data-cfx-role=pictorial-item][data-cfx-point='0']";

@@ -154,9 +154,9 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             _sections.Add("initial", new CapabilitySnapshot(_renderer.PrepareSection(Model(secondary), configure: ConfigureSection), secondary));
         }
         internal string Id { get; }
-        internal string Page(params CapabilityHost[] peers) => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>"
+        internal string Page(params CapabilityHost[] peers) => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>"
             + _sections["initial"].Section.Html + string.Concat(peers.Select(peer => peer._sections["initial"].Section.Html))
-            + "<script>" + HtmlInteractiveChartRenderer.BuildFeatureScript() + "</script><script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+            + "<script>" + HtmlInteractiveChartRenderer.FeatureScript + "</script><script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal object WithoutSecondaryY(double minimum, double maximum) {
             lock (_sections) return Store(false, new ChartAxisWindow(minimum, maximum), null);
         }

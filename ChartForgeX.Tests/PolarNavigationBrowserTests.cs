@@ -306,7 +306,7 @@ public sealed class PolarNavigationBrowserTests {
             var window = seam ? new ChartPolarViewport(new ChartAxisWindow(2.6, 3.7), new ChartAxisWindow(20, 80), new ChartAxisWindow(10, 100)) : PolarNavigationTests.Window();
             _snapshots.Add("initial", PolarNavigationRecipe.PrepareSection(_chart, window));
         }
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + _snapshots["initial"].Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + _snapshots["initial"].Html + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal object Prepare(JsonElement request) {
             lock (_snapshots) {
                 var basis = _snapshots[request.GetProperty("basis").GetString()!];

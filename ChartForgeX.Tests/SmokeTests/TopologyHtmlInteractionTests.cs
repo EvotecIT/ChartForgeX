@@ -261,8 +261,8 @@ internal static partial class SmokeTests {
 
         var assetlessOptions = new TopologyRenderOptions { IncludeLegend = false, Html = { Interactions = true, ViewportControls = true }, CssClassPrefix = "report-topology" };
         var assetlessFragment = CreateSampleTopologyChart().ToInteractiveHtmlFragmentWithoutAssets(assetlessOptions);
-        var assetlessStyle = TopologyHtmlRenderer.BuildFragmentStyle(assetlessOptions, VisualTheme.Graphite());
-        var assetlessScript = HtmlInteractiveTopologyRenderer.BuildInteractionScript(assetlessOptions);
+        var assetlessStyle = TopologyHtmlRenderer.StyleSheet(assetlessOptions, VisualTheme.Graphite());
+        var assetlessScript = HtmlInteractiveTopologyRenderer.Script(assetlessOptions);
         Assert(assetlessFragment.Contains("class=\"report-topology-wrapper\"", StringComparison.Ordinal), "Asset-light topology fragments should still render the requested wrapper prefix.");
         Assert(!assetlessFragment.Contains("data-cfx-topology-assets=\"true\"", StringComparison.Ordinal), "Asset-light topology fragments should omit inline topology CSS assets.");
         Assert(assetlessFragment.Contains("data-cfx-asset-source=\"host\"", StringComparison.Ordinal), "Asset-light topology fragments should declare that the embedding host owns their assets.");

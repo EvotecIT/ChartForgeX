@@ -91,9 +91,9 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
                 Browser = HtmlBrowserEngine.Chromium, Headless = true, Timeout = 30000, ViewportWidth = 980, ViewportHeight = 760
             }).GetAwaiter().GetResult();
             _session = opened; opened.Page.PageError += (_, error) => _pageErrors.Add(error);
-            var page = "<!doctype html><html><head><style>" + _fontCss + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+            var page = "<!doctype html><html><head><style>" + _fontCss + HtmlInteractiveChartRenderer.StyleSheet
                 + "</style></head><body style='margin:12px'>" + initial.Html + "<script>"
-                + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+                + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
             try {
                 opened.Page.SetContentAsync(page).GetAwaiter().GetResult();
                 opened.Page.EvaluateAsync("""

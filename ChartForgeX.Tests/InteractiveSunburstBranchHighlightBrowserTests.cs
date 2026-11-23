@@ -271,8 +271,8 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         var chart = SunburstBranchHighlightExamples.CreateChart();
         var html = externalAssets
             ? chart.ToInteractiveHtmlPage(options => { Configure(options); options.ExternalAssets = new HtmlAssetReferences("https://assets.example.test/"); })
-            : "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style></head><body>"
-                + chart.ToInteractiveHtmlFragmentWithoutAssets(Configure) + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            : "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style></head><body>"
+                + chart.ToInteractiveHtmlFragmentWithoutAssets(Configure) + "<script>" + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", 850, 650);
         var errors = new List<string>(); session.Page.PageError += (_, error) => errors.Add(error);
         if (externalAssets) await session.Page.RouteAsync("https://assets.example.test/**", async route => {

@@ -86,12 +86,12 @@ public sealed class AutoThemeHtmlTests {
         var chart = Line(ThemeMode.Auto);
         var fragment = new HtmlResponsiveChartRenderer().RenderFragmentWithoutAssets(chart);
         Assert.Null(chart.Options.SvgColorVariables);
-        var css = HtmlResponsiveChartRenderer.AutoThemeStylesheet(chart);
+        var css = HtmlResponsiveChartRenderer.AutoThemeStyleSheet(chart);
         Assert.NotNull(css);
         Assert.DoesNotContain("<style", fragment);
         var scope = Regex.Match(fragment, "data-cfx-auto-theme=\"(cfx-auto-[0-9a-f]+)\"").Groups[1].Value;
         Assert.StartsWith("[data-cfx-auto-theme=\"" + scope + "\"]{", css);
-        Assert.Null(HtmlResponsiveChartRenderer.AutoThemeStylesheet(Line(ThemeMode.Light)));
+        Assert.Null(HtmlResponsiveChartRenderer.AutoThemeStyleSheet(Line(ThemeMode.Light)));
     }
 
     [Fact]

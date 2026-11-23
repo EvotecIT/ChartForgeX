@@ -30,9 +30,9 @@ public sealed partial class StandaloneViewportBrowserTests {
                 options.Interaction.GroupName = "linked-windows";
                 options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.StateBookmarks);
             }).Html);
-            html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+            html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
                 + "</style></head><body>" + string.Concat(sections) + "<script>"
-                + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+                + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         }
         await using var session = await OpenAsync(html, 980, 1400);
         var page = session.Page;

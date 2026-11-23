@@ -141,7 +141,7 @@ public sealed class ResponsiveRadialLayoutBrowserTests {
         var fragment = new HtmlResponsiveChartRenderer().RenderFragmentWithoutAssets(chart, 240, 1600, compressLayouts: compressed);
         Assert.DoesNotContain("<script", fragment, StringComparison.Ordinal);
         Assert.DoesNotContain("<style", fragment, StringComparison.Ordinal);
-        var html = ResponsiveRadialFixture.Document(fragment + "<style>" + HtmlResponsiveChartRenderer.Stylesheet + "</style><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script>", false);
+        var html = ResponsiveRadialFixture.Document(fragment + "<style>" + HtmlResponsiveChartRenderer.StyleSheet + "</style><script>" + HtmlResponsiveChartRenderer.Script + "</script>", false);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 390, 1000);
         await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutVersion==='spec-4'");
         Assert.Equal(6, await session.Page.Locator("[data-cfx-role=legend-entry]").CountAsync());

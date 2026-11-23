@@ -87,9 +87,9 @@ public sealed class GroupedCategoryAxisBrowserTests {
         var renderer = new HtmlInteractiveChartRenderer();
         var full = renderer.PrepareSection(chart, configure: ConfigureWindow);
         var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(3.5, 5.5)), ConfigureWindow);
-        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.StyleSheet
             + "</style></head><body style='margin:12px'>" + window.Html + "<script>"
-            + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+            + HtmlInteractiveChartRenderer.Script + "</script></body></html>";
         await using var session = await OpenAsync(html, 980, 780);
         var page = session.Page;
         await Bind(page);

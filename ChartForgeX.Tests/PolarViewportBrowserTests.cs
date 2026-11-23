@@ -132,8 +132,8 @@ public sealed class PolarViewportBrowserTests {
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, HtmlChartSection> _snapshots = new();
         internal Host(bool dark) { _dark = dark; _snapshots.Add("initial", _renderer.PreparePolarSection(Model(), configure: Configure)); }
-        internal string Page => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>" + _snapshots["initial"].Html
-            + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
+        internal string Page => "<style>" + HtmlInteractiveChartRenderer.StyleSheet + "</style>" + _snapshots["initial"].Html
+            + "<script>" + HtmlInteractiveChartRenderer.Script + "</script>";
         internal object Prepare(JsonElement request) {
             lock (_snapshots) {
                 _ = _snapshots[request.GetProperty("basis").GetString()!];
