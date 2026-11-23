@@ -114,7 +114,7 @@ public sealed partial class TerminalStory {
             @"C:\",
             string.Empty,
             TerminalThemes.Default(),
-            TerminalTabIcon.PowerShell);
+            TerminalTabIcons.PowerShell);
         _tabs.Add(initialTab);
         _tabsById.Add(initialTab.Id, initialTab);
     }
@@ -371,7 +371,7 @@ public sealed partial class TerminalStory {
         TerminalDialect dialect,
         string workingDirectory,
         VisualTheme theme,
-        TerminalTabIcon icon = TerminalTabIcon.Terminal,
+        Icon? icon = null,
         string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureInitialConfiguration();
         var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
@@ -389,7 +389,7 @@ public sealed partial class TerminalStory {
         TerminalDialect dialect,
         string workingDirectory,
         VisualTheme theme,
-        TerminalTabIcon icon = TerminalTabIcon.Terminal,
+        Icon? icon = null,
         string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
         var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
@@ -407,7 +407,7 @@ public sealed partial class TerminalStory {
         TerminalDialect dialect,
         string workingDirectory,
         VisualTheme theme,
-        TerminalTabIcon icon = TerminalTabIcon.Terminal,
+        Icon? icon = null,
         string? customPrompt = null,
         double transitionSeconds = 0.2, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
@@ -485,11 +485,10 @@ public sealed partial class TerminalStory {
         TerminalDialect dialect,
         string workingDirectory,
         VisualTheme theme,
-        TerminalTabIcon icon,
+        Icon? icon,
         string? customPrompt, ThemeMode themeMode, TerminalStyleOptions? style) {
         var normalizedId = TabId(id, nameof(id));
         ValidateEnum(dialect, nameof(dialect));
-        ValidateEnum(icon, nameof(icon));
         var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
         if (dialect == TerminalDialect.Custom && normalizedPrompt.Length == 0) throw new ArgumentException("Custom terminal dialects require a prompt.", nameof(customPrompt));
         return new TerminalTab(
@@ -499,7 +498,7 @@ public sealed partial class TerminalStory {
             OneLine(workingDirectory, nameof(workingDirectory), allowEmpty: false),
             normalizedPrompt,
             theme ?? throw new ArgumentNullException(nameof(theme)),
-            icon, themeMode, style);
+            icon ?? TerminalTabIcons.Terminal, themeMode, style);
     }
 
     private static string TabId(string value, string name) {

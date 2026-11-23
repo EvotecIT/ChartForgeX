@@ -74,8 +74,8 @@ var canvas = VisualCanvas.CreateSocialPreview()
     .Theme(theme).ThemeMode(ThemeMode.Dark)
     .BackgroundTop(ChartColor.FromHex("#020713")).BackgroundBottom(ChartColor.FromHex("#071A35"))
     .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
-    .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), iconKind: VisualCanvasInfoTileIconKind.Computer)
-    .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Raised, VisualCanvasInfoTileIconKind.Cpu, VisualCanvasInfoTileMiniChartKind.Area, new[] { 18d, 26d, 22d, 37d, 48d, 43d }, 100)
+    .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), icon: VisualCanvasIcons.Computer)
+    .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Raised, VisualCanvasIcons.Cpu, VisualCanvasInfoTileMiniChartKind.Area, new[] { 18d, 26d, 22d, 37d, 48d, 43d }, 100)
     .AddKeyValueBlock(
         VisualCanvasPlacement.At(VisualCanvasAnchor.BottomLeft, 66, 50),
         300,
@@ -139,8 +139,7 @@ var theme = VisualTheme.Graphite().WithTypography(
         tileDetailSize: 14));
 var canvas = VisualCanvas.Create(1200, 630).Theme(theme)
     .Style(style => style.TileTextScale = 1.15)
-    .AddInfoTileWithTextOptions(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
-        new VisualCanvasInfoTileTextOptions(textScale: 1.25,
+    .AddInfoTile(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01", textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.25,
             valueFontSize: 28));
 ```
 

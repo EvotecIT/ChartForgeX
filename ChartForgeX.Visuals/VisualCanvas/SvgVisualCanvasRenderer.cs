@@ -243,7 +243,6 @@ public sealed class SvgVisualCanvasRenderer {
 
     private static void RenderInfoTile(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, string id, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
-        VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
         var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile, theme);
@@ -252,7 +251,7 @@ public sealed class SvgVisualCanvasRenderer {
         var y = metrics.Y;
         var width = metrics.Width;
         var height = metrics.Height;
-        var accent = tile.AccentOverride ?? theme.Accent;
+        var accent = tile.Accent ?? theme.Accent;
         var radius = Math.Min(16, height * 0.18);
         var isRaised = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Raised;
         var isFilled = tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Glass || isRaised;
@@ -273,9 +272,9 @@ public sealed class SvgVisualCanvasRenderer {
         var iconBox = metrics.IconBox;
         var iconX = metrics.IconX;
         var iconY = metrics.IconY;
-        var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(tile.Icon, iconBox, theme.FontFamily, theme.TextMeasurementMode);
+        var iconFont = VisualCanvasInfoTileTextLayout.IconFontSize(tile.IconText, iconBox, theme.FontFamily, theme.TextMeasurementMode);
         writer.StartElement("rect").Attribute("x", iconX).Attribute("y", iconY).Attribute("width", iconBox).Attribute("height", iconBox).Attribute("rx", Math.Min(13, iconBox * 0.25)).Attribute("fill", isFilled ? accent.WithOpacity(isRaised ? 0.25 : 0.18).ToCss() : "none").Attribute("stroke", isRaised ? accent.WithOpacity(0.32).ToCss() : (tile.SurfaceStyle == VisualCanvasInfoTileSurfaceStyle.Outline ? accent.WithOpacity(0.38).ToCss() : "none")).EndEmptyElement().Line();
-        RenderTileIcon(writer, tile.IconKind, tile.Icon, iconX, iconY, iconBox, iconFont, accent, theme.FontFamily);
+        RenderTileIcon(writer, tile.Glyph, tile.IconText, iconX, iconY, iconBox, iconFont, accent, theme.FontFamily);
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
@@ -424,7 +423,7 @@ public sealed class SvgVisualCanvasRenderer {
 
     private static void RenderHeroBadge(SvgMarkupWriter writer, VisualCanvasHeroBadgeLayer badge, string id, ResolvedVisualCanvasStyle theme, int layerIndex) {
         VisualCanvas.ValidateEnum(badge.ImageFit, nameof(badge.ImageFit));
-        var accent = badge.AccentOverride ?? theme.SecondaryAccent;
+        var accent = badge.Accent ?? theme.SecondaryAccent;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-hero-badge").EndStartElement().Line();
         writer.StartElement("rect").Attribute("x", badge.X).Attribute("y", badge.Y).Attribute("width", badge.Width).Attribute("height", badge.Height).Attribute("rx", Math.Min(22, badge.Height * 0.20)).Attribute("fill", "url(#" + id + "-hero-badge)").Attribute("stroke", accent.ToCss()).Attribute("stroke-width", 2.4).Attribute("filter", "url(#" + id + "-soft-glow)").EndEmptyElement().Line();
         var href = ResolveBadgeImageHref(badge);
