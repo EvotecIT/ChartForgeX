@@ -28,7 +28,7 @@ public sealed partial class ChartGrid {
                 PreserveEmptyColumns = true,
                 Gap = Gap,
                 Padding = Padding,
-                PngOutputScale = PngOutputScale,
+                RasterScale = RasterScale,
                 PanelSize = PanelSize,
                 PanelFit = PanelFit,
                 Theme = Theme,

@@ -34,7 +34,7 @@ public sealed class PreparedChordLeaderTests {
             .Title("Directed regional transfers").Legend(false).DataLabels()
             .AddChord("Regional transfers", nodes, flows);
         // Pin the same portable face that exposed the original compact crossing.
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);
         var captions = NumericRadialAxisTextTests.Footprints(prepared.Scene).Where(item => item.Text.Role == "chord-node-label").ToArray();

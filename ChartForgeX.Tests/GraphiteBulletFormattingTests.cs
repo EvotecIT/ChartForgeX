@@ -18,7 +18,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(true, 80, 1)]
     public void CompactBulletRowsKeepPositiveMarksInSvgAndPng(bool dark, int height, int rowCount) {
         var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-            .Size(200, height).Png(p => p.OutputScale(1));
+            .Size(200, height).Raster(p => p.OutputScale(1));
         for (var row = 0; row < rowCount; row++) chart.AddBullet("Count " + row, 40 + row, 70);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal(rowCount, MarkRoles(nodes, "bullet-row").Length);

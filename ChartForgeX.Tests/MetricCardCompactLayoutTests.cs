@@ -156,7 +156,7 @@ public sealed class MetricCardCompactLayoutTests {
     }
 
     private static MetricCard Compact(int height) => MetricCard.Create().Size(281, height).Padding(6.5)
-        .ShowCard(false).PngOutputScale(1).Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 9)));
+        .ShowCard(false).RasterScale(1).Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 9)));
 
     private static Dictionary<string, XElement> Text(MetricCard card) => XDocument.Parse(card.ToSvg()).Descendants()
         .Where(element => element.Name.LocalName == "text" && element.Attribute("data-cfx-role") != null)

@@ -21,7 +21,7 @@ public sealed class ExtremeAxisTickLayoutTests {
         const double minimum = -1e308, maximum = 1e308;
         var chart = Chart.Create().Size(1000, 600).ShowHeader(false).Legend(false)
             .Padding(20, 20, 20, 20)
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         ChartAxis axis;
         var horizontal = axisRole is "x" or "horizontal-value";
         if (axisRole == "horizontal-value") {

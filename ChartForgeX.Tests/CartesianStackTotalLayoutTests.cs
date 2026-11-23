@@ -20,7 +20,7 @@ public sealed class CartesianStackTotalLayoutTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         var chart = Chart.Create().Size(300, 220).Axes(false).Legend(false).ShowHeader(false)
-            .Png(p => p.FontPath(font)).Bars(b => b.Stacked().ShowTotals()).DataLabelStyle(style => style.FontSize(18))
+            .Raster(p => p.FontPath(font)).Bars(b => b.Stacked().ShowTotals()).DataLabelStyle(style => style.FontSize(18))
             .YAxis(y => y.Bounds(sign < 0 ? -16 : sign > 0 ? 0 : -16, sign < 0 ? 0 : 16));
         chart.Options.YAxis.Reversed(reversed);
         var signs = sign == 0 ? new[] { 1, -1 } : new[] { sign };
@@ -121,7 +121,7 @@ public sealed class CartesianStackTotalLayoutTests {
         Assert.True(File.Exists(font), "The existing Carlito fixture must make full-caption lane measurements repeatable.");
         // Every caption fits with this face; wider system fonts may correctly keep a readable subset.
         var chart = Chart.Create().Size(300, 220).Axes(false).Legend(false).ShowHeader(false)
-            .Png(p => p.FontPath(font)).Bars(b => b.Style(ChartBarStyle.Flat).Stacked().ShowTotals()).DataLabels(false);
+            .Raster(p => p.FontPath(font)).Bars(b => b.Style(ChartBarStyle.Flat).Stacked().ShowTotals()).DataLabels(false);
         var categories = horizontal ? new[] { 1 } : Enumerable.Range(1, 12).ToArray();
         var first = categories.Select(category => new ChartPoint(category, 10 * sign));
         var second = categories.Select(category => new ChartPoint(category, 20 * sign));

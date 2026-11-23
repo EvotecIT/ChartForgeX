@@ -98,7 +98,7 @@ internal static partial class Program {
             "Packed direct and Markdown native exports differ: " + name);
         PackageAssertions.Require(!svg.Contains("<script", StringComparison.OrdinalIgnoreCase) && !svg.Contains("foreignObject", StringComparison.Ordinal),
             "Packed diagram used an active or foreign fallback surface: " + name);
-        PackageAssertions.Png(png);
+        PackageAssertions.Raster(png);
         var json = artifact.ToInterchangeJson();
         PackageAssertions.Require(VisualArtifactInterchangeEnvelope.FromJson(json).ToJson() == json,
             "Packed diagram common interchange envelope did not round trip: " + name);

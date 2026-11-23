@@ -106,7 +106,7 @@ public sealed class FontRegistryTests : IDisposable {
         FontRegistry.Register(Family, bold, weight: 700);
         Assert.Contains(Family, FontRegistry.Families);
         var chart = BarChart(Family + ", sans-serif");
-        Assert.Equal(Path.GetFullPath(regular), chart.GetPngFontInfo().ResolvedPath);
+        Assert.Equal(Path.GetFullPath(regular), chart.GetRasterFontInfo().ResolvedPath);
         Assert.NotEqual(before, chart.ToPng());
         Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveThemeBoldFont(Family)!.Root);
         Assert.Equal(BarChart("Georgia, serif").ToPng(), chart.ToPng());

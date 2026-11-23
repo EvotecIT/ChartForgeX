@@ -20,7 +20,7 @@ public static class NativeVectorGlassExample {
             .StrokeRoundedRectangle(24, 24, width - 48, 352, 18, accent.WithAlpha(200));
         // Only the explicitly authored backdrop is a bitmap. Foreground captions use the incumbent native text owner.
         return ChartForgeX.Composition.VisualCanvas.Create(width, 400)
-            .PngOutputScale(1).BackdropStyle(ChartForgeX.Composition.VisualCanvasBackdropStyle.Transparent)
+            .RasterScale(1).BackdropStyle(ChartForgeX.Composition.VisualCanvasBackdropStyle.Transparent)
             .Theme(VisualTheme.Graphite()).ThemeMode(mode).AddImage(backdrop.ToRgbaImage(), 0, 0, width, 400)
             .AddText(44, 52, width - 88, "Service window", 24, ink, emphasized: true)
             .AddText(44, 106, width - 88, "Explicit local backdrop", 16, ink)

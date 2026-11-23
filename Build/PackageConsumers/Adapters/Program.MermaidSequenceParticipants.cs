@@ -23,7 +23,7 @@ internal static partial class Program {
         PackageAssertions.Require(envelope.Nodes[0].Sequence?.Kind == SequenceArtifactParticipantKind.Database
             && envelope.Nodes[0].Extensions.ContainsKey("mermaid.properties.statements") && envelope.Nodes[0].Extensions.ContainsKey("mermaid.menu.entries"),
             "Packed participant property/menu facts were lost in portable interchange.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Count == 1 && artifact.ToSvg() == fenced.Artifacts[0].ToSvg(),
             "Packed fenced participant source did not use the shared native scene.");

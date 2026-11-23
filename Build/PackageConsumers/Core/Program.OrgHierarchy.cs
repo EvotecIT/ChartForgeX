@@ -22,6 +22,6 @@ internal static partial class Program {
         var reset = restored.Prepare(new TopologyRenderOptions { IncludeLegend = false, HierarchyView = new TopologyHierarchyView() });
         PackageAssertions.Require(reset.NodeCount == 4 && restored.Nodes.All(node => !node.Metadata.ContainsKey("hierarchy.collapsed")),
             "Packed hierarchy reset did not restore its source contributors.");
-        PackageAssertions.Png(prepared.ToPng()); PackageAssertions.Png(reset.ToPng());
+        PackageAssertions.Raster(prepared.ToPng()); PackageAssertions.Raster(reset.ToPng());
     }
 }

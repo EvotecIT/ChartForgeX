@@ -9,7 +9,7 @@ public sealed partial class TerminalStory {
             Width = Width, FontSize = FontSize, LineHeight = LineHeight,
             InitialDelaySeconds = InitialDelaySeconds, CharactersPerSecond = CharactersPerSecond,
             LineDelaySeconds = LineDelaySeconds, TabHoldSeconds = TabHoldSeconds,
-            ShowFinalPrompt = ShowFinalPrompt, PngOutputScale = PngOutputScale,
+            ShowFinalPrompt = ShowFinalPrompt, RasterScale = RasterScale,
             WindowStyle = WindowStyle, _activeTabId = _activeTabId
         };
         copy._tabs.Clear(); copy._tabsById.Clear();

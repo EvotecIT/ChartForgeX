@@ -87,7 +87,7 @@ internal static partial class SmokeTests {
 
         var terminal = TerminalStory.Create()
             .Width(480)
-            .PngOutputScale(1)
+            .RasterScale(1)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Command("Get-Process | Sort-Object CPU", 0.05)
@@ -122,7 +122,7 @@ internal static partial class SmokeTests {
 
         var longTerminal = TerminalStory.Create()
             .Width(960)
-            .PngOutputScale(4)
+            .RasterScale(4)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Output(string.Join(Environment.NewLine, Enumerable.Repeat("completed line", 105)));

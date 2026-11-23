@@ -80,7 +80,7 @@ internal static partial class SmokeTests {
         foreach (var paint in new[] { "status", "series", "point" }) {
             // Pin the controlled Carlito pixel fixture at 12px; responsive Archivo sizes are checked separately.
             // Automatic captions take a reserved lane outside full-height levels; this checks the contained ink.
-            var chart = WaterfallLabelSample(180, dark).Png(p => p.FontPath(font)).Bars(b => b.Style(style)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
+            var chart = WaterfallLabelSample(180, dark).Raster(p => p.FontPath(font)).Bars(b => b.Style(style)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
                 .DataLabelStyle(label => label.FontSize(12))
                 .AddWaterfall("Delta", Points(100), paint == "series" ? ChartColor.FromHex("#172554") : null);
             if (paint == "point") chart.Series[0].PointColor(0, ChartColor.FromHex("#172554"));
@@ -129,7 +129,7 @@ internal static partial class SmokeTests {
         }
 
         foreach (var level in new[] { "chart", "series", "point" }) {
-            var chart = WaterfallLabelSample(180, false).Png(p => p.FontPath(font)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside)).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
+            var chart = WaterfallLabelSample(180, false).Raster(p => p.FontPath(font)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside)).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
             chart.Options.YAxis.Bounds(0, 100).Reversed();
             if (level == "chart") chart.DataLabelStyle(style => style.Color(ChartColor.FromHex("#FFFF00")));
             else if (level == "series") chart.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#FFFF00")));

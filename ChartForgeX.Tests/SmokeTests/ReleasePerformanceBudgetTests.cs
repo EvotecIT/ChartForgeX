@@ -34,7 +34,7 @@ internal static partial class SmokeTests {
         });
 
         var wallpaper = VisualCanvas.CreateDesktopWallpaper()
-            .PngOutputScale((int)ChartPngOutputScale.Retina)
+            .RasterScale((int)ChartRasterScale.Retina)
             .BackgroundTop(ChartColor.FromHex("#020617")).BackgroundBottom(ChartColor.FromHex("#0B2447"))
             .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
             .AddHeroTitle(520, 354, 880, 78, new[] {

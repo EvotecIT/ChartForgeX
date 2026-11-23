@@ -3,7 +3,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Named PNG output-density presets. The chart keeps its logical layout while the emitted PNG dimensions are multiplied by the selected value.
 /// </summary>
-public enum ChartPngOutputScale {
+public enum ChartRasterScale {
     /// <summary>
     /// Emits a PNG at the chart's logical width and height.
     /// </summary>

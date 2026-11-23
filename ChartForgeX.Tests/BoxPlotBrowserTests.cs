@@ -17,7 +17,7 @@ public sealed class BoxPlotBrowserTests {
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, "compact-horizontal")
             .Size(360, 440).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).DataLabels(false).FontFamily("Carlito")
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         chart.Options.XAxis.Bounds(0, 60);
         chart.Labels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne"; labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum"; });
         chart.Series[0].PointLabel(1, "Promised distribution"); chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
@@ -27,7 +27,7 @@ public sealed class BoxPlotBrowserTests {
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         }), 384, 600);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
-        var fontDirectory = Path.GetDirectoryName(chart.Options.Png.FontPath)!;
+        var fontDirectory = Path.GetDirectoryName(chart.Options.Raster.FontPath)!;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content =
             "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Regular.ttf"))) + ") format('truetype');font-weight:400}"
             + "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Bold.ttf"))) + ") format('truetype');font-weight:700}" });

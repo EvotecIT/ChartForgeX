@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class CartesianCategoryExamples {
-    internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void Write(string output, ChartRasterScale pngOutputScale) {
         var peer = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(1.5) + 3);
         var observations = new[] { new ChartPoint(1.5, 2), new ChartPoint(3.5, 3) };
         var mixed = Chart.Create().Title("Bars and interval observations")
@@ -28,7 +28,7 @@ internal static class CartesianCategoryExamples {
     }
 
     /// <summary>Shows numeric category membership in two physical orientations and both paired palettes.</summary>
-    internal static void WriteGrouped(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void WriteGrouped(string output, ChartRasterScale pngOutputScale) {
         foreach (var width in new[] { 390, 960 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var suffix = width + (mode == ThemeMode.Dark ? "-dark" : "-light");
             ExampleArtifactWriter.SaveChart(CreateGroupedMonths(width, mode), output, "cartesian-grouped-months-" + suffix, pngOutputScale);

@@ -27,13 +27,13 @@ public sealed class VisualArtifactInterchangeRailroadArtifact {
     /// <summary>Gets or sets whether the embedding host owns the frame.</summary>
     public bool HostOwnsFrame { get; set; }
     /// <summary>Gets or sets the native PNG output scale, from one through four.</summary>
-    public int PngOutputScale { get; set; } = 1;
+    public int RasterScale { get; set; } = 1;
 
     internal VisualArtifactInterchangeRailroadArtifact Clone() {
         var copy = new VisualArtifactInterchangeRailroadArtifact {
             RuleComparison = RuleComparison, Theme = Theme, ThemeMode = ThemeMode, Padding = Padding,
             TransparentBackground = TransparentBackground, ShowCard = ShowCard, HostOwnsFrame = HostOwnsFrame,
-            PngOutputScale = PngOutputScale
+            RasterScale = RasterScale
         };
         copy.Rules.AddRange(Rules); // Rules and their expressions are immutable; the host collection is detached.
         return copy;

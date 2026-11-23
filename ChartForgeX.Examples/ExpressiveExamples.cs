@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 internal static partial class ExpressiveExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         StyledMultilingualTextExample.Write(output);
         SaveGrid(CreateThemeShowcaseGrid(), output, "theme-font-showcase-grid", pngOutputScale);
         SaveGrid(CreatePaletteSwatchGrid(), output, "palette-swatch-showcase-grid", pngOutputScale);
@@ -30,7 +30,7 @@ internal static partial class ExpressiveExamples {
         SaveChart(CreateColourEmojiShowcase(), output, "colour-emoji-showcase", pngOutputScale);
         SaveChart(CreateFontPaletteShowcase(), output, "font-palette-showcase", pngOutputScale);
         // Keep 12px labels at the authored 12px strike size in this small-text example.
-        SaveChart(CreateEmbeddedBitmapShowcase(), output, "font-bitmap-showcase", ChartPngOutputScale.Standard);
+        SaveChart(CreateEmbeddedBitmapShowcase(), output, "font-bitmap-showcase", ChartRasterScale.Standard);
         SaveChart(CreateControlPartition(), output, "control-partition-sunburst-aurora", pngOutputScale);
         SaveChart(CreateAudiencePictorial(), output, "audience-pictorial-candy", pngOutputScale);
         SaveChart(CreateSupportThemesWordCloud(), output, "support-themes-word-cloud-editorial", pngOutputScale);
@@ -583,15 +583,15 @@ internal static partial class ExpressiveExamples {
         new ChartWordCloudItem("Charts", 8)
     };
 
-    private static void SaveChart(Chart chart, string output, string name, ChartPngOutputScale pngOutputScale) {
-        chart.Png(p => p.OutputScale((int)pngOutputScale));
+    private static void SaveChart(Chart chart, string output, string name, ChartRasterScale pngOutputScale) {
+        chart.Raster(p => p.OutputScale((int)pngOutputScale));
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
         chart.SaveHtml(Path.Combine(output, name + ".html"));
         chart.SavePng(Path.Combine(output, name + ".png"));
     }
 
-    private static void SaveGrid(ChartGrid grid, string output, string name, ChartPngOutputScale pngOutputScale) {
-        grid.PngOutputScale((int)pngOutputScale);
+    private static void SaveGrid(ChartGrid grid, string output, string name, ChartRasterScale pngOutputScale) {
+        grid.RasterScale((int)pngOutputScale);
         grid.SaveSvg(Path.Combine(output, name + ".svg"));
         grid.SaveHtml(Path.Combine(output, name + ".html"));
         grid.SavePng(Path.Combine(output, name + ".png"));

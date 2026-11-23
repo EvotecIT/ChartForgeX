@@ -83,10 +83,10 @@ public sealed partial class ChartOptions {
         set => _wordCloud = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    private ChartPngOptions _png = new();
+    private ChartRasterOptions _png = new();
 
-    /// <summary>Gets or sets the pNG fonts, hinting and scale.</summary>
-    public ChartPngOptions Png {
+    /// <summary>Gets or sets the fonts, hinting and scale of raster output (PNG, JPEG, BMP, TIFF and PPM).</summary>
+    public ChartRasterOptions Raster {
         get => _png;
         set => _png = value ?? throw new ArgumentNullException(nameof(value));
     }

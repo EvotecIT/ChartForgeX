@@ -59,10 +59,10 @@ public sealed class JourneyTimelineInterchangeRejectionTests {
         var envelope = JourneyTimelineInterchangeTests.Parsed(timeline ? "timeline-td" : "journey", 800, false).ToInterchangeEnvelope();
         envelope.Width = 800.5; Assert.ThrowsAny<ArgumentException>(() => envelope.ToJson()); envelope.Width = 800;
         envelope.Height = null; Assert.ThrowsAny<ArgumentException>(() => envelope.ToJson()); envelope.Height = 640;
-        if (timeline) envelope.Timeline!.PngOutputScale = 5; else envelope.Journey!.PngOutputScale = 5;
+        if (timeline) envelope.Timeline!.RasterScale = 5; else envelope.Journey!.RasterScale = 5;
         Assert.ThrowsAny<ArgumentException>(() => envelope.ToJson());
-        if (timeline) { envelope.Timeline!.PngOutputScale = 1; envelope.Timeline.Periods.Add(null!); }
-        else { envelope.Journey!.PngOutputScale = 1; envelope.Journey.Tasks.Add(null!); }
+        if (timeline) { envelope.Timeline!.RasterScale = 1; envelope.Timeline.Periods.Add(null!); }
+        else { envelope.Journey!.RasterScale = 1; envelope.Journey.Tasks.Add(null!); }
         Assert.ThrowsAny<ArgumentException>(() => envelope.ToJson());
     }
 }

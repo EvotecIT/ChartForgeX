@@ -142,7 +142,7 @@ public sealed class TopologyMotionVisualParityTests {
         .AddNode("c", "Data", lastX, 80, width: 100, height: 60)
         .AddEdge("first", "a", "b", routing: TopologyEdgeRouting.Straight, color: ChartColor.FromHex("#EF4444"))
         .AddEdge("second", "b", "c", routing: TopologyEdgeRouting.Straight, color: ChartColor.FromHex("#22C55E"));
-    private static TopologyRenderOptions Options() => new() { IncludeLegend = false, PngSupersamplingScale = 1 };
+    private static TopologyRenderOptions Options() => new() { IncludeLegend = false, RasterSupersampling = 1 };
     private static TopologyMotionOptions Motion(bool loop) {
         var motion = TopologyMotionOptions.RoutePulseForEdges("first", "second").DurationSeconds(2).FramesPerSecond(10);
         motion.Loop = loop;

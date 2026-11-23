@@ -52,7 +52,7 @@ public sealed class TreeViewInterchangeTests {
         var classes = new List<string> { "external", "highlight" };
         var block = TreeViewBlock.Create().Title("Native rows").Subtitle("Portable semantics").Padding(27, 19, 31, 17)
             .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(ThemeMode.Dark)
-            .TransparentBackground().ShowCard(false).PngOutputScale(2);
+            .TransparentBackground().ShowCard(false).RasterScale(2);
         block.ShowIcons = true; block.RowIndent = 25; block.RowPadding = 7;
         block.Options.Accessibility.Name = "Native tree"; block.Options.Accessibility.Description = "Complete values";
         block.Options.Accessibility.Language = "pl"; block.Options.Accessibility.IsDecorative = true;
@@ -70,7 +70,7 @@ public sealed class TreeViewInterchangeTests {
         Equal(envelope.TreeView.Items, imported.Items);
         Assert.Equal(25, imported.RowIndent); Assert.Equal(7, imported.RowPadding); Assert.True(imported.ShowIcons);
         Assert.Equal((27d, 19d, 31d, 17d), Padding(imported));
-        Assert.True(imported.Options.TransparentBackground); Assert.False(imported.Options.ShowCard); Assert.Equal(2, imported.Options.PngOutputScale);
+        Assert.True(imported.Options.TransparentBackground); Assert.False(imported.Options.ShowCard); Assert.Equal(2, imported.Options.RasterScale);
         Assert.True(imported.Options.Accessibility.IsDecorative); Assert.Equal("pl", imported.Options.Accessibility.Language);
         var svg = imported.RenderSvg("native-tree"); var png = imported.ToPng(); var xml = XDocument.Parse(svg);
         Assert.Equal(5, xml.Descendants().Count(item => (string?)item.Attribute("data-cfx-role") == "treeview-row"));

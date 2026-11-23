@@ -17,7 +17,7 @@ internal sealed class PngVisualCanvasRenderer {
         var source = RenderCanvas(canvas).ToRgbaImage();
         if (!canvas.IsResponsive) return source;
 
-        var scale = canvas.PngOutputScale;
+        var scale = canvas.RasterScale;
         var background = canvas.BackdropStyle == VisualCanvasBackdropStyle.Transparent ? ChartColor.Transparent : canvas.BackgroundBottom;
         return ImageComposition.Create(canvas.Width * scale, canvas.Height * scale, background)
             .DrawImage(source, 0, 0, canvas.Width * scale, canvas.Height * scale, canvas.ResponsiveFit)
@@ -29,7 +29,7 @@ internal sealed class PngVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(canvas.BackdropStyle, nameof(canvas.BackdropStyle));
         var width = canvas.DesignWidth;
         var height = canvas.DesignHeight;
-        var output = new RgbaCanvas(width, height, 2, null, canvas.PngOutputScale);
+        var output = new RgbaCanvas(width, height, 2, null, canvas.RasterScale);
         output.Clear(ChartColor.Transparent);
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
             output.FillRoundedRectVerticalGradient(0, 0, width, height, 0, canvas.BackgroundTop, canvas.BackgroundBottom);

@@ -63,14 +63,14 @@ public sealed class JourneyTimelineInterchangeTests {
             : JourneyDiagramBlock.Create().AddSection("phase", "Phase").AddTask("t", "Review", 3.5, actors, "phase");
         source.Options.Padding = new ChartForgeX.Primitives.ChartPadding(31, 17, 23, 19); source.Options.ThemeMode = ThemeMode.Dark;
         source.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
-        source.Options.ShowCard = false; source.Options.TransparentBackground = true; source.Options.PngOutputScale = 2;
+        source.Options.ShowCard = false; source.Options.TransparentBackground = true; source.Options.RasterScale = 2;
         source.Options.HostOwnsFrame = true; source.Options.Accessibility.IsDecorative = true;
         var envelope = VisualArtifact.Create("detached-categorical", VisualArtifactKind.VisualBlock, source).ToInterchangeEnvelope();
-        actors.Clear(); events.Clear(); source.Options.PngOutputScale = 1; source.Options.ShowCard = true;
+        actors.Clear(); events.Clear(); source.Options.RasterScale = 1; source.Options.ShowCard = true;
         if (source is TimelineDiagramBlock producerTimeline) producerTimeline.AddPeriod("later", "Later", new[] { "Only producer" });
         else ((JourneyDiagramBlock)source).AddTask("later", "Only producer", 4);
         var imported = Import(envelope); var svg = imported.RenderSvg("detached"); var png = imported.ToPng();
-        Assert.Equal(2, imported.Options.PngOutputScale); Assert.False(imported.Options.ShowCard);
+        Assert.Equal(2, imported.Options.RasterScale); Assert.False(imported.Options.ShowCard);
         if (imported is TimelineDiagramBlock timelineBlock) Assert.Single(timelineBlock.Periods);
         else { Assert.Single(((JourneyDiagramBlock)imported).Tasks); Assert.Equal(3.5, ((JourneyDiagramBlock)imported).Tasks[0].Score); }
         Assert.True(imported.Options.TransparentBackground); Assert.True(imported.Options.HostOwnsFrame); Assert.True(imported.Options.Accessibility.IsDecorative);

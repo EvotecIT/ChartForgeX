@@ -105,7 +105,7 @@ public sealed class DetachedVisualArtifactTests {
         // Updating the borrowed model after envelope creation must still resolve producer accessibility.
         topology.Accessibility.TextAlternative("Updated model name", "Updated model description", "pl-PL");
         var options = new VisualArtifactRenderOptions {
-            Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 },
+            Topology = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 2 },
             Raster = new RasterImageOptions { Dpi = 144 }
         };
         string originalSvg = source.ToSvg(options);
@@ -134,14 +134,14 @@ public sealed class DetachedVisualArtifactTests {
         Assert.Equal(decoratedEnvelope.ToJson(), first.ToInterchangeJson());
         Assert.Equal(decoratedEnvelope.ToJson(), second.ToInterchangeJson());
         watermark.OffsetX = 50;
-        options.Topology.PngOutputScale = 1;
+        options.Topology.RasterScale = 1;
         Assert.Equal(firstSvg, first.ToSvg());
         Assert.Equal(firstPng, first.ToPng(new VisualArtifactRenderOptions { Raster = new RasterImageOptions { Dpi = 144 } }));
         Assert.Same(topology, source.Model);
         Assert.Null(source.RenderSource);
         Assert.Equal(originalSize, source.NaturalSize);
         Assert.Equal(originalRegions, source.Regions.ToArray());
-        options.Topology.PngOutputScale = 2;
+        options.Topology.RasterScale = 2;
         Assert.Equal(originalSvg, source.ToSvg(options));
         Assert.Equal(originalPng, source.ToPng(options));
         Assert.Equal(originalJson, source.ToInterchangeJson());

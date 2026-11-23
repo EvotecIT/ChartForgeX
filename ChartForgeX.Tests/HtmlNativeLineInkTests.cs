@@ -161,7 +161,7 @@ public sealed class HtmlNativeLineInkTests : IDisposable {
         var family = bitmap ? BrowserProofFonts.Family : Register(fixture, Bytes(fixture));
         var text = bitmap ? "A" : "😀";
         var chart = HtmlOwnedFontDeliveryTests.Model(family).Title("").XLabels(text, text);
-        if (bitmap) chart.Options.Png.FontPath = FixturePath(fixture);
+        if (bitmap) chart.Options.Raster.FontPath = FixturePath(fixture);
         return chart;
     }
     internal static PreparedVisual Prepare(string fixture, string text, bool stroke = false, double lineHeight = 1.2, byte[]? bytes = null) {

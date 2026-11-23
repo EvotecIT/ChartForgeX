@@ -24,7 +24,7 @@ internal static partial class Program {
                 "Visuals Copy lost exact captured RGBA.");
         }
         PackageAssertions.Require(image.Pixels[3] == 0, "Copy retained backdrop outside its source extent.");
-        PackageAssertions.Png(copy.ToPng());
+        PackageAssertions.Raster(copy.ToPng());
         var before = copy.ToPng();
         try {
             copy.DrawLayer(layer, 10, 10, VisualCompositeOperator.DestinationOut, cancellationToken: new CancellationToken(true));

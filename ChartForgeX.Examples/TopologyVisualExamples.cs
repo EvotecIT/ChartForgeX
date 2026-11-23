@@ -594,7 +594,7 @@ internal static partial class TopologyVisualExamples {
     }
 
     private static void SaveMap(string target, List<VisualArtifact> artifacts, string name, Chart chart, string title, string notes) {
-        chart.Png(p => p.OutputScale((int)ChartPngOutputScale.Retina));
+        chart.Raster(p => p.OutputScale((int)ChartRasterScale.Retina));
         chart.SaveSvg(Path.Combine(target, name + ".svg"));
         chart.SaveHtml(Path.Combine(target, name + ".html"));
         chart.SavePng(Path.Combine(target, name + ".png"));

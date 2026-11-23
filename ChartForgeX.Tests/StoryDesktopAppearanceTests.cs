@@ -140,7 +140,7 @@ public sealed class StoryDesktopAppearanceTests {
     [Fact]
     public void StandaloneLinuxTerminalExportsBothNativeBackends() {
         var terminal = TerminalStory.Create().Width(480).WindowStyle(TerminalWindowStyle.Linux)
-            .PngOutputScale(1).ShowFinalPrompt(false).Output("Linux output");
+            .RasterScale(1).ShowFinalPrompt(false).Output("Linux output");
         var document = XDocument.Parse(terminal.ToSvg());
         Assert.Equal("Linux", (string?)Roles(document, "terminal-window-chrome").Single().Attribute("data-cfx-window-style"));
         Assert.Single(Roles(document, "terminal-window-close"));

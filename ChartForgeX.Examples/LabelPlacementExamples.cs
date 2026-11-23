@@ -41,7 +41,7 @@ public static class LabelPlacementExamples {
     /// <summary>Creates a dashboard with dense labels at the target PNG density.</summary>
     public static ChartGrid Scorecard(bool dark) {
         var panels = Charts(dark);
-        return ChartGrid.Create().Title("Measured control scorecards").Columns(2).PngOutputScale(2)
+        return ChartGrid.Create().Title("Measured control scorecards").Columns(2).RasterScale(2)
             .Add(panels[2].Chart).Add(panels[0].Chart).Add(panels[1].Chart).Add(panels[3].Chart);
     }
 
@@ -61,13 +61,13 @@ public static class LabelPlacementExamples {
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             foreach (var (name, chart) in Charts(dark)) {
-                chart.Png(p => p.OutputScale(2));
+                chart.Raster(p => p.OutputScale(2));
                 var chartPath = Path.Combine(output, "label-placement-" + name + "-" + suffix);
                 chart.SaveSvg(chartPath + ".svg"); chart.SavePng(chartPath + ".png"); chart.SaveHtml(chartPath + ".html");
             }
-            ExampleArtifactWriter.SaveGrid(Scorecard(dark), output, "label-placement-scorecards-" + suffix, ChartPngOutputScale.Retina);
+            ExampleArtifactWriter.SaveGrid(Scorecard(dark), output, "label-placement-scorecards-" + suffix, ChartRasterScale.Retina);
             var path = Path.Combine(output, "label-placement-topology-" + suffix);
-            var topology = Topology(dark); var options = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 };
+            var topology = Topology(dark); var options = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 2 };
             File.WriteAllText(path + ".svg", topology.ToSvg(options)); File.WriteAllBytes(path + ".png", topology.ToPng(options));
             File.WriteAllText(path + ".html", topology.ToHtmlPage(options));
         }

@@ -46,7 +46,7 @@ public sealed class TimeAxisFormatterClosureTests {
     public void GanttClockCallbacksRetainSubdayTicksAcrossMultiDayWindows(bool useValueFormat) {
         Func<double, string> clock = value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture);
         var chart = Chart.Create().Size(960, 360).ShowHeader(false).Legend(false)
-            .Png(p => p.FontPath(Font())).AddGanttTask("Window", Start, Start.AddDays(2)).XAxis(axis => {
+            .Raster(p => p.FontPath(Font())).AddGanttTask("Window", Start, Start.AddDays(2)).XAxis(axis => {
                 if (useValueFormat) axis.ValueFormat(ChartValueFormat.Custom(clock));
                 else axis.LabelBy(clock);
             });
@@ -71,7 +71,7 @@ public sealed class TimeAxisFormatterClosureTests {
         var chart = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!
             .ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
             .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-            .Png(p => p.FontPath(Font())).GridLineStyle(style => style.ShowVerticalLines = true);
+            .Raster(p => p.FontPath(Font())).GridLineStyle(style => style.ShowVerticalLines = true);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-distinct-date-{dark}-{width}");
         var labels = Captions(prepared);
@@ -97,7 +97,7 @@ public sealed class TimeAxisFormatterClosureTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void CartesianDateCallbacksUseTheSameAutomaticPrecisionPolicy(ThemeMode mode) {
-        var chart = Chart.Create().Size(960, 360).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font())).ThemeMode(mode)
+        var chart = Chart.Create().Size(960, 360).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font())).ThemeMode(mode)
             .XAxis(x => x.TimeScale()).AddLine("Readings", new[] { new ChartPoint(Start, 10), new ChartPoint(Start.AddDays(4), 20) })
             .XAxis(axis => {
                 axis.Bounds(Start.ToOADate(), Start.AddDays(4).ToOADate());
@@ -116,7 +116,7 @@ public sealed class TimeAxisFormatterClosureTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AuthoredFixedIntervalsAndAllDensityKeepTheirRepeatedDateCaptions(bool fixedInterval) {
-        var chart = Chart.Create().Size(1600, 360).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+        var chart = Chart.Create().Size(1600, 360).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font()))
             .AddGanttTask("Window", Start, Start.AddDays(2))
             .XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
         if (fixedInterval) chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour, 12)));

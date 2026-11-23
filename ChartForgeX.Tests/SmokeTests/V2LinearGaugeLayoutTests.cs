@@ -27,7 +27,7 @@ public sealed class V2LinearGaugeLayoutTests {
         if (carlito) {
             var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
             Assert.True(File.Exists(font), "The gallery's resolved Carlito face must be available.");
-            chart.Png(p => p.FontPath(font));
+            chart.Raster(p => p.FontPath(font));
         }
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);

@@ -37,13 +37,13 @@ internal sealed partial class VisualExportRequest {
                 Math.Min(padding.Right, options.Size.Width / 4), Math.Min(padding.Bottom, options.Size.Height / 4));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(options.Size.Width, options.Size.Height), padding),
             theme, options.ThemeMode, frame: frame, font: ChartFont(options));
-        return new VisualExportRequest(context, new VisualRenderOptions(options.Png.OutputScale, options.Png.SupersamplingScale,
-            textHinting: options.Png.TextHinting));
+        return new VisualExportRequest(context, new VisualRenderOptions(options.Raster.OutputScale, options.Raster.SupersamplingScale,
+            textHinting: options.Raster.TextHinting));
     }
 
     internal static FontSpec ChartFont(ChartOptions options) => new() {
-        Family = options.Theme.Typography.Family, FilePath = options.Png.FontPath,
-        FaceName = options.Png.FontFaceName, CollectionIndex = options.Png.FontCollectionIndex
+        Family = options.Theme.Typography.Family, FilePath = options.Raster.FontPath,
+        FaceName = options.Raster.FontFaceName, CollectionIndex = options.Raster.FontCollectionIndex
     };
 
     internal static VisualExportRequest ForGrid(ChartGrid grid) {
@@ -74,7 +74,7 @@ internal sealed partial class VisualExportRequest {
         }
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(layout.Width, height), grid.Padding),
             theme, grid.ThemeMode, frame: frame, font: font);
-        return new VisualExportRequest(context, new VisualRenderOptions(grid.PngOutputScale));
+        return new VisualExportRequest(context, new VisualRenderOptions(grid.RasterScale));
     }
 
 }

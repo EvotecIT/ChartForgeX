@@ -141,7 +141,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     public void TinyBandsOmitOrdinaryCaptionsWithoutLosingFullPathsOrConsumingThePlot() {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
-        var chart = CatalogChart(false).Size(150, 130).Png(p => p.FontPath(font)).TickLabelStyle(style => style.FontSize = 18);
+        var chart = CatalogChart(false).Size(150, 130).Raster(p => p.FontPath(font)).TickLabelStyle(style => style.FontSize = 18);
         var prepared = Prepare(chart);
         Assert.True(Plot(prepared).Width > 0); Assert.True(Plot(prepared).Height > 0);
         Assert.Equal(5, Groups(prepared).Length);

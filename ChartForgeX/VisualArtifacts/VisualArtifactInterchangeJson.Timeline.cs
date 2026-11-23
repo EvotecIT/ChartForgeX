@@ -15,7 +15,7 @@ internal static partial class VisualArtifactInterchangeJson {
         Number(writer, "paddingLeft", source.Padding.Left); Number(writer, "paddingTop", source.Padding.Top);
         Number(writer, "paddingRight", source.Padding.Right); Number(writer, "paddingBottom", source.Padding.Bottom);
         Boolean(writer, "transparentBackground", source.TransparentBackground); Boolean(writer, "showCard", source.ShowCard);
-        Boolean(writer, "hostOwnsFrame", source.HostOwnsFrame); Number(writer, "pngOutputScale", source.PngOutputScale);
+        Boolean(writer, "hostOwnsFrame", source.HostOwnsFrame); Number(writer, "pngOutputScale", source.RasterScale);
         String(writer, "direction", source.Direction.ToString());
         writer.Property("timelineSections"); writer.StartArray();
         foreach (var item in source.Sections) { writer.StartObject(); String(writer, "id", item.Id); String(writer, "label", item.Label); writer.EndObject(); }
@@ -37,7 +37,7 @@ internal static partial class VisualArtifactInterchangeJson {
                 OptionalNumber(fields, "paddingRight") ?? 18, OptionalNumber(fields, "paddingBottom") ?? 12),
             TransparentBackground = OptionalBool(fields, "transparentBackground") ?? false,
             ShowCard = OptionalBool(fields, "showCard") ?? true, HostOwnsFrame = OptionalBool(fields, "hostOwnsFrame") ?? false,
-            PngOutputScale = OptionalInt(fields, "pngOutputScale") ?? 1,
+            RasterScale = OptionalInt(fields, "pngOutputScale") ?? 1,
             Direction = RequiredEnum<TimelineDiagramDirection>(fields, "direction")
         };
         var theme = OptionalString(fields, "themeJson"); if (theme != null) source.Theme = VisualTheme.FromJson(theme);

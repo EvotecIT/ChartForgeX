@@ -24,7 +24,7 @@ internal sealed class PngVisualBlockRenderer {
         var options = block.Options;
         var theme = options.ResolvedTheme;
         var scene = labelScene();
-        var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
+        var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.RasterScale);
         target.Clear(ChartColor.Transparent);
         scene.PaintMarks(target);
         scene.Paint(target);

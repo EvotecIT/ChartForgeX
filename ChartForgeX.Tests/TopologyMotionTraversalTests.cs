@@ -91,7 +91,7 @@ public sealed class TopologyMotionTraversalTests {
 
     private static ChartPoint[] AuthoredRoute(PreparedTopology prepared) => prepared.ToInterchangeEnvelope().Edges.Single()
         .ResolvedRoute.Select(point => new ChartPoint(point.X, point.Y)).ToArray();
-    private static TopologyRenderOptions Options() => new() { IncludeLegend = false, PngSupersamplingScale = 1 };
+    private static TopologyRenderOptions Options() => new() { IncludeLegend = false, RasterSupersampling = 1 };
     private static TopologyMotionOptions Motion() => NonLooping(TopologyMotionOptions.RoutePulseForScenario("traversal"));
     private static TopologyMotionOptions ExplicitMotion() => NonLooping(TopologyMotionOptions.RoutePulseForEdges("route"));
     private static TopologyMotionOptions NonLooping(TopologyMotionOptions motion) {

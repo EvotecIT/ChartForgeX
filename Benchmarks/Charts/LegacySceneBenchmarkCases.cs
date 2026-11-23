@@ -33,7 +33,7 @@ public static partial class LegacySceneBenchmarkCases {
         var theme = CurrentTheme();
 #endif
         var chart = Chart.Create().Size(Width, Height).Theme(theme).Title(Title)
-            .Subtitle("One prepared scene for SVG and native PNG").Legend().Padding(24, 24, 24, 24).Png(p => p.OutputScale(1))
+            .Subtitle("One prepared scene for SVG and native PNG").Legend().Padding(24, 24, 24, 24).Raster(p => p.OutputScale(1))
             .XLabels(Enumerable.Range(1, fixture.EndsWith("bars", StringComparison.Ordinal) ? 24 : 7).Select(index => "Day " + index).ToArray());
         // Explicit marker density keeps the same marks visible in the two rendering paths.
         chart.Options.Lines.MarkerMode = ChartLineMarkerMode.All;

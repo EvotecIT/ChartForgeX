@@ -23,7 +23,7 @@ internal sealed class PngVisualGridRenderer {
         var theme = grid.ResolvedTheme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
-        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
+        var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.RasterScale);
         canvas.Clear(background);
 
         if (grid.FrameVisible) {
@@ -39,7 +39,7 @@ internal sealed class PngVisualGridRenderer {
 
         foreach (var cell in layout.Cells) {
             var size = VisualGridLayout.ItemSize(cell.Item);
-            var density = ChartPanelDensity.OutputScale(size, cell.Width, cell.Height, grid.PngOutputScale);
+            var density = ChartPanelDensity.OutputScale(size, cell.Width, cell.Height, grid.RasterScale);
             var child = cell.Item.Chart != null ? VisualGridChartRendering.Image(cell.Item.Chart, density) : RenderChildBlock(cell.Item.Block!, density);
             canvas.DrawImageScaled(cell.X, cell.Y, cell.Width, cell.Height, child.Width, child.Height, child.Pixels);
         }

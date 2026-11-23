@@ -16,7 +16,7 @@ public sealed class RangeBarNativeTests {
         var chart = Chart.Create().Size(horizontal ? 360 : 800, 440).Title("Delivery time ranges")
             .Subtitle("Expected and observed intervals by service").XLabels("Standard", "Express")
             .Theme(VisualTheme.Graphite()).ThemeMode(horizontal ? ThemeMode.Dark : ThemeMode.Light).DataLabels().FontFamily("Carlito")
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .Bars(b => b.Style(horizontal ? ChartBarStyle.SegmentedCapsule : ChartBarStyle.Flat))
             .RangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
             .AddRangeBar("Expected", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 3, 9) }, ChartColor.FromRgb(11, 100, 190))

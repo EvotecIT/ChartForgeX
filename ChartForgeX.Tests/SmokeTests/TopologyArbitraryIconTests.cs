@@ -118,7 +118,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", rasterizedArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var rasterPixels = ReadPngRgba(rasterizedPng, out _, out _);
         Assert(CountPixelsNear(rasterPixels, 255, 0, 0) > 450, "PNG topology artwork should rasterize caller-supplied inline SVG fills instead of falling back to a generic card.");
         Assert(CountPixelsNear(rasterPixels, 0, 0, 255) > 280, "PNG topology artwork should rasterize non-rectangular inline SVG nodes.");
@@ -129,7 +129,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-clipped-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", clippedArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var clippedPixels = ReadPngRgba(clippedPng, out var clippedWidth, out _);
         Assert(CountPixelsNear(clippedPixels, clippedWidth, 36, 18, 44, 88, 255, 0, 0) > 900, "PNG topology artwork should render clipped inline SVG content inside the clip-path region.");
         Assert(CountPixelsNear(clippedPixels, clippedWidth, 80, 18, 44, 88, 255, 0, 0) < 80, "PNG topology artwork should not leak clipped content outside the clip-path region.");
@@ -141,7 +141,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-clip-rule-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", clipRuleArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var clipRulePixels = ReadPngRgba(clipRulePng, out var clipRuleWidth, out _);
         Assert(CountPixelsNear(clipRulePixels, clipRuleWidth, 36, 18, 40, 88, 255, 0, 0) > 900, "PNG topology artwork should render the outer clipped region for clip-rule evenodd paths.");
         Assert(CountPixelsNear(clipRulePixels, clipRuleWidth, 48, 38, 16, 48, 255, 0, 0) < 40, "PNG topology artwork should preserve holes for clip-rule evenodd clip paths.");
@@ -152,7 +152,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-masked-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", maskedArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var maskedPixels = ReadPngRgba(maskedPng, out var maskedWidth, out _);
         Assert(CountPixelsNear(maskedPixels, maskedWidth, 36, 18, 44, 88, 255, 0, 0) > 900, "PNG topology artwork should reveal masked SVG content through white mask regions.");
         Assert(CountPixelsNear(maskedPixels, maskedWidth, 80, 18, 44, 88, 255, 0, 0) < 80, "PNG topology artwork should hide masked SVG content through black mask regions.");
@@ -164,7 +164,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-use-symbol-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", useArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var usePixels = ReadPngRgba(usePng, out var useWidth, out _);
         Assert(CountPixelsNear(usePixels, useWidth, 36, 18, 44, 88, 255, 0, 0) > 900, "PNG topology artwork should expand symbol references through SVG use elements.");
         Assert(CountPixelsNear(usePixels, useWidth, 80, 18, 44, 88, 0, 0, 255) > 520, "PNG topology artwork should place multiple use references with their own viewport.");
@@ -174,7 +174,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-pattern-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", patternArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var patternPixels = ReadPngRgba(patternPng, out _, out _);
         Assert(CountPixelsNear(patternPixels, 255, 0, 0) > 1500, "PNG topology artwork should rasterize SVG pattern fills instead of replacing them with a solid fallback.");
         Assert(CountPixelsNear(patternPixels, 0, 0, 255) > 1500, "PNG topology artwork should repeat SVG pattern tiles across filled contours.");
@@ -184,7 +184,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-stylesheet-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", stylesheetArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var stylesheetPixels = ReadPngRgba(stylesheetPng, out _, out _);
         Assert(CountPixelsNear(stylesheetPixels, 255, 0, 0) > 900, "PNG topology artwork should apply CSS rgb color fills from descendant multi-class SVG stylesheet declarations.");
         Assert(CountPixelsNear(stylesheetPixels, 0, 0, 255) > 120, "PNG topology artwork should apply CSS rgba colors from descendant compound class SVG stylesheet declarations and scoped gradient stops.");
@@ -196,7 +196,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-css-variable-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", variableArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var variablePixels = ReadPngRgba(variablePng, out _, out _);
         Assert(CountPixelsNear(variablePixels, 255, 0, 0) > 900, "PNG topology artwork should resolve inherited CSS custom properties for SVG fills and gradient stops.");
         Assert(CountPixelsNear(variablePixels, 0, 0, 255) > 120, "PNG topology artwork should resolve CSS variables in SVG strokes and inline stop styles.");
@@ -207,7 +207,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-text-span-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", textSpanArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var textSpanPixels = ReadPngRgba(textSpanPng, out _, out _);
         Assert(CountPixelsNear(textSpanPixels, 255, 0, 0) > 20, "PNG topology artwork should render SVG text spans with inherited positioning.");
         Assert(CountPixelsNear(textSpanPixels, 0, 0, 255) > 20, "PNG topology artwork should apply tspan dx positioning and fill style.");
@@ -218,7 +218,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-stroke-style-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", strokedArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var strokedPixels = ReadPngRgba(strokedPng, out var strokedWidth, out _);
         Assert(CountPixelsNear(strokedPixels, strokedWidth, 44, 34, 8, 12, 255, 0, 0) > 35, "PNG topology artwork should render visible SVG dashed stroke segments.");
         Assert(CountPixelsNear(strokedPixels, strokedWidth, 54, 34, 4, 12, 255, 0, 0) < 12, "PNG topology artwork should preserve SVG stroke-dasharray gaps.");
@@ -229,7 +229,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-fill-rule-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", fillRuleArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var fillRulePixels = ReadPngRgba(fillRulePng, out var fillRuleWidth, out _);
         Assert(CountPixelsNear(fillRulePixels, fillRuleWidth, 36, 18, 40, 88, 255, 0, 0) > 900, "PNG topology artwork should render the outer region of even-odd SVG paths.");
         Assert(CountPixelsNear(fillRulePixels, fillRuleWidth, 48, 38, 16, 48, 255, 0, 0) < 40, "PNG topology artwork should preserve holes for fill-rule evenodd paths.");
@@ -240,7 +240,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-gradient-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", gradientArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var gradientPixels = ReadPngRgba(gradientPng, out _, out _);
         Assert(CountPixelsNear(gradientPixels, 255, 0, 0) > 160, "PNG topology artwork should rasterize SVG linearGradient fills from defs.");
         Assert(CountPixelsNear(gradientPixels, 0, 0, 255) > 160, "PNG topology artwork should inherit stops from referenced linearGradient definitions.");
@@ -251,7 +251,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-transformed-gradient-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", transformedGradientArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var transformedGradientPixels = ReadPngRgba(transformedGradientPng, out var transformedGradientWidth, out _);
         Assert(CountPixelsNear(transformedGradientPixels, transformedGradientWidth, 36, 18, 88, 36, 255, 0, 0) > 280, "PNG topology artwork should apply linearGradient gradientTransform before rasterizing.");
         Assert(CountPixelsNear(transformedGradientPixels, transformedGradientWidth, 36, 70, 88, 36, 0, 0, 255) > 280, "PNG topology artwork should preserve transformed linearGradient direction.");
@@ -261,7 +261,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-repeated-gradient-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", repeatedGradientArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var repeatedGradientPixels = ReadPngRgba(repeatedGradientPng, out _, out _);
         Assert(CountPixelsNear(repeatedGradientPixels, 255, 0, 0) > 520, "PNG topology artwork should support repeated SVG gradient spread.");
         Assert(CountPixelsNear(repeatedGradientPixels, 0, 0, 255) > 520, "PNG topology artwork should keep repeated gradient bands instead of padding only the final stop.");
@@ -271,7 +271,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-radial-gradient-artwork")
             .Viewport(new TopologyViewport(160, 120, 10))
             .AddArtworkNode("art", "Art", radialArtwork, 36, 18, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 88, height: 88, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var radialPixels = ReadPngRgba(radialPng, out _, out _);
         Assert(CountPixelsNear(radialPixels, 255, 255, 255) > 90, "PNG topology artwork should rasterize the center of radialGradient fills.");
         Assert(CountPixelsNear(radialPixels, 255, 0, 255) > 260, "PNG topology artwork should inherit stops from referenced radialGradient definitions.");
@@ -281,7 +281,7 @@ internal static partial class SmokeTests {
             .Id("png-svg-raster-radial-axis-gradient-artwork")
             .Viewport(new TopologyViewport(180, 120, 10))
             .AddArtworkNode("art", "Art", radialAxisArtwork, 30, 30, TopologyNodeKind.Application, TopologyHealthStatus.Unknown, width: 120, height: 60, symbol: "ART")
-            .ToPng(new TopologyRenderOptions { IncludeLegend = false, PngSupersamplingScale = 1 });
+            .ToPng(new TopologyRenderOptions { IncludeLegend = false, RasterSupersampling = 1 });
         var radialAxisPixels = ReadPngRgba(radialAxisPng, out var radialAxisWidth, out _);
         Assert(CountPixelsNear(radialAxisPixels, radialAxisWidth, 66, 48, 48, 24, 255, 255, 255) > 24, "PNG topology artwork should preserve the center of radial gradients on non-square artwork.");
         Assert(CountPixelsNear(radialAxisPixels, radialAxisWidth, 45, 30, 90, 10, 255, 0, 255) > 120, "PNG topology artwork should rasterize objectBoundingBox radial gradients as ellipses on non-square artwork.");

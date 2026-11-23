@@ -60,7 +60,7 @@ public sealed class SankeyLabelPlacementTests {
         var name = new string('W', 40);
         // Wide enough for a shortened caption that keeps six characters before its ellipsis.
         var chart = Chart.Create().Size(560, 260).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-            .Png(p => p.FontPath(Font())).AddSankey("Flow", new[] { new ChartNode("first", name), new ChartNode("last", name) },
+            .Raster(p => p.FontPath(Font())).AddSankey("Flow", new[] { new ChartNode("first", name), new ChartNode("last", name) },
                 new[] { new ChartFlowLink("flow", "first", "last", 100) })
             .Sankey(options => { options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Inside; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
         var color = ChartColor.FromHex("#7356BD");
@@ -112,7 +112,7 @@ public sealed class SankeyLabelPlacementTests {
         for (int i = 0; i < boxes.Length; i++) for (int j = i + 1; j < boxes.Length; j++)
             Assert.False(boxes[i].Left < boxes[j].Right && boxes[i].Right > boxes[j].Left && boxes[i].Top < boxes[j].Bottom && boxes[i].Bottom > boxes[j].Top);
     }
-    private static Chart Chain() => Chart.Create().Size(900, 420).Png(p => p.FontPath(Font())).AddSankey("Flow",
+    private static Chart Chain() => Chart.Create().Size(900, 420).Raster(p => p.FontPath(Font())).AddSankey("Flow",
         new[] { new ChartNode("first", "First"), new ChartNode("middle", "Middle"), new ChartNode("last", "Last") },
         new[] { new ChartFlowLink("a", "first", "middle", 10), new ChartFlowLink("b", "middle", "last", 10) });
     private static string Font() => Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");

@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void PngOutputScaleEmitsHighDensityAssets() {
-        var normal = BareLineChart().Png(p => p.OutputScale(1));
-        var highDensity = BareLineChart().Png(p => p.OutputScale(3));
-        var presetDensity = BareLineChart().Png(p => p.OutputScale((int)ChartPngOutputScale.Print));
+        var normal = BareLineChart().Raster(p => p.OutputScale(1));
+        var highDensity = BareLineChart().Raster(p => p.OutputScale(3));
+        var presetDensity = BareLineChart().Raster(p => p.OutputScale((int)ChartRasterScale.Print));
 
         var normalPng = normal.ToPng();
         var highDensityPng = highDensity.ToPng();
@@ -19,21 +19,21 @@ internal static partial class SmokeTests {
         Assert(ReadBigEndianInt32(highDensityPng, 16) == 540 && ReadBigEndianInt32(highDensityPng, 20) == 360, "PNG output scale should multiply emitted dimensions.");
         Assert(ReadBigEndianInt32(presetPng, 16) == 720 && ReadBigEndianInt32(presetPng, 20) == 480, "Named PNG output-scale presets should multiply emitted dimensions.");
         Assert(highDensityPng.Length > normalPng.Length, "High-density PNG output should contain more raster data than a 1x export.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Png(p => p.OutputScale(0)), "PNG output scale should reject values below one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.Png.OutputScale = 5, "PNG output scale should reject values above four.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Raster(p => p.OutputScale(0)), "PNG output scale should reject values below one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.Raster.OutputScale = 5, "PNG output scale should reject values above four.");
 
         var normalGrid = ChartGrid.Create().Padding(10).PanelSize(180, 120).Add(BareLineChart());
-        var highDensityGrid = ChartGrid.Create().Padding(10).PanelSize(180, 120).PngOutputScale((int)ChartPngOutputScale.Retina).Add(BareLineChart());
+        var highDensityGrid = ChartGrid.Create().Padding(10).PanelSize(180, 120).RasterScale((int)ChartRasterScale.Retina).Add(BareLineChart());
         var normalGridPng = normalGrid.ToPng();
         var highDensityGridPng = highDensityGrid.ToPng();
         Assert(ReadBigEndianInt32(normalGridPng, 16) == 200 && ReadBigEndianInt32(normalGridPng, 20) == 140, "Default PNG grid output scale should preserve composed dimensions.");
         Assert(ReadBigEndianInt32(highDensityGridPng, 16) == 400 && ReadBigEndianInt32(highDensityGridPng, 20) == 280, "PNG grid output scale should multiply composed dimensions.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().PngOutputScale(0), "PNG grid output scale should reject values below one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().RasterScale(0), "PNG grid output scale should reject values below one.");
     }
 
     private static void PngPrintScaleSurvivesDenseChartStress() {
         foreach (var sample in HighDensityStressCharts()) {
-            var png = sample.Chart.Png(p => p.SupersamplingScale(1).OutputScale((int)ChartPngOutputScale.Print)).ToPng();
+            var png = sample.Chart.Raster(p => p.SupersamplingScale(1).OutputScale((int)ChartRasterScale.Print)).ToPng();
             var encodedWidth = ReadBigEndianInt32(png, 16);
             var encodedHeight = ReadBigEndianInt32(png, 20);
             Assert(encodedWidth == sample.Width * 4 && encodedHeight == sample.Height * 4, sample.Name + " should emit exact 4x print-scale PNG dimensions.");
@@ -68,7 +68,7 @@ internal static partial class SmokeTests {
     private static Chart BareLineChart() {
         var chart = Chart.Create()
             .Size(180, 120)
-            .Png(p => p.SupersamplingScale(1))
+            .Raster(p => p.SupersamplingScale(1))
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;

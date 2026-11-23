@@ -39,7 +39,7 @@ public static class WallpaperOwnerExamples {
                 "RAM", "MEMORY", "32 GB", accent: accent, surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised);
         } else throw new ArgumentException("Unknown example layout.", nameof(layout));
         return canvas.AddTopology(VisualCanvasPlacement.At(VisualCanvasAnchor.BottomRight, 34, 34), 560, 310,
-            CreateTopology(), new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = true, PngSupersamplingScale = 1 }, VisualCanvasImageFit.Contain);
+            CreateTopology(), new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = true, RasterSupersampling = 1 }, VisualCanvasImageFit.Contain);
     }
 
     /// <summary>Creates a transparent fixed-viewport topology suitable for a wallpaper overlay.</summary>

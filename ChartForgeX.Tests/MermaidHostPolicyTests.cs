@@ -140,7 +140,7 @@ public sealed class MermaidHostPolicyTests {
         Assert.Contains("Host accessible name", svg);
         Assert.DoesNotContain(">First</text>", svg);
         var basePixels = artifact.ToRgbaImage();
-        var twice = artifact.ToRgbaImage(new() { Topology = new() { PngOutputScale = 2 } });
+        var twice = artifact.ToRgbaImage(new() { Topology = new() { RasterScale = 2 } });
         Assert.Equal(basePixels.Width * 2, twice.Width);
         Assert.Equal(basePixels.Height * 2, twice.Height);
         var clone = artifact.Clone();
@@ -178,7 +178,7 @@ public sealed class MermaidHostPolicyTests {
             Flowchart = new() { Width = 641.125, Height = 420.375 },
             Sequence = new() { Width = 641.125, Height = 420.375 }
         }).Artifact!;
-        var options = new VisualArtifactRenderOptions { Topology = new() { PngOutputScale = 2 } };
+        var options = new VisualArtifactRenderOptions { Topology = new() { RasterScale = 2 } };
         var measured = artifact.MeasureRasterSize(options);
         var pixels = artifact.ToRgbaImage(options);
         Assert.Equal(pixels.Width, measured.Width);

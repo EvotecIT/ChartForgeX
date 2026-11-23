@@ -64,7 +64,7 @@ public sealed class GanttProjectEndpointTests {
 
     [Fact]
     public void SuccessfulFixedIntervalsKeepTheirAuthoredGridAndDoNotInventOffIntervalEndpoints() {
-        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font()))
             .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddGanttTask("Window", Start.AddHours(6), Finish.AddHours(12))
             .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
@@ -92,7 +92,7 @@ public sealed class GanttProjectEndpointTests {
             if (!seen.Add(value)) throw new InvalidOperationException("Formatted twice");
             return DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
-        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font()))
             .AddGanttTask("Project", Start.AddHours(10), Finish.AddHours(10)).XAxis(axis => {
                 if (valueFormat) axis.ValueFormat(ChartValueFormat.Custom(Format));
                 else axis.LabelBy(Format);
@@ -119,7 +119,7 @@ public sealed class GanttProjectEndpointTests {
     public void SuccessfulSubdayFixedIntervalsKeepTheirTaskWindowWithPeriodicClockCaptions(string format, bool valueFormat) {
         var start = Start.AddHours(10).AddMinutes(17).AddSeconds(23).AddMilliseconds(456); var end = start.AddDays(1);
         var interval = new ChartTimeTickInterval(ChartTimeTickUnit.Minute, 15);
-        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font()))
             .GridLineStyle(style => style.ShowVerticalLines = true).AddGanttTask("Window", start, end)
             .Gantt(g => g.TickInterval(interval)).XAxis(axis => {
                 Func<double, string> clock = value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture);
@@ -144,7 +144,7 @@ public sealed class GanttProjectEndpointTests {
     [InlineData("%f")]
     public void AutomaticPeriodicClockCaptionsDoNotExpandAMidnightAliasedWindow(string format) {
         var start = Start.AddHours(10); var end = start.AddDays(1);
-        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+        var chart = Chart.Create().Size(900, 300).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font()))
             .AddGanttTask("Window", start, end).XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture)));
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
         var window = Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "gantt-chart");
@@ -161,7 +161,7 @@ public sealed class GanttProjectEndpointTests {
     public void AuthoredWindowsKeepHiddenProjectEndsOutsideTheGeneratedAxis(int width, bool fixedInterval) {
         var minimum = Start.AddDays(4); var maximum = Finish.AddDays(-4);
         var chart = Chart.Create().Size(width, 300).ShowHeader(false).Legend(false).Padding(0, 0, 0, 0)
-            .Png(p => p.FontPath(Font())).GridLineStyle(style => style.ShowVerticalLines = true)
+            .Raster(p => p.FontPath(Font())).GridLineStyle(style => style.ShowVerticalLines = true)
             .AddGanttTask("Window", Start, Finish)
             .XAxis(axis => {
                 axis.Bounds(minimum.ToOADate(), maximum.ToOADate());
@@ -244,7 +244,7 @@ public sealed class GanttProjectEndpointTests {
 
     private static Chart PlanChart(int width, ThemeMode mode, string interval) => new MermaidParser()
         .ParseGantt(string.Format(CultureInfo.InvariantCulture, Plan, interval)).Document!.ToChart().Size(width, 300)
-        .Theme(VisualTheme.Graphite()).ThemeMode(mode).FontFamily(BrowserProofFonts.CarlitoFamily).Png(p => p.FontPath(Font()))
+        .Theme(VisualTheme.Graphite()).ThemeMode(mode).FontFamily(BrowserProofFonts.CarlitoFamily).Raster(p => p.FontPath(Font()))
         .TickLabelStyle(style => style.FontSize = 12).GridLineStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()

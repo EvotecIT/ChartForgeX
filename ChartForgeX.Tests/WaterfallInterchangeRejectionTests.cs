@@ -65,8 +65,8 @@ public sealed class WaterfallInterchangeRejectionTests {
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); Assert.Equal(0, calls);
         chart.Options.XAxis.LabelBy((Func<double, string>?)null); chart.Options.Labels.AccessibleTextFormatter = _ => { calls++; return "Custom"; };
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); Assert.Equal(0, calls);
-        chart.Options.Labels.AccessibleTextFormatter = null; chart.Options.Png.FontPath = "process-local-font.ttf";
-        Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); chart.Options.Png.FontPath = null;
+        chart.Options.Labels.AccessibleTextFormatter = null; chart.Options.Raster.FontPath = "process-local-font.ttf";
+        Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); chart.Options.Raster.FontPath = null;
         var culture = (CultureInfo)CultureInfo.GetCultureInfo("pl-PL").Clone(); culture.NumberFormat.NegativeSign = "minus ";
         chart.ValueFormat(ChartValueFormat.Number("0.##", culture));
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson());

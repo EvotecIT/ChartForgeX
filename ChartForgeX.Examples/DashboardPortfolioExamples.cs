@@ -20,23 +20,23 @@ internal static class DashboardPortfolioExamples {
     private static readonly ChartColor TicketAmber = ChartColor.FromHex("#F5BF72");
     private static readonly ChartColor TicketRose = ChartColor.FromHex("#F39AAF");
 
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         var scale = (int)pngOutputScale;
-        var kpiSparkline = KpiSparkline().Png(p => p.OutputScale((int)pngOutputScale));
-        var deviceSplit = DeviceSplit().Png(p => p.OutputScale((int)pngOutputScale));
-        var projectActivity = ProjectActivity().Png(p => p.OutputScale((int)pngOutputScale));
-        var attendance = AttendanceHexbin().Png(p => p.OutputScale((int)pngOutputScale));
-        var mrrTrend = MrrTrend().Png(p => p.OutputScale((int)pngOutputScale));
-        var mrrDrivers = MrrDrivers().Png(p => p.OutputScale((int)pngOutputScale));
-        var reports = RestaurantReports().Png(p => p.OutputScale((int)pngOutputScale));
-        var orderStatus = RestaurantOrderStatus().Png(p => p.OutputScale((int)pngOutputScale));
-        var customers = RestaurantCustomersHexbin().Png(p => p.OutputScale((int)pngOutputScale));
-        var occupation = RestaurantOccupation().Png(p => p.OutputScale((int)pngOutputScale));
-        var weeklySummary = RestaurantWeeklySummary().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingTrend = TicketingRevenueTrend().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingPackages = TicketingPackageMix().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingPromoters = TicketingPromoterAttribution().Png(p => p.OutputScale((int)pngOutputScale));
-        var ticketingFunnel = TicketingGuestFunnel().Png(p => p.OutputScale((int)pngOutputScale));
+        var kpiSparkline = KpiSparkline().Raster(p => p.OutputScale((int)pngOutputScale));
+        var deviceSplit = DeviceSplit().Raster(p => p.OutputScale((int)pngOutputScale));
+        var projectActivity = ProjectActivity().Raster(p => p.OutputScale((int)pngOutputScale));
+        var attendance = AttendanceHexbin().Raster(p => p.OutputScale((int)pngOutputScale));
+        var mrrTrend = MrrTrend().Raster(p => p.OutputScale((int)pngOutputScale));
+        var mrrDrivers = MrrDrivers().Raster(p => p.OutputScale((int)pngOutputScale));
+        var reports = RestaurantReports().Raster(p => p.OutputScale((int)pngOutputScale));
+        var orderStatus = RestaurantOrderStatus().Raster(p => p.OutputScale((int)pngOutputScale));
+        var customers = RestaurantCustomersHexbin().Raster(p => p.OutputScale((int)pngOutputScale));
+        var occupation = RestaurantOccupation().Raster(p => p.OutputScale((int)pngOutputScale));
+        var weeklySummary = RestaurantWeeklySummary().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingTrend = TicketingRevenueTrend().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingPackages = TicketingPackageMix().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingPromoters = TicketingPromoterAttribution().Raster(p => p.OutputScale((int)pngOutputScale));
+        var ticketingFunnel = TicketingGuestFunnel().Raster(p => p.OutputScale((int)pngOutputScale));
         var hrOverview = HrOverviewGrid(scale);
         var saasOverview = SaasOverviewGrid(scale);
         var restaurantOverview = RestaurantOverviewGrid(scale);
@@ -72,7 +72,7 @@ internal static class DashboardPortfolioExamples {
             .PanelSize(380, 260)
             .PanelFit(VisualPanelFit.Contain)
             .Theme(DashboardTheme())
-            .PngOutputScale(scale)
+            .RasterScale(scale)
             .Add(kpiSparkline)
             .Add(deviceSplit)
             .Add(projectActivity)
@@ -379,7 +379,7 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(320, 170)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(TicketingTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(MetricCard.Create()
             .Title("Ticket Sales")
             .Metric("Sold today", "288")
@@ -462,7 +462,7 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(420, 300)
         .PanelFit(VisualPanelFit.Contain)
         .Theme(RestaurantTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(RestaurantReports().Size(800, 298), 2)
         .Add(RestaurantOrderStatus())
         .Add(RestaurantCustomersHexbin())
@@ -479,7 +479,7 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(300, 210)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(DashboardTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(KpiSparkline().Size(300, 210))
         .Add(MetricCard.Create()
             .Title("Employee")
@@ -507,7 +507,7 @@ internal static class DashboardPortfolioExamples {
         .PanelSize(420, 190)
         .PanelFit(VisualPanelFit.Contain)
         .Theme(SaasTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(MetricCard.Create().Title("MRR").Metric("Monthly Recurring Revenue", "$120,400").Tone(Tone.Success).AddDetail("Change", "+$8K", Tone.Success).AddDetail("Plan", "$121K", Tone.Info).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
         .Add(MetricCard.Create().Title("Target").Metric("October target", "$121K").Caption("Tracking above plan").Tone(Tone.Info).AddDetail("Gap", "$0.6K", Tone.Warning).AddDetail("Runway", "98.3%", Tone.Success).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))
         .Add(MetricCard.Create().Title("Net Change").Metric("This month", "+$8.0K").Caption("New business offset churn").Tone(Tone.Success).AddDetail("Adds", "+$12K", Tone.Success).AddDetail("Drag", "-$4K", Tone.Danger).Theme(SaasTheme()).Size(420, 190).Padding(26, 30, 26, 22))

@@ -42,11 +42,11 @@ internal static partial class Program {
         PackageAssertions.Require(sequence.Layout?.MirrorParticipants == true && footer.Bounds.Bottom < survivingFooter.Bounds.Top
             && Math.Abs(double.Parse((string)workerLine.Attribute("y2")!, CultureInfo.InvariantCulture) - footer.Bounds.Top) < .001,
             "Packed mirrored sequence did not end the worker lifeline at its destruction footer before the surviving participant.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var fenced = CreateFixtureParser(options).Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,
             "Packed Markdown bridge did not retain the exact sequence lifecycle.");
-        PackageAssertions.Png(fenced.Artifacts[0].ToPng());
+        PackageAssertions.Raster(fenced.Artifacts[0].ToPng());
 
         const string invalid = "sequenceDiagram\nautonumber nope\nA->>B: Invalid number";
         var invalidDirect = RenderFixture(invalid);

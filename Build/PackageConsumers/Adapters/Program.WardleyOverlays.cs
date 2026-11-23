@@ -17,13 +17,13 @@ internal static partial class Program {
         PackageAssertions.Require(block.Links.Single().FromId == "API_Scale", "Packed Wardley child endpoint identity changed.");
         PackageAssertions.Require(xml.Descendants().Count(e => (string?)e.Attribute("data-cfx-role") == "wardley-annotation-box") == 1, "Packed Wardley annotation box was not painted.");
         PackageAssertions.Require(xml.Descendants().Any(e => (string?)e.Attribute("data-cfx-role") == "wardley-sourcing-outsource"), "Packed Wardley sourcing paint was not emitted.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Single().ToSvg() == svg, "Packed Wardley direct/fence output differs.");
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         PackageAssertions.Require(envelope.Extensions["mermaid.annotation-box"] == "true" && envelope.Extensions["mermaid.annotations"] == "1", "Packed Wardley common envelope lost its retained facts.");
         var map = WardleyMapBlock.Create().Size(600, 400).AnnotationsBox(.2, .1).Style(new WardleyMapStyle(annotationFill: ChartColor.Parse("#D1FAE5")));
         map.AddNode("api", "API", .6, .3); map.AddAnnotation(1, "Keep the contract visible", .8, .5);
-        PackageAssertions.Png(map.ToPng()); PackageAssertions.Require(map.ToSvg().Contains("Keep the contract visible", StringComparison.Ordinal), "Packed native Wardley caption failed.");
+        PackageAssertions.Raster(map.ToPng()); PackageAssertions.Require(map.ToSvg().Contains("Keep the contract visible", StringComparison.Ordinal), "Packed native Wardley caption failed.");
     }
 }

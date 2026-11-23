@@ -25,13 +25,13 @@ public static partial class VisualArtifactRendering {
                 break;
             case Chart chart:
                 width = chart.Options.Size.Width; height = chart.Options.Size.Height;
-                scale = chart.Options.Png.OutputScale;
+                scale = chart.Options.Raster.OutputScale;
                 break;
             case TopologyChart topology:
                 var topologyOptions = TopologyOptions(artifact, options);
                 var layout = PrepareTopologyArtifact(artifact, TopologyModel(artifact, topology), topologyOptions);
                 width = layout.Width; height = layout.Height;
-                scale = topologyOptions?.PngOutputScale ?? 1;
+                scale = topologyOptions?.RasterScale ?? 1;
                 break;
             case SequenceArtifact sequence:
                 var sequenceSize = SequencePreparedCompiler.PrepareDefault(sequence).Size;
@@ -45,7 +45,7 @@ public static partial class VisualArtifactRendering {
                 break;
             case IVisualBlock block when SvgVisualBlockRenderer.IsNativeBlock(block):
                 width = block.Options.Size.Width; height = block.Options.Size.Height;
-                scale = block.Options.PngOutputScale;
+                scale = block.Options.RasterScale;
                 break;
             default:
                 throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a core native raster-size contract.");

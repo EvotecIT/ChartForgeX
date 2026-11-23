@@ -95,7 +95,7 @@ public sealed class TimeAxisDensityTests {
     }
 
     private static Chart Create(int width) => Chart.Create().Size(width, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
-        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(node => node.Role == "axis-x-label").ToArray();

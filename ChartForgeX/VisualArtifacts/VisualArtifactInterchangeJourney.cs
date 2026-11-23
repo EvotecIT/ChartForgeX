@@ -26,12 +26,12 @@ public sealed class VisualArtifactInterchangeJourneyArtifact {
     /// <summary>Gets or sets whether an embedding host owns the frame.</summary>
     public bool HostOwnsFrame { get; set; }
     /// <summary>Gets or sets the output pixel multiplier, from one through four.</summary>
-    public int PngOutputScale { get; set; } = 1;
+    public int RasterScale { get; set; } = 1;
 
     internal VisualArtifactInterchangeJourneyArtifact Clone() {
         var copy = new VisualArtifactInterchangeJourneyArtifact {
             Theme = Theme, ThemeMode = ThemeMode, Padding = Padding, TransparentBackground = TransparentBackground,
-            ShowCard = ShowCard, HostOwnsFrame = HostOwnsFrame, PngOutputScale = PngOutputScale
+            ShowCard = ShowCard, HostOwnsFrame = HostOwnsFrame, RasterScale = RasterScale
         };
         copy.Sections.AddRange(Sections); copy.Tasks.AddRange(Tasks);
         return copy; // Native records, their ordered child lists and themes are immutable.

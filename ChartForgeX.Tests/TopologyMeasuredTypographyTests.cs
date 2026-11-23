@@ -52,7 +52,7 @@ public sealed class TopologyMeasuredTypographyTests {
             .FirstOrDefault(System.IO.File.Exists);
         if (regularPath == null) return; // The portable fallback remains covered on hosts without Arial.
         var theme = VisualTheme.Graphite().WithFontFamily("Arial, sans-serif");
-        Assert.Equal("Arial", TopologyChart.Create().Theme(theme).GetPngFontInfo().ResolvedFaceName);
+        Assert.Equal("Arial", TopologyChart.Create().Theme(theme).GetRasterFontInfo().ResolvedFaceName);
         var boldPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(regularPath)!,
             regularPath.StartsWith("/System/", StringComparison.Ordinal) ? "Arial Bold.ttf" : "arialbd.ttf");
         var bold = TrueTypeFont.TryLoadFromPath(boldPath);
@@ -78,9 +78,9 @@ public sealed class TopologyMeasuredTypographyTests {
     public void FontDiagnosticsReflectCurrentTheme() {
         var theme = VisualTheme.Graphite().WithFontFamily("monospace");
         var chart = TopologyChart.Create().Theme(theme);
-        Assert.Equal("monospace", chart.GetPngFontInfo().ThemeFontFamily);
+        Assert.Equal("monospace", chart.GetRasterFontInfo().ThemeFontFamily);
         chart.Theme(theme.WithFontFamily("serif"));
-        Assert.Equal("serif", chart.GetPngFontInfo().ThemeFontFamily);
+        Assert.Equal("serif", chart.GetRasterFontInfo().ThemeFontFamily);
         Assert.Equal("monospace", theme.Typography.Family);
     }
 

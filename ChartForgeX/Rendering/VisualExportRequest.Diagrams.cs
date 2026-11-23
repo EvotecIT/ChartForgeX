@@ -21,7 +21,7 @@ internal sealed partial class VisualExportRequest {
         var context = new VisualRenderContext(layout,
             theme, chart.ThemeMode, frame: chart.PreparedFrame ?? new VisualFrame(showLegend: options.IncludeLegend, transparentBackground: colors.Background.A == 0),
             font: PreparedDiagramFont.ForRequest(chart)?.ForPreparation() ?? theme.Typography.ToFontSpec());
-        return new VisualExportRequest(context, new VisualRenderOptions(options.PngOutputScale, options.PngSupersamplingScale));
+        return new VisualExportRequest(context, new VisualRenderOptions(options.RasterScale, options.RasterSupersampling));
     }
 
     internal static VisualExportRequest ForFlow(FlowArtifact flow) {

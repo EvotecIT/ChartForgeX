@@ -4,7 +4,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Terminal;
 
 internal static class TerminalStoryExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         var portfolio = TerminalTable.Create()
             .Columns("PROJECT", "STACK", "STATUS")
             .AddRow("ChartForgeX", ".NET", "ready")
@@ -17,7 +17,7 @@ internal static class TerminalStoryExamples {
             .WorkingDirectory(@"C:\OpenSource")
             .Theme(TerminalThemes.PowerShell())
             .WindowStyle(TerminalWindowStyle.MacOS)
-            .PngOutputScale((int)pngOutputScale)
+            .RasterScale((int)pngOutputScale)
             .Command("Get-ActivePortfolio | Format-Table")
             .Table(portfolio)
             .Blank()

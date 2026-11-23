@@ -19,7 +19,7 @@ internal static partial class Program {
             var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
             var restored = envelope.ToTopologyChart().ToVisualArtifact();
             PackageAssertions.Require(EdgeCurveInk(artifact.ToSvg()).SequenceEqual(EdgeCurveInk(restored.ToSvg())), "Packed source curve numeric paint changed on native restoration.");
-            PackageAssertions.Png(restored.ToPng());
+            PackageAssertions.Raster(restored.ToPng());
         }
         const string grammar = "flowchart LR\nlinkStyle default interpolate natural\nA --> B\nB --> C\nlinkStyle 1 interpolate stepBefore,stroke:#123456";
         var styled = (TopologyChart)PackedNativeDiagram("curve-source-order", grammar).Model!;

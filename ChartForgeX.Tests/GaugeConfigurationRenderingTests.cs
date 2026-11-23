@@ -155,7 +155,7 @@ public sealed class GaugeConfigurationRenderingTests {
     public void DefaultLinearTicksKeepCompleteFormattedCaptionsAtCompactWidth() {
         var culture = CultureInfo.GetCultureInfo("fr-FR");
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
-        var chart = Chart.Create().Size(340, 360).Png(p => p.FontPath(font)).Legend(false).AddLinearGauge("Readiness", 81.75)
+        var chart = Chart.Create().Size(340, 360).Raster(p => p.FontPath(font)).Legend(false).AddLinearGauge("Readiness", 81.75)
             .FormatValuesBy(value => "Reading " + value.ToString("0.00", culture));
         Assert.Null(chart.Options.Gauge.TickCount);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

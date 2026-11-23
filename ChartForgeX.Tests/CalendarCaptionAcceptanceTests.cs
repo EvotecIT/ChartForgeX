@@ -160,7 +160,7 @@ public sealed class CalendarCaptionAcceptanceTests {
         return chart;
     }
     private static Chart Base() => Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
-        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+        .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
         .GridLineStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()

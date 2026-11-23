@@ -19,6 +19,6 @@ internal static partial class Program {
             "Packed Core actor authoring lost finite contour/glyph/relationship facts during native JSON editing.");
         loaded.Nodes[0].Subtitle = "«reviewed»"; chart.Nodes.Clear(); chart.Edges.Clear();
         PackageAssertions.Require(svg == prepared.ToSvg() && png.SequenceEqual(prepared.ToPng()), "Packed native actor export retained mutable chart ownership.");
-        PackageAssertions.Png(png); PackageAssertions.Png(loaded.ToPng());
+        PackageAssertions.Raster(png); PackageAssertions.Raster(loaded.ToPng());
     }
 }

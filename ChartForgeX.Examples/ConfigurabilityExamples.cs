@@ -7,7 +7,7 @@ using ChartForgeX.Themes;
 
 /// <summary>Authorable chart paint and captions, rendered through the same static SVG and native PNG scene.</summary>
 internal static class ConfigurabilityExamples {
-    internal static void Write(string output, ChartPngOutputScale scale) {
+    internal static void Write(string output, ChartRasterScale scale) {
         Directory.CreateDirectory(output);
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var compact in new[] { false, true }) {

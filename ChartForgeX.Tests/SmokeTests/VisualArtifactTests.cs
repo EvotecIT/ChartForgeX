@@ -222,8 +222,8 @@ internal static partial class SmokeTests {
         scaleWatermark.Anchor = VisualCanvasAnchor.Center;
         scaleWatermark.FontSize = 20;
         scaleWatermark.Opacity = 1;
-        var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 } };
-        var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
+        var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 1 } };
+        var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, RasterScale = 2 } };
         var scaleOnePlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
         var scaleTwoPlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
         var scaleOneDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().AddWatermarks(scaleOneOptions, scaleWatermark).ToPng(scaleOneOptions));

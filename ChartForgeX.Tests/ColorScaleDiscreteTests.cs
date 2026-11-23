@@ -105,7 +105,7 @@ public sealed class ColorScaleDiscreteTests {
     private static Chart Map(string family, ChartMapScaleLegendPosition placement) {
         var scale = ChartColorScale.Discrete(new[] { new ChartColorBand(10, Low, "Low"), new ChartColorBand(20, Middle, "Middle"), new ChartColorBand(null, High, "High") })
             .WithNoDataColor(Missing);
-        var chart = Chart.Create().Size(760, 420).Png(p => p.SupersamplingScale(1)).Map(m => m.ShowLabels(false).ColorScale(scale).ScaleLegendPosition(placement));
+        var chart = Chart.Create().Size(760, 420).Raster(p => p.SupersamplingScale(1)).Map(m => m.ShowLabels(false).ColorScale(scale).ScaleLegendPosition(placement));
         var items = new[] { new ChartRegionMapItem("CA", 0), new ChartRegionMapItem("NY", 10), new ChartRegionMapItem("TX", 20) };
         return family == "region-map" ? chart.AddRegionMap("Dimension", ChartMapCatalog.Get("us-states"), items)
             : chart.AddTileMap("Dimension", ChartTileMapCatalog.Get("us-states"), items);

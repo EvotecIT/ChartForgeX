@@ -14,7 +14,7 @@ internal static partial class Program {
         var model=direct.Artifact!.Model as SequenceArtifact??throw new InvalidOperationException("Sequence source omitted its native model.");PackageAssertions.Require(model.Typography?.Message?.FontSize==20&&model.Layout?.ActivationWidth==14,"Sequence source policy was lost.");
         var fenced=CreateFixtureParser().Parse("```mermaid\n"+source+"\n```");
         PackageAssertions.Require(!fenced.HasErrors&&fenced.Artifacts.Count==1,"Sequence fence policy failed.");
-        PackageAssertions.Png(direct.Artifact.ToPng());var restored=VisualArtifactInterchangeEnvelope.FromJson(direct.Artifact.ToInterchangeJson()).ToSequenceArtifact();
+        PackageAssertions.Raster(direct.Artifact.ToPng());var restored=VisualArtifactInterchangeEnvelope.FromJson(direct.Artifact.ToInterchangeJson()).ToSequenceArtifact();
         restored.Messages[0].Text="Saved request";PackageAssertions.Require(restored.ToSvg().Contains("Saved request"),"Sequence portable edit failed.");
     }
 }

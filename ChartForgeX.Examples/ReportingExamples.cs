@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 internal static class ReportingExamples {
     private static readonly DateTime WindowStart = new(2026, 9, 24, 6, 0, 0, DateTimeKind.Utc);
 
-    internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void Write(string output, ChartRasterScale pngOutputScale) {
         WriteTimeAxis(output, pngOutputScale);
         WriteTimeAxisRegressions(output, pngOutputScale);
         WriteStateTimeline(output, pngOutputScale);
@@ -21,7 +21,7 @@ internal static class ReportingExamples {
 
     private static string Days(int count) => count + (count == 1 ? " Tag" : " Tage");
 
-    private static void WriteChangeCalendar(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteChangeCalendar(string output, ChartRasterScale pngOutputScale) {
         // Two weeks of configuration changes in a report localized to German: weeks start on Monday, the days, months,
         // and scale words come from the host, days without changes are neutral, and cells grow to fill the card.
         var counts = new[] { 3, 0, 5, 2, 7, 0, 0, 1, 4, 0, 9, 2, 0, 0 };
@@ -32,7 +32,7 @@ internal static class ReportingExamples {
             .Subtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
             .Theme(VisualTheme.Graphite())
             .Size(800, 379)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .Calendar(options => {
                 options.MaximumCellSize = 30;
                 options.FirstDayOfWeek = DayOfWeek.Monday;
@@ -56,7 +56,7 @@ internal static class ReportingExamples {
         chart.SavePng(Path.Combine(output, "reporting-change-calendar.png"));
     }
 
-    private static void WriteHourWeekday(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteHourWeekday(string output, ChartRasterScale pngOutputScale) {
         // Four weeks of synthetic sign-in failures: business-hour peaks, a Monday-morning spike, and quiet weekends.
         var events = new List<ChartTimedValue>();
         var monday = new DateTime(2026, 8, 31, 0, 0, 0, DateTimeKind.Utc);
@@ -76,7 +76,7 @@ internal static class ReportingExamples {
             .Subtitle("Four weeks of events; darker cells had more failures")
             .Theme(VisualTheme.Graphite())
             .Size(800, 298)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Hidden))
             .AddHourWeekdayHeatmap(events, color: ChartColor.FromHex("#2a78d6"));
 
@@ -85,7 +85,7 @@ internal static class ReportingExamples {
         chart.SavePng(Path.Combine(output, "reporting-hour-weekday.png"));
     }
 
-    private static void WriteIncidentLanes(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteIncidentLanes(string output, ChartRasterScale pngOutputScale) {
         // Severity colours come from the Graphite palette v1 defaults of VisualStatusTokens.
         var start = WindowStart;
         ChartGanttLaneItem Incident(double fromHours, double? toHours, string severity, string label, string? detail = null) =>
@@ -95,7 +95,7 @@ internal static class ReportingExamples {
             .Subtitle("Last 48 hours; overlapping incidents stack within a lane and open incidents run to now")
             .Theme(VisualTheme.Graphite())
             .Size(800, 380)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .XAxis(x => x.TimeScale(showTimeZone: true))
             .GanttLaneNow(start.AddHours(44))
             .StateCategories(new VisualStatusTokens().SeverityCategories());
@@ -112,7 +112,7 @@ internal static class ReportingExamples {
         chart.SavePng(Path.Combine(output, "reporting-incident-lanes.png"));
     }
 
-    private static void WriteStatusMatrix(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteStatusMatrix(string output, ChartRasterScale pngOutputScale) {
         // Graphite palette v1 (light): a failed check is coloured by its severity. The three neutral outcomes differ by
         // pattern, not colour: not evaluated is hatched, could not evaluate is outlined. Passed is quiet so findings stand out.
         var chart = Chart.Create()
@@ -120,7 +120,7 @@ internal static class ReportingExamples {
             .Subtitle("Worst finding per check, grouped by site; select a cell to open its evidence")
             .Theme(VisualTheme.Graphite())
             .Size(800, 420)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .StateCategories(
                 new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52"), emphasis: ChartStateEmphasis.Quiet),
                 new ChartStateCategory("low", "Low", ChartColor.FromHex("#0c8aa8")),
@@ -152,7 +152,7 @@ internal static class ReportingExamples {
         chart.SavePng(Path.Combine(output, "reporting-status-matrix.png"));
     }
 
-    private static void WriteStateTimeline(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteStateTimeline(string output, ChartRasterScale pngOutputScale) {
         // Graphite palette v1 (light): operational states reuse the severity and outcome hues, never series colours.
         var states = new[] {
             new ChartStateCategory("up", "Up", ChartColor.FromHex("#1d8a52")),
@@ -168,7 +168,7 @@ internal static class ReportingExamples {
             .Subtitle("15-minute rollups over the last 24 hours, grouped by site; gaps mean no data was collected")
             .Theme(VisualTheme.Graphite())
             .Size(800, 420)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .XAxis(x => x.TimeScale(showTimeZone: true))
             .StateCategories(states)
             .GridLineStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
@@ -212,12 +212,12 @@ internal static class ReportingExamples {
         return hash < 4 ? "degraded" : "up";
     }
 
-    private static void WriteTimeAxisRegressions(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteTimeAxisRegressions(string output, ChartRasterScale pngOutputScale) {
         var start = WindowStart.ToOADate();
         var end = start + 200.0 / 86400000;
         var fast = Chart.Create().Title("Sub-second time-axis fallback")
             .Subtitle("Fractional OLE Automation dates keep distinct values below one second")
-            .Theme(VisualTheme.Graphite()).Size(800, 272).Png(p => p.OutputScale((int)pngOutputScale))
+            .Theme(VisualTheme.Graphite()).Size(800, 272).Raster(p => p.OutputScale((int)pngOutputScale))
             .XAxis(x => x.TimeScale().Title("Observed (OLE Automation days)")).YAxis(y => y.Title("Sample"))
             .AddLine("Signal", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
         fast.Options.XAxis.Bounds(start, end);
@@ -228,7 +228,7 @@ internal static class ReportingExamples {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Example/Plus5", TimeSpan.FromHours(5), "UTC+05", "UTC+05");
         var schedule = Chart.Create().Title("Classic wall-clock schedule")
             .Subtitle("Date inputs keep their fields; calendar ticks align to midnight in the UTC+05 display zone")
-            .Theme(VisualTheme.Graphite()).Size(800, 272).Png(p => p.OutputScale((int)pngOutputScale))
+            .Theme(VisualTheme.Graphite()).Size(800, 272).Raster(p => p.OutputScale((int)pngOutputScale))
             .XAxis(x => x.Title("Window").TimeScale(timeZone: zone, showTimeZone: true, label: "UTC+05"))
             .TickCount(3)
             .AddGanttTask("Maintenance", WindowStart.Date, WindowStart.Date.AddDays(2));
@@ -237,7 +237,7 @@ internal static class ReportingExamples {
         schedule.SavePng(Path.Combine(output, "reporting-classic-wall-clock.png"));
     }
 
-    private static void WriteTimeAxis(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteTimeAxis(string output, ChartRasterScale pngOutputScale) {
         // 36 hours of 5-minute LDAP bind latency with a 50-minute collection outage.
         var samples = Enumerable.Range(0, 36 * 12 + 1)
             .Where(index => index < 200 || index >= 210)
@@ -252,7 +252,7 @@ internal static class ReportingExamples {
             .Subtitle("5-minute rollups; the collection outage stays empty instead of being bridged")
             .Theme(VisualTheme.Graphite())
             .Size(800, 325)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .XAxis(x => x.Title("Observed"))
             .YAxis(y => y.Title("Latency (ms)"))
             .XAxis(x => x.TimeScale(showTimeZone: true))

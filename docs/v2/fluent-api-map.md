@@ -151,11 +151,11 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPlainLineStyle` | `.Lines(l => l.PlainStyle())` |
 | `WithPlotBackground` | `.ShowPlotBackground(visible)` |
 | `WithPlotClipping` | `.ClipMarksToPlot(enabled)` |
-| `WithPngFont(string?,int?,string?)` | `.Png(p => p.FontPath(fontPath)).Png(p => p.FontCollectionIndex(collectionIndex)).Png(p => p.FontFaceName(faceName))` |
-| `WithPngFont(string?,string?)` | `.Png(p => p.FontPath(fontPath)).Png(p => p.FontFaceName(faceName))` |
-| `WithPngOutputScale(ChartPngOutputScale)` | `.Png(p => p.OutputScale((int)scale))` |
-| `WithPngOutputScale(Int32)` | `.Png(p => p.OutputScale(scale))` |
-| `WithPngSupersampling(Int32)` | `.Png(p => p.SupersamplingScale(scale))` |
+| `WithPngFont(string?,int?,string?)` | `.Raster(p => p.FontPath(fontPath)).Raster(p => p.FontCollectionIndex(collectionIndex)).Raster(p => p.FontFaceName(faceName))` |
+| `WithPngFont(string?,string?)` | `.Raster(p => p.FontPath(fontPath)).Raster(p => p.FontFaceName(faceName))` |
+| `WithPngOutputScale(ChartRasterScale)` | `.Raster(p => p.OutputScale((int)scale))` |
+| `WithPngOutputScale(Int32)` | `.Raster(p => p.OutputScale(scale))` |
+| `WithPngSupersampling(Int32)` | `.Raster(p => p.SupersamplingScale(scale))` |
 | `WithPointLegend` | `.Legend(l => l.ShowPoints(visible))` |
 | `WithPolarGridShape` | `.Polar(p => p.GridShape(shape))` |
 | `WithProgressBarThickness` | `.Progress(p => p.BarThicknessRatio(ratio))` |
@@ -296,7 +296,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | --- | --- |
 | `ConfigureTheme` | `.Theme(...)` |
 | `WithPalette` | `.Palette(...)` |
-| `WithPngOutputScale(ChartPngOutputScale)` | `.PngOutputScale((int)scale)` |
+| `WithPngOutputScale(ChartRasterScale)` | `.RasterScale((int)scale)` |
 
 ## ChartGrid
 
@@ -312,8 +312,8 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPanelSize` | `.PanelSize(...)` |
 | `WithPanelSpan` | `.PanelSpan(...)` |
 | `WithPanelThemes(Boolean)` | `.UsePanelThemes(enabled)` |
-| `WithPngOutputScale(ChartPngOutputScale)` | `.PngOutputScale((int)scale)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(ChartRasterScale)` | `.RasterScale((int)scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithSharedAxes` | `.ShareAxes(...)` |
 | `WithSharedXAxis` | `.ShareXAxis(...)` |
 | `WithSharedYAxis` | `.ShareYAxis(...)` |
@@ -461,9 +461,9 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `PngFontCollectionIndex (property)` | `Png.FontCollectionIndex` |
 | `PngFontFaceName (property)` | `Png.FontFaceName` |
 | `PngFontPath (property)` | `Png.FontPath` |
-| `PngOutputScale (property)` | `Png.OutputScale` |
-| `PngSupersamplingScale (property)` | `Png.SupersamplingScale` |
-| `PngTextHinting (property)` | `Png.TextHinting` |
+| `RasterScale (property)` | `Png.OutputScale` |
+| `RasterSupersampling (property)` | `Png.SupersamplingScale` |
+| `RasterTextHinting (property)` | `Png.TextHinting` |
 | `PolarAxisLabelFactor (property)` | `Polar.AxisLabelFactor` |
 | `PolarAxisScaleFactor (property)` | `Polar.AxisScaleFactor` |
 | `PolarAxisStroke (property)` | `Polar.AxisStroke` |
@@ -811,7 +811,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithFinalPrompt(Boolean)` | `.ShowFinalPrompt(visible)` |
 | `WithInitialTab` | `.InitialTab(...)` |
 | `WithPlaybackSpeed` | `.PlaybackSpeed(...)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithStyle(TerminalStyleOptions)` | `.Style(style)` |
 | `WithTabHold(Double)` | `.TabHoldSeconds(seconds)` |
 | `WithTheme` | `.Theme(theme).ThemeMode(mode)` |
@@ -1072,7 +1072,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | --- | --- |
 | `WithCard(Boolean)` | `.ShowCard(enabled)` |
 | `WithHostFrame(Boolean)` | `.HostOwnsFrame(hostOwnsFrame)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithSubtitle(String)` | `.Subtitle(subtitle)` |
 | `WithSvgColorVariables(SvgColorVariables)` | `.SvgColorVariables(variables)` |
 | `WithThemeMode(ThemeMode)` | `.ThemeMode(mode)` |
@@ -1091,7 +1091,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithBackground(ChartColor, ChartColor)` | `.BackgroundTop(top).BackgroundBottom(bottom)` |
 | `WithFixedLayout` | `.FixedLayout(...)` |
 | `WithOutputSize(Int32, Int32)` | `.Width(width).Height(height)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithResponsiveLayout` | `.ResponsiveLayout(...)` |
 | `WithStyle(VisualCanvasStyleOptions)` | `.Style(style)` |
 | `WithTheme` | `.Theme(theme).ThemeMode(mode)` |
@@ -1117,7 +1117,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithPadding(Int32)` | `.Padding(padding)` |
 | `WithPanelFit(VisualPanelFit)` | `.PanelFit(fit)` |
 | `WithPanelSize` | `.PanelSize(...)` |
-| `WithPngOutputScale(Int32)` | `.PngOutputScale(scale)` |
+| `WithPngOutputScale(Int32)` | `.RasterScale(scale)` |
 | `WithSubtitle(String)` | `.Subtitle(subtitle)` |
 | `WithTheme` | `.Theme(theme).ThemeMode(mode)` |
 | `WithThemeMode(ThemeMode)` | `.ThemeMode(mode)` |
@@ -1178,7 +1178,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | 4.x | 5.0 |
 | --- | --- |
 | `ConfigureTheme` | `.Theme(...)` |
-| `WithPngOutputScale` | `.PngOutputScale((int)scale)` |
+| `WithPngOutputScale` | `.RasterScale((int)scale)` |
 
 ## WardleyMapBlock
 

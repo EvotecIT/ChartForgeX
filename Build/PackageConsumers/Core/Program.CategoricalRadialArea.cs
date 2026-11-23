@@ -43,7 +43,7 @@ internal static partial class Program {
         first.Points[0] = new ChartPoint(1, 80); chart.RadialGeometry(new());
         PackageAssertions.Require(prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png),
             "Later source or encoding edits changed a prepared categorical area artifact.");
-        PackageAssertions.Png(png); PackageAssertions.Png(chart.ToPng());
+        PackageAssertions.Raster(png); PackageAssertions.Raster(chart.ToPng());
         var defaults = Chart.Create().Size(320, 280).ShowHeader(false).Legend(false)
             .AddRadialColumn("Radius default", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
         var radiusSvg = defaults.ToSvg(); var radiusPng = defaults.ToPng();

@@ -33,7 +33,7 @@ public sealed class VisualGridArtifactTests {
     [Fact]
     public void CreatingAnEnvelopeMeasuresLogicalSizeWithoutRenderingChildren() {
         var child = new DeferredBlock();
-        var grid = VisualGrid.Create().Columns(1).Padding(10).PngOutputScale(3).Add(child);
+        var grid = VisualGrid.Create().Columns(1).Padding(10).RasterScale(3).Add(child);
 
         var artifact = grid.ToVisualArtifact("  report-grid  ", VisualArtifactSourceLanguage.Markdown);
 
@@ -58,7 +58,7 @@ public sealed class VisualGridArtifactTests {
         chart.AddLine("Completed", ChartPoints.FromValues(3, 7, 5));
         var grid = VisualGrid.Create().Title("Service summary").Subtitle("Charts and facts")
             .Columns(2).Padding(12).Gap(9).AdaptiveRowHeights(adaptiveRows)
-            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).PngOutputScale(2)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).RasterScale(2)
             .Add("requests", chart, columnSpan: 2)
             .Add("ready", MetricCard.Create().Metric("Ready", "12").Size(120, 70))
             .Add("waiting", MetricCard.Create().Metric("Waiting", "3").Size(150, 90));

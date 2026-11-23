@@ -59,7 +59,7 @@ public sealed class MinimumSpanBodyLayoutTests {
     private static PreparedVisual Prepare(bool boxPlot, bool horizontal, ChartBarStyle style, bool reversed) {
         var chart = Chart.Create().Size(480, 320).ShowHeader(false).Legend(false).DataLabels(false)
             .Axes(false).ShowGrid(false).Bars(b => b.Style(style)).Theme(VisualTheme.Graphite())
-            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .FontFamily("Carlito").Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         if (boxPlot) chart.BoxPlot(options => options.Orientation = orientation).AddBoxPlot("Summary", Intervals.Select((interval, point) => {
             var low = Math.Min(interval.Start, interval.End); var high = Math.Max(interval.Start, interval.End);

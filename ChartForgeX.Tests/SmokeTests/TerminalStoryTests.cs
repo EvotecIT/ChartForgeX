@@ -65,7 +65,7 @@ internal static partial class SmokeTests {
 
         var animatedStory = TerminalStory.Create()
             .Width(480)
-            .PngOutputScale(1)
+            .RasterScale(1)
             .InitialDelaySeconds(0).CharactersPerSecond(200).LineDelaySeconds(0)
             .ShowFinalPrompt(false)
             .Command("dotnet run", 0.05)

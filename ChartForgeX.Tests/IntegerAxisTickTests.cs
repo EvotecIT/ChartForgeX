@@ -117,7 +117,7 @@ public sealed class IntegerAxisTickTests {
             var chart = Chart.Create().Size(640, 300).ShowHeader(false).Legend(false)
                 .Padding(20, 20, 20, 20)
                 .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-                .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+                .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
             ChartAxis axis;
             if (location == "horizontal-value") {
                 chart.AddHorizontalBar("Items", new[] { new ChartPoint(1, 1), new ChartPoint(2, maximum) }).XAxis(xAxis => xAxis.IntegerTicks());

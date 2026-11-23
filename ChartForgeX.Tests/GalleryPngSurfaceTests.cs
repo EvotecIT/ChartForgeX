@@ -48,7 +48,7 @@ public sealed class GalleryPngSurfaceTests {
                     builder.CardRadius=3;
                 });
             }
-            block.Options.PngOutputScale = scale;
+            block.Options.RasterScale = scale;
             svg = block.ToSvg(); png = block.ToPng();
             Assert.Contains("data-cfx-role=\"visual-card\"", svg);
         } else if (surface == "fractional-background") {
@@ -59,17 +59,17 @@ public sealed class GalleryPngSurfaceTests {
         } else if (surface == "variable-frame") {
             var tokens = VisualDesignTokens.Dark();
             chart.Theme(new VisualTheme(tokens, tokens)).ThemeMode(ThemeMode.Dark)
-                .SvgColorVariables(tokens.ToSvgColorVariables()).Png(p => p.OutputScale(scale));
+                .SvgColorVariables(tokens.ToSvgColorVariables()).Raster(p => p.OutputScale(scale));
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("var(--cfx-surface-card,", svg);
             Assert.Contains("var(--cfx-surface-line,", svg);
         } else if (surface == "shadow") {
-            chart.Theme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; })).ThemeMode(ThemeMode.Dark).Png(p => p.OutputScale(scale));
+            chart.Theme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; })).ThemeMode(ThemeMode.Dark).Raster(p => p.OutputScale(scale));
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("frame-card-shadow", svg);
         } else {
             var grid = ChartGrid.Create().Columns(2).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
-                .PngOutputScale(scale).Add(chart).Add(Chart.Create().Size(320, 220)
+                .RasterScale(scale).Add(chart).Add(Chart.Create().Size(320, 220)
                     .AddLine("Trend", new[] { new ChartPoint(1, 10), new ChartPoint(2, 30) }));
             svg = grid.ToSvg(); png = grid.ToPng();
             Assert.True(svg.Split("data-cfx-role=\"frame-card\"").Length > 2);

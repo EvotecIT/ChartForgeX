@@ -127,7 +127,7 @@ public sealed class ComfortableCalendarAxisTests {
             File.WriteAllText(Path.Combine(captures, name + ".svg"), prepared.ToSvg());
             File.WriteAllText(Path.Combine(captures, name + ".json"), JsonSerializer.Serialize(new {
                 scenario, mode = mode.ToString(), browser = InteractiveChartBrowser.Engine.ToString(),
-                authoredFamily = chart.Options.Theme.Typography.Family, authoredFile = chart.Options.Png.FontPath,
+                authoredFamily = chart.Options.Theme.Typography.Family, authoredFile = chart.Options.Raster.FontPath,
                 native = native.Select(node => {
                     var line = node.Text.Lines.Single();
                     var ink = node.Text.Face.Font?.MeasureGlyphInk(line.Glyphs, node.Text.Size, node.Text.Face.SynthesizeItalic);
@@ -174,7 +174,7 @@ public sealed class ComfortableCalendarAxisTests {
 
     private static Chart Base(int width) => Chart.Create().Size(width, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
         .FontFamily(BrowserProofFonts.CarlitoFamily)
-        .Png(p => p.FontPath(BrowserProofFonts.CarlitoPath))
+        .Raster(p => p.FontPath(BrowserProofFonts.CarlitoPath))
         .GridLineStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Labels(PreparedVisual prepared, string role) => prepared.Scene.Nodes.OfType<VisualSceneText>()

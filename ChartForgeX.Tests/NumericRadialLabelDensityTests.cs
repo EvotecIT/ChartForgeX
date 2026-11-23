@@ -71,7 +71,7 @@ public sealed class NumericRadialLabelDensityTests {
     internal static Chart CrowdedChart(bool bars) {
         var chart = V2GalleryModels.Create(bars ? ChartSeriesKind.RadialBar : ChartSeriesKind.RadialColumn, "compact-all-labels")
             .Size(360, 360).ShowHeader(false).Legend(false).FontFamily("Carlito");
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return chart;
     }
 

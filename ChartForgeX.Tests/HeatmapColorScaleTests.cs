@@ -124,7 +124,7 @@ public sealed class HeatmapColorScaleTests {
     }
 
     internal static Chart Create(ChartSeriesKind kind, params double[] values) {
-        var chart = Chart.Create().DataLabels(false).Png(p => p.SupersamplingScale(1));
+        var chart = Chart.Create().DataLabels(false).Raster(p => p.SupersamplingScale(1));
         if (kind == ChartSeriesKind.CalendarHeatmap)
             return chart.AddCalendarHeatmap("Observed", values.Select((value, index) => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5).AddDays(index), value)));
         return kind == ChartSeriesKind.Heatmap ? chart.AddHeatmapRow("Observed", values) : chart.AddHexbinHeatmapRow("Observed", values);

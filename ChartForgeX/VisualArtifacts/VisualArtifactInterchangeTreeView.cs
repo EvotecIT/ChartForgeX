@@ -25,7 +25,7 @@ public sealed class VisualArtifactInterchangeTreeViewArtifact {
     /// <summary>Gets or sets whether the host owns the frame and suppresses its padding and surface.</summary>
     public bool HostOwnsFrame { get; set; }
     /// <summary>Gets or sets the PNG output scale, from one through four.</summary>
-    public int PngOutputScale { get; set; } = 1;
+    public int RasterScale { get; set; } = 1;
     /// <summary>Gets or sets whether automatic native file/folder icons are enabled.</summary>
     public bool ShowIcons { get; set; }
     /// <summary>Gets or sets logical indentation per level, from four through 256 pixels.</summary>
@@ -36,7 +36,7 @@ public sealed class VisualArtifactInterchangeTreeViewArtifact {
     internal VisualArtifactInterchangeTreeViewArtifact Clone() {
         var copy = new VisualArtifactInterchangeTreeViewArtifact {
             Theme = Theme, ThemeMode = ThemeMode, Padding = Padding, TransparentBackground = TransparentBackground,
-            ShowCard = ShowCard, HostOwnsFrame = HostOwnsFrame, PngOutputScale = PngOutputScale,
+            ShowCard = ShowCard, HostOwnsFrame = HostOwnsFrame, RasterScale = RasterScale,
             ShowIcons = ShowIcons, RowIndent = RowIndent, RowPadding = RowPadding
         };
         copy.Items.AddRange(Items); // Native rows, their class collections and the theme are immutable.

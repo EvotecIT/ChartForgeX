@@ -73,7 +73,7 @@ ChartGrid HeroDashboard(ThemeMode mode) {
 foreach (var (name, mode) in modes) {
     var grid = HeroDashboard(mode);
     Write($"dashboard-{name}.svg", grid.ToSvg());
-    File.WriteAllBytes(Path.Combine(output, $"dashboard-{name}.png"), grid.PngOutputScale(2).ToPng());
+    File.WriteAllBytes(Path.Combine(output, $"dashboard-{name}.png"), grid.RasterScale(2).ToPng());
 }
 
 // Touch icon and social card, rasterized by ChartForgeX from SVG.

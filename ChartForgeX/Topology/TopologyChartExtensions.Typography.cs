@@ -11,7 +11,7 @@ public static partial class TopologyChartExtensions {
     /// </summary>
     /// <param name="chart">The topology whose theme supplies the font family.</param>
     /// <returns>The resolved outline font or built-in fallback information.</returns>
-    public static PngFontInfo GetPngFontInfo(this TopologyChart chart) {
+    public static RasterFontInfo GetRasterFontInfo(this TopologyChart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         return TrueTypeFont.ResolveInfo(null, null, null, (chart.ResolvedTheme).FontFamily);
     }

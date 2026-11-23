@@ -4,7 +4,7 @@ using ChartForgeX.Data;
 using ChartForgeX.Themes;
 
 internal static class FoundationExamples {
-    internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void Write(string output, ChartRasterScale pngOutputScale) {
         LabelPlacementExamples.Write(output);
         foreach (var dark in new[] { false, true }) {
             var clipped = Chart.Create().Title("Series at the plot boundary")
@@ -25,7 +25,7 @@ internal static class FoundationExamples {
                 .AddMapConnectorBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
             SaveChart(map, output, "foundation-map-typography-" + (dark ? "dark" : "light"), pngOutputScale);
             var typographyGrid = ChartGrid.Create().Title("Dashboard typography").Columns(2)
-                .PngOutputScale((int)pngOutputScale).Add(map).Add(histogram);
+                .RasterScale((int)pngOutputScale).Add(map).Add(histogram);
             var gridName = "foundation-dashboard-typography-" + (dark ? "dark" : "light");
             typographyGrid.SaveSvg(Path.Combine(output, gridName + ".svg"));
             typographyGrid.SavePng(Path.Combine(output, gridName + ".png"));
@@ -105,14 +105,14 @@ internal static class FoundationExamples {
             .Title("Typed Facet Grid")
             .Subtitle("Deterministic small multiples from product-owned records")
             .PanelSize(600, 447);
-        facets.PngOutputScale((int)pngOutputScale);
+        facets.RasterScale((int)pngOutputScale);
         facets.SaveSvg(Path.Combine(output, "foundation-typed-facets.svg"));
         facets.SavePng(Path.Combine(output, "foundation-typed-facets.png"));
         facets.SaveHtml(Path.Combine(output, "foundation-typed-facets.html"));
     }
 
-    private static void SaveChart(Chart chart, string output, string name, ChartPngOutputScale pngOutputScale) {
-        chart.Png(p => p.OutputScale((int)pngOutputScale));
+    private static void SaveChart(Chart chart, string output, string name, ChartRasterScale pngOutputScale) {
+        chart.Raster(p => p.OutputScale((int)pngOutputScale));
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
         chart.SavePng(Path.Combine(output, name + ".png"));
         chart.SaveHtml(Path.Combine(output, name + ".html"));

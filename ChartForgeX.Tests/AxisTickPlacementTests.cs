@@ -250,7 +250,7 @@ public sealed class AxisTickPlacementTests {
 
     private static Chart Create(int width, int height) => Chart.Create().Size(width, height).ShowHeader(false).Legend(false)
         .Padding(14, 14, 14, 14).GridLineStyle(style => { style.ShowHorizontalLines = true; style.ShowVerticalLines = true; })
-        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Texts(PreparedVisual prepared, string role) => prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == role).ToArray();
     private static double ParseCompact(string text) => text.EndsWith('k') ? double.Parse(text[..^1], CultureInfo.InvariantCulture) * 1000 : double.Parse(text, CultureInfo.InvariantCulture);

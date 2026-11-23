@@ -17,7 +17,7 @@ internal static partial class VisualArtifactInterchangeJson {
         Number(writer, "paddingLeft", tree.Padding.Left); Number(writer, "paddingTop", tree.Padding.Top);
         Number(writer, "paddingRight", tree.Padding.Right); Number(writer, "paddingBottom", tree.Padding.Bottom);
         Boolean(writer, "transparentBackground", tree.TransparentBackground); Boolean(writer, "showCard", tree.ShowCard);
-        Boolean(writer, "hostOwnsFrame", tree.HostOwnsFrame); Number(writer, "pngOutputScale", tree.PngOutputScale);
+        Boolean(writer, "hostOwnsFrame", tree.HostOwnsFrame); Number(writer, "pngOutputScale", tree.RasterScale);
         Boolean(writer, "showIcons", tree.ShowIcons); Number(writer, "rowIndent", tree.RowIndent); Number(writer, "rowPadding", tree.RowPadding);
         writer.Property("treeViewItems"); writer.StartArray();
         foreach (var item in tree.Items) {
@@ -39,7 +39,7 @@ internal static partial class VisualArtifactInterchangeJson {
                 OptionalNumber(fields, "paddingRight") ?? 18, OptionalNumber(fields, "paddingBottom") ?? 12),
             TransparentBackground = OptionalBool(fields, "transparentBackground") ?? false,
             ShowCard = OptionalBool(fields, "showCard") ?? true, HostOwnsFrame = OptionalBool(fields, "hostOwnsFrame") ?? false,
-            PngOutputScale = OptionalInt(fields, "pngOutputScale") ?? 1,
+            RasterScale = OptionalInt(fields, "pngOutputScale") ?? 1,
             ShowIcons = OptionalBool(fields, "showIcons") ?? false,
             RowIndent = OptionalNumber(fields, "rowIndent") ?? 18, RowPadding = OptionalNumber(fields, "rowPadding") ?? 5
         };

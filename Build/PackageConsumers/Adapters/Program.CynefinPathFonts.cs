@@ -17,6 +17,6 @@ internal static partial class Program {
             && restored.Nodes.SelectMany(node => node.Details).All(detail => detail.TextStyle!.FontSize == 15), "Packed Cynefin font roles were lost.");
         PackageAssertions.Require(restored.Theme.Typography.TitleSize == 24, "Packed Cynefin title size was lost.");
         PackageAssertions.Require(restored.ToSvg().Contains("Discover demand"), "Packed Cynefin authored items disappeared.");
-        PackageAssertions.Png(restored.ToPng());
+        PackageAssertions.Raster(restored.ToPng());
     }
 }

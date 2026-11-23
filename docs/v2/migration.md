@@ -25,7 +25,7 @@ ChartForgeX 5.0 generates its fluent methods from the model properties, the way 
 | `chart.WithPlainLineStyle()` | `chart.Lines(l => l.PlainStyle())` |
 | `chart.WithTheme(theme, ThemeMode.Dark)` | `chart.Theme(theme).ThemeMode(ThemeMode.Dark)` |
 | `chart.ConfigureTheme(builder => ...)` | `chart.Theme(builder => ...)` |
-| `chart.WithPngOutputScale(2)` | `chart.Png(p => p.OutputScale(2))` |
+| `chart.WithPngOutputScale(2)` | `chart.Raster(p => p.OutputScale(2))` |
 | `chart.WithHeatmapCellGap(2)` | `chart.Heatmap(h => h.CellGap(2))` |
 | `chart.WithValueFormatter(f)` | `chart.FormatValuesBy(f)` |
 | `series.WithColor(color).WithSmooth()` | `series.Color(color).Smooth()` |
@@ -91,6 +91,9 @@ The [fluent API map](fluent-api-map.md) lists every renamed method and moved pro
 | `PreparedVisual.ToSvg(idPrefix)`, `VisualSvgOptions.IdPrefix` | `ToSvg(idScope)`, `VisualSvgOptions.IdScope` |
 | `string` colours on topology nodes, groups, edges, details, stripes, legend items, hierarchy items and icons (`Color`, `BackgroundColor`, `BorderColor`, `LabelColor`, `LabelBackgroundColor`), on flow steps, lanes and connectors and artifact legend items, `TopologyIconSvgPackImportOptions.DefaultColor`, and the `color`/`backgroundColor` parameters of `AddNode`, `AddGroup`, `AddEdge`, `AddEdgeStripe`, `AddNodeDetail`, `AddLane`, `AddConnector`, `TopologyLegend.Add*` and `TopologyIconPack.AddIcon` | `ChartColor?` (`ChartColor` for stripes): `ChartColor.FromHex("#2563EB")`, `ChartColor.Transparent` for `none`, and `ChartColor.FromHex("#2563EB").WithCssVariable("--brand")` for `var(--brand, #2563EB)`. A CSS variable now always carries its fallback colour |
 | `ChartColor` equality through `ValueType.Equals` | `ChartColor` implements `IEquatable<ChartColor>`, `==`, `!=` and `ToString()` (its CSS form) |
+| `ChartPngOptions`, `chart.Png(p => ...)`, `ChartOptions.Png`, `ChartPngOutputScale` | `ChartRasterOptions`, `chart.Raster(p => ...)`, `ChartOptions.Raster`, `ChartRasterScale`; the settings apply to every raster format |
+| `PngOutputScale`, `PngSupersamplingScale`, `PngTextHinting` on grids, blocks, canvases, stories and topology options | `RasterScale`, `RasterSupersampling`, `RasterTextHinting` |
+| `GetPngFontInfo`, `PngFontInfo`, `PngFontSource` | `GetRasterFontInfo`, `RasterFontInfo`, `RasterFontSource` |
 | `AddStateTimelineLane(name, segments, summary, group)`, `ChartSeries.CreateStateTimelineLane(id, name, segments, summary, group)` | `(…, group, summary)`, the same order as the Gantt lane methods |
 | `WardleyMapBlock.SetStages(...)` | `Stages(...)` |
 | `VisualStoryStyleOptions.MacOS(bool light)`, `Windows(bool light)`, `Linux(bool light)` | `MacOS(ThemeMode mode)` and so on |

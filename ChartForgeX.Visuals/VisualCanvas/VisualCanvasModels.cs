@@ -282,7 +282,7 @@ public sealed partial class VisualCanvas {
     public VisualTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the PNG output pixel multiplier.</summary>
-    public int PngOutputScale {
+    public int RasterScale {
         get => _pngOutputScale;
         set {
             if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four.");

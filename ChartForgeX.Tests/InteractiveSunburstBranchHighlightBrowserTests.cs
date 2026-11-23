@@ -41,7 +41,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
             }
         });
         if (composed) {
-            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
+            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Raster.FontPath!));
             html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         }
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 540 : 650);

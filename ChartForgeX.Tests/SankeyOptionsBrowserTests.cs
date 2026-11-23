@@ -22,7 +22,7 @@ public sealed class SankeyOptionsBrowserTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, variant).Size(width, width < 500 ? 360 : 440)
             .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Title("Requests across processing stages").Subtitle("Aligned and ordered weighted flows");
-        chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        chart.Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 630 : 640);

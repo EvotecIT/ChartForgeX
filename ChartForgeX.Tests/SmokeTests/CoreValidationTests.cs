@@ -20,9 +20,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => Chart.Create().Options.Theme = null!, "Chart options should reject null themes.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.TickCount = 1, "Chart options should reject invalid tick counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.XAxis.LabelDensity = (ChartLabelDensity)999, "Chart options should reject unknown label density values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().Png(p => p.FontPath(" ")), "PNG font paths should reject empty values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().Png(p => p.FontPath("font.ttc").FontFaceName(" ")), "PNG font face names should reject empty values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Png(p => p.FontPath("font.ttc").FontCollectionIndex(-1)), "PNG font collection indexes should reject negative values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().Raster(p => p.FontPath(" ")), "PNG font paths should reject empty values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().Raster(p => p.FontPath("font.ttc").FontFaceName(" ")), "PNG font face names should reject empty values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Raster(p => p.FontPath("font.ttc").FontCollectionIndex(-1)), "PNG font collection indexes should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartSize(-1, 100), "ChartSize should reject non-positive dimensions.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartPadding.All(double.NegativeInfinity), "ChartPadding should reject non-finite values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartPoint(1, double.NaN), "ChartPoint should reject non-finite values.");
@@ -150,7 +150,7 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ChartGrid.Create().Add(Chart.Create().AddGauge("Score", 87)).ShareYAxis(), "Shared y-axis grids should require cartesian charts.");
         AssertThrows<ArgumentNullException>(() => ChartExtensions.ToSvg((ChartGrid)null!), "Chart grid SVG export should reject null grids.");
         AssertThrows<ArgumentNullException>(() => ChartExtensions.ToPng((ChartGrid)null!), "Chart grid PNG export should reject null grids.");
-        AssertThrows<ArgumentNullException>(() => ChartExtensions.GetPngFontInfo(null!), "PNG font diagnostics should reject null charts.");
+        AssertThrows<ArgumentNullException>(() => ChartExtensions.GetRasterFontInfo(null!), "PNG font diagnostics should reject null charts.");
         AssertThrows<ArgumentNullException>(() => new HtmlChartRenderer().RenderFragment(null!), "HTML fragment rendering should reject null charts.");
         AssertThrows<ArgumentNullException>(() => new HtmlChartRenderer().RenderPage(null!), "HTML page rendering should reject null charts.");
         AssertThrows<ArgumentNullException>(() => new HtmlChartGridRenderer().RenderPage(null!), "HTML grid rendering should reject null grids.");

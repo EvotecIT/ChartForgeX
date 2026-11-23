@@ -98,7 +98,7 @@ internal static partial class SmokeTests {
 
         var regularCenter = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(420, 280)
-            .Png(p => p.OutputScale(2))
+            .Raster(p => p.OutputScale(2))
             .Legend(false)
             .Pie(p => p.CenterValue("60").CenterLabel("A"))
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#ff00ff")).FontSize(32))
@@ -106,7 +106,7 @@ internal static partial class SmokeTests {
             .AddDonut("Audience", Points(60.5, 39.5));
         var scriptedCenter = Chart.Create().Theme(VisualTheme.Graphite())
             .Size(420, 280)
-            .Png(p => p.OutputScale(2))
+            .Raster(p => p.OutputScale(2))
             .Legend(false)
             .Pie(p => p.CenterValue("60").CenterLabel("A"))
             .DataLabelStyle(style => style.Color(ChartColor.FromHex("#ff00ff")).FontSize(32).Baseline(TextBaseline.Superscript))

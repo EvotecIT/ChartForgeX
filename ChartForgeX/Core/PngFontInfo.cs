@@ -3,8 +3,8 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Describes the font that ChartForgeX will use for PNG text rendering.
 /// </summary>
-public sealed class PngFontInfo {
-    internal PngFontInfo(PngFontSource source, string? themeFontFamily, string? requestedPath, int? requestedCollectionIndex, string? requestedFaceName, string? resolvedPath, int? resolvedCollectionIndex, string? resolvedFaceName) {
+public sealed class RasterFontInfo {
+    internal RasterFontInfo(RasterFontSource source, string? themeFontFamily, string? requestedPath, int? requestedCollectionIndex, string? requestedFaceName, string? resolvedPath, int? resolvedCollectionIndex, string? resolvedFaceName) {
         Source = source;
         ThemeFontFamily = themeFontFamily;
         RequestedPath = requestedPath;
@@ -18,12 +18,12 @@ public sealed class PngFontInfo {
     /// <summary>
     /// Gets the selected PNG font source.
     /// </summary>
-    public PngFontSource Source { get; }
+    public RasterFontSource Source { get; }
 
     /// <summary>
     /// Gets a value indicating whether PNG text will render from TrueType outlines.
     /// </summary>
-    public bool UsesOutlineFont => Source != PngFontSource.BuiltIn;
+    public bool UsesOutlineFont => Source != RasterFontSource.BuiltIn;
 
     /// <summary>
     /// Gets the SVG/HTML font-family stack used to select an automatic PNG font.

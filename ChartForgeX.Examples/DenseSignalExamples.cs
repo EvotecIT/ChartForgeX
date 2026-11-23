@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class DenseSignalExamples {
-    internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    internal static void Write(string output, ChartRasterScale pngOutputScale) {
         var chart = Chart.Create()
             .Title("Dense Signal Review")
             .Subtitle("50,000 source samples resolved against the intended report width with source-index provenance")
@@ -12,7 +12,7 @@ internal static class DenseSignalExamples {
             .YAxis(y => y.Title("Latency"))
             .Theme(VisualTheme.Graphite())
             .Size(800, 434)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .AddAdaptiveLine(
                 "P95 latency",
                 Enumerable.Range(0, 50000).Select(index => new ChartPoint(index, 140 + Math.Sin(index / 190d) * 22 + Math.Sin(index / 37d) * 5 + (index is > 31700 and < 31900 ? 84 : 0))),
@@ -26,14 +26,14 @@ internal static class DenseSignalExamples {
         WriteGappedSignal(output, pngOutputScale);
     }
 
-    private static void WriteGappedSignal(string output, ChartPngOutputScale pngOutputScale) {
+    private static void WriteGappedSignal(string output, ChartRasterScale pngOutputScale) {
         var points = Enumerable.Range(0, 10000)
             .Where(index => index < 3000 || index >= 4000 && index < 7000 || index >= 7500)
             .Select(index => new ChartPoint(index, 100 + Math.Sin(index / 180d) * 20 + (index == 5170 ? 90 : 0), index == 4000 || index == 7500));
         var chart = Chart.Create().Title("Signal with collection gaps")
             .Subtitle("Missing intervals stay empty; min/max sampling retains local peaks and troughs")
             .XAxis(x => x.Title("Sample")).YAxis(y => y.Title("Latency")).Theme(VisualTheme.Graphite())
-            .Size(800, 434).Png(p => p.OutputScale((int)pngOutputScale))
+            .Size(800, 434).Raster(p => p.OutputScale((int)pngOutputScale))
             .AddAdaptiveArea("Observed latency", points, 1180,
                 new ChartResolutionPolicy { MaximumPointCount = 500, DecimationMode = ChartDecimationMode.MinMax },
                 ChartColor.FromRgb(37, 99, 235));

@@ -8,7 +8,7 @@ using System.Text;
 
 /// <summary>Reproducible examples of the approved look in both output formats and themes.</summary>
 internal static class GraphiteExamples {
-    internal static void Write(string output, ChartPngOutputScale scale) {
+    internal static void Write(string output, ChartRasterScale scale) {
         var gallery = new StringBuilder("<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Graphite gallery</title><style>body{margin:24px;background:#f2f3f4;font-size:14px}section{margin-bottom:24px}h2{font-size:17px} .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}img{width:100%;height:auto} .dark{background:#0c0d10;color:#f2f3f5;padding:16px}</style></head><body><h1>ChartForgeX Graphite</h1>");
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
@@ -38,7 +38,7 @@ internal static class GraphiteExamples {
             }
             foreach (var item in Create(dark)) {
                 var name = "graphite-" + suffix + "-" + item.Key;
-                item.Value.Png(p => p.OutputScale((int)scale));
+                item.Value.Raster(p => p.OutputScale((int)scale));
                 item.Value.SaveSvg(Path.Combine(output, name + ".svg"));
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
@@ -59,7 +59,7 @@ internal static class GraphiteExamples {
             var table=ChartTable.Create().Size(300,260).Theme(theme).ThemeMode(mode).Title("Controls").AddColumn("Control").AddColumn("Actual")
                 .AddRow("TLS","92%").AddRow("DNSSEC","74%");
             var dashboard=VisualGrid.Create().Theme(theme).ThemeMode(mode).Title("Control overview").Columns(2).PanelSize(300,260)
-                .PngOutputScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].Size(300,260)).Add(Create(dark)["line"].Size(300,260));
+                .RasterScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].Size(300,260)).Add(Create(dark)["line"].Size(300,260));
             var dashboardName="graphite-"+suffix+"-dashboard";
             dashboard.SaveSvg(Path.Combine(output,dashboardName+".svg")); dashboard.SavePng(Path.Combine(output,dashboardName+".png")); dashboard.SaveHtml(Path.Combine(output,dashboardName+".html"));
             gallery.Append("<h2>Dashboard and KPI</h2><div class='pair'><img alt='SVG dashboard' src='").Append(dashboardName).Append(".svg'><img alt='PNG dashboard' src='").Append(dashboardName).Append(".png'></div>");

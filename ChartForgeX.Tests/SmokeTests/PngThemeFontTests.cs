@@ -11,22 +11,22 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void PngFontDiagnosticsDescribeFallbackDecisions() {
         var collectionPath = "/System/Library/Fonts/HelveticaNeue.ttc";
-        var automatic = Chart.Create().GetPngFontInfo();
-        Assert(automatic.Source == PngFontSource.Automatic || automatic.Source == PngFontSource.BuiltIn, "PNG font diagnostics should report automatic or built-in fallback for default charts.");
-        Assert(automatic.UsesOutlineFont == (automatic.Source != PngFontSource.BuiltIn), "PNG font diagnostics should describe outline font usage consistently.");
+        var automatic = Chart.Create().GetRasterFontInfo();
+        Assert(automatic.Source == RasterFontSource.Automatic || automatic.Source == RasterFontSource.BuiltIn, "PNG font diagnostics should report automatic or built-in fallback for default charts.");
+        Assert(automatic.UsesOutlineFont == (automatic.Source != RasterFontSource.BuiltIn), "PNG font diagnostics should describe outline font usage consistently.");
 
         var missingFont = Path.Combine(Path.GetTempPath(), "ChartForgeX-missing-font-" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture) + ".ttf");
-        var missing = Chart.Create().Png(p => p.FontPath(missingFont)).GetPngFontInfo();
+        var missing = Chart.Create().Raster(p => p.FontPath(missingFont)).GetRasterFontInfo();
         Assert(missing.RequestedPath == Path.GetFullPath(missingFont), "PNG font diagnostics should include the requested font path.");
-        Assert(missing.Source != PngFontSource.Requested, "PNG font diagnostics should not report requested source when the configured font cannot be loaded.");
+        Assert(missing.Source != RasterFontSource.Requested, "PNG font diagnostics should not report requested source when the configured font cannot be loaded.");
 
         if (File.Exists(collectionPath)) {
-            var requested = Chart.Create().Png(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue")).GetPngFontInfo();
-            Assert(requested.Source == PngFontSource.Requested, "PNG font diagnostics should report requested source when a configured font loads.");
+            var requested = Chart.Create().Raster(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue")).GetRasterFontInfo();
+            Assert(requested.Source == RasterFontSource.Requested, "PNG font diagnostics should report requested source when a configured font loads.");
             Assert(string.Equals(requested.ResolvedPath, Path.GetFullPath(collectionPath), StringComparison.OrdinalIgnoreCase), "PNG font diagnostics should include the resolved requested path.");
             Assert(requested.ResolvedCollectionIndex.HasValue, "PNG font diagnostics should include the resolved collection index for TrueType collections.");
             Assert(!string.IsNullOrWhiteSpace(requested.ResolvedFaceName), "PNG font diagnostics should include a resolved face name when available.");
-            var indexed = Chart.Create().Png(p => p.FontPath(collectionPath).FontCollectionIndex(0)).GetPngFontInfo();
+            var indexed = Chart.Create().Raster(p => p.FontPath(collectionPath).FontCollectionIndex(0)).GetRasterFontInfo();
             Assert(indexed.ResolvedCollectionIndex == 0, "PNG font diagnostics should preserve explicitly selected collection indexes.");
         }
     }
@@ -38,11 +38,11 @@ internal static partial class SmokeTests {
         monoTheme = monoTheme.WithFontFamily(ChartFontStacks.Mono);
         var serifChart = Chart.Create().Theme(serifTheme).Size(420, 240).Title("Typography 012345").AddLine("Values", Points(10, 20, 30));
         var monoChart = Chart.Create().Theme(monoTheme).Size(420, 240).Title("Typography 012345").AddLine("Values", Points(10, 20, 30));
-        var serif = serifChart.GetPngFontInfo();
-        var mono = monoChart.GetPngFontInfo();
+        var serif = serifChart.GetRasterFontInfo();
+        var mono = monoChart.GetRasterFontInfo();
 
         Assert(serif.ThemeFontFamily == ChartFontStacks.Serif && mono.ThemeFontFamily == ChartFontStacks.Mono, "PNG font diagnostics should preserve the theme family used for automatic selection.");
-        if (serif.Source == PngFontSource.Automatic && mono.Source == PngFontSource.Automatic) {
+        if (serif.Source == RasterFontSource.Automatic && mono.Source == RasterFontSource.Automatic) {
             Assert(!string.Equals(serif.ResolvedPath, mono.ResolvedPath, StringComparison.OrdinalIgnoreCase), "Automatic PNG font resolution should select distinct serif and monospace faces when platform fonts are available.");
             Assert(!serifChart.ToPng().SequenceEqual(monoChart.ToPng()), "Theme font-family changes should affect PNG pixels when distinct platform faces are available.");
         }
@@ -54,8 +54,8 @@ internal static partial class SmokeTests {
         if (explicitSerifPath != null && genericSerifPath != null) Assert(string.Equals(explicitSerifPath, genericSerifPath, StringComparison.OrdinalIgnoreCase), "Explicit serif family names should select the serif PNG font category.");
         if (explicitMonoPath != null && genericMonoPath != null) Assert(string.Equals(explicitMonoPath, genericMonoPath, StringComparison.OrdinalIgnoreCase), "Explicit monospace family names should select the monospace PNG font category.");
         if (explicitSerifPath != null) {
-            var requestedFont = Chart.Create().Size(420, 240).Title("Requested font wins").Png(p => p.FontPath(explicitSerifPath)).AddLine("Values", Points(10, 20, 30)).ToPng();
-            var requestedFontWithRoleFamily = Chart.Create().Size(420, 240).Title("Requested font wins").Png(p => p.FontPath(explicitSerifPath)).TitleStyle(style => style.FontFamily(ChartFontStacks.Mono)).AddLine("Values", Points(10, 20, 30)).ToPng();
+            var requestedFont = Chart.Create().Size(420, 240).Title("Requested font wins").Raster(p => p.FontPath(explicitSerifPath)).AddLine("Values", Points(10, 20, 30)).ToPng();
+            var requestedFontWithRoleFamily = Chart.Create().Size(420, 240).Title("Requested font wins").Raster(p => p.FontPath(explicitSerifPath)).TitleStyle(style => style.FontFamily(ChartFontStacks.Mono)).AddLine("Values", Points(10, 20, 30)).ToPng();
             Assert(requestedFont.SequenceEqual(requestedFontWithRoleFamily), "An explicit PNG font file should retain precedence over role-specific family discovery.");
         }
     }

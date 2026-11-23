@@ -19,7 +19,7 @@ internal static partial class Program {
             var restored = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToTopologyChart();
             PackageAssertions.Require(restored.Nodes.Single(node => node.Id == "N").GroupId == "Inner" && restored.Nodes.Single(node => node.Id == "Q").GroupId == "Inner",
                 "Packed portable semantics reassigned a nested node on a later edge reference.");
-            PackageAssertions.Require(artifact.ToSvg() == fence.Artifacts[0].ToSvg(), "Packed membership direct/fence scenes differ."); PackageAssertions.Png(artifact.ToPng());
+            PackageAssertions.Require(artifact.ToSvg() == fence.Artifacts[0].ToSvg(), "Packed membership direct/fence scenes differ."); PackageAssertions.Raster(artifact.ToPng());
         }
     }
 }

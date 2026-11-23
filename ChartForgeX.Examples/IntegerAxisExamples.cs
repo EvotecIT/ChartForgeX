@@ -36,7 +36,7 @@ public static class IntegerAxisExamples {
     }
 
     /// <summary>Writes paired SVG, HTML and native PNG examples for small and large count domains.</summary>
-    public static void Write(string output, ChartPngOutputScale scale) {
+    public static void Write(string output, ChartRasterScale scale) {
         TopologyAccentExamples.Write(output);
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var sparse = Chart.Create().Size(800, 200).Theme(VisualTheme.Graphite()).ThemeMode(mode)

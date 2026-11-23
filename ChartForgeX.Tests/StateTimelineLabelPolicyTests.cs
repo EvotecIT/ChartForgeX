@@ -66,7 +66,7 @@ public sealed class StateTimelineLabelPolicyTests {
     [InlineData("Arial")]
     [InlineData("ChartForgeX Missing Test Face")]
     public void ToSvg_OversizedTickFont_StillDrawsTheLaneLabelWithInstalledOrFallbackMetrics(string font) {
-        var chart = Chart.Create().Size(360, 360).Png(p => p.FontPath(font)).Legend(false)
+        var chart = Chart.Create().Size(360, 360).Raster(p => p.FontPath(font)).Legend(false)
             .AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }, "Services", "99%");
         chart.Options.TickLabelStyle.FontSize = 256;
         var labels = Texts(XDocument.Parse(chart.ToSvg()), ChartDomRoles.ScheduleRowLabel);

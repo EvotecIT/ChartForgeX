@@ -17,7 +17,7 @@ internal static class WellnessDashboardExamples {
     private static readonly ChartColor Cyan = ChartColor.FromHex("#38BDF8");
     private static readonly ChartColor Emerald = ChartColor.FromHex("#34D399");
 
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         SaveLayeredRadial(output, pngOutputScale);
         WritePowerBgInfoSocialPreview(output, (int)pngOutputScale);
         SaveWeightCard(output, (int)pngOutputScale);
@@ -33,7 +33,7 @@ internal static class WellnessDashboardExamples {
             .Title("PowerBGInfo social preview")
             .BackgroundTop(ChartColor.FromHex("#020713")).BackgroundBottom(ChartColor.FromHex("#071A35"))
             .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
-            .PngOutputScale(outputScale)
+            .RasterScale(outputScale)
             .AddInfoTile(48, 92, 300, 82, "PC", "HOSTNAME", "DEV-WKS-01", accent: ChartColor.FromHex("#2F80FF"))
             .AddInfoTile(48, 190, 300, 82, "IP", "IP ADDRESS", "10.0.0.42", "192.168.1.42", ChartColor.FromHex("#2F80FF"))
             .AddInfoTile(48, 288, 300, 82, "OS", "OS", "Windows 11", "24H2", ChartColor.FromHex("#2F80FF"))
@@ -58,7 +58,7 @@ internal static class WellnessDashboardExamples {
         canvas.SavePng(Path.Combine(output, "powerbginfo-social-preview-canvas.png"));
     }
 
-    private static void SaveLayeredRadial(string output, ChartPngOutputScale pngOutputScale) {
+    private static void SaveLayeredRadial(string output, ChartRasterScale pngOutputScale) {
         var chart = Chart.Create()
             .Title("Layered Radial Progress")
             .Subtitle("Generic radial layers with independent radius, stroke, color, and value scale.")
@@ -67,7 +67,7 @@ internal static class WellnessDashboardExamples {
             .Theme(WellnessTheme())
             .ShowPlotBackground(false)
             .Legend(false)
-            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Raster(p => p.OutputScale((int)pngOutputScale))
             .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " kcal")
             .AddLayeredRadial("Calories left", layers => layers
                 .Add("Available area", 100, color: Track, configure: layer => layer
@@ -91,7 +91,7 @@ internal static class WellnessDashboardExamples {
             .Subtitle("Goal progress as reusable radial metric layers.")
             .Size(600, 450)
             .Theme(WellnessTheme())
-            .PngOutputScale(outputScale)
+            .RasterScale(outputScale)
             .Metric("Current Weight", "78 kg")
             .AddLayer("Current weight progress", 100, color: Orange, configure: layer => layer
                 .RadiusRatio(1.00).StrokeRatio(0.265)
@@ -160,7 +160,7 @@ internal static class WellnessDashboardExamples {
             .Gap(18)
             .Padding(24)
             .Theme(WellnessTheme())
-            .PngOutputScale(outputScale)
+            .RasterScale(outputScale)
             .Add(radial, rowSpan: 2)
             .Add(eaten)
             .Add(burned)
@@ -219,7 +219,7 @@ internal static class WellnessDashboardExamples {
         var grid = VisualGrid.CreateMetricStrip("Endpoint Snapshot", cards)
             .Subtitle("PowerBGInfo-style reusable metric cards with embedded micro visuals.")
             .Theme(theme)
-            .PngOutputScale(outputScale);
+            .RasterScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "powerbginfo-endpoint-snapshot.svg"));
         grid.SaveHtml(Path.Combine(output, "powerbginfo-endpoint-snapshot.html"));
@@ -264,7 +264,7 @@ internal static class WellnessDashboardExamples {
         var grid = VisualGrid.CreateMetricStrip("Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
             .Subtitle("Light-theme metric strip for generated reports, email, and document surfaces.")
             .Theme(theme)
-            .PngOutputScale(outputScale);
+            .RasterScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "report-summary-metric-strip.svg"));
         grid.SaveHtml(Path.Combine(output, "report-summary-metric-strip.html"));
@@ -310,7 +310,7 @@ internal static class WellnessDashboardExamples {
         var grid = VisualGrid.CreateMetricStrip("Transparent Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
             .Subtitle("Section and cards render as overlay chrome with transparent surfaces.")
             .Theme(theme)
-            .PngOutputScale(outputScale);
+            .RasterScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "transparent-report-summary-metric-strip.svg"));
         grid.SaveHtml(Path.Combine(output, "transparent-report-summary-metric-strip.html"));
@@ -419,7 +419,7 @@ internal static class WellnessDashboardExamples {
             .Gap(20)
             .Padding(30)
             .Theme(theme)
-            .PngOutputScale(outputScale)
+            .RasterScale(outputScale)
             .Add(week, columnSpan: 2)
             .Add(water)
             .Add(calories)

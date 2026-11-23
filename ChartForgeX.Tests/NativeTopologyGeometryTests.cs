@@ -18,7 +18,7 @@ public sealed class NativeTopologyGeometryTests {
     [InlineData(true, 2)]
     public void SharedTailIsPaintedOnceAndReachesTheFittedTargetBorder(bool namedPort, int pngScale) {
         var chart = TopologyRoutingFixtures.FanIn(namedPort);
-        var options = TopologyRoutingFixtures.Options(); options.ShareIncomingTrunks = true; options.FitContentToViewport = true; options.PngOutputScale = pngScale;
+        var options = TopologyRoutingFixtures.Options(); options.ShareIncomingTrunks = true; options.FitContentToViewport = true; options.RasterScale = pngScale;
         var prepared = chart.Prepare(options);
         var document = XDocument.Parse(prepared.ToSvg());
         var tail = Assert.Single(document.Descendants(), element => Role(element) == "topology-shared-trunk-tail");

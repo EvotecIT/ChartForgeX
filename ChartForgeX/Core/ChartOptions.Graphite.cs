@@ -17,7 +17,7 @@ public sealed partial class ChartOptions {
         view.Circle = Circle.Clone();
         view.Pie = Pie.Clone();
         view.WordCloud = WordCloud.Clone();
-        view.Png = Png.Clone();
+        view.Raster = Raster.Clone();
         view.Gantt = Gantt.Clone();
         view.Polar = Polar.Clone();
         view.StateTimeline = StateTimeline.Clone();
@@ -33,7 +33,7 @@ public sealed partial class ChartOptions {
         var font = context.Font;
         view.Theme = context.Theme.WithFontFamily(font.Family);
         view.ThemeMode = context.ThemeMode;
-        view.Png.FontPath = font.FilePath; view.Png.FontFaceName = font.FaceName; view.Png.FontCollectionIndex = font.CollectionIndex;
+        view.Raster.FontPath = font.FilePath; view.Raster.FontFaceName = font.FaceName; view.Raster.FontCollectionIndex = font.CollectionIndex;
         return view;
     }
     /// <summary>Gets or sets whether the embedding host draws the frame. Removes the chart surface and outer padding.</summary>

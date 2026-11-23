@@ -36,9 +36,9 @@ internal static partial class VisualArtifactInterchangeJson {
         String(writer, "yAxisTitle", source.YAxisTitle);
         String(writer, "secondaryXAxisTitle", source.SecondaryXAxisTitle);
         String(writer, "secondaryYAxisTitle", source.SecondaryYAxisTitle);
-        Number(writer, "pngOutputScale", source.PngOutputScale);
-        Number(writer, "pngSupersamplingScale", source.PngSupersamplingScale);
-        String(writer, "pngTextHinting", source.PngTextHinting.ToString());
+        Number(writer, "pngOutputScale", source.RasterScale);
+        Number(writer, "pngSupersamplingScale", source.RasterSupersampling);
+        String(writer, "pngTextHinting", source.RasterTextHinting.ToString());
         String(writer, "dataLabelConnectorStyle", source.DataLabelConnectorStyle.ToString());
         Number(writer, "dataLabelConnectorOpacity", source.DataLabelConnectorOpacity);
         Number(writer, "dataLabelConnectorStrokeWidth", source.DataLabelConnectorStrokeWidth);
@@ -86,9 +86,9 @@ internal static partial class VisualArtifactInterchangeJson {
         source.YAxisTitle = OptionalString(fields, "yAxisTitle") ?? string.Empty;
         source.SecondaryXAxisTitle = OptionalString(fields, "secondaryXAxisTitle") ?? string.Empty;
         source.SecondaryYAxisTitle = OptionalString(fields, "secondaryYAxisTitle") ?? string.Empty;
-        source.PngOutputScale = OptionalInt(fields, "pngOutputScale") ?? 1;
-        source.PngSupersamplingScale = OptionalInt(fields, "pngSupersamplingScale") ?? 2;
-        source.PngTextHinting = OptionalEnum<TextHinting>(fields, "pngTextHinting") ?? TextHinting.Auto;
+        source.RasterScale = OptionalInt(fields, "pngOutputScale") ?? 1;
+        source.RasterSupersampling = OptionalInt(fields, "pngSupersamplingScale") ?? 2;
+        source.RasterTextHinting = OptionalEnum<TextHinting>(fields, "pngTextHinting") ?? TextHinting.Auto;
         source.DataLabelConnectorStyle = OptionalEnum<ChartDataLabelConnectorStyle>(fields, "dataLabelConnectorStyle") ?? ChartDataLabelConnectorStyle.Elbow;
         source.DataLabelConnectorOpacity = OptionalNumber(fields, "dataLabelConnectorOpacity") ?? 0.55;
         source.DataLabelConnectorStrokeWidth = OptionalNumber(fields, "dataLabelConnectorStrokeWidth") ?? 1.2;

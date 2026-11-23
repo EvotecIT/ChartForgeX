@@ -61,7 +61,7 @@ public sealed class NumericRadialEncodedGeometryTests {
     internal static Chart Create(bool bars) {
         var chart = Chart.Create().Size(600, 440).ShowHeader(false).Axes(false).ShowGrid(false)
             .Legend(false).DataLabels(false).FontFamily("Carlito");
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return NumericRadialSeriesTests.Add(chart, bars, "Observed", new ChartPoint(1, 1), new ChartPoint(2, 100000000));
     }
 

@@ -125,16 +125,16 @@ internal sealed partial class TrueTypeFont {
         return null;
     }
 
-    internal static PngFontInfo ResolveInfo(string? path, int? collectionIndex, string? faceName, string? themeFontFamily) {
+    internal static RasterFontInfo ResolveInfo(string? path, int? collectionIndex, string? faceName, string? themeFontFamily) {
         var requestedPath = FullPathOrNull(path);
         if (requestedPath != null) {
             var requested = TryLoadFromPath(requestedPath, collectionIndex, faceName);
-            if (requested != null) return new PngFontInfo(PngFontSource.Requested, themeFontFamily, requestedPath, collectionIndex, faceName, requestedPath, requested.CollectionIndex, requested.DisplayName);
+            if (requested != null) return new RasterFontInfo(RasterFontSource.Requested, themeFontFamily, requestedPath, collectionIndex, faceName, requestedPath, requested.CollectionIndex, requested.DisplayName);
         }
 
         var automatic = TypographyFontResolver.ResolveFace(themeFontFamily, 400, italic: false);
-        if (automatic.Font != null) return new PngFontInfo(PngFontSource.Automatic, themeFontFamily, requestedPath, collectionIndex, faceName, automatic.Path, automatic.Font.CollectionIndex, automatic.Font.DisplayName);
-        return new PngFontInfo(PngFontSource.BuiltIn, themeFontFamily, requestedPath, collectionIndex, faceName, null, null, "ChartForgeX Tiny");
+        if (automatic.Font != null) return new RasterFontInfo(RasterFontSource.Automatic, themeFontFamily, requestedPath, collectionIndex, faceName, automatic.Path, automatic.Font.CollectionIndex, automatic.Font.DisplayName);
+        return new RasterFontInfo(RasterFontSource.BuiltIn, themeFontFamily, requestedPath, collectionIndex, faceName, null, null, "ChartForgeX Tiny");
     }
 
     public static TrueTypeFont? TryLoad(byte[] data) => TryLoad(data, null, null);

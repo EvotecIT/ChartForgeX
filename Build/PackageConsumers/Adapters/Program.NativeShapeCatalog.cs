@@ -15,7 +15,7 @@ internal static partial class Program {
             var artifact=chart.ToVisualArtifact();var facts=artifact.ToInterchangeEnvelope();
             PackageAssertions.Require(facts.Version==2&&facts.Nodes.Single().Topology!.Shape==shape,"Packed native surface identity/version was lost: "+name);
             PackageAssertions.Require(VisualArtifactInterchangeEnvelope.FromJson(facts.ToJson()).ToTopologyChart().Nodes.Single().Shape==shape,"Packed detached native surface was lost: "+name);
-            PackageAssertions.Png(artifact.ToPng());
+            PackageAssertions.Raster(artifact.ToPng());
         }
         foreach(var item in new[]{("bang","ScallopedBurst"),("h-cyl","HorizontalCylinder"),("datastore","DataStore"),("person","Person"),
             ("text","TextBlock"),("brace","BraceLeft"),("docs","StackedDocument"),("browser","Browser"),("fork","SynchronizationBar")}) {
@@ -26,7 +26,7 @@ internal static partial class Program {
             PackageAssertions.Require(chart.Nodes.Single().Shape.ToString()==item.Item2,"Packed Flowchart surface used a fallback: "+item.Item1);
             PackageAssertions.Require(direct.Artifact.ToSvg()==fenced.Artifacts[0].ToSvg(),"Packed direct/fence surface scenes differ: "+item.Item1);
             PackageAssertions.Require(!XDocument.Parse(direct.Artifact.ToSvg()).Descendants().Any(element=>element.Name.LocalName is "script" or "foreignObject" or "image"),"Packed source surface is not inert.");
-            PackageAssertions.Png(direct.Artifact.ToPng());
+            PackageAssertions.Raster(direct.Artifact.ToPng());
         }
         const string collapsed="agentflow-beta\nflow review[Review]@{ view: collapsed }\na --> b\nend\nb --> done";
         var summary=(TopologyChart)PackedNativeDiagram("agentflow-native-summary",collapsed).Model!;

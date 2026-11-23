@@ -26,7 +26,7 @@ public sealed class ColorScaleLocalizationTests {
                 new ChartHierarchyItem("zero", "Zero", "root", 4, 0),
                 new ChartHierarchyItem("missing", "Missing", "root", 2)
             }) : ColorDimensionPresentationFixtures.Create(kind);
-        chart.Size(800, 460).Png(p => p.SupersamplingScale(1))
+        chart.Size(800, 460).Raster(p => p.SupersamplingScale(1))
             .Labels(labels => { labels.Value = "wartość"; labels.Color = "Barwa"; });
         var scale = ChartColorScale.Discrete(new[] {
             new ChartColorBand(10.5, ChartColor.FromHex("#DAE8F8"), "Niski"),
@@ -93,7 +93,7 @@ public sealed class ColorScaleLocalizationTests {
             ? new[] { new ChartColorBand(null, ChartColor.FromHex("#6F9ECE"), "Zakres") }
             : new[] { new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Niski"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Średni"), new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "Wysoki") });
-        var chart = Chart.Create().Size(800, 460).Png(p => p.SupersamplingScale(1));
+        var chart = Chart.Create().Size(800, 460).Raster(p => p.SupersamplingScale(1));
         if (family == "sunburst") chart.AddSunburst("Podział", new[] {
             new ChartHierarchyItem("root", "Wszystko"),
             new ChartHierarchyItem("low", "Niski", "root", 4, 0),

@@ -291,7 +291,7 @@ internal static partial class SmokeTests {
         Assert(overlay.ToPng().Length > 64, "Transparent VisualCanvas overlays should render PNG output.");
 
         AssertThrows<ArgumentOutOfRangeException>(() => VisualCanvas.Create(0, 630), "VisualCanvas should reject invalid widths.");
-        AssertThrows<ArgumentOutOfRangeException>(() => canvas.PngOutputScale = 5, "VisualCanvas should reject unsupported PNG output scales.");
+        AssertThrows<ArgumentOutOfRangeException>(() => canvas.RasterScale = 5, "VisualCanvas should reject unsupported PNG output scales.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").Progress = 1.2, "VisualCanvas info tile progress should stay normalized.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").MiniChart(VisualCanvasInfoTileMiniChartKind.Sparkline, new[] { double.NaN }), "VisualCanvas info tile mini charts should reject invalid values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualCanvasInfoTileLayer(0, 0, 100, 80, "I", "L", "V").TextFitPolicy((VisualCanvasTextFitPolicy)999), "VisualCanvas info tile text fit policy should reject unknown values.");

@@ -15,7 +15,7 @@ internal static partial class Program {
         PackageAssertions.Require(chart.Series[0].FlowLinks.Select(flow => flow.Id).SequenceEqual(new[] { "first", "self", "zero" })
             && chart.Series[0].FlowLinks[0].ColorValue == -10 && chart.Series[0].Points.Count == 0,
             "Packed typed Chord markup fabricated numeric slots or changed source facts.");
-        PackageAssertions.Png(chart.ToPng());
+        PackageAssertions.Raster(chart.ToPng());
         var rejected = new MarkupChartParser().Parse("type chord\nnode a A\nflow bad a missing 1");
         PackageAssertions.Require(rejected.HasErrors && rejected.Document == null && rejected.Diagnostics.Any(item => item.Line == 3),
             "Packed malformed Chord endpoint input was accepted or lost its source location.");

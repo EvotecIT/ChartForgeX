@@ -18,6 +18,6 @@ internal static partial class Program {
         PackageAssertions.Require(artifact.ToSvg()==fence.Artifacts[0].ToSvg()&&artifact.ToPng().SequenceEqual(fence.Artifacts[0].ToPng()),"Packed direct and fenced exports differ.");
         var saved=VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());var a=saved.Nodes.Single(node=>node.Id=="A");var b=saved.Nodes.Single(node=>node.Id=="B");
         PackageAssertions.Require(b.Y>a.Y&&saved.Extensions["mermaid.source"]==source&&saved.Edges.Any(edge=>edge.SourceId=="Product"&&edge.TargetId=="Partner"),"Packed scene lost source identity, local geometry or actual cross-boundary edge.");
-        PackageAssertions.Require(saved.ToTopologyChart().LayoutMode==TopologyLayoutMode.Manual,"Prepared portable geometry was misrepresented as editable host layout settings.");PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Require(saved.ToTopologyChart().LayoutMode==TopologyLayoutMode.Manual,"Prepared portable geometry was misrepresented as editable host layout settings.");PackageAssertions.Raster(artifact.ToPng());
     }
 }

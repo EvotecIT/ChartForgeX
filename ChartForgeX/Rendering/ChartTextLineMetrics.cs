@@ -8,9 +8,9 @@ namespace ChartForgeX.Rendering;
 internal static class ChartTextLineMetrics {
     internal static (double Height, double Ascent) Measure(Chart chart, string text, double size, TextStyleOverride style, int weight) {
         var resolved = ChartLabelScene.ResolveTextStyle(size, style.WithDefaultFontFamily(chart.Options.ResolvedTheme.FontFamily), weight);
-        resolved.Font.FilePath = chart.Options.Png.FontPath;
-        resolved.Font.CollectionIndex = chart.Options.Png.FontCollectionIndex;
-        resolved.Font.FaceName = chart.Options.Png.FontFaceName;
+        resolved.Font.FilePath = chart.Options.Raster.FontPath;
+        resolved.Font.CollectionIndex = chart.Options.Raster.FontCollectionIndex;
+        resolved.Font.FaceName = chart.Options.Raster.FontFaceName;
         var metrics = ChartLabelScene.MeasureText(style.TransformText(text, CultureInfo.InvariantCulture), resolved);
         var ascent = TypographyFontResolver.ResolveFace(resolved.Font).Font?.Ascent(size) ?? size * 0.82;
         return (metrics.Height, ascent);

@@ -17,7 +17,7 @@ internal static partial class Program {
         var restored = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToTopologyChart();
         PackageAssertions.Require(!restored.Groups[0].ShowLabel && restored.Groups[0].Label == "scope" && !restored.Nodes[0].ShowLabel,
             "Packed optional-caption portable restoration lost native flags or semantic labels.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Count == 1 && artifact.ToSvg() == fenced.Artifacts[0].ToSvg(), "Packed optional-caption fence diverged from its native scene.");
     }

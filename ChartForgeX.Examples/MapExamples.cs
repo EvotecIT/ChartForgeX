@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 internal static class MapExamples {
-    public static void Write(string output, ChartPngOutputScale pngOutputScale, bool includeExternalCatalogMaps = false) {
+    public static void Write(string output, ChartRasterScale pngOutputScale, bool includeExternalCatalogMaps = false) {
         Save(CreateCalendarHeatmap(), output, "developer-consistency-calendar-light", pngOutputScale);
         Save(TravelDottedMapRecipe.Create(), output, "travel-dotted-map-dark", pngOutputScale);
         Save(CreateSeaRouteMap(), output, "sea-route-suez-cape-map-light", pngOutputScale);
@@ -338,7 +338,7 @@ internal static class MapExamples {
         }
     }
 
-    private static void SaveOptionalCatalogRegionMapExamples(string output, ChartPngOutputScale pngOutputScale) {
+    private static void SaveOptionalCatalogRegionMapExamples(string output, ChartRasterScale pngOutputScale) {
         var assets = FindCatalogAssetDirectory();
         if (assets == null) return;
         Save(CreateNuts3EuropeIndustrialBirthsMap(assets), output, "eu-industrial-births-nuts3-light", pngOutputScale);
@@ -450,15 +450,15 @@ internal static class MapExamples {
         return null;
     }
 
-    private static void Save(Chart chart, string output, string name, ChartPngOutputScale pngOutputScale) {
-        chart.Png(p => p.OutputScale((int)pngOutputScale));
+    private static void Save(Chart chart, string output, string name, ChartRasterScale pngOutputScale) {
+        chart.Raster(p => p.OutputScale((int)pngOutputScale));
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
         chart.SaveHtml(Path.Combine(output, name + ".html"));
         chart.SavePng(Path.Combine(output, name + ".png"));
     }
 
-    private static void SaveGrid(ChartGrid grid, string output, string name, ChartPngOutputScale pngOutputScale) {
-        grid.PngOutputScale((int)pngOutputScale);
+    private static void SaveGrid(ChartGrid grid, string output, string name, ChartRasterScale pngOutputScale) {
+        grid.RasterScale((int)pngOutputScale);
         grid.SaveSvg(Path.Combine(output, name + ".svg"));
         grid.SaveHtml(Path.Combine(output, name + ".html"));
         grid.SavePng(Path.Combine(output, name + ".png"));

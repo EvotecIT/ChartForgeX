@@ -95,7 +95,7 @@ public sealed class RoundedRadialSeriesTests {
     }
     internal static void UseFixtureFont(Chart chart) {
         chart.FontFamily("Carlito");
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
     }
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static string[] SourceFacts(XDocument svg, string role) => svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == role)

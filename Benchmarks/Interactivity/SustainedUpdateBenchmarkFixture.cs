@@ -70,7 +70,7 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
         _last = null; _lastBrowserSvg = null; _committed = 0; _validated = false;
         var source = Chart.Create().Size(900, 500).ShowHeader(false).Legend(false).DataLabels(false)
             .Padding(24, 24, 24, 24).Theme(_theme).ThemeMode(ThemeMode.Light).YAxis(y => y.Bounds(0, 60));
-        _source = source; source.Options.Png.FontPath = _font;
+        _source = source; source.Options.Raster.FontPath = _font;
         _series = Enumerable.Range(0, _secondary ? 2 : 1).Select(series => {
             var data = ChartSeries.CreateLine(new ChartSeriesId(Key(series)), series == 0 ? "Measurements" : "Companion",
                 Enumerable.Range(0, _count).Select(index => Point(index, series)))

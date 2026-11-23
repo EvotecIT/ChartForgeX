@@ -41,7 +41,7 @@ public sealed class ChartGridPaginationTests {
     [Fact]
     public void PagesCopySettingsAndStylesWithoutSharingGridMutation() {
         var grid = ChartGrid.Create().Title("Fleet").Subtitle("Daily")
-            .Columns(3).Gap(12).Padding(20).PngOutputScale(2)
+            .Columns(3).Gap(12).Padding(20).RasterScale(2)
             .PanelSize(320, 200).PanelFit(VisualPanelFit.Contain)
             .UsePanelThemes()
             .TitleStyle(style => style.FontSize(21).Italic().UnderlineStyle(TextDecorationStyle.Double))
@@ -55,7 +55,7 @@ public sealed class ChartGridPaginationTests {
         Assert.True(last.PreserveEmptyColumns);
         Assert.Equal(12, last.Gap);
         Assert.Equal(20, last.Padding);
-        Assert.Equal(2, last.PngOutputScale);
+        Assert.Equal(2, last.RasterScale);
         Assert.Equal(grid.PanelSize, last.PanelSize);
         Assert.Equal(grid.PanelFit, last.PanelFit);
         Assert.True(last.UsePanelThemes);

@@ -19,7 +19,7 @@ public sealed class CalendarScaleLayoutTests {
             .Select(day => new ChartCalendarHeatmapItem(first.AddDays(day), day % 13)).ToArray();
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito example fixture must be available.");
-        var chart = Chart.Create().Size(width, height).Png(p => p.FontPath(font))
+        var chart = Chart.Create().Size(width, height).Raster(p => p.FontPath(font))
             .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Title("Daily activity").Subtitle("Observations across four months")
             .Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)

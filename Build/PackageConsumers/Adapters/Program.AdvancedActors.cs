@@ -27,6 +27,6 @@ internal static partial class Program {
             && loaded.Nodes[3].Shape == TopologyNodeShape.ActorBusinessHollow && loaded.Annotations.Single().TargetId == "Submit", "Packed typed restoration lost actor forms, glyph or attached note.");
         chart.Nodes[4].Shape = TopologyNodeShape.Actor; chart.Nodes[5].IconShape = TopologyIconShape.Badge; chart.Edges.Clear();
         PackageAssertions.Require(svg == captured.ToSvg() && png.SequenceEqual(captured.ToPng()), "Packed actor edits changed a detached prepared export.");
-        PackageAssertions.Png(png); PackageAssertions.Png(loaded.ToPng());
+        PackageAssertions.Raster(png); PackageAssertions.Raster(loaded.ToPng());
     }
 }

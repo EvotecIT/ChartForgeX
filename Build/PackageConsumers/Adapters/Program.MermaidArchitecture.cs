@@ -24,7 +24,7 @@ internal static partial class Program {
         var detached = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()); var restored = detached.ToTopologyChart();
         PackageAssertions.Require(restored.Groups.Single(group => group.Id == "inner").ParentGroupId == "outer" && restored.Edges[0].SourceNodeId == "inner"
             && restored.Edges[0].Metadata["mermaid.source.id"] == "a", "Packed architecture portable round trip lost native/source endpoint meaning.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Count == 1 && fenced.Artifacts[0].ToSvg() == artifact.ToSvg(),
             "Packed architecture fence did not use the canonical native scene.");

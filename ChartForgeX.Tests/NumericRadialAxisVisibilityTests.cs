@@ -33,7 +33,7 @@ public sealed class NumericRadialAxisVisibilityTests {
         NumericRadialSeriesTests.Add(chart, bars, "Follow-ups", new(1, 600), new(2, 400));
         chart.Series[1].SecondaryAxis();
         chart.YAxis(y => y.Bounds(0, 1500)); chart.Options.SecondaryYAxis.Bounds(0, 1000);
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         chart.Options.XAxis.Visible = hidden != "category";
         chart.Options.YAxis.Visible = hidden != "primary";
         chart.Options.SecondaryYAxis.Visible = hidden != "secondary";

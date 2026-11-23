@@ -118,7 +118,7 @@ public static partial class ChartExtensions {
     /// </summary>
     /// <param name="chart">The chart to inspect.</param>
     /// <returns>The PNG font resolution details.</returns>
-    public static PngFontInfo GetPngFontInfo(this Chart chart) { var font = VisualExportRequest.ForChart(chart).Context.Font; return TrueTypeFont.ResolveInfo(font.FilePath, font.CollectionIndex, font.FaceName, font.Family); }
+    public static RasterFontInfo GetRasterFontInfo(this Chart chart) { var font = VisualExportRequest.ForChart(chart).Context.Font; return TrueTypeFont.ResolveInfo(font.FilePath, font.CollectionIndex, font.FaceName, font.Family); }
 
     /// <summary>
     /// Saves a chart as an SVG file.

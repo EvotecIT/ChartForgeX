@@ -276,7 +276,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         private Chart Model() {
             var chart = Chart.Create().Size(_width, 480).Theme(VisualTheme.Graphite()).ThemeMode(_mode)
                 .FontFamily(BrowserProofFonts.Family)
-                .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+                .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
                 .Title("Native host edits").Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100));
             var source = _typed
                 ? ChartSeries.CreateRangeBar(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11)

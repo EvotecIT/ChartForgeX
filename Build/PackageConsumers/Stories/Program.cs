@@ -24,15 +24,15 @@ internal static class Program {
         PackageAssertions.Require(decoded.Width == 2 && decoded.Height == 1 && decoded.Pixels[7] == 0,
             "Single-frame GIF lost size or transparent pixels.");
 
-        var terminal = TerminalStory.Create().Title("Packed terminal").Width(480).PngOutputScale(1)
+        var terminal = TerminalStory.Create().Title("Packed terminal").Width(480).RasterScale(1)
             .InitialDelaySeconds(0).CharactersPerSecond(100).LineDelaySeconds(0).ShowFinalPrompt(false).Command("status", 0.1).Output("Ready");
         PackageAssertions.Require(PackageAssertions.Contains(terminal.ToTranscript(), "Ready"), "Terminal transcript is missing.");
-        PackageAssertions.Png(terminal.ToPng());
+        PackageAssertions.Raster(terminal.ToPng());
         var shared = VisualTheme.Graphite().Configure(builder => builder.Dark.Foreground = ChartColor.FromHex("#00FE7F"));
         var themedTerminal = TerminalStory.Create().Theme(shared).ThemeMode(ThemeMode.Dark).ShowFinalPrompt(false).Output("Shared appearance");
         PackageAssertions.Require(ReferenceEquals(shared, themedTerminal.Theme)
             && PackageAssertions.Contains(themedTerminal.ToSvg(), "#00FE7F"), "Terminal lost its shared dark foreground.");
-        PackageAssertions.Png(themedTerminal.ToPng());
+        PackageAssertions.Raster(themedTerminal.ToPng());
         var terminalArtifact = terminal.ToVisualArtifact();
         PackageAssertions.Require(ReferenceEquals(terminal, terminalArtifact.Model)
             && PackageAssertions.Contains(terminalArtifact.ToSvg(), "Ready"), "Completed terminal artifact lost its model or transcript.");
@@ -45,7 +45,7 @@ internal static class Program {
         story.Scene("second", "Finish", 0.5).Panel("image", new VisualStoryMediaSurface(image, "Two pixels"));
         story.Outcome("ready", "Ready", "image");
         PackageAssertions.Require(PackageAssertions.Contains(story.ToTranscript(), "Ready"), "Story transcript is missing.");
-        PackageAssertions.Png(story.ToPng());
+        PackageAssertions.Raster(story.ToPng());
         var style = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColor.FromHex("#1234FF") } };
         var themedStory = VisualStory.Create("Shared story").Theme(shared).ThemeMode(ThemeMode.Dark).Style(style).Size(480, 320);
         themedStory.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
@@ -83,11 +83,11 @@ internal static class Program {
         replayStory.Outcome("terminal", "Result", "terminal");
         PackageAssertions.Owner(typeof(StoryReplay), "ChartForgeX.Stories");
         PackageAssertions.Require(PackageAssertions.Contains(replayStory.Prepare().ToSvg(), "Captured result"), "Packed replay failed.");
-        PackageAssertions.Png(replayStory.ToPng());
+        PackageAssertions.Raster(replayStory.ToPng());
         var motion = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("api-db")
             .DurationSeconds(1).FramesPerSecond(2).MaximumRasterFrames(4));
         PackageAssertions.Require(PackageAssertions.Contains(motion.ToSvg(), "<svg"), "Topology motion SVG failed.");
-        PackageAssertions.Png(motion.ToPng());
+        PackageAssertions.Raster(motion.ToPng());
         PackageAssertions.Gif(motion.ToGif());
         PackageAssertions.Apng(motion.ToApng());
         PackageAssertions.Payload("ChartForgeX", "ChartForgeX.Stories");

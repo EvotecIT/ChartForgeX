@@ -6,10 +6,10 @@ using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
-/// <summary>PNG fonts, hinting and scale. Configure it through <see cref="ChartOptions.Png"/>.</summary>
+/// <summary>Fonts, hinting and scale for every raster format. Configure it through <see cref="ChartOptions.Raster"/>.</summary>
 [Fluent(Copy = nameof(Clone))]
-public sealed class ChartPngOptions {
-    internal ChartPngOptions Clone() => (ChartPngOptions)MemberwiseClone();
+public sealed class ChartRasterOptions {
+    internal ChartRasterOptions Clone() => (ChartRasterOptions)MemberwiseClone();
     private string? _pngFontPath;
 
     private string? _pngFontFaceName;
@@ -51,7 +51,7 @@ public sealed class ChartPngOptions {
 
 
     /// <summary>
-    /// Gets or sets the optional face index used when <see cref="ChartPngOptions.FontPath"/> points to a TrueType collection.
+    /// Gets or sets the optional face index used when <see cref="ChartRasterOptions.FontPath"/> points to a TrueType collection.
     /// </summary>
     public int? FontCollectionIndex {
         get => _pngFontCollectionIndex;
@@ -96,7 +96,7 @@ public sealed class ChartPngOptions {
     /// Gets or sets the output pixel multiplier used by the PNG renderer.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="ChartPngOptions.SupersamplingScale"/>, this changes the emitted PNG dimensions while preserving the chart's logical layout.
+    /// Unlike <see cref="ChartRasterOptions.SupersamplingScale"/>, this changes the emitted PNG dimensions while preserving the chart's logical layout.
     /// </remarks>
     public int OutputScale {
         get => _pngOutputScale;

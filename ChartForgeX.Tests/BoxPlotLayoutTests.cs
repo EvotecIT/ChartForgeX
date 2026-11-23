@@ -167,7 +167,7 @@ public sealed class BoxPlotLayoutTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, variant, mode);
         chart.Size(variant.StartsWith("compact", StringComparison.Ordinal) ? 360 : 800, 440)
             .Title("Delivery time by service").Subtitle("Expected and observed five-number summaries")
-            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .FontFamily("Carlito").Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         // Wide layouts keep every median caption; the 360px compact layout may move one that has no clear lane to the tooltip.

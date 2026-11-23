@@ -55,7 +55,7 @@ public sealed class RailroadInterchangeTests {
             RailroadExpression.Lookahead(RailroadExpression.Terminal("blocked"), positive: false),
             RailroadExpression.Except(RailroadExpression.AnyCharacter(), RailroadExpression.Special("host-defined condition")));
         var block = RailroadDiagramBlock.Create().Title("Native grammar").Subtitle("Semantic portable form").Padding(23, 17, 29, 19)
-            .TransparentBackground().ShowCard(false).PngOutputScale(2);
+            .TransparentBackground().ShowCard(false).RasterScale(2);
         block.RuleComparison = RailroadRuleComparison.OrdinalIgnoreCase; block.AddRule("recursive", expression, "Displayed heading");
         block.AddRule("labelled", RailroadExpression.Terminal("<&\"😀"), "A separate label");
         var artifact = VisualArtifact.Create("native-grammar", VisualArtifactKind.VisualBlock, block);
@@ -65,7 +65,7 @@ public sealed class RailroadInterchangeTests {
         Assert.Equal("Native grammar", imported.Title); Assert.Equal("Semantic portable form", imported.Subtitle);
         Assert.Equal(new[] { "Displayed heading", "A separate label" }, imported.Rules.Select(rule => rule.Label));
         Assert.Equal(block.RuleComparison, imported.RuleComparison); Equal(expression, imported.Rules[0].Expression);
-        Assert.Equal(2, imported.Options.PngOutputScale); Assert.True(imported.Options.TransparentBackground); Assert.False(imported.Options.ShowCard);
+        Assert.Equal(2, imported.Options.RasterScale); Assert.True(imported.Options.TransparentBackground); Assert.False(imported.Options.ShowCard);
         Assert.Equal((23d, 17d, 29d, 19d), (imported.Options.Padding.Left, imported.Options.Padding.Top, imported.Options.Padding.Right, imported.Options.Padding.Bottom));
     }
 
@@ -130,7 +130,7 @@ public sealed class RailroadInterchangeTests {
         envelope.Railroad.Rules.Add(new RailroadRule("ROOT", "Duplicate", RailroadExpression.Empty()));
         Assert.ThrowsAny<ArgumentException>(() => envelope.ToJson()); envelope.Railroad.Rules.RemoveAt(1);
         envelope.Width = 520.5; Assert.ThrowsAny<ArgumentException>(() => envelope.ToRailroadDiagramBlock()); envelope.Width = 520;
-        envelope.Railroad.PngOutputScale = 5; Assert.ThrowsAny<ArgumentException>(() => envelope.ToRailroadDiagramBlock());
+        envelope.Railroad.RasterScale = 5; Assert.ThrowsAny<ArgumentException>(() => envelope.ToRailroadDiagramBlock());
     }
 
     private static VisualArtifactInterchangeEnvelope Native(RailroadExpression expression) =>

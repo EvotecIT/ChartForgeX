@@ -414,7 +414,7 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     public int Padding { get => _padding; set { if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Visual grid padding must be non-negative."); _padding = value; } }
 
     /// <summary>Gets or sets the PNG output pixel multiplier.</summary>
-    public int PngOutputScale { get => _pngOutputScale; set { if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four."); _pngOutputScale = value; } }
+    public int RasterScale { get => _pngOutputScale; set { if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four."); _pngOutputScale = value; } }
 
     /// <summary>Gets or sets a value indicating whether the grid should render a subtle outer frame.</summary>
     public bool FrameVisible { get => _frameVisible; set => _frameVisible = value; }

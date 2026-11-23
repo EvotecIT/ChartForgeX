@@ -16,7 +16,7 @@ public static class NumericAxisExamples {
     }
 
     /// <summary>Writes matching SVG, HTML and native PNG examples for both palettes and caption lengths.</summary>
-    public static void Write(string output, ChartPngOutputScale scale) {
+    public static void Write(string output, ChartRasterScale scale) {
         foreach (var width in new[] { 240, 600 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var longLabels in new[] { false, true }) {
                 var name = "numeric-axis-" + width + "-" + mode.ToString().ToLowerInvariant() + (longLabels ? "-long" : "");

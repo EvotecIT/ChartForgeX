@@ -23,7 +23,7 @@ internal static class CompositionEffectsExamples {
                 .DrawImage(panel.ToRgbaImage(), 32, 28, panel.Width, panel.Height);
             var image = composition.ToRgbaImage();
             var canvas = VisualCanvas.Create(width, height).Title("Blurred mark and text with panel shadow")
-                .PngOutputScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, width, height);
+                .RasterScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, width, height);
             var name = "composition-effects-" + (dark ? "dark-" : "light-") + width;
             composition.Save(Path.Combine(output, name + ".source.png"));
             canvas.SaveSvg(Path.Combine(output, name + ".svg")); canvas.SavePng(Path.Combine(output, name + ".png"));

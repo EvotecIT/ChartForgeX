@@ -21,7 +21,7 @@ internal static partial class Program {
         PackageAssertions.Require(path.Id == ink.Id && path.PathData == ink.PathData && path.StrokeWidth == ink.StrokeWidth && path.DashPattern!.SequenceEqual(ink.DashPattern!), "Packed path capture lost numeric geometry or paint.");
         PackageAssertions.Require(restored.Nodes.Count == 2 && restored.Edges.Count == 1 && restored.Nodes[0].SubtitleTextStyle!.FontSize == 14, "Packed native decoration changed graph facts or dropped subtitle style.");
         PackageAssertions.Require(restored.ToSvg().Contains("maintenance-zone"), "Restored packed geometry was not painted.");
-        PackageAssertions.Png(restored.ToPng());
+        PackageAssertions.Raster(restored.ToPng());
         chart.PathDecorations.Clear(); chart.Nodes[0].SubtitleTextStyle = null;
         PackageAssertions.Require(chart.Prepare().ToInterchangeEnvelope().Version == 1, "Ordinary packed topology no longer emits version 1.");
     }

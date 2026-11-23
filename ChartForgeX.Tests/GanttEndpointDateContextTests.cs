@@ -71,7 +71,7 @@ public sealed class GanttEndpointDateContextTests {
         if (policy == "value-format") chart.XAxis(axis => axis.ValueFormat(ChartValueFormat.Custom(clock)));
         if (policy == "fixed") chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour, 12)));
         if (policy == "all") chart.XAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
-        if (policy == "subday") chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
+        if (policy == "subday") chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).Raster(p => p.FontPath(Font()))
             .AddGanttTask("Project", Start, Start.AddHours(6));
         var prepared = Prepare(chart);
         var text = Captions(prepared).Select(label => label.Text.Lines.Single().Text).ToArray();
@@ -95,16 +95,16 @@ public sealed class GanttEndpointDateContextTests {
     public void MermaidNonMidnightPlansKeepTheirExistingDefaultAndAuthoredDateContext() {
         const string source = "gantt\ndateFormat YYYY-MM-DD HH:mm\nTask :2026-03-02 06:00, 17d";
         var document = new MermaidParser().ParseGantt(source).Document!;
-        var chart = document.ToChart().Size(400, 300).Png(p => p.FontPath(Font()));
+        var chart = document.ToChart().Size(400, 300).Raster(p => p.FontPath(Font()));
         Assert.All(Captions(Prepare(chart)), label => Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", label.Text.Lines.Single().Text));
         document.AxisFormat = "%d/%m";
-        var authored = document.ToChart().Size(400, 300).Png(p => p.FontPath(Font()));
+        var authored = document.ToChart().Size(400, 300).Raster(p => p.FontPath(Font()));
         Assert.All(Captions(Prepare(authored)), label => Assert.Matches("^[0-9]{2}/03$", label.Text.Lines.Single().Text));
         Assert.Equal(Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
     }
 
     private static Chart Fixture(ThemeMode mode) => Chart.Create().Size(400, 300).ShowHeader(false).Legend(false)
-        .Png(p => p.FontPath(Font())).Theme(VisualTheme.Graphite()).ThemeMode(mode).GridLineStyle(style => style.ShowVerticalLines = true)
+        .Raster(p => p.FontPath(Font())).Theme(VisualTheme.Graphite()).ThemeMode(mode).GridLineStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Project", Start, Finish);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()

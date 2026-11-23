@@ -16,7 +16,7 @@ public sealed class TimeAxisReviewClosureTests {
     [InlineData(true, ThemeMode.Dark)]
     public void HorizontalAxesPreserveAutomaticAndAuthoredTickDensityThroughProjection(bool category, ThemeMode mode) {
         var chart = Chart.Create().Size(category ? 360 : 1400, category ? 800 : 360).ShowHeader(false).Legend(false)
-            .ThemeMode(mode).Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .ThemeMode(mode).Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .AddLine("Dates", Enumerable.Range(0, 7).Select(index => category
                 ? new ChartPoint(Start.AddDays(index), index) : new ChartPoint(index, Start.AddDays(index).ToOADate())));
         chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
@@ -43,7 +43,7 @@ public sealed class TimeAxisReviewClosureTests {
     [InlineData(5, ThemeMode.Dark)]
     public void UnlistedRegularBarCadencesFitTheGeneratedGridBeforePaintingCaptions(int days, ThemeMode mode) {
         var chart = Chart.Create().Size(360, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale()).ThemeMode(mode)
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddBar("Readings", Enumerable.Range(0, 15).Select(index => new ChartPoint(Start.AddDays(index * days), 20 + index)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

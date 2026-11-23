@@ -52,7 +52,7 @@ public sealed class OrdinaryTableExtractionControlsTests {
 
     private static ChartTable Create(string variant, int width, bool dark) {
         var table = ChartTable.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-            .Size(width, 280).PngOutputScale(1).Title("Publication facts")
+            .Size(width, 280).RasterScale(1).Title("Publication facts")
             .Subtitle("Source values and independent cell presentations");
         if (variant == "rich") {
             table.Dense(width == 390).AddColumn("Name", width: 70).AddColumn("State", width: 80)

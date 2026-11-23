@@ -54,7 +54,7 @@ internal static partial class Program {
             "Packed financial preparation lost its range or line companion.");
         PackageAssertions.Require(prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png),
             "A keyed source update changed a prepared financial export.");
-        PackageAssertions.Png(png); PackageAssertions.Png(chart.ToPng());
+        PackageAssertions.Raster(png); PackageAssertions.Raster(chart.ToPng());
     }
 
     private static void NativeCoordinateDrawings() {
@@ -117,7 +117,7 @@ internal static partial class Program {
         chart.Options.YAxis.Reversed = true;
         PackageAssertions.Require(prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png),
             "Source edits changed prepared XY drawings or native PNG output.");
-        PackageAssertions.Png(png);
+        PackageAssertions.Raster(png);
         Console.WriteLine("Core authoring facts: full/X/Y/XY and plain-null reset agree; generic numeric atomicity, read-only annotations and detached exports passed.");
     }
 
@@ -237,7 +237,7 @@ internal static partial class Program {
         PackageAssertions.Require(depots.MapPoints[0].ColorValue == -5 && depots.MapPoints[1].ColorValue == null
             && prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png),
             "Packed typed replacement conflated color/weight or changed an earlier geographic export.");
-        PackageAssertions.Png(png); PackageAssertions.Png(chart.ToPng());
+        PackageAssertions.Raster(png); PackageAssertions.Raster(chart.ToPng());
         Console.WriteLine("Map authoring facts: named weight and imported WeightPropertyName remain independent from signed or missing color values.");
     }
 

@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 var output = ExampleProgramOptions.OutputDirectory(args);
 ExampleOutputDirectory.Reset(output);
-const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
+const ChartRasterScale DemoPngOutputScale = ChartRasterScale.Retina;
 if (ExampleProgramOptions.TryHandle(args, output, DemoPngOutputScale)) return;
 void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(chart, output, name, DemoPngOutputScale);
 var passed = ChartSeries.CreateArea(new ChartSeriesId("passed"), "Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230, 1260)).Smooth();

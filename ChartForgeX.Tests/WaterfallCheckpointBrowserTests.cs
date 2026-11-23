@@ -64,7 +64,7 @@ public sealed class WaterfallCheckpointBrowserTests {
         }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 24, 540);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
-        var fontDirectory = Path.GetDirectoryName(chart.Options.Png.FontPath)!;
+        var fontDirectory = Path.GetDirectoryName(chart.Options.Raster.FontPath)!;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content =
             "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Regular.ttf"))) + ") format('truetype');font-weight:400}"
             + "@font-face{font-family:Carlito;src:url(data:font/ttf;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(Path.Combine(fontDirectory, "Carlito-Bold.ttf"))) + ") format('truetype');font-weight:700}" });
@@ -232,7 +232,7 @@ public sealed class WaterfallCheckpointBrowserTests {
                 ChartWaterfallItem.Delta(4, -130 * sign), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70 * sign),
                 ChartWaterfallItem.Total(7), ChartWaterfallItem.Delta(8, -20 * sign), ChartWaterfallItem.Subtotal(9)
             }));
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         chart.Series[0].PointColor(4, ChartColor.FromHex("#A5358A")).PointFillPattern(4, ChartFillPattern.Crosshatch);
         if (horizontal) {
             chart.Waterfall(options => options.Orientation = ChartOrientation.Horizontal)

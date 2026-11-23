@@ -251,7 +251,7 @@ public sealed partial class TerminalStory {
     public bool ShowFinalPrompt { get; set; } = true;
 
     /// <summary>Gets or sets the PNG output density multiplier, from 1 to 4.</summary>
-    public int PngOutputScale {
+    public int RasterScale {
         get => _pngOutputScale;
         set {
             if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value));

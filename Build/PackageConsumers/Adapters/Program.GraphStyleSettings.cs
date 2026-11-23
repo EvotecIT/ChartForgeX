@@ -13,7 +13,7 @@ internal static partial class Program {
             PackageAssertions.Require(chart.Viewport.Padding==44&&chart.DefaultRenderOptions!.LayeredNodeSpacing==75&&chart.DefaultRenderOptions.LayeredRankSpacing==140,"Packed graph spacing was lost: "+family);
             var restored=VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToTopologyChart();
             PackageAssertions.Require(restored.Groups.Single().BorderColor=="#345678"&&restored.Edges.Single().Opacity==.6,"Packed style portable capture was lost: "+family);
-            PackageAssertions.Png(artifact.ToPng());
+            PackageAssertions.Raster(artifact.ToPng());
         }
     }
 }

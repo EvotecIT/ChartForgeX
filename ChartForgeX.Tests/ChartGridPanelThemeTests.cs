@@ -58,7 +58,7 @@ public sealed class ChartGridPanelThemeTests {
 
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(fontPath));
-        chart.Png(p => p.FontPath(fontPath));
+        chart.Raster(p => p.FontPath(fontPath));
         var authored = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
             frame: new VisualFrame(showLegend: false, transparentBackground: true)));
         Assert.All(authored.Scene.Nodes.OfType<VisualSceneText>(), node => Assert.Equal(fontPath, node.Text.Style.Font.FilePath));

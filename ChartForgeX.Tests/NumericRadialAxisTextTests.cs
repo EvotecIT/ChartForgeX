@@ -152,7 +152,7 @@ public sealed class NumericRadialAxisTextTests {
             .SecondaryYAxis(axis => { axis.LabelAngle = 90; axis.TickCount = 3; });
         NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("requests"), "Requests", new(1, 1200), new(2, 900), new(3, 700));
         NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("resolved"), "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].SecondaryAxis();
-        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Options.Raster.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return chart;
     }
 

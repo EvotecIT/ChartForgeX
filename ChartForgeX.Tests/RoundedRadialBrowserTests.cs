@@ -56,7 +56,7 @@ public sealed class RoundedRadialBrowserTests {
         var interior = new { x = cx + Math.Cos(middle) * radius, y = cy + Math.Sin(middle) * radius };
         var corner = new { x = cx + Math.Cos(start + .25 / outer) * (outer - .25), y = cy + Math.Sin(start + .25 / outer) * (outer - .25) };
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
-        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
+        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Raster.FontPath!));
         html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, width + 24, height + 150);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

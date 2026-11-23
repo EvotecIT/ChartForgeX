@@ -16,7 +16,7 @@ internal static class DashboardPatternExamples {
     private static readonly ChartColor Red = ChartColor.FromHex("#DE442F");
     private static readonly ChartColor SoftGray = ChartColor.FromHex("#D9DCE3");
 
-    public static void Write(string output, ChartPngOutputScale pngOutputScale) {
+    public static void Write(string output, ChartRasterScale pngOutputScale) {
         var scale = (int)pngOutputScale;
 
         Save(AppointmentOperationsGrid(scale), output, "dashboard-appointment-operations-grid");
@@ -26,18 +26,18 @@ internal static class DashboardPatternExamples {
         Save(ContentPerformanceRows(scale), output, "dashboard-content-performance-rows");
         Save(ConversionFunnelColumns(scale), output, "dashboard-conversion-funnel-columns");
         Save(ProjectTaskCompositionCard(scale), output, "dashboard-project-task-composition-card");
-        Save(ProjectTrackCard().Png(p => p.OutputScale((int)pngOutputScale)), output, "dashboard-project-track-card");
-        Save(ProjectScheduleTimeline().PngOutputScale((int)pngOutputScale), output, "dashboard-project-schedule-timeline");
+        Save(ProjectTrackCard().Raster(p => p.OutputScale((int)pngOutputScale)), output, "dashboard-project-track-card");
+        Save(ProjectScheduleTimeline().RasterScale((int)pngOutputScale), output, "dashboard-project-schedule-timeline");
         Save(ShipmentActivityPanel(scale), output, "dashboard-shipment-activity-panel");
         Save(HrOperationsGrid(scale), output, "dashboard-hr-operations-grid");
         Save(PaymentAnalyticsGrid(scale), output, "dashboard-payment-analytics-grid");
     }
 
-    public static void WriteShipmentActivityPanel(string output, ChartPngOutputScale pngOutputScale) {
+    public static void WriteShipmentActivityPanel(string output, ChartRasterScale pngOutputScale) {
         Save(ShipmentActivityPanel((int)pngOutputScale), output, "dashboard-shipment-activity-panel");
     }
 
-    public static void WriteProjectProgressCard(string output, ChartPngOutputScale pngOutputScale) {
+    public static void WriteProjectProgressCard(string output, ChartRasterScale pngOutputScale) {
         Save(ProjectProgressCard((int)pngOutputScale), output, "dashboard-project-progress-card");
     }
 
@@ -51,12 +51,12 @@ internal static class DashboardPatternExamples {
         .PanelSize(320, 220)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(OperationsTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(AppointmentVolume().Size(600, 357), 2, 2)
         .Add(PeakHourReview().Size(600, 329), 2, 2)
         .Add(StaffWorkload().Size(600, 302), 2, 2)
-        .Add(AppointmentTotalCard().PngOutputScale(outputScale))
-        .Add(AppointmentUnassignedCard().PngOutputScale(outputScale))
+        .Add(AppointmentTotalCard().RasterScale(outputScale))
+        .Add(AppointmentUnassignedCard().RasterScale(outputScale))
         .Add(AvailableStaffList().Size(600, 238), 2, 2)
         .Add(AppointmentBacklogList().Size(600, 238), 2, 2);
 
@@ -153,7 +153,7 @@ internal static class DashboardPatternExamples {
         .Subtitle("Overall completion rate all projects.")
         .Size(800, 351)
         .Theme(ProjectTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .HeaderSymbol("%")
         .AddItem("Performing Progress", 89, segments: 44, color: Green, delta: "+10.2%", tone: Tone.Success)
         .AddItem("Target Sales", 67, segments: 44, color: Blue, delta: "+2.2%", tone: Tone.Info)
@@ -164,7 +164,7 @@ internal static class DashboardPatternExamples {
         .Subtitle("Inventory split by lifecycle state.")
         .Size(800, 332)
         .Theme(ProjectTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Metric("Certificates", 277)
         .AddItem("Valid", 164, color: Green, displayValue: "164")
         .AddItem("Expiring", 48, color: Orange, displayValue: "48")
@@ -176,7 +176,7 @@ internal static class DashboardPatternExamples {
         .Subtitle("Balanced source mix rendered as a capsule loop.")
         .Size(800, 332)
         .Theme(ProjectTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .AddItem("Direct", 40, color: Green, displayValue: "24,000")
         .AddItem("Partner", 35, color: Orange, displayValue: "21,000")
         .AddItem("Referral", 15, color: ChartColor.FromHex("#EF5DA8"), displayValue: "9,000")
@@ -187,7 +187,7 @@ internal static class DashboardPatternExamples {
         .Subtitle("Metric rows with exact values, deltas, and segmented progress.")
         .Size(800, 449)
         .Theme(ProjectTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .AddItem(new SegmentedMetricItem("Posts", 86).Maximum(100).Segments(44).Color(Blue).DisplayValue("132,034").Delta("+4.3%").Tone(Tone.Success))
         .AddItem(new SegmentedMetricItem("Replies", 62).Maximum(100).Segments(44).Color(ChartColor.FromHex("#7894F8")).DisplayValue("56,234").Delta("-6.4%").Tone(Tone.Danger))
         .AddItem(new SegmentedMetricItem("Likes", 84).Maximum(100).Segments(44).Color(ChartColor.FromHex("#8B7AF4")).DisplayValue("125,485,958").Delta("+12.34%").Tone(Tone.Success))
@@ -200,7 +200,7 @@ internal static class DashboardPatternExamples {
         .Subtitle("Ordered stage counts rendered as reusable segmented columns.")
         .Size(800, 322)
         .Theme(ProjectTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .AddItem("Clicks", 82000, segments: 24, color: Green, displayValue: "82,000")
         .AddItem("Added to Cart", 7200, segments: 16, color: Orange, displayValue: "7,200")
         .AddItem("Payment", 1230, segments: 12, color: ChartColor.FromHex("#6D83F2"), displayValue: "1,230")
@@ -211,7 +211,7 @@ internal static class DashboardPatternExamples {
         .Subtitle("Spread across 6 projects.")
         .Size(800, 390)
         .Theme(ProjectTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .ShowCard(false)
         .Metric("Tasks", 23, "Task")
         .AddItem("On Going", 12, color: Blue, tone: Tone.Info, pattern: ChartFillPattern.DiagonalForward)
@@ -265,7 +265,7 @@ internal static class DashboardPatternExamples {
         .Padding(18, 18, 18, 18)
         .TransparentBackground()
         .ShowCard(false)
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .ShowEventSurfaces(false)
         .AddSection("In-progress")
         .AddEvent("Shipment", tone: Tone.Info, detail: "Delivery by: Royal Mail (Standard)", symbol: "S")
@@ -290,7 +290,7 @@ internal static class DashboardPatternExamples {
         .PanelSize(320, 230)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(HrTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(HrMetric("Open Positions", "56", "+5%", Tone.Success, Purple))
         .Add(HrMetric("Applications", "5625", "-3%", Tone.Danger, Mint))
         .Add(HrMetric("Shortlisted", "125", "-3%", Tone.Warning, Orange))
@@ -389,7 +389,7 @@ internal static class DashboardPatternExamples {
         .PanelSize(330, 230)
         .PanelFit(VisualPanelFit.Stretch)
         .Theme(PaymentTheme())
-        .PngOutputScale(outputScale)
+        .RasterScale(outputScale)
         .Add(PaymentMetric("Total transaction", "EUR 56,980", "+12%", Tone.Success, Green))
         .Add(PaymentMetric("Revenue growth", "EUR 26,980", "-7%", Tone.Danger, Red))
         .Add(PaymentMetric("Fees earned", "EUR 23,980", "+13%", Tone.Success, Green))

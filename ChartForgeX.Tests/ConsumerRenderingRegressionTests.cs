@@ -43,7 +43,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(2)]
     public void CardStatusBarSpansTheLogicalCardAtEveryOutputScale(int scale) {
         var card = MetricCard.Create().Size(460, 200).ShowCard().Metric("CPU", "38")
-            .Tone(Tone.Warning).PngOutputScale(scale);
+            .Tone(Tone.Warning).RasterScale(scale);
         var image = card.RenderRgba();
         var svg = XDocument.Parse(card.ToSvg());
         var bar = svg.Descendants().Single(e => Role(e) == "metric-status-bar");
@@ -166,7 +166,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(2)]
     public void MetricRoundBadgeStaysInsideCardPaddingAtEveryOutputScale(int scale) {
         var card = MetricCard.Create().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).Size(330, 150)
-            .ShowCard().Padding(0).Metric("CPU", "38").Symbol("CPU").PngOutputScale(scale);
+            .ShowCard().Padding(0).Metric("CPU", "38").Symbol("CPU").RasterScale(scale);
         var nodes = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = nodes.Single(e => Role(e) == "metric-symbol-badge");
         Assert.True(N(badge, "cx") + N(badge, "r") <= 314);
@@ -197,7 +197,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(1300, 560)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("gateway", "Gateway", 30, 40, width: 90, height: 52).AddNode("identity", "Identity service", 180, 40, width: 90, height: 52)
             .AddEdge("request", "gateway", "identity", "HTTPS");
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, PngSupersamplingScale = scale };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, RasterSupersampling = scale };
         var original = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false }));
         var fitted = XDocument.Parse(chart.ToSvg(options));
         double LargestNodeLabel(XDocument document) => document.Descendants()

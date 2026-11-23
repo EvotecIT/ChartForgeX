@@ -44,7 +44,7 @@ public sealed class V2ExportRequestTests {
         chart.Options.Padding = new ChartPadding(9, 11, 15, 17);
         chart.Options.ShowHeader = false; chart.Options.Legend.Visible = false;
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
-        chart.Options.TransparentBackground = true; chart.Options.Png.OutputScale = 2;
+        chart.Options.TransparentBackground = true; chart.Options.Raster.OutputScale = 2;
         chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#306090") }; });
         var pixels = chart.ToRgbaImage();
         Assert.Equal(480, pixels.Width); Assert.Equal(300, pixels.Height);

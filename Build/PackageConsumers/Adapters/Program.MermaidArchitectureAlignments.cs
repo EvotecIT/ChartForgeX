@@ -27,7 +27,7 @@ internal static partial class Program {
             "Packed aligned Manual import moved saved scene coordinates.");
         var fence = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fence.HasErrors && fence.Artifacts.Count == 1 && fence.Artifacts[0].ToSvg() == artifact.ToSvg(), "Packed aligned fence did not use the native scene owner.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var native = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered).AddAutoNode("first", "First").AddAutoNode("second", "Second");
         native.Alignments.Add(new TopologyAlignment("request", TopologyAlignmentKind.Row, new[] { "first", "second" }));
         var portable = native.ToVisualArtifact().ToInterchangeEnvelope();

@@ -22,6 +22,6 @@ internal static partial class Program {
             }),
             "Packed native Sankey endpoint gradient or outlined text is absent.");
         PackageAssertions.Require(chart.Series[0].FlowLinks.Single().Value == 7, "Packed paint changed the authored flow weight.");
-        PackageAssertions.Png(chart.ToPng()); Console.WriteLine("Packed native Sankey endpoint paint and outlined labels passed.");
+        PackageAssertions.Raster(chart.ToPng()); Console.WriteLine("Packed native Sankey endpoint paint and outlined labels passed.");
     }
 }

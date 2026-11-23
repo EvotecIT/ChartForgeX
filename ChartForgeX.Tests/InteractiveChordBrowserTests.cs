@@ -20,7 +20,7 @@ public sealed class InteractiveChordBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, "options").Size(width, width < 500 ? 320 : 460)
             .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Directed transfers").Legend(true);
-        chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+        chart.Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var name = "chord-styled-" + width + "-" + (dark ? "dark" : "light");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 460 : 600);

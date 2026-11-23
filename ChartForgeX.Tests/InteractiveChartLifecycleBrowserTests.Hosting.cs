@@ -253,7 +253,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var labels = new[] { "Service request measures North", "Service request measures South", "Service request measures West" };
         var chart = Chart.Create().Size(1100, 360).Title("Adaptive legend state").Legend().Legend(l => l.MaxRows(1))
-            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
+            .Raster(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         string legend, mark;
         if (family is "series" or "local-series") {
             for (var index = 0; index < labels.Length; index++) {

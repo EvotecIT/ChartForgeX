@@ -17,11 +17,11 @@ internal static partial class Program {
         var svg = artifact.ToSvg(); var groups = XDocument.Parse(svg).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "fishbone-cause").ToArray();
         PackageAssertions.Require(groups.Length == 6 && (string?)groups[2].Attribute("data-parent-id") == "cause-0.0", "Packed Ishikawa lost actual nested parent identity.");
         PackageAssertions.Require(groups[2].Descendants().Any(e => e.Name.LocalName == "title" && e.Value == "Missing reviewer availability"), "Packed Ishikawa lost its complete caption.");
-        PackageAssertions.Png(artifact.ToPng()); PackageAssertions.Require(artifact.HtmlSizing == VisualArtifactHtmlSizing.PreserveSize, "Packed Ishikawa changed native host sizing.");
+        PackageAssertions.Raster(artifact.ToPng()); PackageAssertions.Require(artifact.HtmlSizing == VisualArtifactHtmlSizing.PreserveSize, "Packed Ishikawa changed native host sizing.");
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Single().ToSvg() == svg, "Packed Ishikawa direct/fence geometry differed.");
         var native = FishboneDiagramBlock.Create("Outcome").Theme(VisualTheme.Graphite()); native.AddCause("Cause").AddChild("Nested").AddChild("Deep fact");
-        native.NaturalSize(); PackageAssertions.Png(native.ToPng()); PackageAssertions.Require(native.ToSvg().Contains("Deep fact", StringComparison.Ordinal), "Packed native cause tree failed.");
+        native.NaturalSize(); PackageAssertions.Raster(native.ToPng()); PackageAssertions.Require(native.ToSvg().Contains("Deep fact", StringComparison.Ordinal), "Packed native cause tree failed.");
         var portable = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         PackageAssertions.Require(portable.Width == block.Options.Size.Width && portable.Extensions["mermaid.nodes"] == "7", "Packed Ishikawa envelope dimensions or source count changed.");
     }

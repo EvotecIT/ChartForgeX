@@ -25,7 +25,7 @@ internal static partial class Program {
         PackageAssertions.Require(svg.Contains("sequence-half-call-arrow", StringComparison.Ordinal)
             && HasNativeSequenceNumber(svg, "Request", "1") && !svg.Contains("<foreignObject", StringComparison.OrdinalIgnoreCase),
             "Packed sequence did not use the native half-arrow, numbering and safe text scene.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         PackageAssertions.Require(envelope.Extensions["chartforgex.sequence.paint.participantFill"] == "#E3EFFF"
             && envelope.Nodes[0].Extensions["mermaid.label"] == "Native<br/>API",
@@ -33,7 +33,7 @@ internal static partial class Program {
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Diagnostics.Count == 0 && fenced.Artifacts.Count == 1,
             "Packed fenced depth did not retain exact source mappings.");
-        PackageAssertions.Png(fenced.Artifacts[0].ToPng());
+        PackageAssertions.Raster(fenced.Artifacts[0].ToPng());
 
         const string invalid = "%%{init: {'themeVariables':{'actorBkg':'hsl(nope,20%,30%)'}}}%%\nsequenceDiagram\nA->>B: Signal";
         var invalidDirect = RenderFixture(invalid);

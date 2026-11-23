@@ -19,6 +19,6 @@ internal static partial class Program {
             "Packed nonlinear alignment lost source provenance or crossing fills.");
         var png = prepared.ToPng(); actual.Points.Clear(); forecast.Name("Changed");
         PackageAssertions.Require(svg == prepared.ToSvg() && png.SequenceEqual(prepared.ToPng()), "Packed aligned preparation is not detached.");
-        PackageAssertions.Png(png);
+        PackageAssertions.Raster(png);
     }
 }

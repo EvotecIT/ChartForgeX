@@ -23,7 +23,7 @@ internal static partial class Program {
         PackageAssertions.Require(artifact.ToSvg() == strictFence.Artifacts[0].ToSvg()
             && artifact.ToPng().SequenceEqual(strictFence.Artifacts[0].ToPng()),
             "Packed direct and Markdown Requirement fill exports disagree.");
-        PackageAssertions.Png(artifact.ToPng());
+        PackageAssertions.Raster(artifact.ToPng());
 
         // The shared safe-style owner diagnoses CSS filters instead of silently claiming a native effect.
         const string unsupported = "requirementDiagram\nrequirement req {\nid: 1\n}\nstyle req filter:blur(2px)";

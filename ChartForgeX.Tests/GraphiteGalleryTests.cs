@@ -18,7 +18,7 @@ public sealed class GraphiteGalleryTests {
         Directory.CreateDirectory(output);
         try {
             var chart = Chart.Create().Size(596, 338).Title("Host frame").HostOwnsFrame()
-                .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Png(p => p.OutputScale(scale))
+                .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Raster(p => p.OutputScale(scale))
                 .XLabels("One", "Two", "Three").AddBar("Counts", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
             foreach (var name in new[] { "normal", "edge-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), chart.ToSvg());
@@ -51,7 +51,7 @@ public sealed class GraphiteGalleryTests {
         var output=Path.Combine(Path.GetTempPath(),"ChartForgeX-graphite-gallery-test-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var chart=Chart.Create().Size(320,220).Title("Graphite frame").Png(p => p.OutputScale(scale))
+            var chart=Chart.Create().Size(320,220).Title("Graphite frame").Raster(p => p.OutputScale(scale))
                 .Theme(translucent ? TranslucentBorderTheme() : VisualTheme.Graphite())
                 .AddBar("Counts",new[]{new ChartPoint(1,20),new ChartPoint(2,50)});
             if(framed) chart.Theme(builder => builder.CardRadius = 8);

@@ -16,7 +16,7 @@ internal static partial class Program {
         var svg = XDocument.Parse(artifact.ToSvg()); var ids = svg.Descendants().Attributes("id").Select(id => id.Value).ToArray();
         PackageAssertions.Require(svg.Descendants().Any(node => node.Attribute("data-cfx-native-text-resources") != null)
             && svg.Descendants().Where(node => node.Name.LocalName == "use").All(node => ids.Contains(((string)node.Attribute("href")!).Substring(1))), "Packed caption SVG lost permanent glyph resources.");
-        PackageAssertions.Png(artifact.ToPng()); var restored = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToTopologyChart();
+        PackageAssertions.Raster(artifact.ToPng()); var restored = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson()).ToTopologyChart();
         PackageAssertions.Require(restored.Nodes[0].LabelContent.Runs.Select(run => run.Emphasis).SequenceEqual(content.Runs.Select(run => run.Emphasis)), "Packed editable caption runs did not survive portable restoration.");
     }
 }
