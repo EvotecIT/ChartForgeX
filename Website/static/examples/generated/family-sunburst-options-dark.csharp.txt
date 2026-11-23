@@ -46,12 +46,12 @@ public static class SunburstRecipe {
             new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
         };
         var allocation = ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocated work", items);
-        var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
+        var chart = Chart.Create().DataLabels().AddSeries(allocation);
         if (configured) {
             var colors = VisualTheme.Graphite().Resolve(mode);
             var low = mode == ThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
             var high = mode == ThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
-            chart.ConfigureSunburst(options => {
+            chart.Sunburst(options => {
                 options.CornerRadius = 6;
                 options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
                     : context.Item.Id == "operations-support" ? "Shared service" : null;
@@ -60,8 +60,8 @@ public static class SunburstRecipe {
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
                     .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
             });
-            allocation.WithNodeState("engineering-support", ChartSeriesState.Warning);
-            allocation.WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+            allocation.NodeState("engineering-support", ChartSeriesState.Warning);
+            allocation.PointFillPattern(4, ChartFillPattern.DiagonalForward);
         }
         return chart;
     }

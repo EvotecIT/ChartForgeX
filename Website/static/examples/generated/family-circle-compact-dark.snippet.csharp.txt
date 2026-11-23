@@ -19,7 +19,7 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var completed = ChartSeries.CreateCircle(new ChartSeriesId("completed"), "Completed", 76);
-var chart = Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completed);
+var chart = Chart.Create().XLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completed);
 
 #region Output
 var context = new VisualRenderContext(

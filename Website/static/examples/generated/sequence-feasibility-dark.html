@@ -117,7 +117,7 @@ public static class SimpleSequenceRecipe {
         if (variant is not (&quot;wide&quot; or &quot;feasibility&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide or feasibility.&quot;);
 
-        return SequenceArtifact.Create(&quot;session&quot;).WithSize(600, 375)
+        return SequenceArtifact.Create(&quot;session&quot;).Width(600).Height(375)
             .AddParticipant(&quot;client&quot;, &quot;Client&quot;)
             .AddParticipant(&quot;server&quot;, &quot;Server&quot;)
             .AddMessage(&quot;client&quot;, &quot;server&quot;, &quot;Request\npayload&quot;)
@@ -161,7 +161,7 @@ public static class SimpleSequenceRecipe {
         if (variant is not (&quot;wide&quot; or &quot;feasibility&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide or feasibility.&quot;);
 
-        return SequenceArtifact.Create(&quot;session&quot;).WithSize(600, 375)
+        return SequenceArtifact.Create(&quot;session&quot;).Width(600).Height(375)
             .AddParticipant(&quot;client&quot;, &quot;Client&quot;)
             .AddParticipant(&quot;server&quot;, &quot;Server&quot;)
             .AddMessage(&quot;client&quot;, &quot;server&quot;, &quot;Request\npayload&quot;)

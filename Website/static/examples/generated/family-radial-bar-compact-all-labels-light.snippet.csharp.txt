@@ -35,10 +35,10 @@ static class RadialBarRecipe {
     internal static Chart AllLabels() {
         var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialBar,
             Enumerable.Range(1, 20).Select(index => new ChartPoint(index, 500 + index * 20)));
-        var chart = Chart.Create().WithXLabels(Enumerable.Range(1, 20).Select(index => "Region " + index + " request volume").ToArray())
-            .WithRadialGeometry(new ChartRadialGeometryOptions(-75, 195, .2, .25, .1))
-            .WithYAxisBounds(0, 1500).WithDataLabels(false).WithXAxis("All region captions; overlaps are intentional")
-            .ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All).AddSeries(requests);
+        var chart = Chart.Create().XLabels(Enumerable.Range(1, 20).Select(index => "Region " + index + " request volume").ToArray())
+            .RadialGeometry(new ChartRadialGeometryOptions(-75, 195, .2, .25, .1))
+            .YAxis(y => y.Bounds(0, 1500)).DataLabels(false).XAxis(x => x.Title("All region captions; overlaps are intentional"))
+            .XAxis(axis => axis.LabelDensity = ChartLabelDensity.All).AddSeries(requests);
         chart.Options.YAxis.Visible = false;
         return chart;
     }

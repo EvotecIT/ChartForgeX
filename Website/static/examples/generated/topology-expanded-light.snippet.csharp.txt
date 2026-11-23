@@ -27,8 +27,8 @@ chart.DefaultRenderOptions = new TopologyRenderOptions {
     IncludeLegend = true,
     IncludeGroupStatusDots = true
 };
-chart.WithViewport(1100, 620).WithLayout(TopologyLayoutMode.Layered)
-    .WithLayoutDirection(TopologyLayoutDirection.LeftToRight);
+chart.Viewport(new TopologyViewport(1100, 620)).LayoutMode(TopologyLayoutMode.Layered)
+    .LayoutDirection(TopologyLayoutDirection.LeftToRight);
 chart.Groups.Add(new TopologyGroup {
     Id = "primary", Label = "Primary region",
     Status = TopologyHealthStatus.Healthy
@@ -77,7 +77,7 @@ chart.Legend = TopologyLegend.Create()
 
 #region Output
 if ((object)chart is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Service request topology").WithSubtitle("Groups, status, details and routed links").WithTheme(theme, mode).ToVisualArtifact();
+    var natural = topology.Title("Service request topology").Subtitle("Groups, status, details and routed links").Theme(theme, mode).ToVisualArtifact();
     natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

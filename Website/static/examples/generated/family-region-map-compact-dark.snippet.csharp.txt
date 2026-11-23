@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var chart = Chart.Create().AddRegionMap("Observations", ChartMapCatalog.Get("us-states"), RegionValues(),
-    id: new ChartSeriesId("regional-observations")).WithMapLabels(false);
+    id: new ChartSeriesId("regional-observations")).Map(m => m.ShowLabels(false));
 
 #region Output
 var context = new VisualRenderContext(

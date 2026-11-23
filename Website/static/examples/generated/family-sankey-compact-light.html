@@ -133,10 +133,10 @@ public static class SankeyRecipe {
         if (variant != &quot;sparse&quot;) {
             // Channels and processing paths take series colours; outcomes take the theme&#39;s status colours.
             var colors = VisualTheme.Graphite().Resolve(mode);
-            for (var index = 0; index &lt; 5; index++) requests.WithPointColor(index, colors.Palette[index]);
-            requests.WithNodeState(&quot;completed&quot;, ChartSeriesState.Success)
-                .WithNodeState(&quot;review&quot;, ChartSeriesState.Warning)
-                .WithNodeState(&quot;rejected&quot;, ChartSeriesState.Danger);
+            for (var index = 0; index &lt; 5; index++) requests.PointColor(index, colors.Palette[index]);
+            requests.NodeState(&quot;completed&quot;, ChartSeriesState.Success)
+                .NodeState(&quot;review&quot;, ChartSeriesState.Warning)
+                .NodeState(&quot;rejected&quot;, ChartSeriesState.Danger);
         }
         return Chart.Create().AddSeries(requests);
     }
@@ -194,10 +194,10 @@ public static class SankeyRecipe {
         if (variant != &quot;sparse&quot;) {
             // Channels and processing paths take series colours; outcomes take the theme&#39;s status colours.
             var colors = VisualTheme.Graphite().Resolve(mode);
-            for (var index = 0; index &lt; 5; index++) requests.WithPointColor(index, colors.Palette[index]);
-            requests.WithNodeState(&quot;completed&quot;, ChartSeriesState.Success)
-                .WithNodeState(&quot;review&quot;, ChartSeriesState.Warning)
-                .WithNodeState(&quot;rejected&quot;, ChartSeriesState.Danger);
+            for (var index = 0; index &lt; 5; index++) requests.PointColor(index, colors.Palette[index]);
+            requests.NodeState(&quot;completed&quot;, ChartSeriesState.Success)
+                .NodeState(&quot;review&quot;, ChartSeriesState.Warning)
+                .NodeState(&quot;rejected&quot;, ChartSeriesState.Danger);
         }
         return Chart.Create().AddSeries(requests);
     }

@@ -20,18 +20,18 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var chart = Chart.Create();
-chart.WithXLabels("North", "South", "East", "West").WithYAxis("Share (%)");
+chart.XLabels("North", "South", "East", "West").YAxis(y => y.Title("Share (%)"));
 var names = new[] { "First half · Completed", "First half · Remaining", "Second half · Completed", "Second half · Remaining" };
 var ids = new[] { "first-half-completed", "first-half-remaining", "second-half-completed", "second-half-remaining" };
 var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
 for (var index = 0; index < names.Length; index++) {
     var points = values[index].Select((value, point) => new ChartPoint(point + 1, value));
     var series = ChartSeries.CreateBar(new ChartSeriesId(ids[index]), names[index], points)
-        .WithStackGroup(index < 2 ? "first-half" : "second-half").WithNormalization(100);
+        .StackGroup(index < 2 ? "first-half" : "second-half").NormalizedTo(100);
     chart.AddSeries(series);
 }
-chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(false);
-chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+chart.Options.YAxis.Bounds(0, 100).LabelBy(Percent).Reversed(false);
+chart.Bars(b => b.Style(ChartBarStyle.SegmentedCapsule).ShowTotals()).DataLabels(false);
 
 #region Output
 var context = new VisualRenderContext(

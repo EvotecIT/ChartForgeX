@@ -117,8 +117,8 @@ public static class GaugeRecipe {
                 new ChartGaugeTarget(1800, &quot;Baseline&quot;), new ChartGaugeTarget(9500, &quot;Expected&quot;),
                 new ChartGaugeTarget(10500, &quot;Goal&quot;), new ChartGaugeTarget(19000, &quot;Limit&quot;)
             });
-            return Chart.Create().WithTitle(&quot;Processed requests&quot;).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId(&quot;capacity&quot;), &quot;Capacity&quot;, reading))
-                .ConfigureGauge(options =&gt; {
+            return Chart.Create().Title(&quot;Processed requests&quot;).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId(&quot;capacity&quot;), &quot;Capacity&quot;, reading))
+                .Gauge(options =&gt; {
                     options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = &quot;Processed requests&quot;;
                     options.Bands.Add(new ChartGaugeBand(0, 10000, ChartSeriesState.Warning));
                     options.Bands.Add(new ChartGaugeBand(10000, 20000, ChartSeriesState.Success));
@@ -127,7 +127,7 @@ public static class GaugeRecipe {
         if (variant is &quot;precision&quot; or &quot;compact-precision&quot;) {
             var tolerance = ChartSeries.CreateGauge(new ChartSeriesId(&quot;tolerance&quot;), &quot;Tolerance&quot;,
                 new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) }));
-            return Chart.Create().AddSeries(tolerance).ConfigureGauge(options =&gt; {
+            return Chart.Create().AddSeries(tolerance).Gauge(options =&gt; {
                 options.Form = ChartGaugeForm.Linear;
             });
         }
@@ -137,7 +137,7 @@ public static class GaugeRecipe {
         var capacity = ChartSeries.CreateGauge(new ChartSeriesId(&quot;capacity&quot;), &quot;Capacity&quot;,
             new ChartGaugeValue(76, targets: configured ? new[] { new ChartGaugeTarget(60, &quot;Baseline&quot;), new ChartGaugeTarget(85, &quot;Goal&quot;) } : new[] { new ChartGaugeTarget(85) }));
         return Chart.Create().AddSeries(capacity)
-            .ConfigureGauge(options =&gt; {
+            .Gauge(options =&gt; {
                 options.Form = variant is &quot;options&quot; or &quot;compact-options&quot; ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
                 if (configured) options.TickCount = 5;
                 if (variant is &quot;vertical&quot; or &quot;compact-vertical&quot;) { options.Form = ChartGaugeForm.Linear; options.Orientation = ChartOrientation.Vertical; }
@@ -187,8 +187,8 @@ public static class GaugeRecipe {
                 new ChartGaugeTarget(1800, &quot;Baseline&quot;), new ChartGaugeTarget(9500, &quot;Expected&quot;),
                 new ChartGaugeTarget(10500, &quot;Goal&quot;), new ChartGaugeTarget(19000, &quot;Limit&quot;)
             });
-            return Chart.Create().WithTitle(&quot;Processed requests&quot;).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId(&quot;capacity&quot;), &quot;Capacity&quot;, reading))
-                .ConfigureGauge(options =&gt; {
+            return Chart.Create().Title(&quot;Processed requests&quot;).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId(&quot;capacity&quot;), &quot;Capacity&quot;, reading))
+                .Gauge(options =&gt; {
                     options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = &quot;Processed requests&quot;;
                     options.Bands.Add(new ChartGaugeBand(0, 10000, ChartSeriesState.Warning));
                     options.Bands.Add(new ChartGaugeBand(10000, 20000, ChartSeriesState.Success));
@@ -197,7 +197,7 @@ public static class GaugeRecipe {
         if (variant is &quot;precision&quot; or &quot;compact-precision&quot;) {
             var tolerance = ChartSeries.CreateGauge(new ChartSeriesId(&quot;tolerance&quot;), &quot;Tolerance&quot;,
                 new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) }));
-            return Chart.Create().AddSeries(tolerance).ConfigureGauge(options =&gt; {
+            return Chart.Create().AddSeries(tolerance).Gauge(options =&gt; {
                 options.Form = ChartGaugeForm.Linear;
             });
         }
@@ -207,7 +207,7 @@ public static class GaugeRecipe {
         var capacity = ChartSeries.CreateGauge(new ChartSeriesId(&quot;capacity&quot;), &quot;Capacity&quot;,
             new ChartGaugeValue(76, targets: configured ? new[] { new ChartGaugeTarget(60, &quot;Baseline&quot;), new ChartGaugeTarget(85, &quot;Goal&quot;) } : new[] { new ChartGaugeTarget(85) }));
         return Chart.Create().AddSeries(capacity)
-            .ConfigureGauge(options =&gt; {
+            .Gauge(options =&gt; {
                 options.Form = variant is &quot;options&quot; or &quot;compact-options&quot; ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
                 if (configured) options.TickCount = 5;
                 if (variant is &quot;vertical&quot; or &quot;compact-vertical&quot;) { options.Form = ChartGaugeForm.Linear; options.Orientation = ChartOrientation.Vertical; }

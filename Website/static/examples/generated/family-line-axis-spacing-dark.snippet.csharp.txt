@@ -1,0 +1,68 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static AxisControlRecipe;
+
+var mode = ThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+if (!Options.Contains("axis-spacing")) throw new ArgumentOutOfRangeException("variant");
+// Twenty-four hourly p95 latency readings against an 80 ms objective.
+var hours = Enumerable.Range(0, 25).ToArray();
+var chart = Chart.Create().XAxis(x => x.Title("Hour")).YAxis(y => y.Title("p95 latency (ms)")).XAxis(x => x.Bounds(0, 24))
+    .AddLine("API", hours.Select(hour => new ChartPoint(hour, Math.Round(44 + 22 * Math.Sin((hour - 6) / 24d * 2 * Math.PI) + hour % 5 * 2.5))).ToArray())
+    .AddLine("Portal", hours.Select(hour => new ChartPoint(hour, Math.Round(31 + 15 * Math.Sin((hour - 9) / 24d * 2 * Math.PI) + hour % 3 * 3))).ToArray());
+switch ("axis-spacing") {
+    case "axis-step":
+        // Every six hours across, and every 15 ms up: the automatic value domain ends on the next multiple of 15.
+        chart.XAxis(axis => axis.TickStep(6)).YAxis(axis => axis.TickStep(15));
+        break;
+    case "axis-values":
+        // Shift changes across, and the latency budget's own thresholds up. The automatic value range starts at the zero
+        // baseline and ends on the nearest authored value above the data, 80.
+        chart.XAxis(axis => axis.TickValues(0, 7, 15, 23))
+            .YAxis(axis => axis.TickValues(20, 50, 80));
+        break;
+    case "axis-spacing":
+        // Ticks at most 45 drawing units apart across, and at least 90 apart up.
+        chart.XAxis(axis => axis.TickSpacing(null, 45)).YAxis(axis => axis.TickSpacing(90, null));
+        break;
+    case "axis-minor":
+        // Four minor lines per 20 ms interval up; one per three-hour interval across, with the vertical grid shown.
+        chart.YAxis(axis => axis.TickStep(20).MinorTickCount(4))
+            .XAxis(axis => axis.TickStep(3).MinorTickCount(2).Grid(grid => grid.ShowLines(true)));
+        break;
+    case "axis-grid":
+        // Dashed teal value lines over neutral alternating bands; solid, faint hour lines across.
+        var teal = ChartColor.FromHex("#2E8B8B");
+        chart.YAxis(axis => axis.TickStep(20).Grid(grid => grid.Color(teal).Opacity(.55).Dash(5, 4).ShowBands()))
+            .XAxis(axis => axis.TickStep(4).Grid(grid => grid.ShowLines(true).Opacity(.25).StrokeWidth(.75)));
+        break;
+}
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Latency with bounded tick spacing", "Ticks at most 45 units apart across, at least 90 up", showLegend: true, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class AxisControlRecipe {
+    public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step", "axis-stacked" };
+}

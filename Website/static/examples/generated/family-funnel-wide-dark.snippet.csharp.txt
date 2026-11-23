@@ -18,11 +18,11 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithDataLabels();
+var chart = Chart.Create().DataLabels();
 var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel, new[] {
     new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41)
 });
-chart.WithXLabels("Received", "Qualified", "Reviewed", "Completed").AddSeries(requests);
+chart.XLabels("Received", "Qualified", "Reviewed", "Completed").AddSeries(requests);
 
 #region Output
 var context = new VisualRenderContext(

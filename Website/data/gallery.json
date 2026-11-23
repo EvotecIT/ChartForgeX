@@ -184,6 +184,54 @@
     "/examples/generated/cartesian-compact-light.svg",
     "/examples/generated/cartesian-compact-light.thumbnail.png",
     "/examples/generated/cartesian-compact-light.thumbnail.svg",
+    "/examples/generated/cartesian-dense-dark.csharp.txt",
+    "/examples/generated/cartesian-dense-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-dense-dark.html",
+    "/examples/generated/cartesian-dense-dark.png",
+    "/examples/generated/cartesian-dense-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-dense-dark.svg",
+    "/examples/generated/cartesian-dense-dark.thumbnail.png",
+    "/examples/generated/cartesian-dense-dark.thumbnail.svg",
+    "/examples/generated/cartesian-dense-light.csharp.txt",
+    "/examples/generated/cartesian-dense-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-dense-light.html",
+    "/examples/generated/cartesian-dense-light.png",
+    "/examples/generated/cartesian-dense-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-dense-light.svg",
+    "/examples/generated/cartesian-dense-light.thumbnail.png",
+    "/examples/generated/cartesian-dense-light.thumbnail.svg",
+    "/examples/generated/cartesian-empty-dark.csharp.txt",
+    "/examples/generated/cartesian-empty-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-empty-dark.html",
+    "/examples/generated/cartesian-empty-dark.png",
+    "/examples/generated/cartesian-empty-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-empty-dark.svg",
+    "/examples/generated/cartesian-empty-dark.thumbnail.png",
+    "/examples/generated/cartesian-empty-dark.thumbnail.svg",
+    "/examples/generated/cartesian-empty-light.csharp.txt",
+    "/examples/generated/cartesian-empty-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-empty-light.html",
+    "/examples/generated/cartesian-empty-light.png",
+    "/examples/generated/cartesian-empty-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-empty-light.svg",
+    "/examples/generated/cartesian-empty-light.thumbnail.png",
+    "/examples/generated/cartesian-empty-light.thumbnail.svg",
+    "/examples/generated/cartesian-explicit-series-dark.csharp.txt",
+    "/examples/generated/cartesian-explicit-series-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-explicit-series-dark.html",
+    "/examples/generated/cartesian-explicit-series-dark.png",
+    "/examples/generated/cartesian-explicit-series-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-explicit-series-dark.svg",
+    "/examples/generated/cartesian-explicit-series-dark.thumbnail.png",
+    "/examples/generated/cartesian-explicit-series-dark.thumbnail.svg",
+    "/examples/generated/cartesian-explicit-series-light.csharp.txt",
+    "/examples/generated/cartesian-explicit-series-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-explicit-series-light.html",
+    "/examples/generated/cartesian-explicit-series-light.png",
+    "/examples/generated/cartesian-explicit-series-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-explicit-series-light.svg",
+    "/examples/generated/cartesian-explicit-series-light.thumbnail.png",
+    "/examples/generated/cartesian-explicit-series-light.thumbnail.svg",
     "/examples/generated/cartesian-explicit-status-dark.csharp.txt",
     "/examples/generated/cartesian-explicit-status-dark.gallery.csharp.txt",
     "/examples/generated/cartesian-explicit-status-dark.html",
@@ -200,6 +248,54 @@
     "/examples/generated/cartesian-explicit-status-light.svg",
     "/examples/generated/cartesian-explicit-status-light.thumbnail.png",
     "/examples/generated/cartesian-explicit-status-light.thumbnail.svg",
+    "/examples/generated/cartesian-long-title-dark.csharp.txt",
+    "/examples/generated/cartesian-long-title-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-long-title-dark.html",
+    "/examples/generated/cartesian-long-title-dark.png",
+    "/examples/generated/cartesian-long-title-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-long-title-dark.svg",
+    "/examples/generated/cartesian-long-title-dark.thumbnail.png",
+    "/examples/generated/cartesian-long-title-dark.thumbnail.svg",
+    "/examples/generated/cartesian-long-title-light.csharp.txt",
+    "/examples/generated/cartesian-long-title-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-long-title-light.html",
+    "/examples/generated/cartesian-long-title-light.png",
+    "/examples/generated/cartesian-long-title-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-long-title-light.svg",
+    "/examples/generated/cartesian-long-title-light.thumbnail.png",
+    "/examples/generated/cartesian-long-title-light.thumbnail.svg",
+    "/examples/generated/cartesian-missing-dark.csharp.txt",
+    "/examples/generated/cartesian-missing-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-missing-dark.html",
+    "/examples/generated/cartesian-missing-dark.png",
+    "/examples/generated/cartesian-missing-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-missing-dark.svg",
+    "/examples/generated/cartesian-missing-dark.thumbnail.png",
+    "/examples/generated/cartesian-missing-dark.thumbnail.svg",
+    "/examples/generated/cartesian-missing-light.csharp.txt",
+    "/examples/generated/cartesian-missing-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-missing-light.html",
+    "/examples/generated/cartesian-missing-light.png",
+    "/examples/generated/cartesian-missing-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-missing-light.svg",
+    "/examples/generated/cartesian-missing-light.thumbnail.png",
+    "/examples/generated/cartesian-missing-light.thumbnail.svg",
+    "/examples/generated/cartesian-surface-dark.csharp.txt",
+    "/examples/generated/cartesian-surface-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-surface-dark.html",
+    "/examples/generated/cartesian-surface-dark.png",
+    "/examples/generated/cartesian-surface-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-surface-dark.svg",
+    "/examples/generated/cartesian-surface-dark.thumbnail.png",
+    "/examples/generated/cartesian-surface-dark.thumbnail.svg",
+    "/examples/generated/cartesian-surface-light.csharp.txt",
+    "/examples/generated/cartesian-surface-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-surface-light.html",
+    "/examples/generated/cartesian-surface-light.png",
+    "/examples/generated/cartesian-surface-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-surface-light.svg",
+    "/examples/generated/cartesian-surface-light.thumbnail.png",
+    "/examples/generated/cartesian-surface-light.thumbnail.svg",
     "/examples/generated/cartesian-wide-dark.csharp.txt",
     "/examples/generated/cartesian-wide-dark.gallery.csharp.txt",
     "/examples/generated/cartesian-wide-dark.html",
@@ -218,6 +314,38 @@
     "/examples/generated/cartesian-wide-light.svg",
     "/examples/generated/cartesian-wide-light.thumbnail.png",
     "/examples/generated/cartesian-wide-light.thumbnail.svg",
+    "/examples/generated/cartesian-wrapped-legend-dark.csharp.txt",
+    "/examples/generated/cartesian-wrapped-legend-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-wrapped-legend-dark.html",
+    "/examples/generated/cartesian-wrapped-legend-dark.png",
+    "/examples/generated/cartesian-wrapped-legend-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-wrapped-legend-dark.svg",
+    "/examples/generated/cartesian-wrapped-legend-dark.thumbnail.png",
+    "/examples/generated/cartesian-wrapped-legend-dark.thumbnail.svg",
+    "/examples/generated/cartesian-wrapped-legend-light.csharp.txt",
+    "/examples/generated/cartesian-wrapped-legend-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-wrapped-legend-light.html",
+    "/examples/generated/cartesian-wrapped-legend-light.png",
+    "/examples/generated/cartesian-wrapped-legend-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-wrapped-legend-light.svg",
+    "/examples/generated/cartesian-wrapped-legend-light.thumbnail.png",
+    "/examples/generated/cartesian-wrapped-legend-light.thumbnail.svg",
+    "/examples/generated/cartesian-zero-dark.csharp.txt",
+    "/examples/generated/cartesian-zero-dark.gallery.csharp.txt",
+    "/examples/generated/cartesian-zero-dark.html",
+    "/examples/generated/cartesian-zero-dark.png",
+    "/examples/generated/cartesian-zero-dark.snippet.csharp.txt",
+    "/examples/generated/cartesian-zero-dark.svg",
+    "/examples/generated/cartesian-zero-dark.thumbnail.png",
+    "/examples/generated/cartesian-zero-dark.thumbnail.svg",
+    "/examples/generated/cartesian-zero-light.csharp.txt",
+    "/examples/generated/cartesian-zero-light.gallery.csharp.txt",
+    "/examples/generated/cartesian-zero-light.html",
+    "/examples/generated/cartesian-zero-light.png",
+    "/examples/generated/cartesian-zero-light.snippet.csharp.txt",
+    "/examples/generated/cartesian-zero-light.svg",
+    "/examples/generated/cartesian-zero-light.thumbnail.png",
+    "/examples/generated/cartesian-zero-light.thumbnail.svg",
     "/examples/generated/catalog.html",
     "/examples/generated/categorical-radial-area-compact-dark.csharp.txt",
     "/examples/generated/categorical-radial-area-compact-dark.gallery.csharp.txt",
@@ -318,6 +446,22 @@
     "/examples/generated/categorical-radial-area-wide-light.thumbnail.png",
     "/examples/generated/categorical-radial-area-wide-light.thumbnail.svg",
     "/examples/generated/cfx-native-text.js",
+    "/examples/generated/chart-grid-compact-dark.csharp.txt",
+    "/examples/generated/chart-grid-compact-dark.gallery.csharp.txt",
+    "/examples/generated/chart-grid-compact-dark.html",
+    "/examples/generated/chart-grid-compact-dark.png",
+    "/examples/generated/chart-grid-compact-dark.snippet.csharp.txt",
+    "/examples/generated/chart-grid-compact-dark.svg",
+    "/examples/generated/chart-grid-compact-dark.thumbnail.png",
+    "/examples/generated/chart-grid-compact-dark.thumbnail.svg",
+    "/examples/generated/chart-grid-compact-light.csharp.txt",
+    "/examples/generated/chart-grid-compact-light.gallery.csharp.txt",
+    "/examples/generated/chart-grid-compact-light.html",
+    "/examples/generated/chart-grid-compact-light.png",
+    "/examples/generated/chart-grid-compact-light.snippet.csharp.txt",
+    "/examples/generated/chart-grid-compact-light.svg",
+    "/examples/generated/chart-grid-compact-light.thumbnail.png",
+    "/examples/generated/chart-grid-compact-light.thumbnail.svg",
     "/examples/generated/chart-grid-wide-dark.csharp.txt",
     "/examples/generated/chart-grid-wide-dark.gallery.csharp.txt",
     "/examples/generated/chart-grid-wide-dark.html",
@@ -660,6 +804,38 @@
     "/examples/generated/combined-gauge-wide-light.svg",
     "/examples/generated/combined-gauge-wide-light.thumbnail.png",
     "/examples/generated/combined-gauge-wide-light.thumbnail.svg",
+    "/examples/generated/donut-above-labels-dark.csharp.txt",
+    "/examples/generated/donut-above-labels-dark.gallery.csharp.txt",
+    "/examples/generated/donut-above-labels-dark.html",
+    "/examples/generated/donut-above-labels-dark.png",
+    "/examples/generated/donut-above-labels-dark.snippet.csharp.txt",
+    "/examples/generated/donut-above-labels-dark.svg",
+    "/examples/generated/donut-above-labels-dark.thumbnail.png",
+    "/examples/generated/donut-above-labels-dark.thumbnail.svg",
+    "/examples/generated/donut-above-labels-light.csharp.txt",
+    "/examples/generated/donut-above-labels-light.gallery.csharp.txt",
+    "/examples/generated/donut-above-labels-light.html",
+    "/examples/generated/donut-above-labels-light.png",
+    "/examples/generated/donut-above-labels-light.snippet.csharp.txt",
+    "/examples/generated/donut-above-labels-light.svg",
+    "/examples/generated/donut-above-labels-light.thumbnail.png",
+    "/examples/generated/donut-above-labels-light.thumbnail.svg",
+    "/examples/generated/donut-below-labels-dark.csharp.txt",
+    "/examples/generated/donut-below-labels-dark.gallery.csharp.txt",
+    "/examples/generated/donut-below-labels-dark.html",
+    "/examples/generated/donut-below-labels-dark.png",
+    "/examples/generated/donut-below-labels-dark.snippet.csharp.txt",
+    "/examples/generated/donut-below-labels-dark.svg",
+    "/examples/generated/donut-below-labels-dark.thumbnail.png",
+    "/examples/generated/donut-below-labels-dark.thumbnail.svg",
+    "/examples/generated/donut-below-labels-light.csharp.txt",
+    "/examples/generated/donut-below-labels-light.gallery.csharp.txt",
+    "/examples/generated/donut-below-labels-light.html",
+    "/examples/generated/donut-below-labels-light.png",
+    "/examples/generated/donut-below-labels-light.snippet.csharp.txt",
+    "/examples/generated/donut-below-labels-light.svg",
+    "/examples/generated/donut-below-labels-light.thumbnail.png",
+    "/examples/generated/donut-below-labels-light.thumbnail.svg",
     "/examples/generated/donut-compact-dark.csharp.txt",
     "/examples/generated/donut-compact-dark.gallery.csharp.txt",
     "/examples/generated/donut-compact-dark.html",
@@ -676,6 +852,54 @@
     "/examples/generated/donut-compact-light.svg",
     "/examples/generated/donut-compact-light.thumbnail.png",
     "/examples/generated/donut-compact-light.thumbnail.svg",
+    "/examples/generated/donut-dense-dark.csharp.txt",
+    "/examples/generated/donut-dense-dark.gallery.csharp.txt",
+    "/examples/generated/donut-dense-dark.html",
+    "/examples/generated/donut-dense-dark.png",
+    "/examples/generated/donut-dense-dark.snippet.csharp.txt",
+    "/examples/generated/donut-dense-dark.svg",
+    "/examples/generated/donut-dense-dark.thumbnail.png",
+    "/examples/generated/donut-dense-dark.thumbnail.svg",
+    "/examples/generated/donut-dense-light.csharp.txt",
+    "/examples/generated/donut-dense-light.gallery.csharp.txt",
+    "/examples/generated/donut-dense-light.html",
+    "/examples/generated/donut-dense-light.png",
+    "/examples/generated/donut-dense-light.snippet.csharp.txt",
+    "/examples/generated/donut-dense-light.svg",
+    "/examples/generated/donut-dense-light.thumbnail.png",
+    "/examples/generated/donut-dense-light.thumbnail.svg",
+    "/examples/generated/donut-empty-dark.csharp.txt",
+    "/examples/generated/donut-empty-dark.gallery.csharp.txt",
+    "/examples/generated/donut-empty-dark.html",
+    "/examples/generated/donut-empty-dark.png",
+    "/examples/generated/donut-empty-dark.snippet.csharp.txt",
+    "/examples/generated/donut-empty-dark.svg",
+    "/examples/generated/donut-empty-dark.thumbnail.png",
+    "/examples/generated/donut-empty-dark.thumbnail.svg",
+    "/examples/generated/donut-empty-light.csharp.txt",
+    "/examples/generated/donut-empty-light.gallery.csharp.txt",
+    "/examples/generated/donut-empty-light.html",
+    "/examples/generated/donut-empty-light.png",
+    "/examples/generated/donut-empty-light.snippet.csharp.txt",
+    "/examples/generated/donut-empty-light.svg",
+    "/examples/generated/donut-empty-light.thumbnail.png",
+    "/examples/generated/donut-empty-light.thumbnail.svg",
+    "/examples/generated/donut-explicit-series-dark.csharp.txt",
+    "/examples/generated/donut-explicit-series-dark.gallery.csharp.txt",
+    "/examples/generated/donut-explicit-series-dark.html",
+    "/examples/generated/donut-explicit-series-dark.png",
+    "/examples/generated/donut-explicit-series-dark.snippet.csharp.txt",
+    "/examples/generated/donut-explicit-series-dark.svg",
+    "/examples/generated/donut-explicit-series-dark.thumbnail.png",
+    "/examples/generated/donut-explicit-series-dark.thumbnail.svg",
+    "/examples/generated/donut-explicit-series-light.csharp.txt",
+    "/examples/generated/donut-explicit-series-light.gallery.csharp.txt",
+    "/examples/generated/donut-explicit-series-light.html",
+    "/examples/generated/donut-explicit-series-light.png",
+    "/examples/generated/donut-explicit-series-light.snippet.csharp.txt",
+    "/examples/generated/donut-explicit-series-light.svg",
+    "/examples/generated/donut-explicit-series-light.thumbnail.png",
+    "/examples/generated/donut-explicit-series-light.thumbnail.svg",
     "/examples/generated/donut-explicit-status-dark.csharp.txt",
     "/examples/generated/donut-explicit-status-dark.gallery.csharp.txt",
     "/examples/generated/donut-explicit-status-dark.html",
@@ -692,6 +916,54 @@
     "/examples/generated/donut-explicit-status-light.svg",
     "/examples/generated/donut-explicit-status-light.thumbnail.png",
     "/examples/generated/donut-explicit-status-light.thumbnail.svg",
+    "/examples/generated/donut-long-title-dark.csharp.txt",
+    "/examples/generated/donut-long-title-dark.gallery.csharp.txt",
+    "/examples/generated/donut-long-title-dark.html",
+    "/examples/generated/donut-long-title-dark.png",
+    "/examples/generated/donut-long-title-dark.snippet.csharp.txt",
+    "/examples/generated/donut-long-title-dark.svg",
+    "/examples/generated/donut-long-title-dark.thumbnail.png",
+    "/examples/generated/donut-long-title-dark.thumbnail.svg",
+    "/examples/generated/donut-long-title-light.csharp.txt",
+    "/examples/generated/donut-long-title-light.gallery.csharp.txt",
+    "/examples/generated/donut-long-title-light.html",
+    "/examples/generated/donut-long-title-light.png",
+    "/examples/generated/donut-long-title-light.snippet.csharp.txt",
+    "/examples/generated/donut-long-title-light.svg",
+    "/examples/generated/donut-long-title-light.thumbnail.png",
+    "/examples/generated/donut-long-title-light.thumbnail.svg",
+    "/examples/generated/donut-missing-dark.csharp.txt",
+    "/examples/generated/donut-missing-dark.gallery.csharp.txt",
+    "/examples/generated/donut-missing-dark.html",
+    "/examples/generated/donut-missing-dark.png",
+    "/examples/generated/donut-missing-dark.snippet.csharp.txt",
+    "/examples/generated/donut-missing-dark.svg",
+    "/examples/generated/donut-missing-dark.thumbnail.png",
+    "/examples/generated/donut-missing-dark.thumbnail.svg",
+    "/examples/generated/donut-missing-light.csharp.txt",
+    "/examples/generated/donut-missing-light.gallery.csharp.txt",
+    "/examples/generated/donut-missing-light.html",
+    "/examples/generated/donut-missing-light.png",
+    "/examples/generated/donut-missing-light.snippet.csharp.txt",
+    "/examples/generated/donut-missing-light.svg",
+    "/examples/generated/donut-missing-light.thumbnail.png",
+    "/examples/generated/donut-missing-light.thumbnail.svg",
+    "/examples/generated/donut-surface-dark.csharp.txt",
+    "/examples/generated/donut-surface-dark.gallery.csharp.txt",
+    "/examples/generated/donut-surface-dark.html",
+    "/examples/generated/donut-surface-dark.png",
+    "/examples/generated/donut-surface-dark.snippet.csharp.txt",
+    "/examples/generated/donut-surface-dark.svg",
+    "/examples/generated/donut-surface-dark.thumbnail.png",
+    "/examples/generated/donut-surface-dark.thumbnail.svg",
+    "/examples/generated/donut-surface-light.csharp.txt",
+    "/examples/generated/donut-surface-light.gallery.csharp.txt",
+    "/examples/generated/donut-surface-light.html",
+    "/examples/generated/donut-surface-light.png",
+    "/examples/generated/donut-surface-light.snippet.csharp.txt",
+    "/examples/generated/donut-surface-light.svg",
+    "/examples/generated/donut-surface-light.thumbnail.png",
+    "/examples/generated/donut-surface-light.thumbnail.svg",
     "/examples/generated/donut-wide-dark.csharp.txt",
     "/examples/generated/donut-wide-dark.gallery.csharp.txt",
     "/examples/generated/donut-wide-dark.html",
@@ -710,6 +982,38 @@
     "/examples/generated/donut-wide-light.svg",
     "/examples/generated/donut-wide-light.thumbnail.png",
     "/examples/generated/donut-wide-light.thumbnail.svg",
+    "/examples/generated/donut-wrapped-legend-dark.csharp.txt",
+    "/examples/generated/donut-wrapped-legend-dark.gallery.csharp.txt",
+    "/examples/generated/donut-wrapped-legend-dark.html",
+    "/examples/generated/donut-wrapped-legend-dark.png",
+    "/examples/generated/donut-wrapped-legend-dark.snippet.csharp.txt",
+    "/examples/generated/donut-wrapped-legend-dark.svg",
+    "/examples/generated/donut-wrapped-legend-dark.thumbnail.png",
+    "/examples/generated/donut-wrapped-legend-dark.thumbnail.svg",
+    "/examples/generated/donut-wrapped-legend-light.csharp.txt",
+    "/examples/generated/donut-wrapped-legend-light.gallery.csharp.txt",
+    "/examples/generated/donut-wrapped-legend-light.html",
+    "/examples/generated/donut-wrapped-legend-light.png",
+    "/examples/generated/donut-wrapped-legend-light.snippet.csharp.txt",
+    "/examples/generated/donut-wrapped-legend-light.svg",
+    "/examples/generated/donut-wrapped-legend-light.thumbnail.png",
+    "/examples/generated/donut-wrapped-legend-light.thumbnail.svg",
+    "/examples/generated/donut-zero-dark.csharp.txt",
+    "/examples/generated/donut-zero-dark.gallery.csharp.txt",
+    "/examples/generated/donut-zero-dark.html",
+    "/examples/generated/donut-zero-dark.png",
+    "/examples/generated/donut-zero-dark.snippet.csharp.txt",
+    "/examples/generated/donut-zero-dark.svg",
+    "/examples/generated/donut-zero-dark.thumbnail.png",
+    "/examples/generated/donut-zero-dark.thumbnail.svg",
+    "/examples/generated/donut-zero-light.csharp.txt",
+    "/examples/generated/donut-zero-light.gallery.csharp.txt",
+    "/examples/generated/donut-zero-light.html",
+    "/examples/generated/donut-zero-light.png",
+    "/examples/generated/donut-zero-light.snippet.csharp.txt",
+    "/examples/generated/donut-zero-light.svg",
+    "/examples/generated/donut-zero-light.thumbnail.png",
+    "/examples/generated/donut-zero-light.thumbnail.svg",
     "/examples/generated/embedding-compact-linked-columns-dark.csharp.txt",
     "/examples/generated/embedding-compact-linked-columns-dark.gallery.csharp.txt",
     "/examples/generated/embedding-compact-linked-columns-dark.html",
@@ -813,18 +1117,20 @@
     "/examples/generated/embedding/index.html",
     "/examples/generated/embedding/light.html",
     "/examples/generated/embedding/shared-strip.csharp.txt",
-    "/examples/generated/enhance/canopyx-export.f18d1ef109ccf0c6.js",
-    "/examples/generated/enhance/canopyx-filter-editor.6faf0c36e139d75f.css",
-    "/examples/generated/enhance/canopyx-filter-editor.a25a9997f0aef871.js",
-    "/examples/generated/enhance/canopyx-link.5874879aadd6cefb.js",
-    "/examples/generated/enhance/canopyx-link.b872151e9cbbd0ce.css",
-    "/examples/generated/enhance/canopyx-presenters.d71f9e12d83969d9.js",
-    "/examples/generated/enhance/canopyx-reporting.5ecb81c0cc558c75.css",
-    "/examples/generated/enhance/canopyx-reporting.f459c38cd3e47eec.js",
-    "/examples/generated/enhance/canopyx-ui-menu.1414af91bc295de8.js",
-    "/examples/generated/enhance/canopyx-ui-menu.29b983c01571b5c3.css",
-    "/examples/generated/enhance/canopyx-ui-overlays.83acc4346a232940.js",
-    "/examples/generated/enhance/canopyx-ui-overlays.bc49b6f13527aecd.css",
+    "/examples/generated/enhance/canopyx-export.055c070ea68acd2c.js",
+    "/examples/generated/enhance/canopyx-filter-editor.522e756e773d1a91.js",
+    "/examples/generated/enhance/canopyx-filter-editor.fb5a7d4441189f1a.css",
+    "/examples/generated/enhance/canopyx-grid-options.4170d2b02aa19b57.js",
+    "/examples/generated/enhance/canopyx-grid-options.e85648a66d70d5b5.css",
+    "/examples/generated/enhance/canopyx-link.64798f9001d92b8c.js",
+    "/examples/generated/enhance/canopyx-link.997fefec6b85f0c5.css",
+    "/examples/generated/enhance/canopyx-presenters.e42f0bd2344667ad.js",
+    "/examples/generated/enhance/canopyx-reporting.8eb6be456440b07a.css",
+    "/examples/generated/enhance/canopyx-reporting.e20aa6c46469ca04.js",
+    "/examples/generated/enhance/canopyx-ui-menu.13980d5b9b0d59f1.css",
+    "/examples/generated/enhance/canopyx-ui-menu.b556aa0f932434bb.js",
+    "/examples/generated/enhance/canopyx-ui-overlays.dad66d2861177c3f.css",
+    "/examples/generated/enhance/canopyx-ui-overlays.dd9a825e1550b10b.js",
     "/examples/generated/enhance/cfx-enhance.5bc648f468b2.css",
     "/examples/generated/enhance/cfx-enhance.cb8f9161fcc0.js",
     "/examples/generated/enhance/enhance-page.css",
@@ -851,6 +1157,38 @@
     "/examples/generated/family-area-compact-light.svg",
     "/examples/generated/family-area-compact-light.thumbnail.png",
     "/examples/generated/family-area-compact-light.thumbnail.svg",
+    "/examples/generated/family-area-options-dark.csharp.txt",
+    "/examples/generated/family-area-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-area-options-dark.html",
+    "/examples/generated/family-area-options-dark.png",
+    "/examples/generated/family-area-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-area-options-dark.svg",
+    "/examples/generated/family-area-options-dark.thumbnail.png",
+    "/examples/generated/family-area-options-dark.thumbnail.svg",
+    "/examples/generated/family-area-options-light.csharp.txt",
+    "/examples/generated/family-area-options-light.gallery.csharp.txt",
+    "/examples/generated/family-area-options-light.html",
+    "/examples/generated/family-area-options-light.png",
+    "/examples/generated/family-area-options-light.snippet.csharp.txt",
+    "/examples/generated/family-area-options-light.svg",
+    "/examples/generated/family-area-options-light.thumbnail.png",
+    "/examples/generated/family-area-options-light.thumbnail.svg",
+    "/examples/generated/family-area-sparse-dark.csharp.txt",
+    "/examples/generated/family-area-sparse-dark.gallery.csharp.txt",
+    "/examples/generated/family-area-sparse-dark.html",
+    "/examples/generated/family-area-sparse-dark.png",
+    "/examples/generated/family-area-sparse-dark.snippet.csharp.txt",
+    "/examples/generated/family-area-sparse-dark.svg",
+    "/examples/generated/family-area-sparse-dark.thumbnail.png",
+    "/examples/generated/family-area-sparse-dark.thumbnail.svg",
+    "/examples/generated/family-area-sparse-light.csharp.txt",
+    "/examples/generated/family-area-sparse-light.gallery.csharp.txt",
+    "/examples/generated/family-area-sparse-light.html",
+    "/examples/generated/family-area-sparse-light.png",
+    "/examples/generated/family-area-sparse-light.snippet.csharp.txt",
+    "/examples/generated/family-area-sparse-light.svg",
+    "/examples/generated/family-area-sparse-light.thumbnail.png",
+    "/examples/generated/family-area-sparse-light.thumbnail.svg",
     "/examples/generated/family-area-wide-dark.csharp.txt",
     "/examples/generated/family-area-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-area-wide-dark.html",
@@ -1373,6 +1711,22 @@
     "/examples/generated/family-bullet-dense-light.svg",
     "/examples/generated/family-bullet-dense-light.thumbnail.png",
     "/examples/generated/family-bullet-dense-light.thumbnail.svg",
+    "/examples/generated/family-bullet-options-dark.csharp.txt",
+    "/examples/generated/family-bullet-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-bullet-options-dark.html",
+    "/examples/generated/family-bullet-options-dark.png",
+    "/examples/generated/family-bullet-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-bullet-options-dark.svg",
+    "/examples/generated/family-bullet-options-dark.thumbnail.png",
+    "/examples/generated/family-bullet-options-dark.thumbnail.svg",
+    "/examples/generated/family-bullet-options-light.csharp.txt",
+    "/examples/generated/family-bullet-options-light.gallery.csharp.txt",
+    "/examples/generated/family-bullet-options-light.html",
+    "/examples/generated/family-bullet-options-light.png",
+    "/examples/generated/family-bullet-options-light.snippet.csharp.txt",
+    "/examples/generated/family-bullet-options-light.svg",
+    "/examples/generated/family-bullet-options-light.thumbnail.png",
+    "/examples/generated/family-bullet-options-light.thumbnail.svg",
     "/examples/generated/family-bullet-wide-dark.csharp.txt",
     "/examples/generated/family-bullet-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-bullet-wide-dark.html",
@@ -1471,6 +1825,22 @@
     "/examples/generated/family-calendar-heatmap-compact-light.svg",
     "/examples/generated/family-calendar-heatmap-compact-light.thumbnail.png",
     "/examples/generated/family-calendar-heatmap-compact-light.thumbnail.svg",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.csharp.txt",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.gallery.csharp.txt",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.html",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.png",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.snippet.csharp.txt",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.svg",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.thumbnail.png",
+    "/examples/generated/family-calendar-heatmap-sparse-dark.thumbnail.svg",
+    "/examples/generated/family-calendar-heatmap-sparse-light.csharp.txt",
+    "/examples/generated/family-calendar-heatmap-sparse-light.gallery.csharp.txt",
+    "/examples/generated/family-calendar-heatmap-sparse-light.html",
+    "/examples/generated/family-calendar-heatmap-sparse-light.png",
+    "/examples/generated/family-calendar-heatmap-sparse-light.snippet.csharp.txt",
+    "/examples/generated/family-calendar-heatmap-sparse-light.svg",
+    "/examples/generated/family-calendar-heatmap-sparse-light.thumbnail.png",
+    "/examples/generated/family-calendar-heatmap-sparse-light.thumbnail.svg",
     "/examples/generated/family-calendar-heatmap-wide-dark.csharp.txt",
     "/examples/generated/family-calendar-heatmap-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-calendar-heatmap-wide-dark.html",
@@ -2061,6 +2431,22 @@
     "/examples/generated/family-donut-concentric-light.svg",
     "/examples/generated/family-donut-concentric-light.thumbnail.png",
     "/examples/generated/family-donut-concentric-light.thumbnail.svg",
+    "/examples/generated/family-donut-options-dark.csharp.txt",
+    "/examples/generated/family-donut-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-donut-options-dark.html",
+    "/examples/generated/family-donut-options-dark.png",
+    "/examples/generated/family-donut-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-donut-options-dark.svg",
+    "/examples/generated/family-donut-options-dark.thumbnail.png",
+    "/examples/generated/family-donut-options-dark.thumbnail.svg",
+    "/examples/generated/family-donut-options-light.csharp.txt",
+    "/examples/generated/family-donut-options-light.gallery.csharp.txt",
+    "/examples/generated/family-donut-options-light.html",
+    "/examples/generated/family-donut-options-light.png",
+    "/examples/generated/family-donut-options-light.snippet.csharp.txt",
+    "/examples/generated/family-donut-options-light.svg",
+    "/examples/generated/family-donut-options-light.thumbnail.png",
+    "/examples/generated/family-donut-options-light.thumbnail.svg",
     "/examples/generated/family-donut-variable-radius-dark.csharp.txt",
     "/examples/generated/family-donut-variable-radius-dark.gallery.csharp.txt",
     "/examples/generated/family-donut-variable-radius-dark.html",
@@ -2587,6 +2973,22 @@
     "/examples/generated/family-gauge-full-circle-light.svg",
     "/examples/generated/family-gauge-full-circle-light.thumbnail.png",
     "/examples/generated/family-gauge-full-circle-light.thumbnail.svg",
+    "/examples/generated/family-gauge-options-dark.csharp.txt",
+    "/examples/generated/family-gauge-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-gauge-options-dark.html",
+    "/examples/generated/family-gauge-options-dark.png",
+    "/examples/generated/family-gauge-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-gauge-options-dark.svg",
+    "/examples/generated/family-gauge-options-dark.thumbnail.png",
+    "/examples/generated/family-gauge-options-dark.thumbnail.svg",
+    "/examples/generated/family-gauge-options-light.csharp.txt",
+    "/examples/generated/family-gauge-options-light.gallery.csharp.txt",
+    "/examples/generated/family-gauge-options-light.html",
+    "/examples/generated/family-gauge-options-light.png",
+    "/examples/generated/family-gauge-options-light.snippet.csharp.txt",
+    "/examples/generated/family-gauge-options-light.svg",
+    "/examples/generated/family-gauge-options-light.thumbnail.png",
+    "/examples/generated/family-gauge-options-light.thumbnail.svg",
     "/examples/generated/family-gauge-precision-dark.csharp.txt",
     "/examples/generated/family-gauge-precision-dark.gallery.csharp.txt",
     "/examples/generated/family-gauge-precision-dark.html",
@@ -2831,6 +3233,22 @@
     "/examples/generated/family-heatmap-gradient-color-legend-light.svg",
     "/examples/generated/family-heatmap-gradient-color-legend-light.thumbnail.png",
     "/examples/generated/family-heatmap-gradient-color-legend-light.thumbnail.svg",
+    "/examples/generated/family-heatmap-options-dark.csharp.txt",
+    "/examples/generated/family-heatmap-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-heatmap-options-dark.html",
+    "/examples/generated/family-heatmap-options-dark.png",
+    "/examples/generated/family-heatmap-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-heatmap-options-dark.svg",
+    "/examples/generated/family-heatmap-options-dark.thumbnail.png",
+    "/examples/generated/family-heatmap-options-dark.thumbnail.svg",
+    "/examples/generated/family-heatmap-options-light.csharp.txt",
+    "/examples/generated/family-heatmap-options-light.gallery.csharp.txt",
+    "/examples/generated/family-heatmap-options-light.html",
+    "/examples/generated/family-heatmap-options-light.png",
+    "/examples/generated/family-heatmap-options-light.snippet.csharp.txt",
+    "/examples/generated/family-heatmap-options-light.svg",
+    "/examples/generated/family-heatmap-options-light.thumbnail.png",
+    "/examples/generated/family-heatmap-options-light.thumbnail.svg",
     "/examples/generated/family-heatmap-positioned-color-scale-dark.csharp.txt",
     "/examples/generated/family-heatmap-positioned-color-scale-dark.gallery.csharp.txt",
     "/examples/generated/family-heatmap-positioned-color-scale-dark.html",
@@ -2847,6 +3265,22 @@
     "/examples/generated/family-heatmap-positioned-color-scale-light.svg",
     "/examples/generated/family-heatmap-positioned-color-scale-light.thumbnail.png",
     "/examples/generated/family-heatmap-positioned-color-scale-light.thumbnail.svg",
+    "/examples/generated/family-heatmap-sparse-dark.csharp.txt",
+    "/examples/generated/family-heatmap-sparse-dark.gallery.csharp.txt",
+    "/examples/generated/family-heatmap-sparse-dark.html",
+    "/examples/generated/family-heatmap-sparse-dark.png",
+    "/examples/generated/family-heatmap-sparse-dark.snippet.csharp.txt",
+    "/examples/generated/family-heatmap-sparse-dark.svg",
+    "/examples/generated/family-heatmap-sparse-dark.thumbnail.png",
+    "/examples/generated/family-heatmap-sparse-dark.thumbnail.svg",
+    "/examples/generated/family-heatmap-sparse-light.csharp.txt",
+    "/examples/generated/family-heatmap-sparse-light.gallery.csharp.txt",
+    "/examples/generated/family-heatmap-sparse-light.html",
+    "/examples/generated/family-heatmap-sparse-light.png",
+    "/examples/generated/family-heatmap-sparse-light.snippet.csharp.txt",
+    "/examples/generated/family-heatmap-sparse-light.svg",
+    "/examples/generated/family-heatmap-sparse-light.thumbnail.png",
+    "/examples/generated/family-heatmap-sparse-light.thumbnail.svg",
     "/examples/generated/family-heatmap-swatch-color-legend-dark.csharp.txt",
     "/examples/generated/family-heatmap-swatch-color-legend-dark.gallery.csharp.txt",
     "/examples/generated/family-heatmap-swatch-color-legend-dark.html",
@@ -3047,6 +3481,262 @@
     "/examples/generated/family-layered-radial-wide-light.svg",
     "/examples/generated/family-layered-radial-wide-light.thumbnail.png",
     "/examples/generated/family-layered-radial-wide-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-grid-dark.csharp.txt",
+    "/examples/generated/family-line-axis-grid-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-grid-dark.html",
+    "/examples/generated/family-line-axis-grid-dark.png",
+    "/examples/generated/family-line-axis-grid-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-grid-dark.svg",
+    "/examples/generated/family-line-axis-grid-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-grid-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-grid-light.csharp.txt",
+    "/examples/generated/family-line-axis-grid-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-grid-light.html",
+    "/examples/generated/family-line-axis-grid-light.png",
+    "/examples/generated/family-line-axis-grid-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-grid-light.svg",
+    "/examples/generated/family-line-axis-grid-light.thumbnail.png",
+    "/examples/generated/family-line-axis-grid-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-log-step-dark.csharp.txt",
+    "/examples/generated/family-line-axis-log-step-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-log-step-dark.html",
+    "/examples/generated/family-line-axis-log-step-dark.png",
+    "/examples/generated/family-line-axis-log-step-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-log-step-dark.svg",
+    "/examples/generated/family-line-axis-log-step-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-log-step-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-log-step-light.csharp.txt",
+    "/examples/generated/family-line-axis-log-step-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-log-step-light.html",
+    "/examples/generated/family-line-axis-log-step-light.png",
+    "/examples/generated/family-line-axis-log-step-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-log-step-light.svg",
+    "/examples/generated/family-line-axis-log-step-light.thumbnail.png",
+    "/examples/generated/family-line-axis-log-step-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-minor-dark.csharp.txt",
+    "/examples/generated/family-line-axis-minor-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-minor-dark.html",
+    "/examples/generated/family-line-axis-minor-dark.png",
+    "/examples/generated/family-line-axis-minor-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-minor-dark.svg",
+    "/examples/generated/family-line-axis-minor-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-minor-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-minor-light.csharp.txt",
+    "/examples/generated/family-line-axis-minor-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-minor-light.html",
+    "/examples/generated/family-line-axis-minor-light.png",
+    "/examples/generated/family-line-axis-minor-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-minor-light.svg",
+    "/examples/generated/family-line-axis-minor-light.thumbnail.png",
+    "/examples/generated/family-line-axis-minor-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-spacing-dark.csharp.txt",
+    "/examples/generated/family-line-axis-spacing-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-spacing-dark.html",
+    "/examples/generated/family-line-axis-spacing-dark.png",
+    "/examples/generated/family-line-axis-spacing-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-spacing-dark.svg",
+    "/examples/generated/family-line-axis-spacing-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-spacing-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-spacing-light.csharp.txt",
+    "/examples/generated/family-line-axis-spacing-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-spacing-light.html",
+    "/examples/generated/family-line-axis-spacing-light.png",
+    "/examples/generated/family-line-axis-spacing-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-spacing-light.svg",
+    "/examples/generated/family-line-axis-spacing-light.thumbnail.png",
+    "/examples/generated/family-line-axis-spacing-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-stacked-dark.csharp.txt",
+    "/examples/generated/family-line-axis-stacked-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-stacked-dark.html",
+    "/examples/generated/family-line-axis-stacked-dark.png",
+    "/examples/generated/family-line-axis-stacked-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-stacked-dark.svg",
+    "/examples/generated/family-line-axis-stacked-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-stacked-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-stacked-light.csharp.txt",
+    "/examples/generated/family-line-axis-stacked-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-stacked-light.html",
+    "/examples/generated/family-line-axis-stacked-light.png",
+    "/examples/generated/family-line-axis-stacked-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-stacked-light.svg",
+    "/examples/generated/family-line-axis-stacked-light.thumbnail.png",
+    "/examples/generated/family-line-axis-stacked-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-step-dark.csharp.txt",
+    "/examples/generated/family-line-axis-step-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-step-dark.html",
+    "/examples/generated/family-line-axis-step-dark.png",
+    "/examples/generated/family-line-axis-step-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-step-dark.svg",
+    "/examples/generated/family-line-axis-step-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-step-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-step-light.csharp.txt",
+    "/examples/generated/family-line-axis-step-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-step-light.html",
+    "/examples/generated/family-line-axis-step-light.png",
+    "/examples/generated/family-line-axis-step-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-step-light.svg",
+    "/examples/generated/family-line-axis-step-light.thumbnail.png",
+    "/examples/generated/family-line-axis-step-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-time-step-dark.csharp.txt",
+    "/examples/generated/family-line-axis-time-step-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-time-step-dark.html",
+    "/examples/generated/family-line-axis-time-step-dark.png",
+    "/examples/generated/family-line-axis-time-step-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-time-step-dark.svg",
+    "/examples/generated/family-line-axis-time-step-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-time-step-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-time-step-light.csharp.txt",
+    "/examples/generated/family-line-axis-time-step-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-time-step-light.html",
+    "/examples/generated/family-line-axis-time-step-light.png",
+    "/examples/generated/family-line-axis-time-step-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-time-step-light.svg",
+    "/examples/generated/family-line-axis-time-step-light.thumbnail.png",
+    "/examples/generated/family-line-axis-time-step-light.thumbnail.svg",
+    "/examples/generated/family-line-axis-values-dark.csharp.txt",
+    "/examples/generated/family-line-axis-values-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-values-dark.html",
+    "/examples/generated/family-line-axis-values-dark.png",
+    "/examples/generated/family-line-axis-values-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-values-dark.svg",
+    "/examples/generated/family-line-axis-values-dark.thumbnail.png",
+    "/examples/generated/family-line-axis-values-dark.thumbnail.svg",
+    "/examples/generated/family-line-axis-values-light.csharp.txt",
+    "/examples/generated/family-line-axis-values-light.gallery.csharp.txt",
+    "/examples/generated/family-line-axis-values-light.html",
+    "/examples/generated/family-line-axis-values-light.png",
+    "/examples/generated/family-line-axis-values-light.snippet.csharp.txt",
+    "/examples/generated/family-line-axis-values-light.svg",
+    "/examples/generated/family-line-axis-values-light.thumbnail.png",
+    "/examples/generated/family-line-axis-values-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-grid-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-grid-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-grid-dark.html",
+    "/examples/generated/family-line-compact-axis-grid-dark.png",
+    "/examples/generated/family-line-compact-axis-grid-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-grid-dark.svg",
+    "/examples/generated/family-line-compact-axis-grid-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-grid-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-grid-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-grid-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-grid-light.html",
+    "/examples/generated/family-line-compact-axis-grid-light.png",
+    "/examples/generated/family-line-compact-axis-grid-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-grid-light.svg",
+    "/examples/generated/family-line-compact-axis-grid-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-grid-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-log-step-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-log-step-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-log-step-dark.html",
+    "/examples/generated/family-line-compact-axis-log-step-dark.png",
+    "/examples/generated/family-line-compact-axis-log-step-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-log-step-dark.svg",
+    "/examples/generated/family-line-compact-axis-log-step-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-log-step-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-log-step-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-log-step-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-log-step-light.html",
+    "/examples/generated/family-line-compact-axis-log-step-light.png",
+    "/examples/generated/family-line-compact-axis-log-step-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-log-step-light.svg",
+    "/examples/generated/family-line-compact-axis-log-step-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-log-step-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-minor-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-minor-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-minor-dark.html",
+    "/examples/generated/family-line-compact-axis-minor-dark.png",
+    "/examples/generated/family-line-compact-axis-minor-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-minor-dark.svg",
+    "/examples/generated/family-line-compact-axis-minor-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-minor-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-minor-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-minor-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-minor-light.html",
+    "/examples/generated/family-line-compact-axis-minor-light.png",
+    "/examples/generated/family-line-compact-axis-minor-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-minor-light.svg",
+    "/examples/generated/family-line-compact-axis-minor-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-minor-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-spacing-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-spacing-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-spacing-dark.html",
+    "/examples/generated/family-line-compact-axis-spacing-dark.png",
+    "/examples/generated/family-line-compact-axis-spacing-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-spacing-dark.svg",
+    "/examples/generated/family-line-compact-axis-spacing-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-spacing-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-spacing-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-spacing-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-spacing-light.html",
+    "/examples/generated/family-line-compact-axis-spacing-light.png",
+    "/examples/generated/family-line-compact-axis-spacing-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-spacing-light.svg",
+    "/examples/generated/family-line-compact-axis-spacing-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-spacing-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-stacked-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-stacked-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-stacked-dark.html",
+    "/examples/generated/family-line-compact-axis-stacked-dark.png",
+    "/examples/generated/family-line-compact-axis-stacked-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-stacked-dark.svg",
+    "/examples/generated/family-line-compact-axis-stacked-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-stacked-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-stacked-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-stacked-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-stacked-light.html",
+    "/examples/generated/family-line-compact-axis-stacked-light.png",
+    "/examples/generated/family-line-compact-axis-stacked-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-stacked-light.svg",
+    "/examples/generated/family-line-compact-axis-stacked-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-stacked-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-step-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-step-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-step-dark.html",
+    "/examples/generated/family-line-compact-axis-step-dark.png",
+    "/examples/generated/family-line-compact-axis-step-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-step-dark.svg",
+    "/examples/generated/family-line-compact-axis-step-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-step-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-step-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-step-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-step-light.html",
+    "/examples/generated/family-line-compact-axis-step-light.png",
+    "/examples/generated/family-line-compact-axis-step-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-step-light.svg",
+    "/examples/generated/family-line-compact-axis-step-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-step-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-time-step-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-time-step-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-time-step-dark.html",
+    "/examples/generated/family-line-compact-axis-time-step-dark.png",
+    "/examples/generated/family-line-compact-axis-time-step-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-time-step-dark.svg",
+    "/examples/generated/family-line-compact-axis-time-step-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-time-step-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-time-step-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-time-step-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-time-step-light.html",
+    "/examples/generated/family-line-compact-axis-time-step-light.png",
+    "/examples/generated/family-line-compact-axis-time-step-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-time-step-light.svg",
+    "/examples/generated/family-line-compact-axis-time-step-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-time-step-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-values-dark.csharp.txt",
+    "/examples/generated/family-line-compact-axis-values-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-values-dark.html",
+    "/examples/generated/family-line-compact-axis-values-dark.png",
+    "/examples/generated/family-line-compact-axis-values-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-values-dark.svg",
+    "/examples/generated/family-line-compact-axis-values-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-values-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-axis-values-light.csharp.txt",
+    "/examples/generated/family-line-compact-axis-values-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-axis-values-light.html",
+    "/examples/generated/family-line-compact-axis-values-light.png",
+    "/examples/generated/family-line-compact-axis-values-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-axis-values-light.svg",
+    "/examples/generated/family-line-compact-axis-values-light.thumbnail.png",
+    "/examples/generated/family-line-compact-axis-values-light.thumbnail.svg",
     "/examples/generated/family-line-compact-dark.csharp.txt",
     "/examples/generated/family-line-compact-dark.gallery.csharp.txt",
     "/examples/generated/family-line-compact-dark.html",
@@ -3071,6 +3761,54 @@
     "/examples/generated/family-line-compact-latency-week-light.svg",
     "/examples/generated/family-line-compact-latency-week-light.thumbnail.png",
     "/examples/generated/family-line-compact-latency-week-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-legend-keys-dark.csharp.txt",
+    "/examples/generated/family-line-compact-legend-keys-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-legend-keys-dark.html",
+    "/examples/generated/family-line-compact-legend-keys-dark.png",
+    "/examples/generated/family-line-compact-legend-keys-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-legend-keys-dark.svg",
+    "/examples/generated/family-line-compact-legend-keys-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-legend-keys-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-legend-keys-light.csharp.txt",
+    "/examples/generated/family-line-compact-legend-keys-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-legend-keys-light.html",
+    "/examples/generated/family-line-compact-legend-keys-light.png",
+    "/examples/generated/family-line-compact-legend-keys-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-legend-keys-light.svg",
+    "/examples/generated/family-line-compact-legend-keys-light.thumbnail.png",
+    "/examples/generated/family-line-compact-legend-keys-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-legend-reference-dark.csharp.txt",
+    "/examples/generated/family-line-compact-legend-reference-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-legend-reference-dark.html",
+    "/examples/generated/family-line-compact-legend-reference-dark.png",
+    "/examples/generated/family-line-compact-legend-reference-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-legend-reference-dark.svg",
+    "/examples/generated/family-line-compact-legend-reference-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-legend-reference-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-legend-reference-light.csharp.txt",
+    "/examples/generated/family-line-compact-legend-reference-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-legend-reference-light.html",
+    "/examples/generated/family-line-compact-legend-reference-light.png",
+    "/examples/generated/family-line-compact-legend-reference-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-legend-reference-light.svg",
+    "/examples/generated/family-line-compact-legend-reference-light.thumbnail.png",
+    "/examples/generated/family-line-compact-legend-reference-light.thumbnail.svg",
+    "/examples/generated/family-line-compact-legend-values-dark.csharp.txt",
+    "/examples/generated/family-line-compact-legend-values-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-legend-values-dark.html",
+    "/examples/generated/family-line-compact-legend-values-dark.png",
+    "/examples/generated/family-line-compact-legend-values-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-legend-values-dark.svg",
+    "/examples/generated/family-line-compact-legend-values-dark.thumbnail.png",
+    "/examples/generated/family-line-compact-legend-values-dark.thumbnail.svg",
+    "/examples/generated/family-line-compact-legend-values-light.csharp.txt",
+    "/examples/generated/family-line-compact-legend-values-light.gallery.csharp.txt",
+    "/examples/generated/family-line-compact-legend-values-light.html",
+    "/examples/generated/family-line-compact-legend-values-light.png",
+    "/examples/generated/family-line-compact-legend-values-light.snippet.csharp.txt",
+    "/examples/generated/family-line-compact-legend-values-light.svg",
+    "/examples/generated/family-line-compact-legend-values-light.thumbnail.png",
+    "/examples/generated/family-line-compact-legend-values-light.thumbnail.svg",
     "/examples/generated/family-line-compact-light.csharp.txt",
     "/examples/generated/family-line-compact-light.gallery.csharp.txt",
     "/examples/generated/family-line-compact-light.html",
@@ -3145,6 +3883,54 @@
     "/examples/generated/family-line-latency-week-light.svg",
     "/examples/generated/family-line-latency-week-light.thumbnail.png",
     "/examples/generated/family-line-latency-week-light.thumbnail.svg",
+    "/examples/generated/family-line-legend-keys-dark.csharp.txt",
+    "/examples/generated/family-line-legend-keys-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-legend-keys-dark.html",
+    "/examples/generated/family-line-legend-keys-dark.png",
+    "/examples/generated/family-line-legend-keys-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-legend-keys-dark.svg",
+    "/examples/generated/family-line-legend-keys-dark.thumbnail.png",
+    "/examples/generated/family-line-legend-keys-dark.thumbnail.svg",
+    "/examples/generated/family-line-legend-keys-light.csharp.txt",
+    "/examples/generated/family-line-legend-keys-light.gallery.csharp.txt",
+    "/examples/generated/family-line-legend-keys-light.html",
+    "/examples/generated/family-line-legend-keys-light.png",
+    "/examples/generated/family-line-legend-keys-light.snippet.csharp.txt",
+    "/examples/generated/family-line-legend-keys-light.svg",
+    "/examples/generated/family-line-legend-keys-light.thumbnail.png",
+    "/examples/generated/family-line-legend-keys-light.thumbnail.svg",
+    "/examples/generated/family-line-legend-reference-dark.csharp.txt",
+    "/examples/generated/family-line-legend-reference-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-legend-reference-dark.html",
+    "/examples/generated/family-line-legend-reference-dark.png",
+    "/examples/generated/family-line-legend-reference-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-legend-reference-dark.svg",
+    "/examples/generated/family-line-legend-reference-dark.thumbnail.png",
+    "/examples/generated/family-line-legend-reference-dark.thumbnail.svg",
+    "/examples/generated/family-line-legend-reference-light.csharp.txt",
+    "/examples/generated/family-line-legend-reference-light.gallery.csharp.txt",
+    "/examples/generated/family-line-legend-reference-light.html",
+    "/examples/generated/family-line-legend-reference-light.png",
+    "/examples/generated/family-line-legend-reference-light.snippet.csharp.txt",
+    "/examples/generated/family-line-legend-reference-light.svg",
+    "/examples/generated/family-line-legend-reference-light.thumbnail.png",
+    "/examples/generated/family-line-legend-reference-light.thumbnail.svg",
+    "/examples/generated/family-line-legend-values-dark.csharp.txt",
+    "/examples/generated/family-line-legend-values-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-legend-values-dark.html",
+    "/examples/generated/family-line-legend-values-dark.png",
+    "/examples/generated/family-line-legend-values-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-legend-values-dark.svg",
+    "/examples/generated/family-line-legend-values-dark.thumbnail.png",
+    "/examples/generated/family-line-legend-values-dark.thumbnail.svg",
+    "/examples/generated/family-line-legend-values-light.csharp.txt",
+    "/examples/generated/family-line-legend-values-light.gallery.csharp.txt",
+    "/examples/generated/family-line-legend-values-light.html",
+    "/examples/generated/family-line-legend-values-light.png",
+    "/examples/generated/family-line-legend-values-light.snippet.csharp.txt",
+    "/examples/generated/family-line-legend-values-light.svg",
+    "/examples/generated/family-line-legend-values-light.thumbnail.png",
+    "/examples/generated/family-line-legend-values-light.thumbnail.svg",
     "/examples/generated/family-line-options-dark.csharp.txt",
     "/examples/generated/family-line-options-dark.gallery.csharp.txt",
     "/examples/generated/family-line-options-dark.html",
@@ -3161,6 +3947,22 @@
     "/examples/generated/family-line-options-light.svg",
     "/examples/generated/family-line-options-light.thumbnail.png",
     "/examples/generated/family-line-options-light.thumbnail.svg",
+    "/examples/generated/family-line-sparse-dark.csharp.txt",
+    "/examples/generated/family-line-sparse-dark.gallery.csharp.txt",
+    "/examples/generated/family-line-sparse-dark.html",
+    "/examples/generated/family-line-sparse-dark.png",
+    "/examples/generated/family-line-sparse-dark.snippet.csharp.txt",
+    "/examples/generated/family-line-sparse-dark.svg",
+    "/examples/generated/family-line-sparse-dark.thumbnail.png",
+    "/examples/generated/family-line-sparse-dark.thumbnail.svg",
+    "/examples/generated/family-line-sparse-light.csharp.txt",
+    "/examples/generated/family-line-sparse-light.gallery.csharp.txt",
+    "/examples/generated/family-line-sparse-light.html",
+    "/examples/generated/family-line-sparse-light.png",
+    "/examples/generated/family-line-sparse-light.snippet.csharp.txt",
+    "/examples/generated/family-line-sparse-light.svg",
+    "/examples/generated/family-line-sparse-light.thumbnail.png",
+    "/examples/generated/family-line-sparse-light.thumbnail.svg",
     "/examples/generated/family-line-wide-dark.csharp.txt",
     "/examples/generated/family-line-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-line-wide-dark.html",
@@ -3427,6 +4229,22 @@
     "/examples/generated/family-pictorial-compact-light.svg",
     "/examples/generated/family-pictorial-compact-light.thumbnail.png",
     "/examples/generated/family-pictorial-compact-light.thumbnail.svg",
+    "/examples/generated/family-pictorial-options-dark.csharp.txt",
+    "/examples/generated/family-pictorial-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-pictorial-options-dark.html",
+    "/examples/generated/family-pictorial-options-dark.png",
+    "/examples/generated/family-pictorial-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-pictorial-options-dark.svg",
+    "/examples/generated/family-pictorial-options-dark.thumbnail.png",
+    "/examples/generated/family-pictorial-options-dark.thumbnail.svg",
+    "/examples/generated/family-pictorial-options-light.csharp.txt",
+    "/examples/generated/family-pictorial-options-light.gallery.csharp.txt",
+    "/examples/generated/family-pictorial-options-light.html",
+    "/examples/generated/family-pictorial-options-light.png",
+    "/examples/generated/family-pictorial-options-light.snippet.csharp.txt",
+    "/examples/generated/family-pictorial-options-light.svg",
+    "/examples/generated/family-pictorial-options-light.thumbnail.png",
+    "/examples/generated/family-pictorial-options-light.thumbnail.svg",
     "/examples/generated/family-pictorial-wide-dark.csharp.txt",
     "/examples/generated/family-pictorial-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-pictorial-wide-dark.html",
@@ -3477,6 +4295,22 @@
     "/examples/generated/family-pie-compact-variable-radius-light.svg",
     "/examples/generated/family-pie-compact-variable-radius-light.thumbnail.png",
     "/examples/generated/family-pie-compact-variable-radius-light.thumbnail.svg",
+    "/examples/generated/family-pie-options-dark.csharp.txt",
+    "/examples/generated/family-pie-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-pie-options-dark.html",
+    "/examples/generated/family-pie-options-dark.png",
+    "/examples/generated/family-pie-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-pie-options-dark.svg",
+    "/examples/generated/family-pie-options-dark.thumbnail.png",
+    "/examples/generated/family-pie-options-dark.thumbnail.svg",
+    "/examples/generated/family-pie-options-light.csharp.txt",
+    "/examples/generated/family-pie-options-light.gallery.csharp.txt",
+    "/examples/generated/family-pie-options-light.html",
+    "/examples/generated/family-pie-options-light.png",
+    "/examples/generated/family-pie-options-light.snippet.csharp.txt",
+    "/examples/generated/family-pie-options-light.svg",
+    "/examples/generated/family-pie-options-light.thumbnail.png",
+    "/examples/generated/family-pie-options-light.thumbnail.svg",
     "/examples/generated/family-pie-variable-radius-dark.csharp.txt",
     "/examples/generated/family-pie-variable-radius-dark.gallery.csharp.txt",
     "/examples/generated/family-pie-variable-radius-dark.html",
@@ -3659,6 +4493,22 @@
     "/examples/generated/family-progress-bar-compact-light.svg",
     "/examples/generated/family-progress-bar-compact-light.thumbnail.png",
     "/examples/generated/family-progress-bar-compact-light.thumbnail.svg",
+    "/examples/generated/family-progress-bar-options-dark.csharp.txt",
+    "/examples/generated/family-progress-bar-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-progress-bar-options-dark.html",
+    "/examples/generated/family-progress-bar-options-dark.png",
+    "/examples/generated/family-progress-bar-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-progress-bar-options-dark.svg",
+    "/examples/generated/family-progress-bar-options-dark.thumbnail.png",
+    "/examples/generated/family-progress-bar-options-dark.thumbnail.svg",
+    "/examples/generated/family-progress-bar-options-light.csharp.txt",
+    "/examples/generated/family-progress-bar-options-light.gallery.csharp.txt",
+    "/examples/generated/family-progress-bar-options-light.html",
+    "/examples/generated/family-progress-bar-options-light.png",
+    "/examples/generated/family-progress-bar-options-light.snippet.csharp.txt",
+    "/examples/generated/family-progress-bar-options-light.svg",
+    "/examples/generated/family-progress-bar-options-light.thumbnail.png",
+    "/examples/generated/family-progress-bar-options-light.thumbnail.svg",
     "/examples/generated/family-progress-bar-wide-dark.csharp.txt",
     "/examples/generated/family-progress-bar-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-progress-bar-wide-dark.html",
@@ -3693,6 +4543,22 @@
     "/examples/generated/family-progress-ring-compact-light.svg",
     "/examples/generated/family-progress-ring-compact-light.thumbnail.png",
     "/examples/generated/family-progress-ring-compact-light.thumbnail.svg",
+    "/examples/generated/family-progress-ring-options-dark.csharp.txt",
+    "/examples/generated/family-progress-ring-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-progress-ring-options-dark.html",
+    "/examples/generated/family-progress-ring-options-dark.png",
+    "/examples/generated/family-progress-ring-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-progress-ring-options-dark.svg",
+    "/examples/generated/family-progress-ring-options-dark.thumbnail.png",
+    "/examples/generated/family-progress-ring-options-dark.thumbnail.svg",
+    "/examples/generated/family-progress-ring-options-light.csharp.txt",
+    "/examples/generated/family-progress-ring-options-light.gallery.csharp.txt",
+    "/examples/generated/family-progress-ring-options-light.html",
+    "/examples/generated/family-progress-ring-options-light.png",
+    "/examples/generated/family-progress-ring-options-light.snippet.csharp.txt",
+    "/examples/generated/family-progress-ring-options-light.svg",
+    "/examples/generated/family-progress-ring-options-light.thumbnail.png",
+    "/examples/generated/family-progress-ring-options-light.thumbnail.svg",
     "/examples/generated/family-progress-ring-wide-dark.csharp.txt",
     "/examples/generated/family-progress-ring-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-progress-ring-wide-dark.html",
@@ -4425,6 +5291,22 @@
     "/examples/generated/family-range-area-singleton-light.svg",
     "/examples/generated/family-range-area-singleton-light.thumbnail.png",
     "/examples/generated/family-range-area-singleton-light.thumbnail.svg",
+    "/examples/generated/family-range-area-sparse-dark.csharp.txt",
+    "/examples/generated/family-range-area-sparse-dark.gallery.csharp.txt",
+    "/examples/generated/family-range-area-sparse-dark.html",
+    "/examples/generated/family-range-area-sparse-dark.png",
+    "/examples/generated/family-range-area-sparse-dark.snippet.csharp.txt",
+    "/examples/generated/family-range-area-sparse-dark.svg",
+    "/examples/generated/family-range-area-sparse-dark.thumbnail.png",
+    "/examples/generated/family-range-area-sparse-dark.thumbnail.svg",
+    "/examples/generated/family-range-area-sparse-light.csharp.txt",
+    "/examples/generated/family-range-area-sparse-light.gallery.csharp.txt",
+    "/examples/generated/family-range-area-sparse-light.html",
+    "/examples/generated/family-range-area-sparse-light.png",
+    "/examples/generated/family-range-area-sparse-light.snippet.csharp.txt",
+    "/examples/generated/family-range-area-sparse-light.svg",
+    "/examples/generated/family-range-area-sparse-light.thumbnail.png",
+    "/examples/generated/family-range-area-sparse-light.thumbnail.svg",
     "/examples/generated/family-range-area-wide-dark.csharp.txt",
     "/examples/generated/family-range-area-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-range-area-wide-dark.html",
@@ -4911,6 +5793,22 @@
     "/examples/generated/family-region-map-compact-light.svg",
     "/examples/generated/family-region-map-compact-light.thumbnail.png",
     "/examples/generated/family-region-map-compact-light.thumbnail.svg",
+    "/examples/generated/family-region-map-options-dark.csharp.txt",
+    "/examples/generated/family-region-map-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-region-map-options-dark.html",
+    "/examples/generated/family-region-map-options-dark.png",
+    "/examples/generated/family-region-map-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-region-map-options-dark.svg",
+    "/examples/generated/family-region-map-options-dark.thumbnail.png",
+    "/examples/generated/family-region-map-options-dark.thumbnail.svg",
+    "/examples/generated/family-region-map-options-light.csharp.txt",
+    "/examples/generated/family-region-map-options-light.gallery.csharp.txt",
+    "/examples/generated/family-region-map-options-light.html",
+    "/examples/generated/family-region-map-options-light.png",
+    "/examples/generated/family-region-map-options-light.snippet.csharp.txt",
+    "/examples/generated/family-region-map-options-light.svg",
+    "/examples/generated/family-region-map-options-light.thumbnail.png",
+    "/examples/generated/family-region-map-options-light.thumbnail.svg",
     "/examples/generated/family-region-map-wide-dark.csharp.txt",
     "/examples/generated/family-region-map-wide-dark.gallery.csharp.txt",
     "/examples/generated/family-region-map-wide-dark.html",
@@ -5443,6 +6341,22 @@
     "/examples/generated/family-scatter-quadrants-light.svg",
     "/examples/generated/family-scatter-quadrants-light.thumbnail.png",
     "/examples/generated/family-scatter-quadrants-light.thumbnail.svg",
+    "/examples/generated/family-scatter-sparse-dark.csharp.txt",
+    "/examples/generated/family-scatter-sparse-dark.gallery.csharp.txt",
+    "/examples/generated/family-scatter-sparse-dark.html",
+    "/examples/generated/family-scatter-sparse-dark.png",
+    "/examples/generated/family-scatter-sparse-dark.snippet.csharp.txt",
+    "/examples/generated/family-scatter-sparse-dark.svg",
+    "/examples/generated/family-scatter-sparse-dark.thumbnail.png",
+    "/examples/generated/family-scatter-sparse-dark.thumbnail.svg",
+    "/examples/generated/family-scatter-sparse-light.csharp.txt",
+    "/examples/generated/family-scatter-sparse-light.gallery.csharp.txt",
+    "/examples/generated/family-scatter-sparse-light.html",
+    "/examples/generated/family-scatter-sparse-light.png",
+    "/examples/generated/family-scatter-sparse-light.snippet.csharp.txt",
+    "/examples/generated/family-scatter-sparse-light.svg",
+    "/examples/generated/family-scatter-sparse-light.thumbnail.png",
+    "/examples/generated/family-scatter-sparse-light.thumbnail.svg",
     "/examples/generated/family-scatter-swatch-color-legend-dark.csharp.txt",
     "/examples/generated/family-scatter-swatch-color-legend-dark.gallery.csharp.txt",
     "/examples/generated/family-scatter-swatch-color-legend-dark.html",
@@ -6163,6 +7077,22 @@
     "/examples/generated/family-tile-map-gradient-color-legend-light.svg",
     "/examples/generated/family-tile-map-gradient-color-legend-light.thumbnail.png",
     "/examples/generated/family-tile-map-gradient-color-legend-light.thumbnail.svg",
+    "/examples/generated/family-tile-map-options-dark.csharp.txt",
+    "/examples/generated/family-tile-map-options-dark.gallery.csharp.txt",
+    "/examples/generated/family-tile-map-options-dark.html",
+    "/examples/generated/family-tile-map-options-dark.png",
+    "/examples/generated/family-tile-map-options-dark.snippet.csharp.txt",
+    "/examples/generated/family-tile-map-options-dark.svg",
+    "/examples/generated/family-tile-map-options-dark.thumbnail.png",
+    "/examples/generated/family-tile-map-options-dark.thumbnail.svg",
+    "/examples/generated/family-tile-map-options-light.csharp.txt",
+    "/examples/generated/family-tile-map-options-light.gallery.csharp.txt",
+    "/examples/generated/family-tile-map-options-light.html",
+    "/examples/generated/family-tile-map-options-light.png",
+    "/examples/generated/family-tile-map-options-light.snippet.csharp.txt",
+    "/examples/generated/family-tile-map-options-light.svg",
+    "/examples/generated/family-tile-map-options-light.thumbnail.png",
+    "/examples/generated/family-tile-map-options-light.thumbnail.svg",
     "/examples/generated/family-tile-map-partial-color-range-dark.csharp.txt",
     "/examples/generated/family-tile-map-partial-color-range-dark.gallery.csharp.txt",
     "/examples/generated/family-tile-map-partial-color-range-dark.html",
@@ -7470,9 +8400,9 @@
     "/examples/generated/interactive/cfx-feature-data.c0b66a325f85.js",
     "/examples/generated/interactive/cfx-feature-hierarchy.f16950891c96.js",
     "/examples/generated/interactive/cfx-feature-isolate.31e4c647133f.js",
-    "/examples/generated/interactive/cfx-feature-motion.0bce9b58ea97.js",
-    "/examples/generated/interactive/cfx-interactive.3b3f6c30ae24.css",
-    "/examples/generated/interactive/cfx-interactive.7d603e064367.js",
+    "/examples/generated/interactive/cfx-feature-motion.753fc20cf639.js",
+    "/examples/generated/interactive/cfx-interactive.631db8a78d1d.css",
+    "/examples/generated/interactive/cfx-interactive.9972824fe413.js",
     "/examples/generated/interactive/cfx-native-text.4dbb7b4e18ea.js",
     "/examples/generated/manifest.json",
     "/examples/generated/mixed-schedule-compact-dark.csharp.txt",
@@ -7993,6 +8923,38 @@
     "/examples/generated/pictorial-artwork-wide-light.svg",
     "/examples/generated/pictorial-artwork-wide-light.thumbnail.png",
     "/examples/generated/pictorial-artwork-wide-light.thumbnail.svg",
+    "/examples/generated/pie-above-labels-dark.csharp.txt",
+    "/examples/generated/pie-above-labels-dark.gallery.csharp.txt",
+    "/examples/generated/pie-above-labels-dark.html",
+    "/examples/generated/pie-above-labels-dark.png",
+    "/examples/generated/pie-above-labels-dark.snippet.csharp.txt",
+    "/examples/generated/pie-above-labels-dark.svg",
+    "/examples/generated/pie-above-labels-dark.thumbnail.png",
+    "/examples/generated/pie-above-labels-dark.thumbnail.svg",
+    "/examples/generated/pie-above-labels-light.csharp.txt",
+    "/examples/generated/pie-above-labels-light.gallery.csharp.txt",
+    "/examples/generated/pie-above-labels-light.html",
+    "/examples/generated/pie-above-labels-light.png",
+    "/examples/generated/pie-above-labels-light.snippet.csharp.txt",
+    "/examples/generated/pie-above-labels-light.svg",
+    "/examples/generated/pie-above-labels-light.thumbnail.png",
+    "/examples/generated/pie-above-labels-light.thumbnail.svg",
+    "/examples/generated/pie-below-labels-dark.csharp.txt",
+    "/examples/generated/pie-below-labels-dark.gallery.csharp.txt",
+    "/examples/generated/pie-below-labels-dark.html",
+    "/examples/generated/pie-below-labels-dark.png",
+    "/examples/generated/pie-below-labels-dark.snippet.csharp.txt",
+    "/examples/generated/pie-below-labels-dark.svg",
+    "/examples/generated/pie-below-labels-dark.thumbnail.png",
+    "/examples/generated/pie-below-labels-dark.thumbnail.svg",
+    "/examples/generated/pie-below-labels-light.csharp.txt",
+    "/examples/generated/pie-below-labels-light.gallery.csharp.txt",
+    "/examples/generated/pie-below-labels-light.html",
+    "/examples/generated/pie-below-labels-light.png",
+    "/examples/generated/pie-below-labels-light.snippet.csharp.txt",
+    "/examples/generated/pie-below-labels-light.svg",
+    "/examples/generated/pie-below-labels-light.thumbnail.png",
+    "/examples/generated/pie-below-labels-light.thumbnail.svg",
     "/examples/generated/pyramid-presentation-compact-dark.csharp.txt",
     "/examples/generated/pyramid-presentation-compact-dark.gallery.csharp.txt",
     "/examples/generated/pyramid-presentation-compact-dark.html",
@@ -8449,6 +9411,22 @@
     "/examples/generated/source-drawings-wide-light.svg",
     "/examples/generated/source-drawings-wide-light.thumbnail.png",
     "/examples/generated/source-drawings-wide-light.thumbnail.svg",
+    "/examples/generated/topology-compact-dark.csharp.txt",
+    "/examples/generated/topology-compact-dark.gallery.csharp.txt",
+    "/examples/generated/topology-compact-dark.html",
+    "/examples/generated/topology-compact-dark.png",
+    "/examples/generated/topology-compact-dark.snippet.csharp.txt",
+    "/examples/generated/topology-compact-dark.svg",
+    "/examples/generated/topology-compact-dark.thumbnail.png",
+    "/examples/generated/topology-compact-dark.thumbnail.svg",
+    "/examples/generated/topology-compact-light.csharp.txt",
+    "/examples/generated/topology-compact-light.gallery.csharp.txt",
+    "/examples/generated/topology-compact-light.html",
+    "/examples/generated/topology-compact-light.png",
+    "/examples/generated/topology-compact-light.snippet.csharp.txt",
+    "/examples/generated/topology-compact-light.svg",
+    "/examples/generated/topology-compact-light.thumbnail.png",
+    "/examples/generated/topology-compact-light.thumbnail.svg",
     "/examples/generated/topology-expanded-dark.csharp.txt",
     "/examples/generated/topology-expanded-dark.gallery.csharp.txt",
     "/examples/generated/topology-expanded-dark.html",
@@ -8579,6 +9557,22 @@
     "/examples/generated/topology-path-decorations-wide-light.svg",
     "/examples/generated/topology-path-decorations-wide-light.thumbnail.png",
     "/examples/generated/topology-path-decorations-wide-light.thumbnail.svg",
+    "/examples/generated/topology-shapes-dark.csharp.txt",
+    "/examples/generated/topology-shapes-dark.gallery.csharp.txt",
+    "/examples/generated/topology-shapes-dark.html",
+    "/examples/generated/topology-shapes-dark.png",
+    "/examples/generated/topology-shapes-dark.snippet.csharp.txt",
+    "/examples/generated/topology-shapes-dark.svg",
+    "/examples/generated/topology-shapes-dark.thumbnail.png",
+    "/examples/generated/topology-shapes-dark.thumbnail.svg",
+    "/examples/generated/topology-shapes-light.csharp.txt",
+    "/examples/generated/topology-shapes-light.gallery.csharp.txt",
+    "/examples/generated/topology-shapes-light.html",
+    "/examples/generated/topology-shapes-light.png",
+    "/examples/generated/topology-shapes-light.snippet.csharp.txt",
+    "/examples/generated/topology-shapes-light.svg",
+    "/examples/generated/topology-shapes-light.thumbnail.png",
+    "/examples/generated/topology-shapes-light.thumbnail.svg",
     "/examples/generated/topology-site-links-dark.csharp.txt",
     "/examples/generated/topology-site-links-dark.gallery.csharp.txt",
     "/examples/generated/topology-site-links-dark.html",
@@ -10183,8 +11177,8 @@
       "darkSource": "/examples/generated/chart-grid-wide-dark.csharp.txt",
       "snippet": "/examples/generated/chart-grid-wide-light.snippet.csharp.txt",
       "darkSnippet": "/examples/generated/chart-grid-wide-dark.snippet.csharp.txt",
-      "compactHtml": null,
-      "darkCompactHtml": null,
+      "compactHtml": "/examples/generated/chart-grid-compact-light.html",
+      "darkCompactHtml": "/examples/generated/chart-grid-compact-dark.html",
       "interactive": "/examples/generated/chart-grid-wide-light.interactive.html",
       "darkInteractive": "/examples/generated/chart-grid-wide-dark.interactive.html",
       "slug": "chart-grid",
@@ -10443,36 +11437,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -10541,39 +11507,71 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
+        {
+          "label": "Axis grid style",
+          "title": "Latency with styled axis grids",
+          "image": "/examples/generated/family-line-axis-grid-light.svg",
+          "darkImage": "/examples/generated/family-line-axis-grid-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-line-axis-grid-light.csharp.txt",
+          "darkSource": "/examples/generated/family-line-axis-grid-dark.csharp.txt",
+          "snippet": "/examples/generated/family-line-axis-grid-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-line-axis-grid-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Axis tick spacing",
+          "title": "Latency with bounded tick spacing",
+          "image": "/examples/generated/family-line-axis-spacing-light.svg",
+          "darkImage": "/examples/generated/family-line-axis-spacing-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-line-axis-spacing-light.csharp.txt",
+          "darkSource": "/examples/generated/family-line-axis-spacing-dark.csharp.txt",
+          "snippet": "/examples/generated/family-line-axis-spacing-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-line-axis-spacing-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Axis tick step",
+          "title": "Latency on fixed tick steps",
+          "image": "/examples/generated/family-line-axis-step-light.svg",
+          "darkImage": "/examples/generated/family-line-axis-step-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-line-axis-step-light.csharp.txt",
+          "darkSource": "/examples/generated/family-line-axis-step-dark.csharp.txt",
+          "snippet": "/examples/generated/family-line-axis-step-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-line-axis-step-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Axis tick values",
+          "title": "Latency against budget thresholds",
+          "image": "/examples/generated/family-line-axis-values-light.svg",
+          "darkImage": "/examples/generated/family-line-axis-values-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-line-axis-values-light.csharp.txt",
+          "darkSource": "/examples/generated/family-line-axis-values-dark.csharp.txt",
+          "snippet": "/examples/generated/family-line-axis-values-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-line-axis-values-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Calendar tick step",
+          "title": "Deployments on a calendar step",
+          "image": "/examples/generated/family-line-axis-time-step-light.svg",
+          "darkImage": "/examples/generated/family-line-axis-time-step-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-line-axis-time-step-light.csharp.txt",
+          "darkSource": "/examples/generated/family-line-axis-time-step-dark.csharp.txt",
+          "snippet": "/examples/generated/family-line-axis-time-step-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-line-axis-time-step-dark.snippet.csharp.txt"
+        },
         {
           "label": "Compact",
           "title": "Weekly request volume",
@@ -10585,54 +11583,6 @@
           "darkSource": "/examples/generated/family-line-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-line-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-line-compact-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Configured options",
-          "title": "Weekly request volume",
-          "image": "/examples/generated/family-line-options-light.svg",
-          "darkImage": "/examples/generated/family-line-options-dark.svg",
-          "width": 800,
-          "height": 440,
-          "source": "/examples/generated/family-line-options-light.csharp.txt",
-          "darkSource": "/examples/generated/family-line-options-dark.csharp.txt",
-          "snippet": "/examples/generated/family-line-options-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/family-line-options-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Latency Week",
-          "title": "Domain controller round-trip time",
-          "image": "/examples/generated/family-line-latency-week-light.svg",
-          "darkImage": "/examples/generated/family-line-latency-week-dark.svg",
-          "width": 800,
-          "height": 440,
-          "source": "/examples/generated/family-line-latency-week-light.csharp.txt",
-          "darkSource": "/examples/generated/family-line-latency-week-dark.csharp.txt",
-          "snippet": "/examples/generated/family-line-latency-week-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/family-line-latency-week-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Prepared X zoom",
-          "title": "Requests at 2× X zoom",
-          "image": "/examples/generated/family-line-x-zoom-light.svg",
-          "darkImage": "/examples/generated/family-line-x-zoom-dark.svg",
-          "width": 800,
-          "height": 440,
-          "source": "/examples/generated/family-line-x-zoom-light.csharp.txt",
-          "darkSource": "/examples/generated/family-line-x-zoom-dark.csharp.txt",
-          "snippet": "/examples/generated/family-line-x-zoom-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/family-line-x-zoom-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Standard",
-          "title": "Review a measured trend",
-          "image": "/examples/generated/source-drawings-wide-light.svg",
-          "darkImage": "/examples/generated/source-drawings-wide-dark.svg",
-          "width": 800,
-          "height": 520,
-          "source": "/examples/generated/source-drawings-wide-light.csharp.txt",
-          "darkSource": "/examples/generated/source-drawings-wide-dark.csharp.txt",
-          "snippet": "/examples/generated/source-drawings-wide-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/source-drawings-wide-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -10651,36 +11601,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -10725,36 +11647,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -10769,6 +11663,18 @@
           "darkSource": "/examples/generated/family-area-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-area-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-area-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Capacity used during the week",
+          "image": "/examples/generated/family-area-options-light.svg",
+          "darkImage": "/examples/generated/family-area-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-area-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-area-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-area-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-area-options-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -10787,36 +11693,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -10849,36 +11727,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -10967,7 +11817,7 @@
         "Bubble"
       ],
       "optionsType": "ChartBubbleOptions",
-      "configure": "ConfigureBubble",
+      "configure": null,
       "api": "/api/chartforgex-core-chartbubbleoptions/",
       "options": [
         {
@@ -11089,36 +11939,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11227,36 +12049,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11289,36 +12083,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11375,36 +12141,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11473,36 +12211,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11613,7 +12323,7 @@
         "RangeBar"
       ],
       "optionsType": "ChartRangeBarOptions",
-      "configure": "ConfigureRangeBar",
+      "configure": null,
       "api": "/api/chartforgex-core-chartrangebaroptions/",
       "options": [
         {
@@ -11723,7 +12433,7 @@
         "BoxPlot"
       ],
       "optionsType": "ChartBoxPlotOptions",
-      "configure": "ConfigureBoxPlot",
+      "configure": null,
       "api": "/api/chartforgex-core-chartboxplotoptions/",
       "options": [
         {
@@ -11837,36 +12547,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11911,36 +12593,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -11993,6 +12647,18 @@
           "darkSnippet": "/examples/generated/family-heatmap-compact-dark.snippet.csharp.txt"
         },
         {
+          "label": "Configured options",
+          "title": "Coverage across service areas",
+          "image": "/examples/generated/family-heatmap-options-light.svg",
+          "darkImage": "/examples/generated/family-heatmap-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-heatmap-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-heatmap-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-heatmap-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-heatmap-options-dark.snippet.csharp.txt"
+        },
+        {
           "label": "Gradient Color Legend",
           "title": "Temperature by grid position",
           "image": "/examples/generated/family-heatmap-gradient-color-legend-light.svg",
@@ -12003,18 +12669,6 @@
           "darkSource": "/examples/generated/family-heatmap-gradient-color-legend-dark.csharp.txt",
           "snippet": "/examples/generated/family-heatmap-gradient-color-legend-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-heatmap-gradient-color-legend-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Positioned Color Scale",
-          "title": "Temperature across service areas",
-          "image": "/examples/generated/family-heatmap-positioned-color-scale-light.svg",
-          "darkImage": "/examples/generated/family-heatmap-positioned-color-scale-dark.svg",
-          "width": 800,
-          "height": 440,
-          "source": "/examples/generated/family-heatmap-positioned-color-scale-light.csharp.txt",
-          "darkSource": "/examples/generated/family-heatmap-positioned-color-scale-dark.csharp.txt",
-          "snippet": "/examples/generated/family-heatmap-positioned-color-scale-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/family-heatmap-positioned-color-scale-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -12033,36 +12687,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12103,7 +12729,7 @@
         "CalendarHeatmap"
       ],
       "optionsType": "ChartCalendarOptions",
-      "configure": "ConfigureCalendar",
+      "configure": null,
       "api": "/api/chartforgex-core-chartcalendaroptions/",
       "options": [
         {
@@ -12185,36 +12811,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12283,36 +12881,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12339,6 +12909,18 @@
           "darkSource": "/examples/generated/family-tile-map-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-tile-map-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-tile-map-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Service coverage by state",
+          "image": "/examples/generated/family-tile-map-options-light.svg",
+          "darkImage": "/examples/generated/family-tile-map-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-tile-map-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-tile-map-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-tile-map-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-tile-map-options-dark.snippet.csharp.txt"
         },
         {
           "label": "Gradient Color Legend",
@@ -12375,18 +12957,6 @@
           "darkSource": "/examples/generated/family-tile-map-positioned-color-scale-dark.csharp.txt",
           "snippet": "/examples/generated/family-tile-map-positioned-color-scale-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-tile-map-positioned-color-scale-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Swatch Color Legend",
-          "title": "Temperature by state",
-          "image": "/examples/generated/family-tile-map-swatch-color-legend-light.svg",
-          "darkImage": "/examples/generated/family-tile-map-swatch-color-legend-dark.svg",
-          "width": 800,
-          "height": 440,
-          "source": "/examples/generated/family-tile-map-swatch-color-legend-light.csharp.txt",
-          "darkSource": "/examples/generated/family-tile-map-swatch-color-legend-dark.csharp.txt",
-          "snippet": "/examples/generated/family-tile-map-swatch-color-legend-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/family-tile-map-swatch-color-legend-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -12405,36 +12975,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12461,6 +13003,18 @@
           "darkSource": "/examples/generated/family-region-map-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-region-map-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-region-map-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Regional service coverage",
+          "image": "/examples/generated/family-region-map-options-light.svg",
+          "darkImage": "/examples/generated/family-region-map-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-region-map-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-region-map-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-region-map-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-region-map-options-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -12475,7 +13029,7 @@
         "Gauge"
       ],
       "optionsType": "ChartGaugeOptions",
-      "configure": "ConfigureGauge",
+      "configure": null,
       "api": "/api/chartforgex-core-chartgaugeoptions/",
       "options": [
         {
@@ -12525,6 +13079,18 @@
           "darkSnippet": "/examples/generated/family-gauge-compact-dark.snippet.csharp.txt"
         },
         {
+          "label": "Configured options",
+          "title": "Available capacity against a target",
+          "image": "/examples/generated/family-gauge-options-light.svg",
+          "darkImage": "/examples/generated/family-gauge-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-gauge-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-gauge-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-gauge-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-gauge-options-dark.snippet.csharp.txt"
+        },
+        {
           "label": "Full Circle",
           "title": "Available capacity against a target",
           "image": "/examples/generated/family-gauge-full-circle-light.svg",
@@ -12571,18 +13137,6 @@
           "darkSource": "/examples/generated/combined-gauge-wide-dark.csharp.txt",
           "snippet": "/examples/generated/combined-gauge-wide-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/combined-gauge-wide-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Vertical",
-          "title": "Available capacity against a target",
-          "image": "/examples/generated/family-gauge-vertical-light.svg",
-          "darkImage": "/examples/generated/family-gauge-vertical-dark.svg",
-          "width": 800,
-          "height": 440,
-          "source": "/examples/generated/family-gauge-vertical-light.csharp.txt",
-          "darkSource": "/examples/generated/family-gauge-vertical-dark.csharp.txt",
-          "snippet": "/examples/generated/family-gauge-vertical-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/family-gauge-vertical-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -12601,36 +13155,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12663,36 +13189,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12707,6 +13205,18 @@
           "darkSource": "/examples/generated/family-progress-ring-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-progress-ring-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-progress-ring-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Completion by delivery stage",
+          "image": "/examples/generated/family-progress-ring-options-light.svg",
+          "darkImage": "/examples/generated/family-progress-ring-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-progress-ring-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-progress-ring-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-progress-ring-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-progress-ring-options-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -12725,36 +13235,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -12783,7 +13265,7 @@
         "Bullet"
       ],
       "optionsType": "ChartBulletOptions",
-      "configure": "ConfigureBullet",
+      "configure": null,
       "api": "/api/chartforgex-core-chartbulletoptions/",
       "options": [
         {
@@ -12807,6 +13289,18 @@
           "darkSource": "/examples/generated/family-bullet-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-bullet-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-bullet-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Reviewed work against its targets",
+          "image": "/examples/generated/family-bullet-options-light.svg",
+          "darkImage": "/examples/generated/family-bullet-options-dark.svg",
+          "width": 800,
+          "height": 379,
+          "source": "/examples/generated/family-bullet-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-bullet-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-bullet-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-bullet-options-dark.snippet.csharp.txt"
         },
         {
           "label": "Standard",
@@ -12845,7 +13339,7 @@
         "Waterfall"
       ],
       "optionsType": "ChartWaterfallOptions",
-      "configure": "ConfigureWaterfall",
+      "configure": null,
       "api": "/api/chartforgex-core-chartwaterfalloptions/",
       "options": [
         {
@@ -13013,7 +13507,7 @@
         "Funnel"
       ],
       "optionsType": "ChartFunnelOptions",
-      "configure": "ConfigureFunnel",
+      "configure": null,
       "api": "/api/chartforgex-core-chartfunneloptions/",
       "options": [
         {
@@ -13139,36 +13633,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13201,36 +13667,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13319,7 +13757,7 @@
         "Sankey"
       ],
       "optionsType": "ChartSankeyOptions",
-      "configure": "ConfigureSankey",
+      "configure": null,
       "api": "/api/chartforgex-core-chartsankeyoptions/",
       "options": [
         {
@@ -13445,36 +13883,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13515,7 +13925,7 @@
         "Sunburst"
       ],
       "optionsType": "ChartSunburstOptions",
-      "configure": "ConfigureSunburst",
+      "configure": null,
       "api": "/api/chartforgex-core-chartsunburstoptions/",
       "options": [
         {
@@ -13617,36 +14027,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13661,6 +14043,42 @@
           "darkSource": "/examples/generated/family-pie-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-pie-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-pie-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Revenue by service",
+          "image": "/examples/generated/family-pie-options-light.svg",
+          "darkImage": "/examples/generated/family-pie-options-dark.svg",
+          "width": 800,
+          "height": 440,
+          "source": "/examples/generated/family-pie-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-pie-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-pie-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-pie-options-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Inner labels",
+          "title": "Four equal shares",
+          "image": "/examples/generated/pie-below-labels-light.svg",
+          "darkImage": "/examples/generated/pie-below-labels-dark.svg",
+          "width": 600,
+          "height": 375,
+          "source": "/examples/generated/pie-below-labels-light.csharp.txt",
+          "darkSource": "/examples/generated/pie-below-labels-dark.csharp.txt",
+          "snippet": "/examples/generated/pie-below-labels-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/pie-below-labels-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Outer labels",
+          "title": "Four equal shares",
+          "image": "/examples/generated/pie-above-labels-light.svg",
+          "darkImage": "/examples/generated/pie-above-labels-dark.svg",
+          "width": 600,
+          "height": 375,
+          "source": "/examples/generated/pie-above-labels-light.csharp.txt",
+          "darkSource": "/examples/generated/pie-above-labels-dark.csharp.txt",
+          "snippet": "/examples/generated/pie-above-labels-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/pie-above-labels-dark.snippet.csharp.txt"
         },
         {
           "label": "Variable Radius",
@@ -13691,36 +14109,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13773,28 +14163,28 @@
           "darkSnippet": "/examples/generated/family-donut-concentric-dark.snippet.csharp.txt"
         },
         {
-          "label": "Mixed",
-          "title": "Independent periods with inner captions",
-          "image": "/examples/generated/multi-ring-callouts-mixed-light.svg",
-          "darkImage": "/examples/generated/multi-ring-callouts-mixed-dark.svg",
-          "width": 900,
-          "height": 560,
-          "source": "/examples/generated/multi-ring-callouts-mixed-light.csharp.txt",
-          "darkSource": "/examples/generated/multi-ring-callouts-mixed-dark.csharp.txt",
-          "snippet": "/examples/generated/multi-ring-callouts-mixed-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/multi-ring-callouts-mixed-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Standard",
-          "title": "Findings by category",
-          "image": "/examples/generated/donut-wide-light.svg",
-          "darkImage": "/examples/generated/donut-wide-dark.svg",
+          "label": "Configured options",
+          "title": "Services contributing to revenue",
+          "image": "/examples/generated/family-donut-options-light.svg",
+          "darkImage": "/examples/generated/family-donut-options-dark.svg",
           "width": 800,
           "height": 440,
-          "source": "/examples/generated/donut-wide-light.csharp.txt",
-          "darkSource": "/examples/generated/donut-wide-dark.csharp.txt",
-          "snippet": "/examples/generated/donut-wide-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/donut-wide-dark.snippet.csharp.txt"
+          "source": "/examples/generated/family-donut-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-donut-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-donut-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-donut-options-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Inner labels",
+          "title": "Four equal shares",
+          "image": "/examples/generated/donut-below-labels-light.svg",
+          "darkImage": "/examples/generated/donut-below-labels-dark.svg",
+          "width": 600,
+          "height": 375,
+          "source": "/examples/generated/donut-below-labels-light.csharp.txt",
+          "darkSource": "/examples/generated/donut-below-labels-dark.csharp.txt",
+          "snippet": "/examples/generated/donut-below-labels-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/donut-below-labels-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -13813,36 +14203,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13911,36 +14273,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -13993,7 +14327,7 @@
         "Treemap"
       ],
       "optionsType": "ChartTreemapOptions",
-      "configure": "ConfigureTreemap",
+      "configure": null,
       "api": "/api/chartforgex-core-charttreemapoptions/",
       "options": [
         {
@@ -14095,36 +14429,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -14151,6 +14457,18 @@
           "darkSource": "/examples/generated/family-pictorial-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-pictorial-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-pictorial-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Completed assessments by team",
+          "image": "/examples/generated/family-pictorial-options-light.svg",
+          "darkImage": "/examples/generated/family-pictorial-options-dark.svg",
+          "width": 800,
+          "height": 177,
+          "source": "/examples/generated/family-pictorial-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-pictorial-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-pictorial-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-pictorial-options-dark.snippet.csharp.txt"
         },
         {
           "label": "Contour",
@@ -14187,18 +14505,6 @@
           "darkSource": "/examples/generated/pictorial-artwork-right-dark.csharp.txt",
           "snippet": "/examples/generated/pictorial-artwork-right-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/pictorial-artwork-right-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Standard",
-          "title": "Completed assessments by team",
-          "image": "/examples/generated/pictorial-artwork-wide-light.svg",
-          "darkImage": "/examples/generated/pictorial-artwork-wide-dark.svg",
-          "width": 900,
-          "height": 195,
-          "source": "/examples/generated/pictorial-artwork-wide-light.csharp.txt",
-          "darkSource": "/examples/generated/pictorial-artwork-wide-dark.csharp.txt",
-          "snippet": "/examples/generated/pictorial-artwork-wide-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/pictorial-artwork-wide-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -14217,36 +14523,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -14261,6 +14539,18 @@
           "darkSource": "/examples/generated/family-progress-bar-compact-dark.csharp.txt",
           "snippet": "/examples/generated/family-progress-bar-compact-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/family-progress-bar-compact-dark.snippet.csharp.txt"
+        },
+        {
+          "label": "Configured options",
+          "title": "Progress through delivery stages",
+          "image": "/examples/generated/family-progress-bar-options-light.svg",
+          "darkImage": "/examples/generated/family-progress-bar-options-dark.svg",
+          "width": 800,
+          "height": 177,
+          "source": "/examples/generated/family-progress-bar-options-light.csharp.txt",
+          "darkSource": "/examples/generated/family-progress-bar-options-dark.csharp.txt",
+          "snippet": "/examples/generated/family-progress-bar-options-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/family-progress-bar-options-dark.snippet.csharp.txt"
         },
         {
           "label": "Standard",
@@ -14291,36 +14581,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -14651,36 +14913,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -14725,36 +14959,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -14783,7 +14989,7 @@
         "Pyramid"
       ],
       "optionsType": "ChartPyramidOptions",
-      "configure": "ConfigurePyramid",
+      "configure": null,
       "api": "/api/chartforgex-core-chartpyramidoptions/",
       "options": [
         {
@@ -14897,36 +15103,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -15007,36 +15185,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [
@@ -15125,7 +15275,7 @@
         "Chord"
       ],
       "optionsType": "ChartChordOptions",
-      "configure": "ConfigureChord",
+      "configure": null,
       "api": "/api/chartforgex-core-chartchordoptions/",
       "options": [
         {
@@ -15367,31 +15517,24 @@
       "api": "/api/chartforgex-core-chartgrid/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the report title."
-        },
-        {
-          "name": "WithColumns",
-          "summary": "Sets the preferred number of columns on wide viewports."
-        },
-        {
-          "name": "WithGap",
-          "summary": "Sets the gap between charts in pixels."
-        },
-        {
-          "name": "WithPanelSize",
-          "summary": "Sets a fixed panel size for composed SVG and PNG grid exports."
-        },
-        {
-          "name": "WithTheme",
-          "summary": "Sets the theme used by the grid background and heading."
-        },
-        {
           "name": "Add",
           "summary": "Adds a chart to the grid."
         }
       ],
-      "variants": []
+      "variants": [
+        {
+          "label": "Compact",
+          "title": "Requests and capacity",
+          "image": "/examples/generated/chart-grid-compact-light.svg",
+          "darkImage": "/examples/generated/chart-grid-compact-dark.svg",
+          "width": 520,
+          "height": 540,
+          "source": "/examples/generated/chart-grid-compact-light.csharp.txt",
+          "darkSource": "/examples/generated/chart-grid-compact-dark.csharp.txt",
+          "snippet": "/examples/generated/chart-grid-compact-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/chart-grid-compact-dark.snippet.csharp.txt"
+        }
+      ]
     },
     {
       "slug": "topology",
@@ -15405,18 +15548,6 @@
       "configure": null,
       "api": "/api/chartforgex-topology-topologychart/",
       "options": [
-        {
-          "name": "WithTitle",
-          "summary": "Sets the topology chart title."
-        },
-        {
-          "name": "WithTheme",
-          "summary": "Sets the topology theme."
-        },
-        {
-          "name": "WithLayout",
-          "summary": "Sets the topology chart layout mode."
-        },
         {
           "name": "AddNode",
           "summary": "Adds a node to the topology chart."
@@ -15476,6 +15607,18 @@
           "darkSnippet": "/examples/generated/org-portraits-meet-dark.snippet.csharp.txt"
         },
         {
+          "label": "Node shapes",
+          "title": "Topology node shapes",
+          "image": "/examples/generated/topology-shapes-light.svg",
+          "darkImage": "/examples/generated/topology-shapes-dark.svg",
+          "width": 960,
+          "height": 720,
+          "source": "/examples/generated/topology-shapes-light.csharp.txt",
+          "darkSource": "/examples/generated/topology-shapes-dark.csharp.txt",
+          "snippet": "/examples/generated/topology-shapes-light.snippet.csharp.txt",
+          "darkSnippet": "/examples/generated/topology-shapes-dark.snippet.csharp.txt"
+        },
+        {
           "label": "Plain",
           "title": "Independent maintenance boundary",
           "image": "/examples/generated/topology-path-decorations-plain-light.svg",
@@ -15486,18 +15629,6 @@
           "darkSource": "/examples/generated/topology-path-decorations-plain-dark.csharp.txt",
           "snippet": "/examples/generated/topology-path-decorations-plain-light.snippet.csharp.txt",
           "darkSnippet": "/examples/generated/topology-path-decorations-plain-dark.snippet.csharp.txt"
-        },
-        {
-          "label": "Reordered",
-          "title": "People in the example studio",
-          "image": "/examples/generated/org-portraits-reordered-light.svg",
-          "darkImage": "/examples/generated/org-portraits-reordered-dark.svg",
-          "width": 900,
-          "height": 480,
-          "source": "/examples/generated/org-portraits-reordered-light.csharp.txt",
-          "darkSource": "/examples/generated/org-portraits-reordered-dark.csharp.txt",
-          "snippet": "/examples/generated/org-portraits-reordered-light.snippet.csharp.txt",
-          "darkSnippet": "/examples/generated/org-portraits-reordered-dark.snippet.csharp.txt"
         }
       ]
     },
@@ -15513,14 +15644,6 @@
       "configure": null,
       "api": "/api/chartforgex-visualartifacts-flowartifact/",
       "options": [
-        {
-          "name": "WithTitle",
-          "summary": "Sets the flow title."
-        },
-        {
-          "name": "WithSize",
-          "summary": "Sets the static preview size."
-        },
         {
           "name": "AddLane",
           "summary": "Adds a flow lane."
@@ -15548,14 +15671,6 @@
       "configure": null,
       "api": "/api/chartforgex-visualartifacts-sequenceartifact/",
       "options": [
-        {
-          "name": "WithTitle",
-          "summary": "Sets the title."
-        },
-        {
-          "name": "WithSize",
-          "summary": "Sets the natural preview size."
-        },
         {
           "name": "AddParticipant",
           "summary": "Adds or updates a participant."
@@ -15623,36 +15738,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": []
@@ -15669,18 +15756,6 @@
       "configure": null,
       "api": "/api/chartforgex-topology-topologychart/",
       "options": [
-        {
-          "name": "WithTitle",
-          "summary": "Sets the topology chart title."
-        },
-        {
-          "name": "WithTheme",
-          "summary": "Sets the topology theme."
-        },
-        {
-          "name": "WithLayout",
-          "summary": "Sets the topology chart layout mode."
-        },
         {
           "name": "AddNode",
           "summary": "Adds a node to the topology chart."
@@ -15703,7 +15778,7 @@
         "Funnel"
       ],
       "optionsType": "ChartFunnelOptions",
-      "configure": "ConfigureFunnel",
+      "configure": null,
       "api": "/api/chartforgex-core-chartfunneloptions/",
       "options": [
         {
@@ -15760,26 +15835,6 @@
       "api": "/api/chartforgex-core-chartgrid/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the report title."
-        },
-        {
-          "name": "WithColumns",
-          "summary": "Sets the preferred number of columns on wide viewports."
-        },
-        {
-          "name": "WithGap",
-          "summary": "Sets the gap between charts in pixels."
-        },
-        {
-          "name": "WithPanelSize",
-          "summary": "Sets a fixed panel size for composed SVG and PNG grid exports."
-        },
-        {
-          "name": "WithTheme",
-          "summary": "Sets the theme used by the grid background and heading."
-        },
-        {
           "name": "Add",
           "summary": "Adds a chart to the grid."
         }
@@ -15797,7 +15852,7 @@
         "Gauge"
       ],
       "optionsType": "ChartGaugeOptions",
-      "configure": "ConfigureGauge",
+      "configure": null,
       "api": "/api/chartforgex-core-chartgaugeoptions/",
       "options": [
         {
@@ -15850,36 +15905,8 @@
       "api": "/api/chartforgex-core-chart/",
       "options": [
         {
-          "name": "WithTitle",
-          "summary": "Sets the chart title."
-        },
-        {
-          "name": "WithXLabels",
-          "summary": "Sets x-axis labels for one-based x values."
-        },
-        {
           "name": "AddSeries",
           "summary": "Attaches a configured series, preserving its stable identity and data ownership."
-        },
-        {
-          "name": "WithLegend",
-          "summary": "Sets whether the legend should be rendered."
-        },
-        {
-          "name": "WithDataLabels",
-          "summary": "Sets chart-level data-label visibility. Explicit series overrides take precedence."
-        },
-        {
-          "name": "WithValueFormat",
-          "summary": "Sets the shared numeric display policy used by value labels, totals and numeric vertical axes."
-        },
-        {
-          "name": "ConfigureXAxis",
-          "summary": "Configures the primary horizontal axis."
-        },
-        {
-          "name": "ConfigureYAxis",
-          "summary": "Configures the primary vertical axis."
         }
       ],
       "variants": [

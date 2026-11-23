@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe())
+var chart = Chart.Create().DataLabels().Map(m => m.Viewport(ChartMapViewport.Europe()))
     .AddDottedMap("Locations", new[] {
         new ChartMapPoint("Madrid", -3.7, 40.4, 18),
         new ChartMapPoint("Warsaw", 21, 52.2, 74),
@@ -30,7 +30,7 @@ var chart = Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Eur
         new ChartMapPoint("Baltic", 17, 56),
         new ChartMapPoint("Oslo", 10.8, 59.9)
     });
-chart.WithPointLegend();
+chart.Legend(l => l.ShowPoints());
 
 #region Output
 var context = new VisualRenderContext(

@@ -56,7 +56,7 @@ public static class TreemapRecipe {
             new ChartColorBand(0, low, "Decline"), new ChartColorBand(10, colors.Border, "Steady"), new ChartColorBand(null, high, "Growth")
         }) : ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15).WithLabels("Decrease", "No change", "Increase");
         var allocation = ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocated work", items);
-        var chart = Chart.Create().WithDataLabels(true).AddSeries(allocation).ConfigureTreemap(options => {
+        var chart = Chart.Create().DataLabels(true).AddSeries(allocation).Treemap(options => {
             options.GroupPadding = variant == "options" ? 8 : 6;
             options.Gap = 3;
             options.ShowGroupLabels = true;
@@ -64,7 +64,7 @@ public static class TreemapRecipe {
             // Only the sparse model has an item without a measured change, so only it needs a no-data colour.
             options.ColorScale = variant == "sparse" ? scale.WithNoDataColor(colors.Surface) : scale;
         });
-        if (variant == "options") allocation.WithNodeState("south-support", ChartSeriesState.Warning);
+        if (variant == "options") allocation.NodeState("south-support", ChartSeriesState.Warning);
         return chart;
     }
 

@@ -26,21 +26,21 @@ var labels = new[] {
 var observed = new ChartSeries(new ChartSeriesId("observed"), "Completed orders",
     ChartSeriesKind.RadialColumn,
     new[] { new ChartPoint(1, 28), new ChartPoint(3, 41), new ChartPoint(4, 0) })
-    .WithObservationIds(Ids("north-central", "south-central", "south-remote"));
+    .ObservationIds(Ids("north-central", "south-central", "south-remote"));
 ChartSeries reference;
 reference = new ChartSeries(new ChartSeriesId("reference"), "Target",
     ChartSeriesKind.Radar,
     new[] { new ChartPoint(1, 45), new ChartPoint(2, 50), new ChartPoint(3, 55), new ChartPoint(4, 60) });
-reference.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
-reference.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
-reference.WithObservationIds(Ids("north-central", "north-remote", "south-central", "south-remote"));
-var chart = Chart.Create().WithSize(800, 460).WithTheme(VisualTheme.Graphite(), mode)
-    .WithTitle("Orders by location").WithSubtitle("Source identities survive updates; an absent order count stays absent")
-    .WithLegend().WithDataLabels(false)
+reference.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
+reference.Radar(options => options.Form = ChartLineAreaForm.Line);
+reference.ObservationIds(Ids("north-central", "north-remote", "south-central", "south-remote"));
+var chart = Chart.Create().Size(800, 460).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+    .Title("Orders by location").Subtitle("Source identities survive updates; an absent order count stays absent")
+    .Legend().DataLabels(false)
     .AddSeries(observed).AddSeries(reference);
-chart.WithXLabels(labels.Select(label => new ChartAxisLabel(label.Value, string.Join(" / ", label.Groups) + " / " + label.Text)))
-    .WithYAxis("Orders");
-chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 70; });
+chart.XLabels(labels.Select(label => new ChartAxisLabel(label.Value, string.Join(" / ", label.Groups) + " / " + label.Text)))
+    .YAxis(y => y.Title("Orders"));
+chart.YAxis(axis => { axis.Min = 0; axis.Max = 70; });
 
 #region Output
 var context = new VisualRenderContext(

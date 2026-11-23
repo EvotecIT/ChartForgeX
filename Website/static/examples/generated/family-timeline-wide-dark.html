@@ -120,7 +120,7 @@ public static class TimelineRecipe {
             (&quot;rollout&quot;, &quot;Rollout&quot;, 19, 23) })
             chart.AddSeries(new ChartSeries(new ChartSeriesId(id), name, ChartSeriesKind.Timeline,
                 new[] { new ChartPoint(start.AddDays(from).ToOADate(), start.AddDays(to).ToOADate()) }));
-        return chart.ConfigureXAxis(axis =&gt; {
+        return chart.XAxis(axis =&gt; {
             axis.Scale = ChartScaleKind.Time;
             axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, CultureInfo.InvariantCulture));
         });
@@ -166,7 +166,7 @@ public static class TimelineRecipe {
             (&quot;rollout&quot;, &quot;Rollout&quot;, 19, 23) })
             chart.AddSeries(new ChartSeries(new ChartSeriesId(id), name, ChartSeriesKind.Timeline,
                 new[] { new ChartPoint(start.AddDays(from).ToOADate(), start.AddDays(to).ToOADate()) }));
-        return chart.ConfigureXAxis(axis =&gt; {
+        return chart.XAxis(axis =&gt; {
             axis.Scale = ChartScaleKind.Time;
             axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, CultureInfo.InvariantCulture));
         });

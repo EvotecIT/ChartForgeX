@@ -740,6 +740,59 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   if (typeof value === 'string') text = value;
   return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
 };
+// Strict CSP: runtimes turn HtmlStrictStyles' cfx-s-* classes back into inline styles through the CSSOM when they mount.
+window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
+  const pattern = /^\.(cfx-s-[0-9a-f]{12})\.\1\.\1$/, cache = new WeakMap();
+  const rulesOf = sheet => {
+    if (!cache.has(sheet)) {
+      const rules = new Map();
+      const index = list => {
+        for (const rule of list) {
+          // Conditional imports stay class-based.
+          if (rule.styleSheet) { if (!rule.media?.length && !rule.supportsText && rule.layerName == null) try { index(rule.styleSheet.cssRules); } catch { } continue; }
+          const match = pattern.exec(rule.selectorText || ''); if (match) rules.set(match[1], rule.style);
+        }
+      };
+      try { index(sheet.cssRules); } catch { }
+      cache.set(sheet, rules);
+    }
+    return cache.get(sheet);
+  };
+  return (root, css) => {
+    if (!root?.querySelectorAll) return;
+    // Adaptive drawings wait in templates, which querySelectorAll does not enter.
+    const nodes = root.matches?.('[class*="cfx-s-"]') ? [root] : [];
+    const collect = scope => {
+      nodes.push(...scope.querySelectorAll('[class*="cfx-s-"]'));
+      for (const template of scope.querySelectorAll('template')) collect(template.content);
+    };
+    collect(root);
+    if (!nodes.length) return;
+    const sources = [];
+    if (css) try { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); sources.push(rulesOf(sheet)); } catch { }
+    const offset = sources.length, sheets = [];
+    let reindexed = false;
+    for (const owner of new Set([root.getRootNode(), root.ownerDocument, document])) sheets.push(...(owner?.styleSheets || []), ...(owner?.adoptedStyleSheets || []));
+    sources.push(...sheets.map(rulesOf));
+    for (const node of nodes) {
+      for (const name of [...node.classList]) {
+        if (!name.startsWith('cfx-s-')) continue;
+        // Index again for rules inserted later.
+        if (!reindexed && !sources.some(rules => rules.has(name))) {
+          reindexed = true;
+          sheets.forEach((sheet, index) => { cache.delete(sheet); sources[offset + index] = rulesOf(sheet); });
+        }
+        const declarations = sources.find(rules => rules.has(name))?.get(name);
+        if (!declarations) continue;
+        // Host inline values win, as over the class.
+        for (const property of declarations)
+          if (!node.style.getPropertyValue(property)) node.style.setProperty(property, declarations.getPropertyValue(property), declarations.getPropertyPriority(property));
+        node.classList.remove(name);
+      }
+      if (!node.classList.length) node.removeAttribute('class');
+    }
+  };
+})();
 // Region presentation bindings share the adapter's mount/dispose lifetime and public event contract.
 (() => {
   window[Symbol.for('ChartForgeX.topologyRegions')] = (wrapper, lifetime) => {
@@ -868,7 +921,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       for (const update of updates) nodes.filter(node => node.dataset.nodeId === update.id).forEach(node => {
         const tone = {Healthy:'tone-good',Warning:'tone-warn',Critical:'tone-bad',Unknown:'tone-neutral',Disabled:'tone-neutral'}[update.status];
         if (!tone) return;
-        node.classList.remove('tone-good','tone-warn','tone-bad','tone-info','tone-neutral'); node.classList.add(tone);
+        node.classList.remove('tone-good','tone-warn','tone-bad','tone-info','tone-neutral','tone-muted','tone-named'); node.classList.add(tone);
         node.dataset.cfxStatus = update.status;
         node.dataset.regionTip = [node.dataset.nodeLabel,node.dataset.nodeSubtitle,node.dataset.nodeBadgeMeanings,update.statusText || update.status].filter(Boolean).join(' · ');
         if (node.dataset.regionGeneratedName === 'true') node.setAttribute('aria-label',node.dataset.regionTip);
@@ -882,6 +935,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
     for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;
+    window[Symbol.for('ChartForgeX.strictStyles')]?.(wrapper);
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(wrapper, 'topology:' + selector);
     window[Symbol.for('ChartForgeX.nativeTextExport')].mount(wrapper, release => lifetime.own(release));
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);
@@ -1140,7 +1194,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     // request flowing back) mirrors the drawn arrowhead onto the route's source end; edges drawn with arrows at both
     // ends, or none, already read either way.
     const routeEnd = (edge, last) => {
-      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
+      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"],[data-cfx-role="topology-edge-stripe"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
       const arity = { M: 2, L: 2, Q: 4, C: 6, A: 7, H: 1, V: 1, Z: 0 }, points = [];
       for (let index = 0, command = ''; index < tokens.length;) {
         if (/^[a-zA-Z]$/.test(tokens[index])) { command = tokens[index++].toUpperCase(); if (command === 'Z') continue; }
@@ -2161,7 +2215,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const siblingCardLayout = card => {
       const surface = card.querySelector(':scope > [data-cfx-role="topology-node-surface"]');
       if (!surface || surface.tagName.toLowerCase() !== 'rect') return null;
-      const top = parseFloat(surface.getAttribute('y')) || 0;
+      // The expanded top is captured once: a bottom-anchored collapse moves the surface, and expanding must return it.
+      if (!surface.hasAttribute('data-sibling-top')) surface.setAttribute('data-sibling-top', surface.getAttribute('y') || '0');
+      const top = parseFloat(surface.getAttribute('data-sibling-top')) || 0;
       const full = parseFloat(attr(card, 'data-sibling-expanded-height')) || parseFloat(surface.getAttribute('height')) || 0;
       const header = parseFloat(attr(card, 'data-sibling-collapsed-height')) || full;
       const id = attr(card, 'data-node-id');
@@ -2176,12 +2232,43 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (finite.length && highest >= full - 6) return { surface, top, full, height: header, shift: full - header };
       return { surface, top, full, height: Math.min(full, Math.max(header, lowest + 6)), shift: 0 };
     };
+    const siblingClip = card => {
+      for (let element = card.parentElement; element; element = element.parentElement) {
+        const reference = element.getAttribute && element.getAttribute('clip-path');
+        const id = reference && (reference.match(/url\(#?["']?#?([^"')]+)["']?\)/) || [])[1];
+        const rect = id && element.ownerDocument.getElementById(id)?.querySelector('rect');
+        if (rect) return { top: parseFloat(rect.getAttribute('y')) || 0, bottom: (parseFloat(rect.getAttribute('y')) || 0) + (parseFloat(rect.getAttribute('height')) || 0) };
+        if (element.tagName && element.tagName.toLowerCase() === 'svg') {
+          const box = element.viewBox && element.viewBox.baseVal;
+          if (box && box.height > 0) return { top: box.y, bottom: box.y + box.height };
+        }
+      }
+      return { top: -Infinity, bottom: Infinity };
+    };
+    const siblingClipTop = card => siblingClip(card).top;
+    const siblingClipBottom = card => siblingClip(card).bottom;
+    // Rows of a card that started collapsed carry their member's safe link and tooltip as data until the card first opens.
+    const attachSiblingRowLinks = rows => rows.querySelectorAll('[data-cfx-role="topology-sibling-row"][data-sibling-href],[data-cfx-role="topology-sibling-row"][data-sibling-tooltip]').forEach(row => {
+      const namespace = 'http://www.w3.org/2000/svg';
+      const href = attr(row, 'data-sibling-href'), tip = attr(row, 'data-sibling-tooltip');
+      const host = href ? row.ownerDocument.createElementNS(namespace, 'a') : row.ownerDocument.createElementNS(namespace, 'g');
+      if (href) host.setAttribute('href', href);
+      if (href && attr(row, 'data-sibling-new-tab') === 'true') { host.setAttribute('target', '_blank'); host.setAttribute('rel', 'noopener noreferrer'); }
+      if (tip) { const title = row.ownerDocument.createElementNS(namespace, 'title'); title.textContent = tip; host.appendChild(title); }
+      host.setAttribute('data-cfx-role', 'topology-sibling-row-host');
+      row.parentNode.insertBefore(host, row); host.appendChild(row);
+      row.removeAttribute('data-sibling-href'); row.removeAttribute('data-sibling-tooltip');
+    });
     const setSiblingCardExpanded = (card, expanded, emit) => {
       const layout = siblingCardLayout(card);
       const rows = card.querySelector('[data-cfx-role="topology-sibling-rows"]');
       const header = card.querySelector('[data-cfx-role="topology-sibling-header"]');
-      if (rows) { rows.style.display = expanded ? '' : 'none'; if (expanded) rows.removeAttribute('opacity'); }
+      if (rows) { rows.style.display = expanded ? '' : 'none'; if (expanded) { rows.removeAttribute('opacity'); attachSiblingRowLinks(rows); } }
       // A card that started collapsed opens over its neighbours, so it is drawn last while open.
+      // An open card must stay inside the clipped diagram: lift it by however far its rows would reach past the clip.
+      const clipBottom = siblingClipBottom(card);
+      const overflow = expanded && layout && Number.isFinite(clipBottom) ? Math.max(0, Math.min(layout.top + layout.full - clipBottom, layout.top - siblingClipTop(card))) : 0;
+      overflow > 0 ? card.setAttribute('transform', 'translate(0 ' + (-overflow) + ')') : card.removeAttribute('transform');
       const front = card.closest('[data-cfx-role="topology-node-host"]') || card;
       if (expanded && emit && front.parentNode && front.parentNode.lastElementChild !== front) front.parentNode.appendChild(front);
       if (layout) {
@@ -2954,7 +3041,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) playScenario();
     }
+    // A member link inside a sibling card opens its own target rather than selecting the card around it.
+    const siblingRowLink = target => target instanceof Element && !!target.closest('a[data-cfx-role="topology-sibling-row-host"]');
     listen(wrapper, 'click', event => {
+      if (siblingRowLink(event.target)) return;
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
@@ -2974,6 +3064,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         return;
       }
       if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.key === 'Enter' && siblingRowLink(event.target)) return;
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();

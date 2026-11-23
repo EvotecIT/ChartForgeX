@@ -19,8 +19,8 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var chart = Chart.Create();
-chart.WithTitle("One observed range").AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range",
-    new[] { new ChartRangeBand(0, 0, 7) }).WithObservationId(0, new ChartObservationId("only-range")));
+chart.Title("One observed range").AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range",
+    new[] { new ChartRangeBand(0, 0, 7) }).ObservationId(0, new ChartObservationId("only-range")));
 
 #region Output
 var context = new VisualRenderContext(

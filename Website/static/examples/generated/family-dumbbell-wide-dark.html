@@ -117,8 +117,8 @@ public static class DumbbellRecipe {
         var count = variant == &quot;sparse&quot; ? 2 : 5;
         var changes = Enumerable.Range(1, count).Select(index =&gt; new ChartDumbbell(index, 20 + index * 2, 40 + index * 3));
         var change = ChartSeries.CreateDumbbell(new ChartSeriesId(&quot;change&quot;), &quot;Change&quot;, changes);
-        if (variant != &quot;sparse&quot;) change.WithPointLabel(2, &quot;Premium regional service capacity&quot;).WithDataLabels();
-        return Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(change);
+        if (variant != &quot;sparse&quot;) change.PointLabel(2, &quot;Premium regional service capacity&quot;).ShowDataLabels(true);
+        return Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(change);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -158,8 +158,8 @@ public static class DumbbellRecipe {
         var count = variant == &quot;sparse&quot; ? 2 : 5;
         var changes = Enumerable.Range(1, count).Select(index =&gt; new ChartDumbbell(index, 20 + index * 2, 40 + index * 3));
         var change = ChartSeries.CreateDumbbell(new ChartSeriesId(&quot;change&quot;), &quot;Change&quot;, changes);
-        if (variant != &quot;sparse&quot;) change.WithPointLabel(2, &quot;Premium regional service capacity&quot;).WithDataLabels();
-        return Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(change);
+        if (variant != &quot;sparse&quot;) change.PointLabel(2, &quot;Premium regional service capacity&quot;).ShowDataLabels(true);
+        return Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(change);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

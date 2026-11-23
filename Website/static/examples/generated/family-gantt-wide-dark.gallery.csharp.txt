@@ -38,7 +38,7 @@ public static class GanttRecipe {
         var delivery = ChartSeries.CreateGanttMilestone(new ChartSeriesId("delivery"), "Delivery", start.AddDays(9));
         return Chart.Create().AddSeries(discovery).AddSeries(implementation).AddSeries(validation).AddSeries(delivery)
             .AddGanttDependency(discovery, implementation).AddGanttDependency(implementation, validation).AddGanttDependency(validation, delivery)
-            .ConfigureXAxis(axis => {
+            .XAxis(axis => {
                 axis.Scale = ChartScaleKind.Time;
                 axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
             });

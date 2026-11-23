@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Donut, Observations());
-var chart = Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
+var chart = Chart.Create().XLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
     .AddSeries(revenue);
 
 #region Output

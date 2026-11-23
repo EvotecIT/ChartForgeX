@@ -20,9 +20,9 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Line,
-    Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 38, 82)).ConfigureMarkers(markers => markers.Radius = 3);
-var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels().AddSeries(observed);
-chart.Options.XAxis.WithReversal(false);
+    Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 38, 82)).Markers(markers => markers.Radius = 3);
+var chart = Chart.Create().XAxis(x => x.Title("Sample")).YAxis(y => y.Title("Requests")).XAxis(x => x.Bounds(0, 10)).DataLabels().AddSeries(observed);
+chart.Options.XAxis.Reversed(false);
 chart.Options.XAxis.TickCount = 4;
 chart.Options.YAxis.TickCount = 4;
 

@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
+var chart = Chart.Create().Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
     .AddCalendarHeatmap("Observations", Enumerable.Range(0, 120)
         .Where(index => index % 7 != 0 && index % 9 != 0)
         .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)),

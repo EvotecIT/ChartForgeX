@@ -116,16 +116,16 @@ public static class PyramidPresentationRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var horizontal = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
         var reversed = variant.EndsWith(&quot;reversed&quot;, StringComparison.Ordinal);
-        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 500 : 560)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Allocation by service&quot;)
-            .WithSubtitle(&quot;Partition area encodes values; caption placement and borders preserve source order&quot;)
-            .WithLegend(false).WithDataLabels().WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;);
+        var chart = Chart.Create().Size(compact ? 390 : 800, compact ? 500 : 560)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(&quot;Allocation by service&quot;)
+            .Subtitle(&quot;Partition area encodes values; caption placement and borders preserve source order&quot;)
+            .Legend(false).DataLabels().XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;);
         var series = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid,
             new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-            .WithObservationIds(new[] { new ChartObservationId(&quot;services&quot;), new ChartObservationId(&quot;platform&quot;), new ChartObservationId(&quot;support&quot;), new ChartObservationId(&quot;unassigned&quot;) })
-            .WithPointColor(0, &quot;#357BA4&quot;).WithPointColor(1, &quot;#C18B3D&quot;).WithPointColor(2, &quot;#4D947D&quot;)
-            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward).WithPointStrokeColor(1, ChartColor.FromHex(&quot;#8D3E69&quot;));
-        chart.AddSeries(series).ConfigurePyramid(options =&gt; {
+            .ObservationIds(new[] { new ChartObservationId(&quot;services&quot;), new ChartObservationId(&quot;platform&quot;), new ChartObservationId(&quot;support&quot;), new ChartObservationId(&quot;unassigned&quot;) })
+            .PointColor(0, &quot;#357BA4&quot;).PointColor(1, &quot;#C18B3D&quot;).PointColor(2, &quot;#4D947D&quot;)
+            .PointFillPattern(1, ChartFillPattern.DiagonalForward).PointStrokeColor(1, ChartColor.FromHex(&quot;#8D3E69&quot;));
+        chart.AddSeries(series).Pyramid(options =&gt; {
             options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = reversed;
             options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             options.LabelContent = ChartStageLabelContent.Separate;
@@ -133,7 +133,7 @@ public static class PyramidPresentationRecipe {
             options.PartitionOutline = new ChartStrokeStyle(width: 2, dash: new[] { 6d, 2d });
             options.PartitionOutlineDashOffset = -1;
         });
-        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        return chart.ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -172,16 +172,16 @@ public static class PyramidPresentationRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var horizontal = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
         var reversed = variant.EndsWith(&quot;reversed&quot;, StringComparison.Ordinal);
-        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 500 : 560)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Allocation by service&quot;)
-            .WithSubtitle(&quot;Partition area encodes values; caption placement and borders preserve source order&quot;)
-            .WithLegend(false).WithDataLabels().WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;);
+        var chart = Chart.Create().Size(compact ? 390 : 800, compact ? 500 : 560)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(&quot;Allocation by service&quot;)
+            .Subtitle(&quot;Partition area encodes values; caption placement and borders preserve source order&quot;)
+            .Legend(false).DataLabels().XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;);
         var series = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid,
             new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-            .WithObservationIds(new[] { new ChartObservationId(&quot;services&quot;), new ChartObservationId(&quot;platform&quot;), new ChartObservationId(&quot;support&quot;), new ChartObservationId(&quot;unassigned&quot;) })
-            .WithPointColor(0, &quot;#357BA4&quot;).WithPointColor(1, &quot;#C18B3D&quot;).WithPointColor(2, &quot;#4D947D&quot;)
-            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward).WithPointStrokeColor(1, ChartColor.FromHex(&quot;#8D3E69&quot;));
-        chart.AddSeries(series).ConfigurePyramid(options =&gt; {
+            .ObservationIds(new[] { new ChartObservationId(&quot;services&quot;), new ChartObservationId(&quot;platform&quot;), new ChartObservationId(&quot;support&quot;), new ChartObservationId(&quot;unassigned&quot;) })
+            .PointColor(0, &quot;#357BA4&quot;).PointColor(1, &quot;#C18B3D&quot;).PointColor(2, &quot;#4D947D&quot;)
+            .PointFillPattern(1, ChartFillPattern.DiagonalForward).PointStrokeColor(1, ChartColor.FromHex(&quot;#8D3E69&quot;));
+        chart.AddSeries(series).Pyramid(options =&gt; {
             options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = reversed;
             options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             options.LabelContent = ChartStageLabelContent.Separate;
@@ -189,7 +189,7 @@ public static class PyramidPresentationRecipe {
             options.PartitionOutline = new ChartStrokeStyle(width: 2, dash: new[] { 6d, 2d });
             options.PartitionOutlineDashOffset = -1;
         });
-        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        return chart.ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

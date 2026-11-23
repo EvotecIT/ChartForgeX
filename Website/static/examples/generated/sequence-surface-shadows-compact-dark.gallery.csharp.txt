@@ -35,7 +35,7 @@ public static class SequenceSurfaceShadowRecipe {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var dark = mode == ThemeMode.Dark;
-        var model = SequenceArtifact.Create("sequence-surface-shadows").WithSize(compact ? 390 : 1100, 900)
+        var model = SequenceArtifact.Create("sequence-surface-shadows").Width(compact ? 390 : 1100).Height(900)
             .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)
             .AddMessage("A", "B", "Save").AddMessage("B", "A", "Stored");

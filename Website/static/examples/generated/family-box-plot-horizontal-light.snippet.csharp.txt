@@ -26,11 +26,11 @@ var expected = ChartSeries.CreateBoxPlot(new ChartSeriesId("expected"), "Expecte
 var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId("observed"), "Observed", new[] {
     new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
     new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
-}).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
-chart.WithXLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
-    .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
-    .WithDataLabels();
-chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+}).PointFillPattern(2, ChartFillPattern.DiagonalForward);
+chart.XLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
+    .BoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
+    .DataLabels();
+chart.XAxis(x => x.Title("Delivery time (minutes)")).YAxis(y => y.Title("Service"));
 
 #region Output
 var context = new VisualRenderContext(

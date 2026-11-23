@@ -21,11 +21,11 @@ var theme = VisualTheme.Graphite();
 var smoothPairs = ChartDifferencePoints.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
     new double?[] { 42, 68, 48, null, 74, 46, 62, 55 }, new double?[] { 56, 54, 60, 60, 58, 64, 50, 68 });
 var smoothComparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", smoothPairs)
-    .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
-    .WithObservationId(3, new ChartObservationId("resumed-comparison"))
-    .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
-    .ConfigureMarkers(markers => markers.Radius = 3);
-var chart = Chart.Create().WithTitle("Smooth actual and held forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+    .BoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+    .ObservationId(3, new ChartObservationId("resumed-comparison"))
+    .DifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+    .Markers(markers => markers.Radius = 3);
+var chart = Chart.Create().Title("Smooth actual and held forecast").XAxis(x => x.Title("Observation")).YAxis(y => y.Title("Completed requests"))
     .AddSeries(smoothComparison);
 
 #region Output

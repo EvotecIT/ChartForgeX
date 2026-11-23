@@ -121,11 +121,11 @@ public static class QuadrantChartRecipe {
         var count = variant == &quot;compact&quot; ? 8 : projects.Length;
         var series = ChartSeries.CreateScatter(new ChartSeriesId(&quot;projects&quot;), &quot;Projects&quot;,
             projects.Take(count).Select(project =&gt; new ChartPoint(project.Effort, project.Impact)));
-        for (var index = 0; index &lt; count; index++) series.WithPointLabel(index, projects[index].Name);
-        series.ConfigureMarkers(markers =&gt; { markers.Radius = 6; });
+        for (var index = 0; index &lt; count; index++) series.PointLabel(index, projects[index].Name);
+        series.Markers(markers =&gt; { markers.Radius = 6; });
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false).WithDataLabels()
-            .WithXAxis(&quot;Effort (person-months)&quot;).WithYAxis(&quot;Impact (score)&quot;).AddSeries(series)
+        return Chart.Create().XAxis(x =&gt; x.Bounds(0, 10)).YAxis(y =&gt; y.Bounds(0, 10)).Legend(false).DataLabels()
+            .XAxis(x =&gt; x.Title(&quot;Effort (person-months)&quot;)).YAxis(y =&gt; y.Title(&quot;Impact (score)&quot;)).AddSeries(series)
             .AddPlotRegion(new(colors.Status.Pass.Fill, xMaximum: 5, yMinimum: 5, label: &quot;Quick wins&quot;, opacity: .14))
             .AddPlotRegion(new(colors.Palette.First(), xMinimum: 5, yMinimum: 5, label: &quot;Major projects&quot;, opacity: .12))
             .AddPlotRegion(new(colors.Status.Medium.Fill, xMaximum: 5, yMaximum: 5, label: &quot;Fill-ins&quot;, opacity: .12))
@@ -173,11 +173,11 @@ public static class QuadrantChartRecipe {
         var count = variant == &quot;compact&quot; ? 8 : projects.Length;
         var series = ChartSeries.CreateScatter(new ChartSeriesId(&quot;projects&quot;), &quot;Projects&quot;,
             projects.Take(count).Select(project =&gt; new ChartPoint(project.Effort, project.Impact)));
-        for (var index = 0; index &lt; count; index++) series.WithPointLabel(index, projects[index].Name);
-        series.ConfigureMarkers(markers =&gt; { markers.Radius = 6; });
+        for (var index = 0; index &lt; count; index++) series.PointLabel(index, projects[index].Name);
+        series.Markers(markers =&gt; { markers.Radius = 6; });
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false).WithDataLabels()
-            .WithXAxis(&quot;Effort (person-months)&quot;).WithYAxis(&quot;Impact (score)&quot;).AddSeries(series)
+        return Chart.Create().XAxis(x =&gt; x.Bounds(0, 10)).YAxis(y =&gt; y.Bounds(0, 10)).Legend(false).DataLabels()
+            .XAxis(x =&gt; x.Title(&quot;Effort (person-months)&quot;)).YAxis(y =&gt; y.Title(&quot;Impact (score)&quot;)).AddSeries(series)
             .AddPlotRegion(new(colors.Status.Pass.Fill, xMaximum: 5, yMinimum: 5, label: &quot;Quick wins&quot;, opacity: .14))
             .AddPlotRegion(new(colors.Palette.First(), xMinimum: 5, yMinimum: 5, label: &quot;Major projects&quot;, opacity: .12))
             .AddPlotRegion(new(colors.Status.Medium.Fill, xMaximum: 5, yMaximum: 5, label: &quot;Fill-ins&quot;, opacity: .12))

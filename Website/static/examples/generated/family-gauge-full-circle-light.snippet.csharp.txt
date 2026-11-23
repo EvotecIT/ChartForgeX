@@ -21,7 +21,7 @@ var theme = VisualTheme.Graphite();
 var capacity = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
     new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(60, "Baseline"), new ChartGaugeTarget(85, "Goal") }));
 var chart = Chart.Create().AddSeries(capacity)
-    .ConfigureGauge(options => {
+    .Gauge(options => {
         options.Form = ChartGaugeForm.Arc;
 options.TickCount = 5;
 options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360;                 options.Caption = "Available capacity";

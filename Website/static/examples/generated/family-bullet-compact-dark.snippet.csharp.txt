@@ -24,7 +24,7 @@ var regions = new (string Id, string Name, double Reviewed, double Target, doubl
     ("north", "North", 86, 90, 60, 80), ("south", "South", 74, 85, 55, 75), ("east", "East", 91, 90, 60, 80),
     ("west", "West", 68, 80, 50, 70), ("central", "Central", 79, 85, 55, 75), ("online", "Online", 95, 92, 70, 85)
 };
-var review = Chart.Create().WithValueFormat(ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture));
+var review = Chart.Create().ValueFormat(ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture));
 foreach (var region in regions)
     review.AddSeries(ChartSeries.CreateBullet(new ChartSeriesId(region.Id), region.Name, region.Reviewed, region.Target,
         rangeEnds: new[] { region.Poor, region.Acceptable }));

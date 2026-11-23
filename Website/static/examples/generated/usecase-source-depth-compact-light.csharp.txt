@@ -33,10 +33,10 @@ public static class UseCaseSourceDepthRecipe {
     public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
-        var chart = TopologyChart.Create().WithId("native-usecase-depth").WithTitle("Publish prepared documents")
-            .WithSubtitle("Actors, stereotypes, approval notes and named associations")
-            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 900, compact ? 620 : 520, 28)
-            .WithLayout(TopologyLayoutMode.Swimlane, compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Id("native-usecase-depth").Title("Publish prepared documents")
+            .Subtitle("Actors, stereotypes, approval notes and named associations")
+            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
+            .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
             MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };
         chart.AddAutoGroup("Service", "Publication service");

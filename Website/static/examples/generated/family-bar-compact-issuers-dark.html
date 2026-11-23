@@ -114,8 +114,8 @@ public static class CertificatesByIssuerRecipe {
     public static Chart Create(string variant = &quot;issuers&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;issuers&quot; or &quot;compact-issuers&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month =&gt; new DateTime(2025, 11, 1).AddMonths(month).ToString(&quot;MMM&quot;, CultureInfo.InvariantCulture)).ToArray();
-        var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis(&quot;Certificates&quot;)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XLabels(months).Bars(b =&gt; b.Stacked()).YAxis(y =&gt; y.Title(&quot;Certificates&quot;))
+            .ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
         var issuers = new[] { (&quot;lets-encrypt&quot;, &quot;Let&#39;s Encrypt&quot;, 64), (&quot;digicert&quot;, &quot;DigiCert&quot;, 18), (&quot;sectigo&quot;, &quot;Sectigo&quot;, 11), (&quot;internal-ca&quot;, &quot;Internal CA&quot;, 7) };
         foreach (var (id, name, typical) in issuers) {
             // Renewals cluster every third month; the values are deterministic so the gallery stays reproducible.
@@ -159,8 +159,8 @@ public static class CertificatesByIssuerRecipe {
     public static Chart Create(string variant = &quot;issuers&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;issuers&quot; or &quot;compact-issuers&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month =&gt; new DateTime(2025, 11, 1).AddMonths(month).ToString(&quot;MMM&quot;, CultureInfo.InvariantCulture)).ToArray();
-        var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis(&quot;Certificates&quot;)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XLabels(months).Bars(b =&gt; b.Stacked()).YAxis(y =&gt; y.Title(&quot;Certificates&quot;))
+            .ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
         var issuers = new[] { (&quot;lets-encrypt&quot;, &quot;Let&#39;s Encrypt&quot;, 64), (&quot;digicert&quot;, &quot;DigiCert&quot;, 18), (&quot;sectigo&quot;, &quot;Sectigo&quot;, 11), (&quot;internal-ca&quot;, &quot;Internal CA&quot;, 7) };
         foreach (var (id, name, typical) in issuers) {
             // Renewals cluster every third month; the values are deterministic so the gallery stays reproducible.

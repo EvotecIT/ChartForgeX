@@ -19,7 +19,7 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var dark = mode == ThemeMode.Dark;
-var model = SequenceArtifact.Create("sequence-surface-shadows").WithSize(1100, 900)
+var model = SequenceArtifact.Create("sequence-surface-shadows").Width(1100).Height(900)
     .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
     .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)
     .AddMessage("A", "B", "Save").AddMessage("B", "A", "Stored");

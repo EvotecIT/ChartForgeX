@@ -130,9 +130,9 @@ public static class TreemapColorDimensionRecipe {
         }, new ChartColorStop(0, ChartColor.FromHex(&quot;#D1D5DB&quot;)), new[] {
             new ChartColorStop(5, ChartColor.FromHex(&quot;#D9A441&quot;)), new ChartColorStop(40, ChartColor.FromHex(&quot;#B2182B&quot;))
         }).WithLabels(&quot;Cold&quot;, &quot;Freezing&quot;, &quot;Warm&quot;).WithNoDataColor(colors.Border);
-        return Chart.Create().ConfigureLabels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0 &#39;tasks&#39;&quot;, System.Globalization.CultureInfo.InvariantCulture)).WithDataLabels()
-            .AddSeries(allocation).ConfigureTreemap(options =&gt; {
+        return Chart.Create().Labels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
+            .ValueFormat(ChartValueFormat.Number(&quot;0 &#39;tasks&#39;&quot;, System.Globalization.CultureInfo.InvariantCulture)).DataLabels()
+            .AddSeries(allocation).Treemap(options =&gt; {
                 options.Gap = 3;
                 options.GroupPadding = 6;
                 options.ColorScale = scale;
@@ -192,9 +192,9 @@ public static class TreemapColorDimensionRecipe {
         }, new ChartColorStop(0, ChartColor.FromHex(&quot;#D1D5DB&quot;)), new[] {
             new ChartColorStop(5, ChartColor.FromHex(&quot;#D9A441&quot;)), new ChartColorStop(40, ChartColor.FromHex(&quot;#B2182B&quot;))
         }).WithLabels(&quot;Cold&quot;, &quot;Freezing&quot;, &quot;Warm&quot;).WithNoDataColor(colors.Border);
-        return Chart.Create().ConfigureLabels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0 &#39;tasks&#39;&quot;, System.Globalization.CultureInfo.InvariantCulture)).WithDataLabels()
-            .AddSeries(allocation).ConfigureTreemap(options =&gt; {
+        return Chart.Create().Labels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
+            .ValueFormat(ChartValueFormat.Number(&quot;0 &#39;tasks&#39;&quot;, System.Globalization.CultureInfo.InvariantCulture)).DataLabels()
+            .AddSeries(allocation).Treemap(options =&gt; {
                 options.Gap = 3;
                 options.GroupPadding = 6;
                 options.ColorScale = scale;

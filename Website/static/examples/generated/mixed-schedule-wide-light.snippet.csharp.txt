@@ -19,29 +19,29 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var origin = 0;
-var chart = Chart.Create().WithSize(900, 660).WithTheme(VisualTheme.Graphite(), mode)
-    .WithTitle("One release, several kinds of schedule evidence").WithSubtitle("Reversal changes presentation; source instants and resource identities remain unchanged")
-    .WithXAxisBounds(origin, origin + 10).WithDataLabels().WithStateCategories(
+var chart = Chart.Create().Size(900, 660).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+    .Title("One release, several kinds of schedule evidence").Subtitle("Reversal changes presentation; source instants and resource identities remain unchanged")
+    .XAxis(x => x.Bounds(origin, origin + 10)).DataLabels().StateCategories(
         new ChartStateCategory("ready", "Ready", ChartColor.FromHex("#218A63")),
         new ChartStateCategory("review", "Review", ChartColor.FromHex("#BD771C"), ChartStatePattern.Outlined));
 chart.AddSeries(new ChartSeries(new ChartSeriesId("window"), "Delivery window", ChartSeriesKind.Timeline,
-    new[] { new ChartPoint(origin + 1, origin + 9) }).WithObservationId(0, new ChartObservationId("delivery-window")));
+    new[] { new ChartPoint(origin + 1, origin + 9) }).ObservationId(0, new ChartObservationId("delivery-window")));
 var build = ChartSeries.CreateGanttTask(new ChartSeriesId("build"), "Implementation", origin + 2, origin + 4, .65)
-    .WithObservationId(0, new ChartObservationId("implementation"));
+    .ObservationId(0, new ChartObservationId("implementation"));
 chart.AddSeries(build);
 chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("service"), "Service state", new[] {
     new ChartStateTimelineSegment(origin + 1, origin + 3, "ready"), new ChartStateTimelineSegment(origin + 4, origin + 7, "review") },
-    summary: "One source gap", group: "Resources").WithObservationId(0, new ChartObservationId("ready-period")));
+    summary: "One source gap", group: "Resources").ObservationId(0, new ChartObservationId("ready-period")));
 chart.AddSeries(ChartSeries.CreateGanttLane(new ChartSeriesId("reviewers"), "Review activity", new[] {
     new ChartGanttLaneItem(origin + 2, origin + 6, "review", "Review"), new ChartGanttLaneItem(origin + 3, null, "ready", "Follow-up") },
-    group: "Resources", summary: "Two overlapping items").WithObservationId(0, new ChartObservationId("review-item")));
+    group: "Resources", summary: "Two overlapping items").ObservationId(0, new ChartObservationId("review-item")));
 var gate = ChartSeries.CreateGanttMilestone(new ChartSeriesId("gate"), "Acceptance", origin + 8)
-    .WithObservationId(0, new ChartObservationId("acceptance"));
+    .ObservationId(0, new ChartObservationId("acceptance"));
 chart.AddSeries(gate).AddGanttDependency(build, gate);
 chart.AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("checkpoint"), "Current checkpoint", origin + 9));
-chart.WithGanttToday(origin + 9);
-chart.ConfigureXAxis(axis => axis.Reversed = false);
-chart.ConfigureYAxis(axis => axis.Reversed = false);
+chart.Gantt(g => g.Today(origin + 9));
+chart.XAxis(axis => axis.Reversed = false);
+chart.YAxis(axis => axis.Reversed = false);
 
 #region Output
 var context = new VisualRenderContext(

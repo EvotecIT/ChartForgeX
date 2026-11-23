@@ -18,16 +18,16 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithSize(390, 500)
-    .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Allocation by service")
-    .WithSubtitle("Partition area encodes values; caption placement and borders preserve source order")
-    .WithLegend(false).WithDataLabels().WithXLabels("Services", "Platform", "Support", "Unassigned");
+var chart = Chart.Create().Size(390, 500)
+    .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Allocation by service")
+    .Subtitle("Partition area encodes values; caption placement and borders preserve source order")
+    .Legend(false).DataLabels().XLabels("Services", "Platform", "Support", "Unassigned");
 var series = new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid,
     new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-    .WithObservationIds(new[] { new ChartObservationId("services"), new ChartObservationId("platform"), new ChartObservationId("support"), new ChartObservationId("unassigned") })
-    .WithPointColor(0, "#357BA4").WithPointColor(1, "#C18B3D").WithPointColor(2, "#4D947D")
-    .WithPointFillPattern(1, ChartFillPattern.DiagonalForward).WithPointStrokeColor(1, ChartColor.FromHex("#8D3E69"));
-chart.AddSeries(series).ConfigurePyramid(options => {
+    .ObservationIds(new[] { new ChartObservationId("services"), new ChartObservationId("platform"), new ChartObservationId("support"), new ChartObservationId("unassigned") })
+    .PointColor(0, "#357BA4").PointColor(1, "#C18B3D").PointColor(2, "#4D947D")
+    .PointFillPattern(1, ChartFillPattern.DiagonalForward).PointStrokeColor(1, ChartColor.FromHex("#8D3E69"));
+chart.AddSeries(series).Pyramid(options => {
     options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = false;
     options.Orientation = ChartOrientation.Horizontal;
     options.LabelContent = ChartStageLabelContent.Separate;
@@ -35,7 +35,7 @@ chart.AddSeries(series).ConfigurePyramid(options => {
     options.PartitionOutline = new ChartStrokeStyle(width: 2, dash: new[] { 6d, 2d });
     options.PartitionOutlineDashOffset = -1;
 });
-chart.WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+chart.ValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
 
 #region Output
 var context = new VisualRenderContext(

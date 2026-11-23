@@ -32,14 +32,14 @@ public static class ServerRenderedRecipe {
                 cssClass: publisher ? "publisher-mark" : "activity-mark",
                 dataAttributes: new Dictionary<string, string> { ["data-day"] = day, ["data-kind"] = publisher ? "publisher" : "update" }));
         }
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithBarStyle(ChartBarStyle.Flat)
-            .WithLegend(false).WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
-            .WithYAxisBounds(0, 24).ConfigureYAxis(axis => { axis.TickCount = 4; axis.IntegerTicks = true; })
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Bars(b => b.Stacked().Style(ChartBarStyle.Flat))
+            .Legend(false).XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+            .YAxis(y => y.Bounds(0, 24)).YAxis(axis => { axis.TickCount = 4; axis.IntegerTicks = true; })
             .AddBar("Updates", updates.Select((value, index) => Point(index, value, false)), Color("--updates", mode))
             .AddBar("Publisher notes", notes.Select((value, index) => Point(index, value, true)), Color("--publisher-notes", mode));
-        chart.Series[0].WithMarkOptions(new ChartMarkOptions(cssClass: "activity-series",
+        chart.Series[0].MarkOptions(new ChartMarkOptions(cssClass: "activity-series",
             dataAttributes: new Dictionary<string, string> { ["data-feed"] = "daily-updates" }));
-        chart.Series[1].WithMarkOptions(new ChartMarkOptions(cssClass: "publisher-series",
+        chart.Series[1].MarkOptions(new ChartMarkOptions(cssClass: "publisher-series",
             dataAttributes: new Dictionary<string, string> { ["data-feed"] = "publisher-notes" }));
         return chart;
     }
@@ -48,7 +48,7 @@ public static class ServerRenderedRecipe {
     public static Chart SupportSchedule(ThemeMode mode = ThemeMode.Light, string summaryPage = "") {
         var chart = Schedule(mode);
         for (var row = 0; row < 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
-        return chart.WithGanttToday(new DateTime(2026, 7, 15));
+        return chart.GanttToday(new DateTime(2026, 7, 15));
     }
 
     /// <summary>Creates one support row for plot-only preparation; HTML owns the row label.</summary>
@@ -62,13 +62,13 @@ public static class ServerRenderedRecipe {
         return new ChartStripScale(axis);
     }
 
-    private static Chart Schedule(ThemeMode mode) => Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
-        .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
-        .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
-        .ConfigureXAxis(ConfigureTimeAxis);
+    private static Chart Schedule(ThemeMode mode) => Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode)
+        .Legend(false).Gantt(g => g.OpenEndStyle(ChartGanttOpenEndStyle.Fade))
+        .XAxis(x => x.Bounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate()))
+        .XAxis(ConfigureTimeAxis);
 
     private static void ConfigureTimeAxis(ChartAxis axis) {
-        axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2027, 1, 1).ToOADate();
+        axis.Min = new DateTime(2026, 1, 1).ToOADate(); axis.Max = new DateTime(2027, 1, 1).ToOADate();
         axis.Scale = ChartScaleKind.Time; axis.TickCount = 3;
         axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM yy", CultureInfo.InvariantCulture));
         axis.Labels.Clear();
@@ -93,8 +93,8 @@ public static class ServerRenderedRecipe {
             cssClass: "support-mark", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }));
         return ChartSeries.CreateGanttTask(new ChartSeriesId(key), name, start, end, color: Color(current ? "--updates" : "--support", mode))
             .ReplaceGanttItems(new[] { item })
-            .WithMarkOptions(new ChartMarkOptions(cssClass: "support-series", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }))
-            .WithRowOptions(new ChartMarkOptions(href: summaryPage + "#" + key, accessibleLabel: name + (current ? ", current release" : ", support summary"),
+            .MarkOptions(new ChartMarkOptions(cssClass: "support-series", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }))
+            .RowOptions(new ChartMarkOptions(href: summaryPage + "#" + key, accessibleLabel: name + (current ? ", current release" : ", support summary"),
                 cssClass: "support-row", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }, current: current));
     }
 

@@ -22,7 +22,7 @@ var theme = VisualTheme.Graphite();
 var chart = Chart.Create();
 var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.StackedArea, Observations(0));
 var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.StackedArea, Observations(-10));
-chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(requests).AddSeries(followUps);
+chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(requests).AddSeries(followUps);
 
 #region Output
 var context = new VisualRenderContext(

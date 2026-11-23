@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model=SequenceArtifact.Create("sequence-self-routes").WithSize(1000,820).WithTitle("Self routes")
+var model=SequenceArtifact.Create("sequence-self-routes").Width(1000).Height(820).Title("Self routes")
     .AddParticipant("A","Review").AddMessage("A","A","Check").AddMessage("A","A","Save");
 model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8,wrapPadding:8,selfMessageRouting:SequenceSelfMessageRouting.Curved);
 model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12});

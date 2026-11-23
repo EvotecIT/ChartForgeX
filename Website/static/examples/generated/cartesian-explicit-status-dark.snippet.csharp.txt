@@ -27,10 +27,10 @@ var expected = ChartSeries.CreateArea(new ChartSeriesId("expected"), names[1], P
 var observed = ChartSeries.CreateLine(new ChartSeriesId("observed"), names[0], Points(count, 0));
 var colors = VisualTheme.Graphite().Resolve(mode);
 var selected = new[] { colors.Status.Pass.Fill, colors.Status.Medium.Fill, colors.Status.Critical.Fill };
-observed.WithColor(selected[0]);
-expected.WithColor(selected[1]);
-capacity.WithColor(selected[2]);
-var chart = Chart.Create().WithXLabels(Enumerable.Range(1, count).Select(index => "Day " + index).ToArray())
+observed.Color(selected[0]);
+expected.Color(selected[1]);
+capacity.Color(selected[2]);
+var chart = Chart.Create().XLabels(Enumerable.Range(1, count).Select(index => "Day " + index).ToArray())
     .AddSeries(capacity).AddSeries(expected).AddSeries(observed);
 
 #region Output

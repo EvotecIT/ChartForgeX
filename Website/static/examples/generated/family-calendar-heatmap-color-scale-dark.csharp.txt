@@ -32,12 +32,12 @@ public static class CalendarHeatmapColorScaleRecipe {
     public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
+        return Chart.Create().Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
             .AddCalendarHeatmap("Daily observations", Enumerable.Range(0, 120)
                 .Where(index => index % 7 != 0 && index % 9 != 0)
                 .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)),
                 id: new ChartSeriesId("daily-observations"))
-            .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
-                .WithLabels("Quiet", null, "Busy").WithNoDataColor(colors.Border));
+            .Heatmap(h => h.ColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
+                .WithLabels("Quiet", null, "Busy").WithNoDataColor(colors.Border)));
     }
 }

@@ -34,29 +34,29 @@ public static class LineRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
         if (variant is "options" or "compact-options") {
-            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Recorded level");
+            chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri").YAxis(y => y.Title("Recorded level"));
             var positions = new[] { ChartStepPosition.Start, ChartStepPosition.Middle, ChartStepPosition.End };
             var shapes = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle };
             var ids = new[] { "step-start", "step-middle", "step-end" };
             for (var index = 0; index < positions.Length; index++) {
                 var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) => new ChartPoint(point + 1, value + index * 30));
                 var series = ChartSeries.CreateLine(new ChartSeriesId(ids[index]), positions[index].ToString(), points)
-                    .WithInterpolation(ChartInterpolation.Step, positions[index]);
+                    .Interpolation(ChartInterpolation.Step, positions[index]);
                 var shape = shapes[index];
-                series.ConfigureMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
+                series.Markers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
                 chart.AddSeries(series);
             }
         }
         else if (variant == "sparse") {
             var points = Enumerable.Range(1, 6).Where(index => index is 1 or 3 or 6)
                 .Select(index => new ChartPoint(index, 20 + index * 7 % 29, index == 6));
-            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+            chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
                 .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", points));
         }
         else {
             // Twelve weeks of requests per channel: the portal grows, email declines and the API stays seasonal.
             var weeks = Enumerable.Range(1, 12).ToArray();
-            chart.WithXLabels(weeks.Select(week => "W" + week).ToArray()).WithYAxis("Requests");
+            chart.XLabels(weeks.Select(week => "W" + week).ToArray()).YAxis(y => y.Title("Requests"));
             chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Portal",
                 weeks.Select(week => new ChartPoint(week, Math.Round(820 + week * 64 + Math.Sin(week * 1.1) * 60)))));
             chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("api"), "API",

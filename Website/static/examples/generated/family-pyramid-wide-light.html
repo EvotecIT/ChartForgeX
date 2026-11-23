@@ -114,19 +114,19 @@ public static class PyramidRecipe {
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;dense&quot; or &quot;compact-dense&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Chart.Create().WithDataLabels();
+        var chart = Chart.Create().DataLabels();
         if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) {
-            chart.WithTitle(&quot;Allocation by service&quot;)
-                .WithXLabels(Enumerable.Range(1, 16).Select(index =&gt; &quot;Regional service &quot; + index).ToArray())
+            chart.Title(&quot;Allocation by service&quot;)
+                .XLabels(Enumerable.Range(1, 16).Select(index =&gt; &quot;Regional service &quot; + index).ToArray())
                 .AddPyramid(&quot;Allocation&quot;, Enumerable.Range(1, 16).Select(index =&gt; new ChartPoint(index, 17 - index)));
         }
         else if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
             var allocation = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid, new[] {
                 new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0)
-            }).WithPointColor(0, &quot;#2F78C4&quot;).WithPointColor(1, &quot;#E2A644&quot;).WithPointColor(2, &quot;#34957A&quot;)
-                .WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
-            chart.WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).AddSeries(allocation)
-                .ConfigurePyramid(options =&gt; {
+            }).PointColor(0, &quot;#2F78C4&quot;).PointColor(1, &quot;#E2A644&quot;).PointColor(2, &quot;#34957A&quot;)
+                .PointFillPattern(1, ChartFillPattern.DiagonalForward);
+            chart.XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).AddSeries(allocation)
+                .Pyramid(options =&gt; {
                     options.ValueEncoding = ChartPyramidValueEncoding.Area;
                     options.Orientation = ChartOrientation.Horizontal;
                     options.Reversed = true;
@@ -136,7 +136,7 @@ public static class PyramidRecipe {
         else {
             var allocation = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid,
                 new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
-            chart.WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;).AddSeries(allocation);
+            chart.XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;).AddSeries(allocation);
         }
         return chart;
     }
@@ -175,19 +175,19 @@ public static class PyramidRecipe {
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;dense&quot; or &quot;compact-dense&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Chart.Create().WithDataLabels();
+        var chart = Chart.Create().DataLabels();
         if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) {
-            chart.WithTitle(&quot;Allocation by service&quot;)
-                .WithXLabels(Enumerable.Range(1, 16).Select(index =&gt; &quot;Regional service &quot; + index).ToArray())
+            chart.Title(&quot;Allocation by service&quot;)
+                .XLabels(Enumerable.Range(1, 16).Select(index =&gt; &quot;Regional service &quot; + index).ToArray())
                 .AddPyramid(&quot;Allocation&quot;, Enumerable.Range(1, 16).Select(index =&gt; new ChartPoint(index, 17 - index)));
         }
         else if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
             var allocation = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid, new[] {
                 new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0)
-            }).WithPointColor(0, &quot;#2F78C4&quot;).WithPointColor(1, &quot;#E2A644&quot;).WithPointColor(2, &quot;#34957A&quot;)
-                .WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
-            chart.WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).AddSeries(allocation)
-                .ConfigurePyramid(options =&gt; {
+            }).PointColor(0, &quot;#2F78C4&quot;).PointColor(1, &quot;#E2A644&quot;).PointColor(2, &quot;#34957A&quot;)
+                .PointFillPattern(1, ChartFillPattern.DiagonalForward);
+            chart.XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).AddSeries(allocation)
+                .Pyramid(options =&gt; {
                     options.ValueEncoding = ChartPyramidValueEncoding.Area;
                     options.Orientation = ChartOrientation.Horizontal;
                     options.Reversed = true;
@@ -197,7 +197,7 @@ public static class PyramidRecipe {
         else {
             var allocation = new ChartSeries(new ChartSeriesId(&quot;allocation&quot;), &quot;Allocation&quot;, ChartSeriesKind.Pyramid,
                 new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
-            chart.WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;).AddSeries(allocation);
+            chart.XLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;).AddSeries(allocation);
         }
         return chart;
     }

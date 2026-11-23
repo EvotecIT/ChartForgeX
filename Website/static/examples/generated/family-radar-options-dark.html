@@ -118,31 +118,31 @@ public static class RadarRecipe {
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) return Markers();
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Radar, Observations(variant));
         var expected = new ChartSeries(new ChartSeriesId(&quot;expected&quot;), &quot;Expected&quot;, ChartSeriesKind.Radar, Observations(variant == &quot;sparse&quot; ? &quot;wide&quot; : variant, 12));
-        observed.ConfigureRadar(options =&gt; options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
-        return Chart.Create().WithXLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
+        observed.Radar(options =&gt; options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
+        return Chart.Create().XLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
             .AddSeries(observed).AddSeries(expected);
     }
 
     private static Chart Markers() {
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Radar, Points(58, 76, 69, 84, 62, 73))
-            .ConfigureRadar(options =&gt; options.FillOpacity = .2)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+            .Radar(options =&gt; options.FillOpacity = .2)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
         var target = new ChartSeries(new ChartSeriesId(&quot;target&quot;), &quot;Target&quot;, ChartSeriesKind.Radar, Points(75, 85, 80, 90, 75, 85))
-            .ConfigureRadar(options =&gt; options.Form = ChartLineAreaForm.Line)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
-        return Chart.Create().WithXLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
-            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target);
+            .Radar(options =&gt; options.Form = ChartLineAreaForm.Line)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        return Chart.Create().XLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
+            .YAxis(y =&gt; y.Bounds(0, 100)).AddSeries(observed).AddSeries(target);
     }
 
     private static Chart Reversed() {
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Radar, Points(58, 76, 69, 84))
-            .ConfigureRadar(options =&gt; options.FillOpacity = .2)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
+            .Radar(options =&gt; options.FillOpacity = .2)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
         var target = new ChartSeries(new ChartSeriesId(&quot;target&quot;), &quot;Target&quot;, ChartSeriesKind.Radar, Points(75, 85, 80, 90))
-            .ConfigureRadar(options =&gt; options.Form = ChartLineAreaForm.Line)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
-        return Chart.Create().WithXLabels(&quot;North&quot;, &quot;East&quot;, &quot;South&quot;, &quot;West&quot;).WithYAxisBounds(0, 100).WithDataLabels(false)
-            .AddSeries(observed).AddSeries(target).ConfigureXAxis(axis =&gt; axis.WithReversal());
+            .Radar(options =&gt; options.Form = ChartLineAreaForm.Line)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
+        return Chart.Create().XLabels(&quot;North&quot;, &quot;East&quot;, &quot;South&quot;, &quot;West&quot;).YAxis(y =&gt; y.Bounds(0, 100)).DataLabels(false)
+            .AddSeries(observed).AddSeries(target).XAxis(axis =&gt; axis.Reversed());
     }
 
     private static ChartPoint[] Points(params double[] values) =&gt; values.Select((value, index) =&gt; new ChartPoint(index + 1, value)).ToArray();
@@ -187,31 +187,31 @@ public static class RadarRecipe {
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) return Markers();
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Radar, Observations(variant));
         var expected = new ChartSeries(new ChartSeriesId(&quot;expected&quot;), &quot;Expected&quot;, ChartSeriesKind.Radar, Observations(variant == &quot;sparse&quot; ? &quot;wide&quot; : variant, 12));
-        observed.ConfigureRadar(options =&gt; options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
-        return Chart.Create().WithXLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
+        observed.Radar(options =&gt; options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
+        return Chart.Create().XLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
             .AddSeries(observed).AddSeries(expected);
     }
 
     private static Chart Markers() {
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Radar, Points(58, 76, 69, 84, 62, 73))
-            .ConfigureRadar(options =&gt; options.FillOpacity = .2)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+            .Radar(options =&gt; options.FillOpacity = .2)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
         var target = new ChartSeries(new ChartSeriesId(&quot;target&quot;), &quot;Target&quot;, ChartSeriesKind.Radar, Points(75, 85, 80, 90, 75, 85))
-            .ConfigureRadar(options =&gt; options.Form = ChartLineAreaForm.Line)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
-        return Chart.Create().WithXLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
-            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target);
+            .Radar(options =&gt; options.Form = ChartLineAreaForm.Line)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        return Chart.Create().XLabels(&quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot;)
+            .YAxis(y =&gt; y.Bounds(0, 100)).AddSeries(observed).AddSeries(target);
     }
 
     private static Chart Reversed() {
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Radar, Points(58, 76, 69, 84))
-            .ConfigureRadar(options =&gt; options.FillOpacity = .2)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
+            .Radar(options =&gt; options.FillOpacity = .2)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
         var target = new ChartSeries(new ChartSeriesId(&quot;target&quot;), &quot;Target&quot;, ChartSeriesKind.Radar, Points(75, 85, 80, 90))
-            .ConfigureRadar(options =&gt; options.Form = ChartLineAreaForm.Line)
-            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
-        return Chart.Create().WithXLabels(&quot;North&quot;, &quot;East&quot;, &quot;South&quot;, &quot;West&quot;).WithYAxisBounds(0, 100).WithDataLabels(false)
-            .AddSeries(observed).AddSeries(target).ConfigureXAxis(axis =&gt; axis.WithReversal());
+            .Radar(options =&gt; options.Form = ChartLineAreaForm.Line)
+            .Markers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
+        return Chart.Create().XLabels(&quot;North&quot;, &quot;East&quot;, &quot;South&quot;, &quot;West&quot;).YAxis(y =&gt; y.Bounds(0, 100)).DataLabels(false)
+            .AddSeries(observed).AddSeries(target).XAxis(axis =&gt; axis.Reversed());
     }
 
     private static ChartPoint[] Points(params double[] values) =&gt; values.Select((value, index) =&gt; new ChartPoint(index + 1, value)).ToArray();

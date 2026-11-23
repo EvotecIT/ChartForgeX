@@ -119,24 +119,24 @@ public static class DifferenceAreaRecipe {
             var smoothPairs = ChartDifferencePoints.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
                 new double?[] { 42, 68, 48, null, 74, 46, 62, 55 }, new double?[] { 56, 54, 60, 60, 58, 64, 50, 68 });
             var smoothComparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;, smoothPairs)
-                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
-                .WithObservationId(3, new ChartObservationId(&quot;resumed-comparison&quot;))
-                .ConfigureDifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
-                .ConfigureMarkers(markers =&gt; markers.Radius = 3);
-            return Chart.Create().WithTitle(&quot;Smooth actual and held forecast&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Completed requests&quot;)
+                .BoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .ObservationId(3, new ChartObservationId(&quot;resumed-comparison&quot;))
+                .DifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
+                .Markers(markers =&gt; markers.Radius = 3);
+            return Chart.Create().Title(&quot;Smooth actual and held forecast&quot;).XAxis(x =&gt; x.Title(&quot;Observation&quot;)).YAxis(y =&gt; y.Title(&quot;Completed requests&quot;))
                 .AddSeries(smoothComparison);
         }
-        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().WithTitle(&quot;One observed comparison&quot;)
+        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().Title(&quot;One observed comparison&quot;)
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;, new[] { new ChartDifferencePoint(0, 0, 7) })
-                .WithObservationId(0, new ChartObservationId(&quot;only-comparison&quot;))
-                .ConfigureDifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; }));
-        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().WithTitle(&quot;Observed and forecast&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Completed requests&quot;)
+                .ObservationId(0, new ChartObservationId(&quot;only-comparison&quot;))
+                .DifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; }));
+        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().Title(&quot;Observed and forecast&quot;).XAxis(x =&gt; x.Title(&quot;Observation&quot;)).YAxis(y =&gt; y.Title(&quot;Completed requests&quot;))
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;,
                 Enumerable.Range(0, 32).Select(index =&gt; new ChartDifferencePoint(index,
                     index % 7 == 0 ? 0 : Math.Sin(index * .6) * 9,
                     index % 7 == 0 ? 0 : Math.Cos(index * .6) * 7, index == 16)))
-                .ConfigureDifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
-                .ConfigureMarkers(options =&gt; options.Radius = 2));
+                .DifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
+                .Markers(options =&gt; options.Radius = 2));
         var dated = variant is &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;;
         var stepped = variant is &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot;;
         var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -146,28 +146,28 @@ public static class DifferenceAreaRecipe {
         for (var item = 0; item &lt; pairs.Length; item++) pairs[item] = dated
             ? new ChartDifferencePoint(day.AddDays(item + (item &gt;= 4 ? 2 : 0)), actual[item], forecast[item], item == 4)
             : new ChartDifferencePoint(item + 1, actual[item], forecast[item], stepped &amp;&amp; item == 5);
-        var chart = Chart.Create().WithXAxis(dated ? &quot;Observation date (UTC)&quot; : &quot;Observation&quot;)
-            .WithYAxis(dated ? &quot;Primary reference&quot; : &quot;Completed requests&quot;);
+        var chart = Chart.Create().XAxis(x =&gt; x.Title(dated ? &quot;Observation date (UTC)&quot; : &quot;Observation&quot;))
+            .YAxis(y =&gt; y.Title(dated ? &quot;Primary reference&quot; : &quot;Completed requests&quot;));
         if (dated) {
-            chart.ConfigureXAxis(axis =&gt; axis.WithTimeScale());
+            chart.XAxis(axis =&gt; axis.TimeScale());
             var reference = ChartSeries.CreateLine(new ChartSeriesId(&quot;primary-reference&quot;), &quot;Primary reference&quot;,
                 new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
             chart.AddSeries(reference);
         }
         var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;, pairs);
-        comparison.ConfigureDifferenceArea(options =&gt; {
+        comparison.DifferenceArea(options =&gt; {
             options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;;
             options.PositiveFill = ChartColor.FromHex(&quot;#267EAB&quot;); options.NegativeFill = ChartColor.FromHex(&quot;#D47A34&quot;);
             options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
-        }).ConfigureMarkers(markers =&gt; markers.Radius = 3);
-        if (stepped) comparison.WithInterpolation(ChartInterpolation.Step, variant switch {
+        }).Markers(markers =&gt; markers.Radius = 3);
+        if (stepped) comparison.Interpolation(ChartInterpolation.Step, variant switch {
             &quot;step-start&quot; =&gt; ChartStepPosition.Start,
             &quot;step-end&quot; =&gt; ChartStepPosition.End,
             _ =&gt; ChartStepPosition.Middle
         });
         if (dated) {
-            comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
-            chart.WithSecondaryYAxis(&quot;Completed requests&quot;);
+            comparison.SecondaryAxis().FillPattern(ChartFillPattern.DiagonalForward);
+            chart.SecondaryYAxis(s =&gt; s.Title(&quot;Completed requests&quot;));
         }
         return chart.AddSeries(comparison);
     }
@@ -211,24 +211,24 @@ public static class DifferenceAreaRecipe {
             var smoothPairs = ChartDifferencePoints.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
                 new double?[] { 42, 68, 48, null, 74, 46, 62, 55 }, new double?[] { 56, 54, 60, 60, 58, 64, 50, 68 });
             var smoothComparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;, smoothPairs)
-                .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
-                .WithObservationId(3, new ChartObservationId(&quot;resumed-comparison&quot;))
-                .ConfigureDifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
-                .ConfigureMarkers(markers =&gt; markers.Radius = 3);
-            return Chart.Create().WithTitle(&quot;Smooth actual and held forecast&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Completed requests&quot;)
+                .BoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+                .ObservationId(3, new ChartObservationId(&quot;resumed-comparison&quot;))
+                .DifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
+                .Markers(markers =&gt; markers.Radius = 3);
+            return Chart.Create().Title(&quot;Smooth actual and held forecast&quot;).XAxis(x =&gt; x.Title(&quot;Observation&quot;)).YAxis(y =&gt; y.Title(&quot;Completed requests&quot;))
                 .AddSeries(smoothComparison);
         }
-        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().WithTitle(&quot;One observed comparison&quot;)
+        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().Title(&quot;One observed comparison&quot;)
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;, new[] { new ChartDifferencePoint(0, 0, 7) })
-                .WithObservationId(0, new ChartObservationId(&quot;only-comparison&quot;))
-                .ConfigureDifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; }));
-        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().WithTitle(&quot;Observed and forecast&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Completed requests&quot;)
+                .ObservationId(0, new ChartObservationId(&quot;only-comparison&quot;))
+                .DifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; }));
+        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().Title(&quot;Observed and forecast&quot;).XAxis(x =&gt; x.Title(&quot;Observation&quot;)).YAxis(y =&gt; y.Title(&quot;Completed requests&quot;))
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;,
                 Enumerable.Range(0, 32).Select(index =&gt; new ChartDifferencePoint(index,
                     index % 7 == 0 ? 0 : Math.Sin(index * .6) * 9,
                     index % 7 == 0 ? 0 : Math.Cos(index * .6) * 7, index == 16)))
-                .ConfigureDifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
-                .ConfigureMarkers(options =&gt; options.Radius = 2));
+                .DifferenceArea(options =&gt; { options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;; })
+                .Markers(options =&gt; options.Radius = 2));
         var dated = variant is &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;;
         var stepped = variant is &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot;;
         var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -238,28 +238,28 @@ public static class DifferenceAreaRecipe {
         for (var item = 0; item &lt; pairs.Length; item++) pairs[item] = dated
             ? new ChartDifferencePoint(day.AddDays(item + (item &gt;= 4 ? 2 : 0)), actual[item], forecast[item], item == 4)
             : new ChartDifferencePoint(item + 1, actual[item], forecast[item], stepped &amp;&amp; item == 5);
-        var chart = Chart.Create().WithXAxis(dated ? &quot;Observation date (UTC)&quot; : &quot;Observation&quot;)
-            .WithYAxis(dated ? &quot;Primary reference&quot; : &quot;Completed requests&quot;);
+        var chart = Chart.Create().XAxis(x =&gt; x.Title(dated ? &quot;Observation date (UTC)&quot; : &quot;Observation&quot;))
+            .YAxis(y =&gt; y.Title(dated ? &quot;Primary reference&quot; : &quot;Completed requests&quot;));
         if (dated) {
-            chart.ConfigureXAxis(axis =&gt; axis.WithTimeScale());
+            chart.XAxis(axis =&gt; axis.TimeScale());
             var reference = ChartSeries.CreateLine(new ChartSeriesId(&quot;primary-reference&quot;), &quot;Primary reference&quot;,
                 new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
             chart.AddSeries(reference);
         }
         var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId(&quot;comparison&quot;), &quot;Actual and forecast&quot;, pairs);
-        comparison.ConfigureDifferenceArea(options =&gt; {
+        comparison.DifferenceArea(options =&gt; {
             options.FirstName = &quot;Actual&quot;; options.SecondName = &quot;Forecast&quot;;
             options.PositiveFill = ChartColor.FromHex(&quot;#267EAB&quot;); options.NegativeFill = ChartColor.FromHex(&quot;#D47A34&quot;);
             options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
-        }).ConfigureMarkers(markers =&gt; markers.Radius = 3);
-        if (stepped) comparison.WithInterpolation(ChartInterpolation.Step, variant switch {
+        }).Markers(markers =&gt; markers.Radius = 3);
+        if (stepped) comparison.Interpolation(ChartInterpolation.Step, variant switch {
             &quot;step-start&quot; =&gt; ChartStepPosition.Start,
             &quot;step-end&quot; =&gt; ChartStepPosition.End,
             _ =&gt; ChartStepPosition.Middle
         });
         if (dated) {
-            comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
-            chart.WithSecondaryYAxis(&quot;Completed requests&quot;);
+            comparison.SecondaryAxis().FillPattern(ChartFillPattern.DiagonalForward);
+            chart.SecondaryYAxis(s =&gt; s.Title(&quot;Completed requests&quot;));
         }
         return chart.AddSeries(comparison);
     }

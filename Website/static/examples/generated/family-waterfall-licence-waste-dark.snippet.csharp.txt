@@ -22,9 +22,9 @@ var bridge = ChartSeries.CreateWaterfall(new ChartSeriesId("licences"), "Licence
     ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Delta(3, -142),
     ChartWaterfallItem.Delta(4, -57), ChartWaterfallItem.Total(5), ChartWaterfallItem.Delta(6, -38), ChartWaterfallItem.Total(7)
 });
-var chart = Chart.Create().WithXLabels("Purchased", "Unassigned", "Inactive", "Disabled", "In use", "Duplicates", "Effective")
-    .AddSeries(bridge).WithDataLabels().WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
-chart.WithYAxis("Licences");
+var chart = Chart.Create().XLabels("Purchased", "Unassigned", "Inactive", "Disabled", "In use", "Duplicates", "Effective")
+    .AddSeries(bridge).DataLabels().ValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+chart.YAxis(y => y.Title("Licences"));
 
 #region Output
 var context = new VisualRenderContext(

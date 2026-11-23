@@ -120,21 +120,21 @@ public static class BubbleMarkerOptionsRecipe {
     private static Chart MarkerOptions(bool custom, ThemeMode mode) {
         var standard = ChartSeries.CreateBubble(new ChartSeriesId(&quot;standard&quot;), &quot;Standard&quot;, new[] {
             new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
-        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
+        }).Markers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
         var priority = ChartSeries.CreateBubble(new ChartSeriesId(&quot;priority&quot;), &quot;Priority&quot;, new[] {
             new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200)
-        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
-        if (custom) priority.ConfigureMarkers(markers =&gt; {
+        }).Markers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
+        if (custom) priority.Markers(markers =&gt; {
             markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
                 .CubicTo(-1, 1, -1, -1, 0, -1);
             var outline = mode == ThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
             markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
             markers.StrokeDashOffset = 1;
         });
-        return Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
+        return Chart.Create().XAxis(x =&gt; x.Title(&quot;Workload batches&quot;)).YAxis(y =&gt; y.Title(&quot;Time (minutes)&quot;))
             .AddSeries(standard).AddSeries(priority)
-            .ConfigureBubble(bubble =&gt; {
-                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+            .Bubble(bubble =&gt; {
+                bubble.SizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
                 bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
                 bubble.SizeDimension.Name = &quot;Requests&quot;; bubble.SizeDimension.ShowLegend = true;
             });
@@ -180,21 +180,21 @@ public static class BubbleMarkerOptionsRecipe {
     private static Chart MarkerOptions(bool custom, ThemeMode mode) {
         var standard = ChartSeries.CreateBubble(new ChartSeriesId(&quot;standard&quot;), &quot;Standard&quot;, new[] {
             new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
-        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
+        }).Markers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
         var priority = ChartSeries.CreateBubble(new ChartSeriesId(&quot;priority&quot;), &quot;Priority&quot;, new[] {
             new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200)
-        }).ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
-        if (custom) priority.ConfigureMarkers(markers =&gt; {
+        }).Markers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
+        if (custom) priority.Markers(markers =&gt; {
             markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
                 .CubicTo(-1, 1, -1, -1, 0, -1);
             var outline = mode == ThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
             markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
             markers.StrokeDashOffset = 1;
         });
-        return Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
+        return Chart.Create().XAxis(x =&gt; x.Title(&quot;Workload batches&quot;)).YAxis(y =&gt; y.Title(&quot;Time (minutes)&quot;))
             .AddSeries(standard).AddSeries(priority)
-            .ConfigureBubble(bubble =&gt; {
-                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+            .Bubble(bubble =&gt; {
+                bubble.SizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
                 bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
                 bubble.SizeDimension.Name = &quot;Requests&quot;; bubble.SizeDimension.ShowLegend = true;
             });

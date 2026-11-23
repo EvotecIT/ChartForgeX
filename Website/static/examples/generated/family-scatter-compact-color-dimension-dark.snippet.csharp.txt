@@ -38,17 +38,17 @@ static class ScatterColorDimensionRecipe {
         var temperatures = new double?[] { -12, 0, null, 2.5, 22.5 };
         var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
             new ChartPoint((index + 1) * 16, minutes[index]).WithColorValue(value)));
-        recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border)).ConfigureColorDimension(options => {
+        recorded.ColorScale(TemperatureScale().WithNoDataColor(colors.Border)).ColorDimension(options => {
             options.Name = "Temperature";
             options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
             options.LegendStyle = ChartColorLegendStyle.Auto;
         });
-        return NumericAxes().ConfigureLabels(labels => labels.NoData = "Not sampled")
-            .WithValueFormat(ChartValueFormat.Number("0.0 'min'", CultureInfo.InvariantCulture)).AddSeries(recorded);
+        return NumericAxes().Labels(labels => labels.NoData = "Not sampled")
+            .ValueFormat(ChartValueFormat.Number("0.0 'min'", CultureInfo.InvariantCulture)).AddSeries(recorded);
     }
 
-    internal static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
-        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+    internal static Chart NumericAxes() => Chart.Create().XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
+        .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 60)).DataLabels(false);
 
     internal static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {
         new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))

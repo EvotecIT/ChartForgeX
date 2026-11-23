@@ -38,7 +38,7 @@ var scale = ChartColorScale.Discrete(new[] {
     new ChartColorBand(0, low, "Decline"), new ChartColorBand(10, colors.Border, "Steady"), new ChartColorBand(null, high, "Growth")
 });
 var allocation = ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocated work", items);
-var chart = Chart.Create().WithDataLabels(true).AddSeries(allocation).ConfigureTreemap(options => {
+var chart = Chart.Create().DataLabels(true).AddSeries(allocation).Treemap(options => {
     options.GroupPadding = 8;
     options.Gap = 3;
     options.ShowGroupLabels = true;
@@ -46,7 +46,7 @@ var chart = Chart.Create().WithDataLabels(true).AddSeries(allocation).ConfigureT
     // Only the sparse model has an item without a measured change, so only it needs a no-data colour.
     options.ColorScale = scale;
 });
-allocation.WithNodeState("south-support", ChartSeriesState.Warning);
+allocation.NodeState("south-support", ChartSeriesState.Warning);
 
 #region Output
 var context = new VisualRenderContext(

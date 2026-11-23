@@ -31,8 +31,8 @@ public static class SequenceLayoutTypographyRecipe {
     /// <summary>Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.</summary>
     public static SequenceArtifact Create(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create("sequence-layout").WithSize(variant=="compact"?390:1000,620)
-            .WithTitle("Measured review sequence").WithSubtitle("Each role retains its own font and source identity")
+        var model=SequenceArtifact.Create("sequence-layout").Width(variant=="compact"?390:1000).Height(620)
+            .Title("Measured review sequence").Subtitle("Each role retains its own font and source identity")
             .AddParticipant("A","Review").AddParticipant("B","Store")
             .AddMessage("A","B","Save").AddMessage("B","A","Ready",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return)
             .AddBlock(SequenceArtifactBlockKind.Alt,"Accepted",0,1).AddActivation("B",true,0).AddActivation("B",false,2)

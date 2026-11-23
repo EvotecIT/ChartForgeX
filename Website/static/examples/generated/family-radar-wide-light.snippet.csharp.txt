@@ -21,8 +21,8 @@ var theme = VisualTheme.Graphite();
 
 var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Observations());
 var expected = new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, Observations(12));
-observed.ConfigureRadar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
-var chart = Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
+observed.Radar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
+var chart = Chart.Create().XLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
     .AddSeries(observed).AddSeries(expected);
 
 #region Output

@@ -19,10 +19,10 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 Chart chart;
-chart = Chart.Create().WithTitle("Signed delivery intervals")
-    .WithXLabels(Enumerable.Range(1, 24).Select(index => "R" + index.ToString("00", CultureInfo.InvariantCulture)).ToArray())
-    .WithBarStyle(ChartBarStyle.Flat).WithDataLabels()
-    .ConfigureRangeBar(options => options.Orientation = ChartOrientation.Vertical)
+chart = Chart.Create().Title("Signed delivery intervals")
+    .XLabels(Enumerable.Range(1, 24).Select(index => "R" + index.ToString("00", CultureInfo.InvariantCulture)).ToArray())
+    .Bars(b => b.Style(ChartBarStyle.Flat)).DataLabels()
+    .RangeBar(options => options.Orientation = ChartOrientation.Vertical)
     .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Delivery range", Enumerable.Range(1, 24).Select(index => {
         var start = index % 6 == 0 ? 0 : Math.Sin(index * .9) * 20;
         return new ChartInterval(index, start, index % 6 == 0 ? 0 : start + (index % 3 == 0 ? -10 : 10));

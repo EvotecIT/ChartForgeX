@@ -42,15 +42,15 @@ public static class ChordRecipe {
         });
         var chart = Chart.Create().AddSeries(transfers);
         if (configured) {
-            chart.ConfigureChord(options => {
+            chart.Chord(options => {
                 options.StartAngleDegrees = -120; options.SweepAngleDegrees = 300;
                 options.NodeGapDegrees = 5; options.NodeThicknessRatio = .09; options.RibbonOpacity = .45;
                 options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             });
-            transfers.WithNodeState("north-support", ChartSeriesState.Warning)
-                .WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+            transfers.NodeState("north-support", ChartSeriesState.Warning)
+                .FlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
                     fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
-                .WithFlowState("north-priority", ChartSeriesState.Warning).WithFlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
+                .FlowState("north-priority", ChartSeriesState.Warning).FlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
         }
         if (variant is "color-dimension" or "compact-color-dimension") {
             // Illustrative measurements color the existing transfers; they are not additional flow weights.
@@ -58,7 +58,7 @@ public static class ChordRecipe {
             transfers.ReplaceFlowData(transfers.Nodes, transfers.FlowLinks.Select((flow, index) =>
                 new ChartFlowLink(flow.Id, flow.SourceId, flow.TargetId, flow.Value, latency[index])));
             transfers.ShowInLegend = false;
-            chart.WithLegend(true).ConfigureLabels(labels => labels.NoData = "Not sampled").ConfigureChord(options => {
+            chart.Legend(true).Labels(labels => labels.NoData = "Not sampled").Chord(options => {
                 options.ColorScale = ChartColorScale.Sequential(new[] {
                     new ChartColorStop(0, ChartColor.FromHex("#2166AC")), new ChartColorStop(50, ChartColor.FromHex("#67A9CF")),
                     new ChartColorStop(150, ChartColor.FromHex("#D9A441")), new ChartColorStop(240, ChartColor.FromHex("#B2182B"))

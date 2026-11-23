@@ -20,14 +20,13 @@ var theme = VisualTheme.Graphite();
 
 var series = new ChartSeries(new ChartSeriesId("assessments"), "Completed assessments", ChartSeriesKind.Pictorial,
     new[] { new ChartPoint(1, 2.5), new ChartPoint(2, 1.25), new ChartPoint(3, .75) })
-    .WithObservationId(0, new ChartObservationId("team-a")).WithObservationId(1, new ChartObservationId("team-b"))
-    .WithObservationId(2, new ChartObservationId("team-c"));
-var chart = Chart.Create().WithSize(900, 460).WithTheme(VisualTheme.Graphite(), mode)
-    .WithTitle("Completed assessments by team").WithLegend(false).WithAxes(false).WithGrid(false)
-    .WithXLabels("Team A", "Team B", "Team C").WithPictorialColumns(4).WithPictorialValuePerSymbol(1)
-    .WithPictorialSvgPath("M1 1H23V23H1Z M8 8V16H16V8Z").WithPictorialEmptyOpacity(.16)
-    .WithValueFormat(ChartValueFormat.Number("0.##' units'", CultureInfo.InvariantCulture)).AddSeries(series);
-chart.WithPictorialFillDirection(ChartPictorialFillDirection.BottomToTop);
+    .ObservationId(0, new ChartObservationId("team-a")).ObservationId(1, new ChartObservationId("team-b"))
+    .ObservationId(2, new ChartObservationId("team-c"));
+var chart = Chart.Create().Size(900, 460).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+    .Title("Completed assessments by team").Legend(false).Axes(false).ShowGrid(false)
+    .XLabels("Team A", "Team B", "Team C").Pictorial(p => p.Columns(4).ValuePerSymbol(1).SvgPath("M1 1H23V23H1Z M8 8V16H16V8Z").EmptyOpacity(.16))
+    .ValueFormat(ChartValueFormat.Number("0.##' units'", CultureInfo.InvariantCulture)).AddSeries(series);
+chart.Pictorial(p => p.FillDirection(ChartPictorialFillDirection.BottomToTop));
 
 #region Output
 var context = new VisualRenderContext(

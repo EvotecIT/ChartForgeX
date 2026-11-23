@@ -49,11 +49,11 @@ public static class SankeyOptionsRecipe {
             requests.ReplaceFlowData(requests.Nodes, requests.FlowLinks.Select((link, index) =>
                 new ChartFlowLink(link.Id, link.SourceId, link.TargetId, link.Value, latency[index])));
         }
-        requests.WithNodeState("north-support", ChartSeriesState.Warning).WithPointColor(0, ChartColor.FromHex("#7356BD"))
-            .WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+        requests.NodeState("north-support", ChartSeriesState.Warning).PointColor(0, ChartColor.FromHex("#7356BD"))
+            .FlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
                 fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
-            .WithFlowState("north-priority", ChartSeriesState.Warning);
-        var chart = Chart.Create().AddSeries(requests).ConfigureSankey(options => {
+            .FlowState("north-priority", ChartSeriesState.Warning);
+        var chart = Chart.Create().AddSeries(requests).Sankey(options => {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
@@ -63,7 +63,7 @@ public static class SankeyOptionsRecipe {
             options.RibbonFill = ChartColor.FromHex("#607DAA"); options.RibbonOpacity = .45;
         });
         if (variant.EndsWith("source-colors", StringComparison.Ordinal) || variant.EndsWith("target-colors", StringComparison.Ordinal) || quantitative) {
-            chart.ConfigureSankey(options => {
+            chart.Sankey(options => {
                 options.RibbonFill = null; // Let the selected endpoint or measurement policy supply ribbon paint.
                 options.FlowColorMode = quantitative ? ChartSankeyFlowColorMode.Quantitative
                     : variant.EndsWith("target-colors", StringComparison.Ordinal) ? ChartSankeyFlowColorMode.Target : ChartSankeyFlowColorMode.Source;
@@ -75,7 +75,7 @@ public static class SankeyOptionsRecipe {
                     options.ColorDimension.LegendStyle = ChartColorLegendStyle.Gradient;
                 }
             });
-            if (quantitative) chart.WithLegend(true).ConfigureLabels(labels => labels.NoData = "Not sampled");
+            if (quantitative) chart.Legend(true).Labels(labels => labels.NoData = "Not sampled");
         }
         return chart;
     }

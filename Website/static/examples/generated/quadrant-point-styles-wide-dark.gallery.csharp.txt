@@ -38,24 +38,24 @@ public static class QuadrantPointStylesRecipe {
         });
         var labels = new[] { "Opportunity", "Investment", "Experiment", "Review" };
         for (var index = 0; index < labels.Length; index++)
-            observations.WithObservationId(index, new ChartObservationId(labels[index].ToLowerInvariant())).WithPointLabel(index, labels[index]);
-        observations.ConfigureMarkers(marker => { marker.Radius = 5; marker.StrokeWidth = 0; });
-        observations.ConfigurePointMarkers(0, marker => {
+            observations.ObservationId(index, new ChartObservationId(labels[index].ToLowerInvariant())).PointLabel(index, labels[index]);
+        observations.Markers(marker => { marker.Radius = 5; marker.StrokeWidth = 0; });
+        observations.PointMarkers(0, marker => {
             marker.Radius = 9; marker.Fill = ChartColor.FromHex("#B45309");
             marker.Stroke = ChartColor.FromHex("#7C2D12"); marker.StrokeWidth = 2;
         });
-        observations.ConfigurePointMarkers(1, marker => {
+        observations.PointMarkers(1, marker => {
             marker.Radius = 7; marker.Fill = ChartColor.FromHex("#0369A1");
             marker.Stroke = ChartColor.FromHex("#075985"); marker.StrokeWidth = 1;
         });
-        observations.ConfigurePointMarkers(2, marker => { marker.Radius = 6; marker.Fill = ChartColor.FromHex("#7C3AED"); });
-        var chart = Chart.Create().WithSize(variant == "compact" ? 390 : 800, 500)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Native work priorities")
-            .WithSubtitle("One source series, independent marker options and endpoint captions")
-            .WithLegend(false).WithGrid(false).WithDataLabels().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
+        observations.PointMarkers(2, marker => { marker.Radius = 6; marker.Fill = ChartColor.FromHex("#7C3AED"); });
+        var chart = Chart.Create().Size(variant == "compact" ? 390 : 800, 500)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Native work priorities")
+            .Subtitle("One source series, independent marker options and endpoint captions")
+            .Legend(false).ShowGrid(false).DataLabels().XAxis(x => x.Bounds(0, 1)).YAxis(y => y.Bounds(0, 1))
             .AddSeries(observations);
-        chart.ConfigureXAxis(axis => { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, "Low effort")); axis.Labels.Add(new ChartAxisLabel(.75, "High effort")); });
-        chart.ConfigureYAxis(axis => { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, "Low impact")); axis.Labels.Add(new ChartAxisLabel(.75, "High impact")); });
+        chart.XAxis(axis => { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, "Low effort")); axis.Labels.Add(new ChartAxisLabel(.75, "High effort")); });
+        chart.YAxis(axis => { axis.TickCount = 2; axis.Labels.Add(new ChartAxisLabel(.25, "Low impact")); axis.Labels.Add(new ChartAxisLabel(.75, "High impact")); });
         chart.AddPlotRegion(new ChartPlotRegion(0, xMinimum: .5, yMinimum: .5, label: "Plan"))
             .AddPlotRegion(new ChartPlotRegion(1, xMaximum: .5, yMinimum: .5, label: "Prioritize"))
             .AddPlotRegion(new ChartPlotRegion(2, xMaximum: .5, yMaximum: .5, label: "Consider"))

@@ -18,17 +18,17 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithSize(900, 560)
-    .WithTitle("Service intake across two periods").WithSubtitle("Caption leaders retain their own ring and observation")
-    .WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Consulting", "Subscriptions")
-    .WithDataLabels().WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
+var chart = Chart.Create().Size(900, 560)
+    .Title("Service intake across two periods").Subtitle("Caption leaders retain their own ring and observation")
+    .Theme(VisualTheme.Graphite()).ThemeMode(mode).XLabels("Consulting", "Subscriptions")
+    .DataLabels().Pie(p => p.ShowCenterLabel(false).SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent));
 for (var index = 0; index < 2; index++) {
     var values = index == 0 ? new[] { 60d, 30 } : new[] { 40d, 80 };
     var series = new ChartSeries(new ChartSeriesId(index == 0 ? "prior" : "current"), index == 0 ? "Prior period" : "Current period", ChartSeriesKind.Donut,
         values.Select((value, category) => new ChartPoint(category + 1, value)))
-        .WithObservationIds(new[] { new ChartObservationId("consulting"), new ChartObservationId("subscriptions") })
-        .WithPointSliceOffset(index, index == 0 ? .16 : .1);
-series.WithRadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
+        .ObservationIds(new[] { new ChartObservationId("consulting"), new ChartObservationId("subscriptions") })
+        .PointSliceOffset(index, index == 0 ? .16 : .1);
+series.RadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
     series.DataLabelPlacement = ChartDataLabelPlacement.Outside;
     chart.AddSeries(series);
 }

@@ -117,14 +117,14 @@ public static class SankeyPaintRecipe {
             new ChartFlowLink(&quot;standard&quot;, &quot;received&quot;, &quot;review&quot;, 60),
             new ChartFlowLink(&quot;priority&quot;, &quot;received&quot;, &quot;review&quot;, 20),
             new ChartFlowLink(&quot;delivered&quot;, &quot;review&quot;, &quot;ready&quot;, 80)
-        }).ConfigureSankey(options =&gt; {
+        }).Sankey(options =&gt; {
             options.FlowColorMode = ChartSankeyFlowColorMode.Gradient;
             options.LabelStyle = ChartSankeyLabelStyle.Outlined;
             options.RibbonOpacity = .6; options.NodeWidth = 16;
-        }).WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex(&quot;#2864B4&quot;))
-            .WithPointColor(1, ChartColor.FromHex(&quot;#BB6428&quot;)).WithPointColor(2, ChartColor.FromHex(&quot;#279473&quot;))
-            .WithFlowStyle(&quot;priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#7954AA&quot;), fillOpacity: .75));
+        }).ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        chart.Series[0].PointColor(0, ChartColor.FromHex(&quot;#2864B4&quot;))
+            .PointColor(1, ChartColor.FromHex(&quot;#BB6428&quot;)).PointColor(2, ChartColor.FromHex(&quot;#279473&quot;))
+            .FlowStyle(&quot;priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#7954AA&quot;), fillOpacity: .75));
         return chart;
     }
 }
@@ -165,14 +165,14 @@ public static class SankeyPaintRecipe {
             new ChartFlowLink(&quot;standard&quot;, &quot;received&quot;, &quot;review&quot;, 60),
             new ChartFlowLink(&quot;priority&quot;, &quot;received&quot;, &quot;review&quot;, 20),
             new ChartFlowLink(&quot;delivered&quot;, &quot;review&quot;, &quot;ready&quot;, 80)
-        }).ConfigureSankey(options =&gt; {
+        }).Sankey(options =&gt; {
             options.FlowColorMode = ChartSankeyFlowColorMode.Gradient;
             options.LabelStyle = ChartSankeyLabelStyle.Outlined;
             options.RibbonOpacity = .6; options.NodeWidth = 16;
-        }).WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex(&quot;#2864B4&quot;))
-            .WithPointColor(1, ChartColor.FromHex(&quot;#BB6428&quot;)).WithPointColor(2, ChartColor.FromHex(&quot;#279473&quot;))
-            .WithFlowStyle(&quot;priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#7954AA&quot;), fillOpacity: .75));
+        }).ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        chart.Series[0].PointColor(0, ChartColor.FromHex(&quot;#2864B4&quot;))
+            .PointColor(1, ChartColor.FromHex(&quot;#BB6428&quot;)).PointColor(2, ChartColor.FromHex(&quot;#279473&quot;))
+            .FlowStyle(&quot;priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#7954AA&quot;), fillOpacity: .75));
         return chart;
     }
 }

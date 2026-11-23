@@ -18,7 +18,7 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = SequenceArtifact.Create("session").WithSize(600, 375)
+var chart = SequenceArtifact.Create("session").Width(600).Height(375)
     .AddParticipant("client", "Client")
     .AddParticipant("server", "Server")
     .AddMessage("client", "server", "Request\npayload")

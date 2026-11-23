@@ -33,12 +33,10 @@ public static class HeatmapPositionedColorScaleRecipe {
         if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var values = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
-        return Chart.Create().WithXLabels("A", "B", "C", "D", "E", "F")
+        return Chart.Create().XLabels("A", "B", "C", "D", "E", "F")
             .AddHeatmapRow("Primary", values.Take(6), id: new ChartSeriesId("primary-measurements"))
             .AddHeatmapRow("Secondary", values.Skip(6), id: new ChartSeriesId("secondary-measurements"))
-            .WithHeatmapColorScale(TemperatureScale().WithNoDataColor(colors.Border))
-            .WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels();
+            .Heatmap(h => h.ColorScale(TemperatureScale().WithNoDataColor(colors.Border)).CellGap(3).CellRadius(3).ValueTextMode(ChartHeatmapValueTextMode.Auto)).DataLabels();
     }
 
     private static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {

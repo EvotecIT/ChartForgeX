@@ -21,8 +21,8 @@ var theme = VisualTheme.Graphite();
 var count = 5;
 var changes = Enumerable.Range(1, count).Select(index => new ChartDumbbell(index, 20 + index * 2, 40 + index * 3));
 var change = ChartSeries.CreateDumbbell(new ChartSeriesId("change"), "Change", changes);
-change.WithPointLabel(2, "Premium regional service capacity").WithDataLabels();
-var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(change);
+change.PointLabel(2, "Premium regional service capacity").ShowDataLabels(true);
+var chart = Chart.Create().XLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(change);
 
 #region Output
 var context = new VisualRenderContext(

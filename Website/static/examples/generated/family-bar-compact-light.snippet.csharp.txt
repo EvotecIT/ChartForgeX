@@ -22,7 +22,7 @@ var chart = Chart.Create();
 // Completed orders per region, this year against last year.
 var lastYear = new[] { 1240d, 980, 1460, 1720, 860, 2140 };
 var thisYear = new[] { 1380d, 1050, 1390, 1940, 1010, 2710 };
-chart.WithXLabels("North", "South", "East", "West", "Central", "Online").WithYAxis("Orders")
+chart.XLabels("North", "South", "East", "West", "Central", "Online").YAxis(y => y.Title("Orders"))
     .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("last-year"), "2025", lastYear.Select((value, index) => new ChartPoint(index + 1, value))))
     .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "2026", thisYear.Select((value, index) => new ChartPoint(index + 1, value))));
 

@@ -18,10 +18,10 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithTitle("One observed comparison")
+var chart = Chart.Create().Title("One observed comparison")
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", new[] { new ChartDifferencePoint(0, 0, 7) })
-                .WithObservationId(0, new ChartObservationId("only-comparison"))
-                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; }));
+                .ObservationId(0, new ChartObservationId("only-comparison"))
+                .DifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; }));
 
 #region Output
 var context = new VisualRenderContext(

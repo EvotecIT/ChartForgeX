@@ -113,8 +113,8 @@ public static class SequenceLayoutTypographyRecipe {
     /// &lt;summary&gt;Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-layout&quot;).WithSize(variant==&quot;compact&quot;?390:1000,620)
-            .WithTitle(&quot;Measured review sequence&quot;).WithSubtitle(&quot;Each role retains its own font and source identity&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-layout&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(620)
+            .Title(&quot;Measured review sequence&quot;).Subtitle(&quot;Each role retains its own font and source identity&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddParticipant(&quot;B&quot;,&quot;Store&quot;)
             .AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save&quot;).AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Ready&quot;,SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return)
             .AddBlock(SequenceArtifactBlockKind.Alt,&quot;Accepted&quot;,0,1).AddActivation(&quot;B&quot;,true,0).AddActivation(&quot;B&quot;,false,2)
@@ -160,8 +160,8 @@ public static class SequenceLayoutTypographyRecipe {
     /// &lt;summary&gt;Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-layout&quot;).WithSize(variant==&quot;compact&quot;?390:1000,620)
-            .WithTitle(&quot;Measured review sequence&quot;).WithSubtitle(&quot;Each role retains its own font and source identity&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-layout&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(620)
+            .Title(&quot;Measured review sequence&quot;).Subtitle(&quot;Each role retains its own font and source identity&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddParticipant(&quot;B&quot;,&quot;Store&quot;)
             .AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save&quot;).AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Ready&quot;,SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return)
             .AddBlock(SequenceArtifactBlockKind.Alt,&quot;Accepted&quot;,0,1).AddActivation(&quot;B&quot;,true,0).AddActivation(&quot;B&quot;,false,2)

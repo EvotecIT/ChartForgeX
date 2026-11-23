@@ -21,7 +21,7 @@ var theme = VisualTheme.Graphite();
 
 var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Polar,
     Enumerable.Range(0, 6).Select(index => new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
-var chart = Chart.Create().AddSeries(observed).ConfigureXAxis(axis => axis.LabelFormatter = Degrees);
+var chart = Chart.Create().AddSeries(observed).XAxis(axis => axis.LabelFormatter = Degrees);
 
 #region Output
 var context = new VisualRenderContext(

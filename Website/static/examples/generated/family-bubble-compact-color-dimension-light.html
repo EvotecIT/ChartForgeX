@@ -123,21 +123,21 @@ public static class BubbleColorDimensionRecipe {
         var sizes = new[] { 9d, 36, 81, 49, 25 };
         var recorded = ChartSeries.CreateBubble(new ChartSeriesId(&quot;recorded-batches&quot;), &quot;Recorded batches&quot;, temperatures.Select((value, index) =&gt;
             new ChartBubble((index + 1) * 16, minutes[index], sizes[index]).WithColorValue(value)));
-        recorded.WithColorScale(ChartColorScale.Discrete(new[] {
+        recorded.ColorScale(ChartColorScale.Discrete(new[] {
                 new ChartColorBand(0, colors.Palette[0], &quot;Cold&quot;),
                 new ChartColorBand(15, colors.Status.Medium.Fill, &quot;Mild&quot;),
                 new ChartColorBand(null, colors.Status.Critical.Fill, &quot;Warm&quot;)
-            }).WithNoDataColor(colors.Border)).ConfigureColorDimension(options =&gt; {
+            }).WithNoDataColor(colors.Border)).ColorDimension(options =&gt; {
                 options.Name = &quot;Temperature&quot;;
                 options.ValueFormat = ChartValueFormat.Number(&quot;#,0.### &#39;&#176;C&#39;&quot;, CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Auto;
             });
-        return NumericAxes().ConfigureLabels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0.0 &#39;min&#39;&quot;, CultureInfo.InvariantCulture)).AddSeries(recorded);
+        return NumericAxes().Labels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
+            .ValueFormat(ChartValueFormat.Number(&quot;0.0 &#39;min&#39;&quot;, CultureInfo.InvariantCulture)).AddSeries(recorded);
     }
 
-    private static Chart NumericAxes() =&gt; Chart.Create().WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
-        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+    private static Chart NumericAxes() =&gt; Chart.Create().XAxis(x =&gt; x.Title(&quot;Batch size (items)&quot;)).YAxis(y =&gt; y.Title(&quot;Processing time (minutes)&quot;))
+        .XAxis(x =&gt; x.Bounds(0, 100)).YAxis(y =&gt; y.Bounds(0, 60)).DataLabels(false);
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
 using System;
@@ -182,21 +182,21 @@ public static class BubbleColorDimensionRecipe {
         var sizes = new[] { 9d, 36, 81, 49, 25 };
         var recorded = ChartSeries.CreateBubble(new ChartSeriesId(&quot;recorded-batches&quot;), &quot;Recorded batches&quot;, temperatures.Select((value, index) =&gt;
             new ChartBubble((index + 1) * 16, minutes[index], sizes[index]).WithColorValue(value)));
-        recorded.WithColorScale(ChartColorScale.Discrete(new[] {
+        recorded.ColorScale(ChartColorScale.Discrete(new[] {
                 new ChartColorBand(0, colors.Palette[0], &quot;Cold&quot;),
                 new ChartColorBand(15, colors.Status.Medium.Fill, &quot;Mild&quot;),
                 new ChartColorBand(null, colors.Status.Critical.Fill, &quot;Warm&quot;)
-            }).WithNoDataColor(colors.Border)).ConfigureColorDimension(options =&gt; {
+            }).WithNoDataColor(colors.Border)).ColorDimension(options =&gt; {
                 options.Name = &quot;Temperature&quot;;
                 options.ValueFormat = ChartValueFormat.Number(&quot;#,0.### &#39;&#176;C&#39;&quot;, CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Auto;
             });
-        return NumericAxes().ConfigureLabels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0.0 &#39;min&#39;&quot;, CultureInfo.InvariantCulture)).AddSeries(recorded);
+        return NumericAxes().Labels(labels =&gt; labels.NoData = &quot;Not sampled&quot;)
+            .ValueFormat(ChartValueFormat.Number(&quot;0.0 &#39;min&#39;&quot;, CultureInfo.InvariantCulture)).AddSeries(recorded);
     }
 
-    private static Chart NumericAxes() =&gt; Chart.Create().WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
-        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+    private static Chart NumericAxes() =&gt; Chart.Create().XAxis(x =&gt; x.Title(&quot;Batch size (items)&quot;)).YAxis(y =&gt; y.Title(&quot;Processing time (minutes)&quot;))
+        .XAxis(x =&gt; x.Bounds(0, 100)).YAxis(y =&gt; y.Bounds(0, 60)).DataLabels(false);
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
     'use strict';

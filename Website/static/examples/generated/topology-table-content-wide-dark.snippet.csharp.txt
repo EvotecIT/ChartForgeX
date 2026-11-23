@@ -19,11 +19,11 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = TopologyChart.Create().WithId("linked-table-content").WithTitle("Approve a captured release")
-    .WithSubtitle("The source table remains part of its graph vertex")
-    .WithTheme(VisualTheme.Graphite(), mode).WithViewport(1000, 680, 24)
-    .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
-chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
+var chart = TopologyChart.Create().Id("linked-table-content").Title("Approve a captured release")
+    .Subtitle("The source table remains part of its graph vertex")
+    .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(1000, 680, 24))
+    .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight);
+chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
 chart.AddAutoNode("User", "Release coordinator", width: 180, height: 90);
 chart.AddAutoNode("Publish", "Approve release", width: 180, height: 70);
 chart.AddAutoNode("Details", "Details", width: 220, height: 130);

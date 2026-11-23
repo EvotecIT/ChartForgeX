@@ -118,7 +118,7 @@ public static class BubbleRecipe {
 
     // Batch size in items, median processing time in minutes and requests handled during the week.
     private static Chart RequestVolume() =&gt; Chart.Create()
-        .WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+        .XAxis(x =&gt; x.Title(&quot;Batch size (items)&quot;)).YAxis(y =&gt; y.Title(&quot;Processing time (minutes)&quot;))
         .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId(&quot;standard&quot;), &quot;Standard&quot;, new[] {
             new ChartBubble(40, 18, 320), new ChartBubble(80, 26, 540), new ChartBubble(120, 31, 410),
             new ChartBubble(160, 39, 620), new ChartBubble(220, 47, 380), new ChartBubble(280, 58, 260) }))
@@ -132,8 +132,8 @@ public static class BubbleRecipe {
     private static Chart Sparse() {
         var requests = ChartSeries.CreateBubble(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;,
             Enumerable.Range(1, 2).Select(index =&gt; new ChartBubble(index, 20 + index * 5, index * index + 1)));
-        return Chart.Create().WithXLabels(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;)
-            .WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddSeries(requests);
+        return Chart.Create().XLabels(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;)
+            .XAxis(x =&gt; x.Title(&quot;Workload batches&quot;)).YAxis(y =&gt; y.Title(&quot;Time (minutes)&quot;)).AddSeries(requests);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -174,7 +174,7 @@ public static class BubbleRecipe {
 
     // Batch size in items, median processing time in minutes and requests handled during the week.
     private static Chart RequestVolume() =&gt; Chart.Create()
-        .WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+        .XAxis(x =&gt; x.Title(&quot;Batch size (items)&quot;)).YAxis(y =&gt; y.Title(&quot;Processing time (minutes)&quot;))
         .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId(&quot;standard&quot;), &quot;Standard&quot;, new[] {
             new ChartBubble(40, 18, 320), new ChartBubble(80, 26, 540), new ChartBubble(120, 31, 410),
             new ChartBubble(160, 39, 620), new ChartBubble(220, 47, 380), new ChartBubble(280, 58, 260) }))
@@ -188,8 +188,8 @@ public static class BubbleRecipe {
     private static Chart Sparse() {
         var requests = ChartSeries.CreateBubble(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;,
             Enumerable.Range(1, 2).Select(index =&gt; new ChartBubble(index, 20 + index * 5, index * index + 1)));
-        return Chart.Create().WithXLabels(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;)
-            .WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddSeries(requests);
+        return Chart.Create().XLabels(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;)
+            .XAxis(x =&gt; x.Title(&quot;Workload batches&quot;)).YAxis(y =&gt; y.Title(&quot;Time (minutes)&quot;)).AddSeries(requests);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

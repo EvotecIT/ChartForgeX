@@ -22,8 +22,8 @@ var chart = Chart.Create();
 var expected = ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range", new[] {
     new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50), new ChartRangeBand(3, 20, 40),
     new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55)
-}).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
-chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Expected level").AddSeries(expected);
+}).Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri").YAxis(y => y.Title("Expected level")).AddSeries(expected);
 
 #region Output
 var context = new VisualRenderContext(

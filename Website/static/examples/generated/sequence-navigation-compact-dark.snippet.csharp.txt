@@ -18,7 +18,7 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model=SequenceArtifact.Create("sequence-navigation").WithSize(390,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");
+var model=SequenceArtifact.Create("sequence-navigation").Width(390).Height(820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");
 model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8);
 model.Participants[0].NavigationLinks=new[]{new VisualNavigationLink("Guide","#guide"),new VisualNavigationLink("Status","#status")};
 model.ThemeMode=mode;

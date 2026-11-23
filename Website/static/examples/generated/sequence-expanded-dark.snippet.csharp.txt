@@ -18,7 +18,7 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model = SequenceArtifact.Create("request-sequence").WithSize(800, 633)
+var model = SequenceArtifact.Create("request-sequence").Width(800).Height(633)
     .AddParticipant("client", "Client", SequenceArtifactParticipantKind.Actor)
     .AddParticipant("service", "Service", SequenceArtifactParticipantKind.Control)
     .AddParticipant("store", "Store", SequenceArtifactParticipantKind.Database)

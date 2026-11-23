@@ -18,12 +18,12 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithDataLabels();
+var chart = Chart.Create().DataLabels();
 var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel, new[] {
     new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0)
 });
-chart.WithXLabels("Received", "Reviewed", "Qualified", "Completed").AddSeries(requests)
-    .ConfigureFunnel(options => {
+chart.XLabels("Received", "Reviewed", "Qualified", "Completed").AddSeries(requests)
+    .Funnel(options => {
         options.Form = ChartFunnelForm.Cone;
         options.Orientation = ChartOrientation.Horizontal;
     });

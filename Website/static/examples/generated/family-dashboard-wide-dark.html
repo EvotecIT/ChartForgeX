@@ -113,26 +113,26 @@ public static class OperationsDashboardRecipe {
     public static ChartGrid Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var weeks = Enumerable.Range(1, 12).ToArray();
-        var trend = Chart.Create().WithTitle(&quot;Tickets per week&quot;).WithSubtitle(&quot;Opened against resolved&quot;)
-            .WithXLabels(weeks.Select(week =&gt; &quot;W&quot; + week).ToArray())
+        var trend = Chart.Create().Title(&quot;Tickets per week&quot;).Subtitle(&quot;Opened against resolved&quot;)
+            .XLabels(weeks.Select(week =&gt; &quot;W&quot; + week).ToArray())
             .AddSeries(ChartSeries.CreateArea(new ChartSeriesId(&quot;opened&quot;), &quot;Opened&quot;,
                 weeks.Select(week =&gt; new ChartPoint(week, Math.Round(420 + Math.Sin(week * .8) * 60 + week * 6)))))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId(&quot;resolved&quot;), &quot;Resolved&quot;,
                 weeks.Select(week =&gt; new ChartPoint(week, Math.Round(400 + Math.Sin(week * .8 - .6) * 55 + week * 9)))));
-        var channels = Chart.Create().WithTitle(&quot;Tickets by channel&quot;).WithSubtitle(&quot;This quarter&quot;)
-            .WithXLabels(&quot;Portal&quot;, &quot;Email&quot;, &quot;Phone&quot;, &quot;Chat&quot;)
+        var channels = Chart.Create().Title(&quot;Tickets by channel&quot;).Subtitle(&quot;This quarter&quot;)
+            .XLabels(&quot;Portal&quot;, &quot;Email&quot;, &quot;Phone&quot;, &quot;Chat&quot;)
             .AddDonut(&quot;Tickets&quot;, new[] { new ChartPoint(1, 2430), new ChartPoint(2, 1320), new ChartPoint(3, 870), new ChartPoint(4, 640) });
         var hours = new[] { &quot;08&quot;, &quot;10&quot;, &quot;12&quot;, &quot;14&quot;, &quot;16&quot;, &quot;18&quot; };
         var days = new[] { &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot; };
-        var load = Chart.Create().WithTitle(&quot;Calls by hour&quot;).WithSubtitle(&quot;Average per weekday&quot;).WithXLabels(hours)
+        var load = Chart.Create().Title(&quot;Calls by hour&quot;).Subtitle(&quot;Average per weekday&quot;).XLabels(hours)
             .AddHeatmapRows(days, days.Select((day, d) =&gt; hours.Select((hour, h) =&gt; Math.Round(42 + 24 * Math.Sin((h + 1) * .9) + (d == 0 ? 12 : 0) - d * 3))))
-            .ConfigureHeatmapColorDimension(dimension =&gt; dimension.ShowLegend = false);
-        var sla = Chart.Create().WithTitle(&quot;Resolved within SLA&quot;).WithSubtitle(&quot;Target 95%&quot;)
+            .Heatmap(heatmap =&gt; heatmap.ColorDimension(dimension =&gt; dimension.ShowLegend = false));
+        var sla = Chart.Create().Title(&quot;Resolved within SLA&quot;).Subtitle(&quot;Target 95%&quot;)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId(&quot;sla&quot;), &quot;Within SLA&quot;,
                 new ChartGaugeValue(92.4, targets: new[] { new ChartGaugeTarget(95) })));
         var compact = variant == &quot;compact&quot;;
-        var grid = ChartGrid.Create().WithThemeMode(mode).WithColumns(compact ? 1 : 3).WithGap(16)
-            .WithPanelSize(compact ? 360 : 320, 260).WithPanelFit(VisualPanelFit.Stretch);
+        var grid = ChartGrid.Create().ThemeMode(mode).Columns(compact ? 1 : 3).Gap(16)
+            .PanelSize(compact ? 360 : 320, 260).PanelFit(VisualPanelFit.Stretch);
         return compact ? grid.Add(trend).Add(channels).Add(sla)
             : grid.Add(trend, 2).Add(channels).Add(load, 2).Add(sla);
     }
@@ -170,26 +170,26 @@ public static class OperationsDashboardRecipe {
     public static ChartGrid Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var weeks = Enumerable.Range(1, 12).ToArray();
-        var trend = Chart.Create().WithTitle(&quot;Tickets per week&quot;).WithSubtitle(&quot;Opened against resolved&quot;)
-            .WithXLabels(weeks.Select(week =&gt; &quot;W&quot; + week).ToArray())
+        var trend = Chart.Create().Title(&quot;Tickets per week&quot;).Subtitle(&quot;Opened against resolved&quot;)
+            .XLabels(weeks.Select(week =&gt; &quot;W&quot; + week).ToArray())
             .AddSeries(ChartSeries.CreateArea(new ChartSeriesId(&quot;opened&quot;), &quot;Opened&quot;,
                 weeks.Select(week =&gt; new ChartPoint(week, Math.Round(420 + Math.Sin(week * .8) * 60 + week * 6)))))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId(&quot;resolved&quot;), &quot;Resolved&quot;,
                 weeks.Select(week =&gt; new ChartPoint(week, Math.Round(400 + Math.Sin(week * .8 - .6) * 55 + week * 9)))));
-        var channels = Chart.Create().WithTitle(&quot;Tickets by channel&quot;).WithSubtitle(&quot;This quarter&quot;)
-            .WithXLabels(&quot;Portal&quot;, &quot;Email&quot;, &quot;Phone&quot;, &quot;Chat&quot;)
+        var channels = Chart.Create().Title(&quot;Tickets by channel&quot;).Subtitle(&quot;This quarter&quot;)
+            .XLabels(&quot;Portal&quot;, &quot;Email&quot;, &quot;Phone&quot;, &quot;Chat&quot;)
             .AddDonut(&quot;Tickets&quot;, new[] { new ChartPoint(1, 2430), new ChartPoint(2, 1320), new ChartPoint(3, 870), new ChartPoint(4, 640) });
         var hours = new[] { &quot;08&quot;, &quot;10&quot;, &quot;12&quot;, &quot;14&quot;, &quot;16&quot;, &quot;18&quot; };
         var days = new[] { &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot; };
-        var load = Chart.Create().WithTitle(&quot;Calls by hour&quot;).WithSubtitle(&quot;Average per weekday&quot;).WithXLabels(hours)
+        var load = Chart.Create().Title(&quot;Calls by hour&quot;).Subtitle(&quot;Average per weekday&quot;).XLabels(hours)
             .AddHeatmapRows(days, days.Select((day, d) =&gt; hours.Select((hour, h) =&gt; Math.Round(42 + 24 * Math.Sin((h + 1) * .9) + (d == 0 ? 12 : 0) - d * 3))))
-            .ConfigureHeatmapColorDimension(dimension =&gt; dimension.ShowLegend = false);
-        var sla = Chart.Create().WithTitle(&quot;Resolved within SLA&quot;).WithSubtitle(&quot;Target 95%&quot;)
+            .Heatmap(heatmap =&gt; heatmap.ColorDimension(dimension =&gt; dimension.ShowLegend = false));
+        var sla = Chart.Create().Title(&quot;Resolved within SLA&quot;).Subtitle(&quot;Target 95%&quot;)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId(&quot;sla&quot;), &quot;Within SLA&quot;,
                 new ChartGaugeValue(92.4, targets: new[] { new ChartGaugeTarget(95) })));
         var compact = variant == &quot;compact&quot;;
-        var grid = ChartGrid.Create().WithThemeMode(mode).WithColumns(compact ? 1 : 3).WithGap(16)
-            .WithPanelSize(compact ? 360 : 320, 260).WithPanelFit(VisualPanelFit.Stretch);
+        var grid = ChartGrid.Create().ThemeMode(mode).Columns(compact ? 1 : 3).Gap(16)
+            .PanelSize(compact ? 360 : 320, 260).PanelFit(VisualPanelFit.Stretch);
         return compact ? grid.Add(trend).Add(channels).Add(sla)
             : grid.Add(trend, 2).Add(channels).Add(load, 2).Add(sla);
     }

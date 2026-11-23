@@ -114,14 +114,14 @@ public static class HexbinHeatmapColorScaleRecipe {
     public static Chart Create(string variant = &quot;color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).WithDataLabels()
+        return Chart.Create().XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).DataLabels()
             .AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 0, 30, 40, null, 80, 100 }, id: new ChartSeriesId(&quot;primary-measurements&quot;))
             .AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 15, 40, 60, 80, null, 120 }, id: new ChartSeriesId(&quot;secondary-measurements&quot;))
-            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+            .Heatmap(h =&gt; h.ColorScale(ChartColorScale.Discrete(new[] {
                 new ChartColorBand(40, colors.SequentialRamp[0], &quot;Low&quot;),
                 new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], &quot;Medium&quot;),
                 new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], &quot;High&quot;)
-            }));
+            })));
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -158,14 +158,14 @@ public static class HexbinHeatmapColorScaleRecipe {
     public static Chart Create(string variant = &quot;color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).WithDataLabels()
+        return Chart.Create().XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).DataLabels()
             .AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 0, 30, 40, null, 80, 100 }, id: new ChartSeriesId(&quot;primary-measurements&quot;))
             .AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 15, 40, 60, 80, null, 120 }, id: new ChartSeriesId(&quot;secondary-measurements&quot;))
-            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+            .Heatmap(h =&gt; h.ColorScale(ChartColorScale.Discrete(new[] {
                 new ChartColorBand(40, colors.SequentialRamp[0], &quot;Low&quot;),
                 new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], &quot;Medium&quot;),
                 new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], &quot;High&quot;)
-            }));
+            })));
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

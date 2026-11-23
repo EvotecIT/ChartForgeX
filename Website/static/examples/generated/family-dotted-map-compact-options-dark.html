@@ -115,7 +115,7 @@ public static class DottedMapRecipe {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
 
-        var chart = Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().DataLabels().Map(m =&gt; m.Viewport(ChartMapViewport.Europe()))
             .AddDottedMap(&quot;Locations&quot;, new[] {
                 new ChartMapPoint(&quot;Madrid&quot;, -3.7, 40.4, 18),
                 new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2, 74),
@@ -127,7 +127,7 @@ public static class DottedMapRecipe {
                 new ChartMapPoint(&quot;Baltic&quot;, 17, 56),
                 new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9)
             });
-        if (variant is &quot;options&quot; or &quot;compact-options&quot;) chart.WithPointLegend();
+        if (variant is &quot;options&quot; or &quot;compact-options&quot;) chart.Legend(l =&gt; l.ShowPoints());
         return chart;
     }
 }
@@ -166,7 +166,7 @@ public static class DottedMapRecipe {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
 
-        var chart = Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().DataLabels().Map(m =&gt; m.Viewport(ChartMapViewport.Europe()))
             .AddDottedMap(&quot;Locations&quot;, new[] {
                 new ChartMapPoint(&quot;Madrid&quot;, -3.7, 40.4, 18),
                 new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2, 74),
@@ -178,7 +178,7 @@ public static class DottedMapRecipe {
                 new ChartMapPoint(&quot;Baltic&quot;, 17, 56),
                 new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9)
             });
-        if (variant is &quot;options&quot; or &quot;compact-options&quot;) chart.WithPointLegend();
+        if (variant is &quot;options&quot; or &quot;compact-options&quot;) chart.Legend(l =&gt; l.ShowPoints());
         return chart;
     }
 }

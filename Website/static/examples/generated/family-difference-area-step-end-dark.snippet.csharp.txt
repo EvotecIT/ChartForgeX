@@ -23,15 +23,15 @@ var actual = new[] { 42d, 68, 78, 60, 74, 46, 62 };
 var forecast = new[] { 56d, 54, 62, 60, 58, 64, 50 };
 var pairs = new ChartDifferencePoint[actual.Length];
 for (var item = 0; item < pairs.Length; item++) pairs[item] = new ChartDifferencePoint(item + 1, actual[item], forecast[item], item == 5);
-var chart = Chart.Create().WithXAxis("Observation")
-    .WithYAxis("Completed requests");
+var chart = Chart.Create().XAxis(x => x.Title("Observation"))
+    .YAxis(y => y.Title("Completed requests"));
 var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", pairs);
-comparison.ConfigureDifferenceArea(options => {
+comparison.DifferenceArea(options => {
     options.FirstName = "Actual"; options.SecondName = "Forecast";
     options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
     options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
-}).ConfigureMarkers(markers => markers.Radius = 3);
-comparison.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.End);
+}).Markers(markers => markers.Radius = 3);
+comparison.Interpolation(ChartInterpolation.Step, ChartStepPosition.End);
 chart.AddSeries(comparison);
 
 #region Output

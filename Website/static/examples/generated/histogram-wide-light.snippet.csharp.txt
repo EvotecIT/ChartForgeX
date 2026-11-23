@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithDataLabels();
+var chart = Chart.Create().DataLabels();
 ChartSeries observations;
 var encoding = ChartHistogramEncoding.Value;
 // Hours to resolve each service desk ticket closed in October 2026; the intervals widen as tickets get rarer.
@@ -30,9 +30,9 @@ var hours = new[] {
 };
 observations = ChartSeries.CreateHistogram(new ChartSeriesId("resolution-time"), "Tickets", hours,
     ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2, 4, 8, 16, 24 }), encoding);
-chart.WithXAxis("Resolution time (hours)").WithYAxis("Tickets");
-chart.Options.XAxis.WithBounds(0, 24);
-foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
+chart.XAxis(x => x.Title("Resolution time (hours)")).YAxis(y => y.Title("Tickets"));
+chart.Options.XAxis.Bounds(0, 24);
+foreach (var bin in observations.HistogramBins) observations.PointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
 chart.AddSeries(observations);
 
 #region Output

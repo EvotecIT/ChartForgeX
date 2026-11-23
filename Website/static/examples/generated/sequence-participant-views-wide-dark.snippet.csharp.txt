@@ -18,8 +18,8 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model=SequenceArtifact.Create("sequence-participant-views").WithSize(1000,820)
-    .WithTitle("Participant views").WithSubtitle("Unused records stay editable; footer occurrences share source identity")
+var model=SequenceArtifact.Create("sequence-participant-views").Width(1000).Height(820)
+    .Title("Participant views").Subtitle("Unused records stay editable; footer occurrences share source identity")
     .AddParticipant("A","Review",SequenceArtifactParticipantKind.Actor).AddParticipant("Unused","Retained unused participant")
     .AddParticipant("B","Archive").AddParticipant("Empty","Retained empty-group participant").AddParticipant("N","Audit")
     .AddMessage("A","B","Store").AddMessage("B","A","Saved",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage("A","B","Close")

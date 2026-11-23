@@ -50,9 +50,9 @@ public static class TreemapColorDimensionRecipe {
         }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
             new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
         }).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border);
-        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
-            .WithValueFormat(ChartValueFormat.Number("0 'tasks'", System.Globalization.CultureInfo.InvariantCulture)).WithDataLabels()
-            .AddSeries(allocation).ConfigureTreemap(options => {
+        return Chart.Create().Labels(labels => labels.NoData = "Not sampled")
+            .ValueFormat(ChartValueFormat.Number("0 'tasks'", System.Globalization.CultureInfo.InvariantCulture)).DataLabels()
+            .AddSeries(allocation).Treemap(options => {
                 options.Gap = 3;
                 options.GroupPadding = 6;
                 options.ColorScale = scale;

@@ -23,20 +23,20 @@ var actual = new[] { 42d, 68, 48, 60, 74, 46, 62 };
 var forecast = new[] { 56d, 54, 60, 60, 58, 64, 50 };
 var pairs = new ChartDifferencePoint[actual.Length];
 for (var item = 0; item < pairs.Length; item++) pairs[item] = new ChartDifferencePoint(day.AddDays(item + (item >= 4 ? 2 : 0)), actual[item], forecast[item], item == 4);
-var chart = Chart.Create().WithXAxis("Observation date (UTC)")
-    .WithYAxis("Primary reference");
-chart.ConfigureXAxis(axis => axis.WithTimeScale());
+var chart = Chart.Create().XAxis(x => x.Title("Observation date (UTC)"))
+    .YAxis(y => y.Title("Primary reference"));
+chart.XAxis(axis => axis.TimeScale());
 var reference = ChartSeries.CreateLine(new ChartSeriesId("primary-reference"), "Primary reference",
     new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
 chart.AddSeries(reference);
 var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", pairs);
-comparison.ConfigureDifferenceArea(options => {
+comparison.DifferenceArea(options => {
     options.FirstName = "Actual"; options.SecondName = "Forecast";
     options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
     options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
-}).ConfigureMarkers(markers => markers.Radius = 3);
-comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
-chart.WithSecondaryYAxis("Completed requests");
+}).Markers(markers => markers.Radius = 3);
+comparison.SecondaryAxis().FillPattern(ChartFillPattern.DiagonalForward);
+chart.SecondaryYAxis(s => s.Title("Completed requests"));
 chart.AddSeries(comparison);
 
 #region Output

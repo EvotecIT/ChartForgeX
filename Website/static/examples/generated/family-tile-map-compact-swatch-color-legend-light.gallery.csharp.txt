@@ -45,15 +45,15 @@ public static class TileMapColorDimensionRecipe {
         }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
             new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
         }).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border);
-        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
+        return Chart.Create().Labels(labels => labels.NoData = "Not sampled")
             .AddTileMap("Daily mean", ChartTileMapCatalog.Get("us-states"),
                 codes.Select((code, index) => new ChartRegionMapItem(code, values[index])), id: new ChartSeriesId("state-temperatures"))
-            .WithMapLabels().WithMapColorScale(scale)
-            .ConfigureMapColorDimension(options => {
+            .Map(m => m.ShowLabels().ColorScale(scale))
+            .Map(map => map.ColorDimension(options => {
                 options.Name = "Temperature";
                 options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", System.Globalization.CultureInfo.InvariantCulture);
                 options.LegendStyle = variant is "gradient-color-legend" or "compact-gradient-color-legend" ? ChartColorLegendStyle.Gradient
                     : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
-            });
+            }));
     }
 }

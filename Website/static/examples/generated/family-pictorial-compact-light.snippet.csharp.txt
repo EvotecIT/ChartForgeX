@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 
 var chart = Chart.Create().AddPictorial("Assessments", new[] {
     new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61)
-}, ChartPictorialShape.Person).WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
+}, ChartPictorialShape.Person).Pictorial(p => p.Max(100).ValuePerSymbol(10).Columns(10));
 
 #region Output
 var context = new VisualRenderContext(

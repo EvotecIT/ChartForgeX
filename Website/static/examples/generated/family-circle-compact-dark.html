@@ -115,7 +115,7 @@ public static class CircleRecipe {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var completed = ChartSeries.CreateCircle(new ChartSeriesId(&quot;completed&quot;), &quot;Completed&quot;, 76);
-        return Chart.Create().WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(completed);
+        return Chart.Create().XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(completed);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -153,7 +153,7 @@ public static class CircleRecipe {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var completed = ChartSeries.CreateCircle(new ChartSeriesId(&quot;completed&quot;), &quot;Completed&quot;, 76);
-        return Chart.Create().WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(completed);
+        return Chart.Create().XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(completed);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

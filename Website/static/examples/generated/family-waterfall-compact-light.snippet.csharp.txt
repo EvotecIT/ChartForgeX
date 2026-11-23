@@ -22,7 +22,7 @@ var chart = Chart.Create();
 var changes = new ChartSeries(new ChartSeriesId("changes"), "Changes", ChartSeriesKind.Waterfall, new[] {
     new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12)
 });
-chart.WithXLabels("North", "South", "East", "West", "Central", "Total").AddSeries(changes);
+chart.XLabels("North", "South", "East", "West", "Central", "Total").AddSeries(changes);
 
 #region Output
 var context = new VisualRenderContext(

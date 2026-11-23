@@ -121,7 +121,7 @@ public static class CandlestickRecipe {
                 new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
                 new ChartCandlestick(5, 47, 63, 44, 58)
             });
-            prices.ConfigureFinancial(financial =&gt; {
+            prices.Financial(financial =&gt; {
                 financial.Rising.Stroke = ChartColor.FromHex(&quot;#2A967B&quot;);
                 financial.Rising.StrokeWidth = 2.4;
                 financial.Falling.Stroke = ChartColor.FromHex(&quot;#DB825B&quot;);
@@ -134,8 +134,8 @@ public static class CandlestickRecipe {
                 financial.Falling.FillOpacity = .65;
                 financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
                 financial.Falling.Wick.StrokeWidth = 1.4;
-            }).WithPointColor(4, &quot;#729BB7&quot;);
-            if (variant is &quot;dashed&quot; or &quot;compact-dashed&quot;) prices.ConfigureFinancial(financial =&gt; {
+            }).PointColor(4, &quot;#729BB7&quot;);
+            if (variant is &quot;dashed&quot; or &quot;compact-dashed&quot;) prices.Financial(financial =&gt; {
                 financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
                 financial.Rising.DashOffset = -3;
                 financial.Falling.DashPattern = new[] { 4d, 4d };
@@ -143,13 +143,13 @@ public static class CandlestickRecipe {
                 financial.Rising.Wick.DashPattern = Array.Empty&lt;double&gt;();
                 financial.Falling.Wick.DashOffset = -1;
             });
-            chart.WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Price&quot;)
-                .WithPointLegend().WithDataLabels(false).AddSeries(prices);
+            chart.XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).YAxis(y =&gt; y.Title(&quot;Price&quot;))
+                .Legend(l =&gt; l.ShowPoints()).DataLabels(false).AddSeries(prices);
         }
         else if (variant == &quot;sparse&quot;) {
             var values = Enumerable.Range(1, 2).Select(index =&gt; new ChartCandlestick(index, 30 + index * 3,
                 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3));
-            chart.WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId(&quot;market-price&quot;), &quot;Market price&quot;, values));
+            chart.XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId(&quot;market-price&quot;), &quot;Market price&quot;, values));
         }
         else {
             // Daily open, high, low and close for every October 2026 trading session.
@@ -171,7 +171,7 @@ public static class CandlestickRecipe {
             var average = ChartSeries.CreateLine(new ChartSeriesId(&quot;five-session-average&quot;), &quot;Five-session average&quot;,
                 quotes.Select((quote, index) =&gt; new ChartPoint(index + 1,
                     Math.Round(quotes.Skip(Math.Max(0, index - 4)).Take(Math.Min(5, index + 1)).Average(item =&gt; item.Item4), 2))));
-            chart.WithXLabels(sessions).WithYAxis(&quot;Price (USD)&quot;).WithYAxisBounds(44, 58).AddSeries(prices).AddSeries(average);
+            chart.XLabels(sessions).YAxis(y =&gt; y.Title(&quot;Price (USD)&quot;).Bounds(44, 58)).AddSeries(prices).AddSeries(average);
         }
         return chart;
     }
@@ -217,7 +217,7 @@ public static class CandlestickRecipe {
                 new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
                 new ChartCandlestick(5, 47, 63, 44, 58)
             });
-            prices.ConfigureFinancial(financial =&gt; {
+            prices.Financial(financial =&gt; {
                 financial.Rising.Stroke = ChartColor.FromHex(&quot;#2A967B&quot;);
                 financial.Rising.StrokeWidth = 2.4;
                 financial.Falling.Stroke = ChartColor.FromHex(&quot;#DB825B&quot;);
@@ -230,8 +230,8 @@ public static class CandlestickRecipe {
                 financial.Falling.FillOpacity = .65;
                 financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
                 financial.Falling.Wick.StrokeWidth = 1.4;
-            }).WithPointColor(4, &quot;#729BB7&quot;);
-            if (variant is &quot;dashed&quot; or &quot;compact-dashed&quot;) prices.ConfigureFinancial(financial =&gt; {
+            }).PointColor(4, &quot;#729BB7&quot;);
+            if (variant is &quot;dashed&quot; or &quot;compact-dashed&quot;) prices.Financial(financial =&gt; {
                 financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
                 financial.Rising.DashOffset = -3;
                 financial.Falling.DashPattern = new[] { 4d, 4d };
@@ -239,13 +239,13 @@ public static class CandlestickRecipe {
                 financial.Rising.Wick.DashPattern = Array.Empty&lt;double&gt;();
                 financial.Falling.Wick.DashOffset = -1;
             });
-            chart.WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Price&quot;)
-                .WithPointLegend().WithDataLabels(false).AddSeries(prices);
+            chart.XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).YAxis(y =&gt; y.Title(&quot;Price&quot;))
+                .Legend(l =&gt; l.ShowPoints()).DataLabels(false).AddSeries(prices);
         }
         else if (variant == &quot;sparse&quot;) {
             var values = Enumerable.Range(1, 2).Select(index =&gt; new ChartCandlestick(index, 30 + index * 3,
                 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3));
-            chart.WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId(&quot;market-price&quot;), &quot;Market price&quot;, values));
+            chart.XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId(&quot;market-price&quot;), &quot;Market price&quot;, values));
         }
         else {
             // Daily open, high, low and close for every October 2026 trading session.
@@ -267,7 +267,7 @@ public static class CandlestickRecipe {
             var average = ChartSeries.CreateLine(new ChartSeriesId(&quot;five-session-average&quot;), &quot;Five-session average&quot;,
                 quotes.Select((quote, index) =&gt; new ChartPoint(index + 1,
                     Math.Round(quotes.Skip(Math.Max(0, index - 4)).Take(Math.Min(5, index + 1)).Average(item =&gt; item.Item4), 2))));
-            chart.WithXLabels(sessions).WithYAxis(&quot;Price (USD)&quot;).WithYAxisBounds(44, 58).AddSeries(prices).AddSeries(average);
+            chart.XLabels(sessions).YAxis(y =&gt; y.Title(&quot;Price (USD)&quot;).Bounds(44, 58)).AddSeries(prices).AddSeries(average);
         }
         return chart;
     }

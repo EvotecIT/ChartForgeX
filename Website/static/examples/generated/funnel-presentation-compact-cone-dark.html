@@ -116,17 +116,17 @@ public static class FunnelPresentationRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var cone = variant is &quot;cone&quot; or &quot;compact-cone&quot; or &quot;cone-horizontal&quot; or &quot;compact-cone-horizontal&quot;;
         var horizontal = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
-        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 560 : 620)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Requests through the intake stages&quot;)
-            .WithSubtitle(&quot;Native paint and captions retain every source value, including the zero completion stage&quot;)
-            .WithLegend(false).WithDataLabels().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;);
+        var chart = Chart.Create().Size(compact ? 390 : 800, compact ? 560 : 620)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(&quot;Requests through the intake stages&quot;)
+            .Subtitle(&quot;Native paint and captions retain every source value, including the zero completion stage&quot;)
+            .Legend(false).DataLabels().XLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;);
         var series = new ChartSeries(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, ChartSeriesKind.Funnel,
             new[] { new ChartPoint(1, 120), new ChartPoint(2, 80), new ChartPoint(3, 40), new ChartPoint(4, 0) })
-            .WithObservationIds(new[] { new ChartObservationId(&quot;received&quot;), new ChartObservationId(&quot;reviewed&quot;), new ChartObservationId(&quot;qualified&quot;), new ChartObservationId(&quot;completed&quot;) })
-            .WithPointColor(0, &quot;#2978A5&quot;).WithPointColor(1, &quot;#3C8D70&quot;).WithPointColor(2, &quot;#BA7834&quot;)
-            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward)
-            .WithPointStrokeColor(1, ChartColor.FromHex(&quot;#93455E&quot;));
-        chart.AddSeries(series).ConfigureFunnel(options =&gt; {
+            .ObservationIds(new[] { new ChartObservationId(&quot;received&quot;), new ChartObservationId(&quot;reviewed&quot;), new ChartObservationId(&quot;qualified&quot;), new ChartObservationId(&quot;completed&quot;) })
+            .PointColor(0, &quot;#2978A5&quot;).PointColor(1, &quot;#3C8D70&quot;).PointColor(2, &quot;#BA7834&quot;)
+            .PointFillPattern(1, ChartFillPattern.DiagonalForward)
+            .PointStrokeColor(1, ChartColor.FromHex(&quot;#93455E&quot;));
+        chart.AddSeries(series).Funnel(options =&gt; {
             options.Form = cone ? ChartFunnelForm.Cone : ChartFunnelForm.StageBars;
             options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             options.LabelContent = ChartStageLabelContent.Separate;
@@ -138,10 +138,10 @@ public static class FunnelPresentationRecipe {
             options.StageOutlineDashOffset = 1;
             options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .16);
         });
-        series.WithFunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex(&quot;#8763A1&quot;), fillOpacity: .45,
+        series.FunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex(&quot;#8763A1&quot;), fillOpacity: .45,
             fillPattern: ChartFillPattern.DiagonalBackward, outlineStroke: new ChartStrokeStyle(width: 1.5, dash: new[] { 4d, 2d }), strokeDashOffset: 2));
         // Crowded captions can be omitted at the requested size; the complete source, ratio and connection facts remain descriptive.
-        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        return chart.ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -180,17 +180,17 @@ public static class FunnelPresentationRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var cone = variant is &quot;cone&quot; or &quot;compact-cone&quot; or &quot;cone-horizontal&quot; or &quot;compact-cone-horizontal&quot;;
         var horizontal = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
-        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 560 : 620)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Requests through the intake stages&quot;)
-            .WithSubtitle(&quot;Native paint and captions retain every source value, including the zero completion stage&quot;)
-            .WithLegend(false).WithDataLabels().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;);
+        var chart = Chart.Create().Size(compact ? 390 : 800, compact ? 560 : 620)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(&quot;Requests through the intake stages&quot;)
+            .Subtitle(&quot;Native paint and captions retain every source value, including the zero completion stage&quot;)
+            .Legend(false).DataLabels().XLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;);
         var series = new ChartSeries(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, ChartSeriesKind.Funnel,
             new[] { new ChartPoint(1, 120), new ChartPoint(2, 80), new ChartPoint(3, 40), new ChartPoint(4, 0) })
-            .WithObservationIds(new[] { new ChartObservationId(&quot;received&quot;), new ChartObservationId(&quot;reviewed&quot;), new ChartObservationId(&quot;qualified&quot;), new ChartObservationId(&quot;completed&quot;) })
-            .WithPointColor(0, &quot;#2978A5&quot;).WithPointColor(1, &quot;#3C8D70&quot;).WithPointColor(2, &quot;#BA7834&quot;)
-            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward)
-            .WithPointStrokeColor(1, ChartColor.FromHex(&quot;#93455E&quot;));
-        chart.AddSeries(series).ConfigureFunnel(options =&gt; {
+            .ObservationIds(new[] { new ChartObservationId(&quot;received&quot;), new ChartObservationId(&quot;reviewed&quot;), new ChartObservationId(&quot;qualified&quot;), new ChartObservationId(&quot;completed&quot;) })
+            .PointColor(0, &quot;#2978A5&quot;).PointColor(1, &quot;#3C8D70&quot;).PointColor(2, &quot;#BA7834&quot;)
+            .PointFillPattern(1, ChartFillPattern.DiagonalForward)
+            .PointStrokeColor(1, ChartColor.FromHex(&quot;#93455E&quot;));
+        chart.AddSeries(series).Funnel(options =&gt; {
             options.Form = cone ? ChartFunnelForm.Cone : ChartFunnelForm.StageBars;
             options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             options.LabelContent = ChartStageLabelContent.Separate;
@@ -202,10 +202,10 @@ public static class FunnelPresentationRecipe {
             options.StageOutlineDashOffset = 1;
             options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .16);
         });
-        series.WithFunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex(&quot;#8763A1&quot;), fillOpacity: .45,
+        series.FunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex(&quot;#8763A1&quot;), fillOpacity: .45,
             fillPattern: ChartFillPattern.DiagonalBackward, outlineStroke: new ChartStrokeStyle(width: 1.5, dash: new[] { 4d, 2d }), strokeDashOffset: 2));
         // Crowded captions can be omitted at the requested size; the complete source, ratio and connection facts remain descriptive.
-        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+        return chart.ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

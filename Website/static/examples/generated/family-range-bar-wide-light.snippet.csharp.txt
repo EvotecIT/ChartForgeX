@@ -22,7 +22,7 @@ Chart chart;
 var count = 5;
 var intervals = Enumerable.Range(1, count).Select(index => new ChartInterval(index, 20 + index * 2, 40 + index * 4));
 var range = ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Range", intervals);
-chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(range);
+chart = Chart.Create().XLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(range);
 
 #region Output
 var context = new VisualRenderContext(

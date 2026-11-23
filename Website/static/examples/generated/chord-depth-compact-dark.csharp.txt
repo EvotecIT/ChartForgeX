@@ -44,12 +44,12 @@ public static class ChordDepthRecipe {
             new ChartFlowLink("data-self", "data", "data", 2, 0),
             new ChartFlowLink("zero", "ops", "api", 0, null)
         });
-        var chart = Chart.Create().AddSeries(source).WithTitle("Directed service transfers")
-            .WithSize(compact ? 390 : 800, compact ? 460 : 520).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), mode);
-        source.WithFlowStyle("api-priority", new ChartFlowStyle(stroke: ChartColor.FromHex("#A56421"),
+        var chart = Chart.Create().AddSeries(source).Title("Directed service transfers")
+            .Size(compact ? 390 : 800, compact ? 460 : 520).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode);
+        source.FlowStyle("api-priority", new ChartFlowStyle(stroke: ChartColor.FromHex("#A56421"),
             outlineStroke: new ChartStrokeStyle(width: 2, dash: new[] { 5d, 3d }), strokeDashOffset: 1.5));
-        chart.ConfigureChord(options => {
+        chart.Chord(options => {
             options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             if (form != "source") {
                 options.Ordering = new ChartChordOrdering(new[] { "api", "data", "web", "ops", "idle" },

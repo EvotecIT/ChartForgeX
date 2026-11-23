@@ -39,29 +39,29 @@ public static class StackedAreaRecipe {
             var policy = variant.EndsWith("gap", StringComparison.Ordinal) ? ChartStackedAreaMissingDataPolicy.Gap : ChartStackedAreaMissingDataPolicy.Zero;
             var received = new ChartSeries(new ChartSeriesId("received"), "Received", ChartSeriesKind.StackedArea,
                 new[] { new ChartPoint(1, 18), new ChartPoint(2, 25), new ChartPoint(4, 0), new ChartPoint(5, 20), new ChartPoint(6, 28) })
-                .WithStackedAreaMissingData(policy).WithObservationId(2, new ChartObservationId("observed-zero"));
+                .StackedAreaMissingData(policy).ObservationId(2, new ChartObservationId("observed-zero"));
             var processed = new ChartSeries(new ChartSeriesId("processed"), "Processed", ChartSeriesKind.StackedArea,
                 new[] { new ChartPoint(1, 12), new ChartPoint(2, 14), new ChartPoint(3, 16), new ChartPoint(4, 9), new ChartPoint(5, 11), new ChartPoint(6, 15) })
-                .WithStackedAreaMissingData(policy);
-            chart.WithTitle(policy == ChartStackedAreaMissingDataPolicy.Gap ? "Missing contribution cuts the stack" : "Missing contribution has zero height")
-                .WithXLabels("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday").WithYAxis("Requests")
+                .StackedAreaMissingData(policy);
+            chart.Title(policy == ChartStackedAreaMissingDataPolicy.Gap ? "Missing contribution cuts the stack" : "Missing contribution has zero height")
+                .XLabels("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday").YAxis(y => y.Title("Requests"))
                 .AddSeries(received).AddSeries(processed);
         }
         else if (variant is "options" or "compact-options") {
             var completed = new ChartSeries(new ChartSeriesId("completed"), "Completed", ChartSeriesKind.StackedArea,
                 new[] { 45d, 70, 80, 55, 90 }.Select((value, point) => new ChartPoint(point + 1, value)))
-                .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+                .NormalizedTo(100).Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             var remaining = new ChartSeries(new ChartSeriesId("remaining"), "Remaining", ChartSeriesKind.StackedArea,
                 new[] { 55d, 45, 20, 45, 30 }.Select((value, point) => new ChartPoint(point + 1, value)))
-                .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
-            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Share (%)")
+                .NormalizedTo(100).Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri").YAxis(y => y.Title("Share (%)"))
                 .AddSeries(completed).AddSeries(remaining);
-            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent);
+            chart.Options.YAxis.Bounds(0, 100).LabelBy(Percent);
         }
         else {
             var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.StackedArea, Observations(variant, 0));
             var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.StackedArea, Observations(variant, -10));
-            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(requests).AddSeries(followUps);
+            chart.XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(requests).AddSeries(followUps);
         }
         return chart;
     }

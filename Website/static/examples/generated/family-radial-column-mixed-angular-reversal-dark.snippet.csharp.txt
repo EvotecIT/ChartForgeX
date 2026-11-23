@@ -22,16 +22,16 @@ var theme = VisualTheme.Graphite();
 double? curveTension = null;
 var tension = curveTension ?? ((double?)null);
 var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Radar, Points(1000, 900, 1100, 1000))
-    .ConfigureRadar(options => { options.FillOpacity = .15; options.CurveTension = tension; })
-    .ConfigureMarkers(markers => markers.Enabled = false);
+    .Radar(options => { options.FillOpacity = .15; options.CurveTension = tension; })
+    .Markers(markers => markers.Enabled = false);
 var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.RadialColumn, Points(1200, 700, 1050, 950));
 var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(1400, 1200, 1300, 1250))
-    .ConfigureRadar(options => { options.Form = ChartLineAreaForm.Line; options.CurveTension = tension; })
-    .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
-var chart = Chart.Create().WithXLabels("North", "East", "South", "West").WithYAxisBounds(0, 1600).WithDataLabels(false)
-    .WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .22, cornerRadius: 4))
+    .Radar(options => { options.Form = ChartLineAreaForm.Line; options.CurveTension = tension; })
+    .Markers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
+var chart = Chart.Create().XLabels("North", "East", "South", "West").YAxis(y => y.Bounds(0, 1600)).DataLabels(false)
+    .RadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .22, cornerRadius: 4))
     .AddSeries(reference).AddSeries(observed).AddSeries(target);
-chart.ConfigureXAxis(axis => axis.WithReversal());
+chart.XAxis(axis => axis.Reversed());
 
 #region Output
 var context = new VisualRenderContext(

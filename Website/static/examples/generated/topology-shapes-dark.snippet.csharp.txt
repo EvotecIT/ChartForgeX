@@ -1,0 +1,53 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = ThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = TopologyChart.Create();
+chart.ThemeMode = mode;
+chart.Id = "shape-atlas";
+chart.DefaultRenderOptions = new TopologyRenderOptions {
+    FitContentToViewport = true,
+    WrapNodeLabels = true,
+    IncludeLegend = true,
+    IncludeGroupStatusDots = true
+};
+var shapes = Enum.GetValues<TopologyNodeShape>();
+for (var index = 0; index < shapes.Length; index++) {
+    chart.Nodes.Add(new TopologyNode {
+        Id = "shape-" + index,
+        Label = shapes[index].ToString(),
+        X = 24 + index % 5 * 160,
+        Y = 24 + index / 5 * 120,
+        Width = 132,
+        Height = 86,
+        Shape = shapes[index],
+        PreserveDisplayModeSize = true,
+        ShowStatusBadge = false
+    });
+}
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(960, 720)), theme, mode,
+    new VisualFrame("Topology node shapes", "Every native node shape", showLegend: false, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion

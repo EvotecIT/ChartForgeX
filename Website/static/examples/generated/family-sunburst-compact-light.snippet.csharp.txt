@@ -28,7 +28,7 @@ var items = new[] {
     new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
 };
 var allocation = ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocated work", items);
-var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
+var chart = Chart.Create().DataLabels().AddSeries(allocation);
 
 #region Output
 var context = new VisualRenderContext(

@@ -41,26 +41,26 @@ public static class AlignedDifferenceRecipe {
         var actual = ChartSeries.CreateLine(new ChartSeriesId("actual-source"), "Actual", new[] {
             new ChartPoint(1, actualValues[0]), new ChartPoint(2, actualValues[1]), new ChartPoint(4, actualValues[2]),
             new ChartPoint(8, actualValues[3]), new ChartPoint(16, actualValues[4]) })
-            .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("actual-" + index)));
+            .ObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("actual-" + index)));
         var forecast = ChartSeries.CreateLine(new ChartSeriesId("forecast-source"), "Forecast", new[] {
             new ChartPoint(1, forecastValues[0]), new ChartPoint(3, forecastValues[1]), new ChartPoint(4, forecastValues[2]),
             new ChartPoint(8, forecastValues[3]), new ChartPoint(16, forecastValues[4]) })
-            .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("forecast-" + index)));
+            .ObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("forecast-" + index)));
         var alignment = ChartDifferencePoints.Align(actual, forecast, connect ? ChartMissingDataPolicy.Connect : ChartMissingDataPolicy.Gap);
         var comparison = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("comparison"), "Actual against forecast", alignment)
             // Reuse actual authored first-source IDs explicitly; Align never invents a destination key.
-            .WithObservationIds(alignment.FirstSourceIndices.Select(index => alignment.FirstObservationIds[index]))
-            .ConfigureMarkers(options => options.Radius = 3)
-            .ConfigureDifferenceArea(options => {
+            .ObservationIds(alignment.FirstSourceIndices.Select(index => alignment.FirstObservationIds[index]))
+            .Markers(options => options.Radius = 3)
+            .DifferenceArea(options => {
                 options.PositiveFill = ChartColor.FromHex("#2F8199"); options.NegativeFill = ChartColor.FromHex("#C7703C");
                 options.PositiveFillOpacity = .38; options.NegativeFillOpacity = .38;
             });
-        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 500 : 520).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Observed and forecast at shared coordinates")
-            .WithSubtitle(connect ? "Unmatched source slots remain captured; surviving pairs connect" : "Unmatched source slots remain captured and break the filled path")
-            .WithXAxis("Authored coordinate").WithYAxis("Requests").AddSeries(comparison);
+        var chart = Chart.Create().Size(compact ? 390 : 800, compact ? 500 : 520).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Observed and forecast at shared coordinates")
+            .Subtitle(connect ? "Unmatched source slots remain captured; surviving pairs connect" : "Unmatched source slots remain captured and break the filled path")
+            .XAxis(x => x.Title("Authored coordinate")).YAxis(y => y.Title("Requests")).AddSeries(comparison);
         if (symmetric) { chart.Options.YAxis.Scale = ChartScaleKind.SymmetricLogarithmic; chart.Options.YAxis.SymmetricLogarithmThreshold = 1; }
-        else chart.Options.YAxis.WithLogarithmicScale(domain: negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive);
+        else chart.Options.YAxis.LogarithmicScale(domain: negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive);
         return chart;
     }
 }

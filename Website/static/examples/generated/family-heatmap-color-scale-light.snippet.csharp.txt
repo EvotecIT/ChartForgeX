@@ -21,10 +21,10 @@ var theme = VisualTheme.Graphite();
 var colors = VisualTheme.Graphite().Resolve(mode);
 var scale = ChartColorScale.Diverging(new[] { colors.Status.Critical.Fill }, colors.Surface,
         new[] { colors.SequentialRamp[2], colors.SequentialRamp[3], colors.SequentialRamp[4] }, 0);
-var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").WithDataLabels()
+var chart = Chart.Create().XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").DataLabels()
     .AddHeatmapRow("Primary", new double?[] { -20, -10, 0, null, 10, 20 }, id: new ChartSeriesId("primary-measurements"))
     .AddHeatmapRow("Secondary", new double?[] { -15, 0, 5, 15, null, 25 }, id: new ChartSeriesId("secondary-measurements"))
-    .WithHeatmapColorScale(scale.WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target"));
+    .Heatmap(h => h.ColorScale(scale.WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target")));
 
 #region Output
 var context = new VisualRenderContext(

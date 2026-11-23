@@ -21,13 +21,13 @@ var theme = VisualTheme.Graphite();
 
 var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialColumn, Points(1200, 950, 680, 1050));
 var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn, Points(320, 410, 260, 360));
-var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
-    .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
-    .AddSeries(requests).AddSeries(followUps).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
-chart.WithYAxisBounds(0, 1500);
-chart.WithXAxis("Region").WithYAxis("Requests")
-    .ConfigureXAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Parallel; axis.LabelAngle = 10; axis.LabelDensity = ChartLabelDensity.Relaxed; })
-    .ConfigureYAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular; axis.LabelDensity = ChartLabelDensity.Dense; });
+var chart = Chart.Create().XLabels("North", "South", "East", "West")
+    .RadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
+    .AddSeries(requests).AddSeries(followUps).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
+chart.YAxis(y => y.Bounds(0, 1500));
+chart.XAxis(x => x.Title("Region")).YAxis(y => y.Title("Requests"))
+    .XAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Parallel; axis.LabelAngle = 10; axis.LabelDensity = ChartLabelDensity.Relaxed; })
+    .YAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular; axis.LabelDensity = ChartLabelDensity.Dense; });
 
 #region Output
 var context = new VisualRenderContext(

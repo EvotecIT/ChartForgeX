@@ -118,7 +118,7 @@ public static class GanttRecipe {
         var delivery = ChartSeries.CreateGanttMilestone(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery&quot;, start.AddDays(9));
         return Chart.Create().AddSeries(discovery).AddSeries(implementation).AddSeries(validation).AddSeries(delivery)
             .AddGanttDependency(discovery, implementation).AddGanttDependency(implementation, validation).AddGanttDependency(validation, delivery)
-            .ConfigureXAxis(axis =&gt; {
+            .XAxis(axis =&gt; {
                 axis.Scale = ChartScaleKind.Time;
                 axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, CultureInfo.InvariantCulture));
             });
@@ -162,7 +162,7 @@ public static class GanttRecipe {
         var delivery = ChartSeries.CreateGanttMilestone(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery&quot;, start.AddDays(9));
         return Chart.Create().AddSeries(discovery).AddSeries(implementation).AddSeries(validation).AddSeries(delivery)
             .AddGanttDependency(discovery, implementation).AddGanttDependency(implementation, validation).AddGanttDependency(validation, delivery)
-            .ConfigureXAxis(axis =&gt; {
+            .XAxis(axis =&gt; {
                 axis.Scale = ChartScaleKind.Time;
                 axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, CultureInfo.InvariantCulture));
             });

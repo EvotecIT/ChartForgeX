@@ -115,11 +115,11 @@ public static class AvailabilityLanesRecipe {
         if (variant is not (&quot;availability&quot; or &quot;compact-availability&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc)
-            .WithStateCategories(new ChartStateCategory(&quot;up&quot;, &quot;Up&quot;, colors.Status.Pass.Fill),
+        var chart = Chart.Create().XAxis(x =&gt; x.TimeScale(timeZone: TimeZoneInfo.Utc))
+            .StateCategories(new ChartStateCategory(&quot;up&quot;, &quot;Up&quot;, colors.Status.Pass.Fill),
                 new ChartStateCategory(&quot;degraded&quot;, &quot;Degraded&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory(&quot;down&quot;, &quot;Down&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
-        chart.Options.LaneSummaryHeader = &quot;Available&quot;;
+        chart.Options.StateTimeline.SummaryHeader = &quot;Available&quot;;
         var targets = new[] {
             (&quot;Warsaw&quot;, &quot;dc1.ad.evotec.xyz&quot;, &quot;No response to LDAP bind&quot;), (&quot;Warsaw&quot;, &quot;dc2.ad.evotec.xyz&quot;, &quot;No response to LDAP bind&quot;),
             (&quot;Warsaw&quot;, &quot;dns.ad.evotec.xyz&quot;, &quot;No DNS response&quot;), (&quot;Krakow&quot;, &quot;dc3.ad.evotec.xyz&quot;, &quot;No response to LDAP bind&quot;),
@@ -189,11 +189,11 @@ public static class AvailabilityLanesRecipe {
         if (variant is not (&quot;availability&quot; or &quot;compact-availability&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc)
-            .WithStateCategories(new ChartStateCategory(&quot;up&quot;, &quot;Up&quot;, colors.Status.Pass.Fill),
+        var chart = Chart.Create().XAxis(x =&gt; x.TimeScale(timeZone: TimeZoneInfo.Utc))
+            .StateCategories(new ChartStateCategory(&quot;up&quot;, &quot;Up&quot;, colors.Status.Pass.Fill),
                 new ChartStateCategory(&quot;degraded&quot;, &quot;Degraded&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory(&quot;down&quot;, &quot;Down&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
-        chart.Options.LaneSummaryHeader = &quot;Available&quot;;
+        chart.Options.StateTimeline.SummaryHeader = &quot;Available&quot;;
         var targets = new[] {
             (&quot;Warsaw&quot;, &quot;dc1.ad.evotec.xyz&quot;, &quot;No response to LDAP bind&quot;), (&quot;Warsaw&quot;, &quot;dc2.ad.evotec.xyz&quot;, &quot;No response to LDAP bind&quot;),
             (&quot;Warsaw&quot;, &quot;dns.ad.evotec.xyz&quot;, &quot;No DNS response&quot;), (&quot;Krakow&quot;, &quot;dc3.ad.evotec.xyz&quot;, &quot;No response to LDAP bind&quot;),

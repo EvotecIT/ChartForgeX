@@ -113,8 +113,8 @@ public static class SequenceParticipantViewsRecipe {
     /// &lt;summary&gt;Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-participant-views&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
-            .WithTitle(&quot;Participant views&quot;).WithSubtitle(&quot;Unused records stay editable; footer occurrences share source identity&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-participant-views&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(820)
+            .Title(&quot;Participant views&quot;).Subtitle(&quot;Unused records stay editable; footer occurrences share source identity&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;,SequenceArtifactParticipantKind.Actor).AddParticipant(&quot;Unused&quot;,&quot;Retained unused participant&quot;)
             .AddParticipant(&quot;B&quot;,&quot;Archive&quot;).AddParticipant(&quot;Empty&quot;,&quot;Retained empty-group participant&quot;).AddParticipant(&quot;N&quot;,&quot;Audit&quot;)
             .AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Store&quot;).AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Saved&quot;,SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Close&quot;)
@@ -159,8 +159,8 @@ public static class SequenceParticipantViewsRecipe {
     /// &lt;summary&gt;Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-participant-views&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
-            .WithTitle(&quot;Participant views&quot;).WithSubtitle(&quot;Unused records stay editable; footer occurrences share source identity&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-participant-views&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(820)
+            .Title(&quot;Participant views&quot;).Subtitle(&quot;Unused records stay editable; footer occurrences share source identity&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;,SequenceArtifactParticipantKind.Actor).AddParticipant(&quot;Unused&quot;,&quot;Retained unused participant&quot;)
             .AddParticipant(&quot;B&quot;,&quot;Archive&quot;).AddParticipant(&quot;Empty&quot;,&quot;Retained empty-group participant&quot;).AddParticipant(&quot;N&quot;,&quot;Audit&quot;)
             .AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Store&quot;).AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Saved&quot;,SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Close&quot;)

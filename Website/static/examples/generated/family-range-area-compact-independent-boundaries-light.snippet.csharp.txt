@@ -22,9 +22,9 @@ var chart = Chart.Create();
 var ranges = ChartRangeBands.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
     new double?[] { 12, 22, 16, null, 25, 15, 20, 18 }, new double?[] { 32, 46, 38, 40, 48, 41, 52, 44 });
 var expected = ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range", ranges)
-    .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
-    .WithObservationId(3, new ChartObservationId("resumed-range"));
-chart.WithTitle("Smooth lower and held upper limits").WithXAxis("Observation").WithYAxis("Expected level").AddSeries(expected);
+    .BoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+    .ObservationId(3, new ChartObservationId("resumed-range"));
+chart.Title("Smooth lower and held upper limits").XAxis(x => x.Title("Observation")).YAxis(y => y.Title("Expected level")).AddSeries(expected);
 
 #region Output
 var context = new VisualRenderContext(

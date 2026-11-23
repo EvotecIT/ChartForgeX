@@ -34,8 +34,8 @@ public static class LatencyWeekRecipe {
     public static Chart Create(string variant = "latency-week", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("latency-week" or "compact-latency-week")) throw new ArgumentOutOfRangeException(nameof(variant));
         var start = new DateTime(2026, 10, 19, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc).WithYAxis("Round-trip time (ms)").WithValueUnit("ms")
-            .WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc)).YAxis(y => y.Title("Round-trip time (ms)")).ValueUnit("ms")
+            .ValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
         var controllers = new[] { ("dc-01", 18d), ("dc-02", 27d), ("dc-03", 41d) };
         for (var controller = 0; controller < controllers.Length; controller++) {
             var (name, baseline) = controllers[controller];

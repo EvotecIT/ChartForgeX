@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithXLabels("Same day", "Premium", "Express", "Standard", "Return", "Bulk").WithYAxis("Delivery time (hours)");
+var chart = Chart.Create().XLabels("Same day", "Premium", "Express", "Standard", "Return", "Bulk").YAxis(y => y.Title("Delivery time (hours)"));
 // Median hours per service; each pair sits either side of its category. Same-day delivery is domestic only.
 var domestic = ChartSeries.CreateErrorBar(new ChartSeriesId("domestic"), "Domestic", new[] {
     new ChartErrorBar(.86, 7, yBounds: new ChartErrorBounds(5, 10)), new ChartErrorBar(1.86, 14, yBounds: new ChartErrorBounds(10, 20)),
@@ -29,7 +29,7 @@ var international = ChartSeries.CreateErrorBar(new ChartSeriesId("international"
     new ChartErrorBar(4.14, 118, yBounds: new ChartErrorBounds(86, 160)), new ChartErrorBar(5.14, 132, yBounds: new ChartErrorBounds(96, 180)),
     new ChartErrorBar(6.14, 160, yBounds: new ChartErrorBounds(120, 214)) });
 // Delivery takes no negative time, so the scale starts at zero rather than below the shortest range.
-chart.Options.YAxis.Minimum = 0;
+chart.Options.YAxis.Min = 0;
 chart.AddSeries(domestic).AddSeries(international);
 
 #region Output

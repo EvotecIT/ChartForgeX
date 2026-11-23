@@ -19,7 +19,7 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = TopologyChart.Create().WithViewport(390, 480).WithLegend(null);
+var chart = TopologyChart.Create().Viewport(new TopologyViewport(390, 480)).Legend((TopologyLegend?)null);
 chart.Theme = VisualTheme.Graphite();
 chart.ThemeMode = mode;
 chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
