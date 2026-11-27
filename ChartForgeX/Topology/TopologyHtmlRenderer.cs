@@ -275,9 +275,17 @@ public sealed partial class TopologyHtmlRenderer {
         return auto;
     }
 
-    // The key a placement's runtime state goes by: the chart's id, scoped when the host scopes the placement.
-    internal static string? PlacementKey(TopologyRenderOptions options, string id) =>
-        string.IsNullOrWhiteSpace(options.IdScope) ? null : TopologyRenderPrimitives.SanitizeId(options.IdScope!.Trim()) + "-" + id;
+    // The key a placement's runtime state goes by: the chart's id, scoped when the host scopes the placement. The scope is
+    // spelled in lower-case letters, digits and dashes, each other character as -hex-, so distinct scopes never share a key.
+    internal static string? PlacementKey(TopologyRenderOptions options, string id) {
+        if (string.IsNullOrWhiteSpace(options.IdScope)) return null;
+        var key = new System.Text.StringBuilder();
+        foreach (var ch in options.IdScope!.Trim()) {
+            if (ch is >= 'a' and <= 'z' or >= '0' and <= '9') key.Append(ch);
+            else key.Append('-').Append(((int)ch).ToString("x", CultureInfo.InvariantCulture)).Append('-');
+        }
+        return key.Append('-').Append(id).ToString();
+    }
 
     /// <summary>
     /// Builds the renderer-owned stylesheet used by topology HTML fragments.

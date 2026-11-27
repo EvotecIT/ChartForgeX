@@ -243,11 +243,11 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     let applyingSync = false;
     let scenarioPlayback = null;
     let forceGraphMotionTimer = null;
-    const scenarioUrlKey = name => {
-      const chartId = attr(wrapper, 'data-cfx-key').replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
+    const scenarioUrlKey = (name, from = 'data-cfx-key') => {
+      const chartId = attr(wrapper, from).replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
       return 'cfx-' + chartId + '-' + name;
     };
-    const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; return params.get(scenarioUrlKey(name)) || params.get(name) || ''; } catch { return ''; } })() : '';
+    const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; return params.get(scenarioUrlKey(name)) || params.get(scenarioUrlKey(name, 'data-chart-id')) || params.get(name) || ''; } catch { return ''; } })() : '';
     const syncScenarioUrl = (scenarioId, stepIndex) => {
       if (!scenarioUrlState || !window.history || !window.history.replaceState) return;
       try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); scenarioId ? url.searchParams.set(scenarioKey, scenarioId) : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); url.searchParams.delete('scenario'); url.searchParams.delete('scenarioStep'); window.history.replaceState(window.history.state, '', url); } catch { }

@@ -169,6 +169,7 @@ public sealed class StrictStyleTests {
     [InlineData("physics")]
     [InlineData("patch")]
     [InlineData("print")]
+    [InlineData("print host rules")]
     public async Task GraphExplorerKeepsAStrictPolicy(string action) {
         if (!InteractiveChartBrowser.Enabled) return;
         var scene = GraphScene.Create("strict-graph", "Services");
@@ -177,9 +178,12 @@ public sealed class StrictStyleTests {
         scene.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.IncrementalUpdates);
         scene.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
         var policy = "default-src 'none'; img-src data: blob:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
-        await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(options => {
+        var graphPage = scene.ToGraphExplorerHtmlPage(options => {
             options.Nonce = Nonce; options.PhysicsThread = HtmlGraphPhysicsThread.Main; options.PersistThemePreference = false;
-        }), policy);
+        });
+        // A host's own print rule, which the print snapshot's rules must not override.
+        if (action == "print host rules") graphPage = graphPage.Replace("</head>", "<style nonce=\"" + Nonce + "\">@media print{.cfx-graph-shell{margin-left:27px}}</style></head>", StringComparison.Ordinal);
+        await using var session = await OpenAsync(graphPage, policy);
         var page = session.Page;
         if (action == "physics") {
             await page.WaitForFunctionAsync("() => ['main', 'stopped'].includes(document.querySelector('.cfx-graph-explorer').dataset.cfxGraphPhysicsThread)");
@@ -194,11 +198,39 @@ public sealed class StrictStyleTests {
                 """));
         } else {
             await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
+            if (action == "print host rules") {
+                await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+                Assert.Equal("27px", await page.EvaluateAsync<string>("() => getComputedStyle(document.body).marginLeft"));
+            }
             await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
             Assert.True(await page.EvaluateAsync<bool>("() => !!document.querySelector('[data-cfx-role=graph-print-surface] svg')"));
         }
         var violations = await page.EvaluateAsync<string[]>("() => window.__cfxViolations || []");
         Assert.True(violations.Length == 0, string.Join(" | ", violations));
+    }
+
+    // A responsive drawing handed to the layout runtime keeps its fragment references after the runtime renames its ids and
+    // moves its styles into the CSS object model under a nonce policy.
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task ResponsiveLayoutKeepsFragmentReferencesUnderAStrictPolicy() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        using var stream = typeof(HtmlResponsiveChartRenderer).Assembly.GetManifestResourceStream("ChartForgeX.Interactivity.Html.Assets.chart-layout.js")!;
+        string runtime = new StreamReader(stream).ReadToEnd();
+        var page = "<!doctype html><html><head></head><body><div id=\"host\"><svg></svg></div><script nonce=\"" + Nonce + "\">" + runtime + "</script></body></html>";
+        var policy = "default-src 'none'; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
+        await using var session = await OpenAsync(page, policy);
+        var references = await session.Page.EvaluateAsync<string[]>("""
+            () => {
+              const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="plot"><rect width="50" height="50"/></clipPath></defs><rect data-probe="true" width="100" height="100" style="clip-path:url(#plot);fill:red"/></svg>';
+              try { ChartForgeXLayout.create(document.getElementById('host'), { schema: 'chartforgex/layout-1', svg }); } catch { }
+              const probe = document.querySelector('#host [data-probe]');
+              return [probe.style.clipPath, document.querySelector('#host clipPath').id, probe.style.fill];
+            }
+            """);
+        Assert.Contains(references[1], references[0]);
+        Assert.Equal("red", references[2]);
+        Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 
     // Serve the page with a real Content-Security-Policy header; a meta policy is not applied to injected content.

@@ -9,7 +9,7 @@
       let value=attribute.value;
       if(attribute.name==='id')value=ids.get(value);
       else if(['aria-labelledby','aria-describedby'].includes(attribute.name))value=value.split(/\s+/).map(id=>ids.get(id)||id).join(' ');
-      else {value=value.replace(/url\(#([^)]*)\)/g,(_,id)=>'url(#'+(ids.get(id)||id)+')');if(value.startsWith('#')&&ids.has(value.slice(1)))value='#'+ids.get(value.slice(1));}
+      else {value=value.replace(/url\(\s*(['"]?)#([^)'"]*)\1\s*\)/g,(_,q,id)=>'url(#'+(ids.get(id)||id)+')');if(value.startsWith('#')&&ids.has(value.slice(1)))value='#'+ids.get(value.slice(1));}
       // A style goes through the CSS object model, which a strict content security policy allows.
       if(value!==attribute.value){if(attribute.name==='style')node.style.cssText=value;else node.setAttribute(attribute.name,value);}
     }
@@ -18,12 +18,10 @@
     if(!/^chartforgex\/layout-[1-4]$/.test(spec.schema))throw new Error('Unsupported ChartForgeX layout specification.');
     let svg;
     if(spec.schema==="chartforgex/layout-1"){
-      const parsed=new DOMParser().parseFromString(spec.svg,'image/svg+xml');
+      // Style attributes travel as data, since a strict policy checks parsed markup, and arrive through the CSS object model.
+      const parsed=new DOMParser().parseFromString(spec.svg.replace(/(<[^<>]*\s)style=/g,'$1data-cfx-paint-style='),'image/svg+xml');
       if(parsed.querySelector('parsererror'))throw new Error('Invalid ChartForgeX paint specification.');
-      // Style attributes travel as data into the page and arrive through the CSS object model.
-      for(const node of [parsed.documentElement,...parsed.documentElement.querySelectorAll('[style]')])if(node.hasAttribute('style')){node.setAttribute('data-cfx-paint-style',node.getAttribute('style'));node.removeAttribute('style');}
       svg=document.importNode(parsed.documentElement,true);
-      for(const node of [svg,...svg.querySelectorAll('[data-cfx-paint-style]')])if(node.hasAttribute('data-cfx-paint-style')){node.style.cssText=node.getAttribute('data-cfx-paint-style');node.removeAttribute('data-cfx-paint-style');}
       host.querySelector(':scope > svg').replaceWith(svg);
     }else {
       svg=host.querySelector(':scope > svg');
@@ -32,6 +30,7 @@
     }
     if(!svg)throw new Error('Missing ChartForgeX paint specification.');
     namespace(svg);
+    for(const node of [svg,...svg.querySelectorAll('[data-cfx-paint-style]')])if(node.hasAttribute('data-cfx-paint-style')){node.style.cssText=node.getAttribute('data-cfx-paint-style');node.removeAttribute('data-cfx-paint-style');}
     if(spec.schema==='chartforgex/layout-4')return window.ChartForgeXLayoutRadial.create(host,spec,svg);
     let source,legend,sticky,typed;
     const compactSizes=new Map(spec.compact?.sizes||[]);

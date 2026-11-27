@@ -122,7 +122,7 @@
       const svg = exportSvgClone(root), doc = root.ownerDocument, sheets = root.__cfxGraphPrintSheets = [];
       if (!svg) return;
       scopeGraphPrintIds(svg, `cfx-graph-print-${++graphPrintSequence}-`);
-      if (doc.adoptedStyleSheets) svg.querySelectorAll('style').forEach(style => { const sheet = new CSSStyleSheet(); sheet.replaceSync(style.textContent); style.remove(); sheets.push(sheet); });
+      if (doc.adoptedStyleSheets) svg.querySelectorAll('style').forEach(style => { const sheet = new CSSStyleSheet(); sheet.replaceSync(`@layer cfx-graph-print{${style.textContent}}`); style.remove(); sheets.push(sheet); });
       if (sheets.length) doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, ...sheets];
       const camera = svg.querySelector('[data-cfx-role="graph-viewport"]');
       camera?.removeAttribute('transform'); camera?.style.removeProperty('transform');
