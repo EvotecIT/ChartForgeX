@@ -96,7 +96,10 @@ public sealed partial class TopologyHtmlRenderer {
         // The SVG can be wider than the authored viewport when its content needs the room, so the wrapper follows the SVG.
         var svgMarkup = preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls);
         var topologyWidth = preparedWidth ?? SvgWidth(svgMarkup) ?? chart.Viewport.Width;
-        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, id) : new List<ScenarioSequenceFigure>();
+        // A scoped placement keeps the chart's identity for events and adds the scope to everything that has to stay apart
+        // when the same chart appears twice: scenario sequence ids and the scenario keys in the address.
+        var placement = string.IsNullOrWhiteSpace(options.IdScope) ? null : TopologyRenderPrimitives.SanitizeId(options.IdScope!.Trim()) + "-" + id;
+        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, placement ?? id) : new List<ScenarioSequenceFigure>();
         // The playback page shows the topology above sequence diagrams, so they share one type scale: each fits the column
         // only while that costs at most an eighth of its size, and otherwise scrolls in its own frame. Anything placed over
         // the diagram (zoom, export and fullscreen controls, the selection panel) keeps the regular fitted view.
@@ -117,6 +120,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-ui", messages.Json)
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-chart-id", id)
+            .Attribute("data-cfx-placement", placement)
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
             .Attribute("data-cfx-interactive", options.Html.Interactions)
             .Attribute("data-cfx-viewport-controls", enableViewportControls)

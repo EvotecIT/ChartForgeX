@@ -244,7 +244,8 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     let scenarioPlayback = null;
     let forceGraphMotionTimer = null;
     const scenarioUrlKey = name => {
-      const chartId = attr(wrapper, 'data-chart-id').replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
+      // A scoped placement keys its state apart from another placement of the same chart.
+      const chartId = (attr(wrapper, 'data-cfx-placement') || attr(wrapper, 'data-chart-id')).replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
       return 'cfx-' + chartId + '-' + name;
     };
     const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; return params.get(scenarioUrlKey(name)) || params.get(name) || ''; } catch { return ''; } })() : '';
