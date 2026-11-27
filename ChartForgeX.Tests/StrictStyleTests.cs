@@ -174,7 +174,7 @@ public sealed class StrictStyleTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var scene = GraphScene.Create("strict-graph", "Services");
         for (var index = 0; index < 170; index++) scene.AddNode("n" + index, "Service " + index);
-        for (var index = 1; index < 170; index++) scene.AddEdge("e" + index, "n" + (index - 1), "n" + index);
+        for (var index = 1; index < 170; index++) scene.AddEdge("e" + index, "n" + (index - 1), "n" + index, configure: edge => edge.Directed = index % 2 == 0);
         scene.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.IncrementalUpdates);
         scene.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
         var policy = "default-src 'none'; img-src data: blob:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
@@ -222,14 +222,17 @@ public sealed class StrictStyleTests {
         await using var session = await OpenAsync(page, policy);
         var references = await session.Page.EvaluateAsync<string[]>("""
             () => {
-              const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><clipPath id="plot"><rect width="50" height="50"/></clipPath></defs><rect data-probe="true" width="100" height="100" style="clip-path:url(#plot);fill:red"/></svg>';
+              const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="Preference style=automatic"><defs><clipPath id="plot"><rect width="50" height="50"/></clipPath></defs><rect data-probe="true" width="100" height="100" style="clip-path:url(#plot);fill:red" aria-label="a > b style=x"/></svg>';
               try { ChartForgeXLayout.create(document.getElementById('host'), { schema: 'chartforgex/layout-1', svg }); } catch { }
               const probe = document.querySelector('#host [data-probe]');
-              return [probe.style.clipPath, document.querySelector('#host clipPath').id, probe.style.fill];
+              return [probe.style.clipPath, document.querySelector('#host clipPath').id, probe.style.fill, document.querySelector('#host > svg').getAttribute('aria-label'), probe.getAttribute('aria-label')];
             }
             """);
         Assert.Contains(references[1], references[0]);
         Assert.Equal("red", references[2]);
+        // Text that only looks like a style attribute stays as it was.
+        Assert.Equal("Preference style=automatic", references[3]);
+        Assert.Equal("a > b style=x", references[4]);
         Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 

@@ -19,7 +19,8 @@
     let svg;
     if(spec.schema==="chartforgex/layout-1"){
       // Style attributes travel as data, since a strict policy checks parsed markup, and arrive through the CSS object model.
-      const parsed=new DOMParser().parseFromString(spec.svg.replace(/(<[^<>]*\s)style=/g,'$1data-cfx-paint-style='),'image/svg+xml');
+      const paint=spec.svg.replace(/<[a-zA-Z](?:[^<>"']|"[^"]*"|'[^']*')*>/g,tag=>tag.replace(/(\s+)([^\s=\/>"']+)((?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))?)/g,(_,space,name,value)=>space+(name.toLowerCase()==='style'?'data-cfx-paint-style':name)+value));
+      const parsed=new DOMParser().parseFromString(paint,'image/svg+xml');
       if(parsed.querySelector('parsererror'))throw new Error('Invalid ChartForgeX paint specification.');
       svg=document.importNode(parsed.documentElement,true);
       host.querySelector(':scope > svg').replaceWith(svg);

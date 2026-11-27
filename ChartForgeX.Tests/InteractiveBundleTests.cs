@@ -108,7 +108,7 @@ public sealed class InteractiveBundleTests {
     // Strict-CSP style restoration, including adaptive templates: about 1.1 KiB raw and 0.3 KiB gzip in the unoptimized
     // topology runtime, 1.4 KiB raw in the explorer once imported sheets and host inline values are handled.
     [InlineData("topology", 169 * 1024, 36 * 1024)]
-    [InlineData("explorer", 437 * 1024, 98 * 1024)]
+    [InlineData("explorer", 438 * 1024, 98 * 1024)]
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
         var topology = TopologyChart.Create().Id("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
         var (script, page) = runtime == "topology"

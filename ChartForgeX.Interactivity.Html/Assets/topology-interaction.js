@@ -247,10 +247,12 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       const chartId = attr(wrapper, from).replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
       return 'cfx-' + chartId + '-' + name;
     };
-    const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; return params.get(scenarioUrlKey(name)) || params.get(scenarioUrlKey(name, 'data-chart-id')) || params.get(name) || ''; } catch { return ''; } })() : '';
+    // Scenario and step come from one set of keys: the placement's, else those of a link keyed by the chart id.
+    const scenarioUrlFrom = params => ['data-cfx-key', 'data-chart-id'].find(from => params.has(scenarioUrlKey('scenario', from)) || params.has(scenarioUrlKey('scenarioStep', from))) || 'data-cfx-key';
+    const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; return params.get(scenarioUrlKey(name, scenarioUrlFrom(params))) || params.get(name) || ''; } catch { return ''; } })() : '';
     const syncScenarioUrl = (scenarioId, stepIndex) => {
       if (!scenarioUrlState || !window.history || !window.history.replaceState) return;
-      try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); scenarioId ? url.searchParams.set(scenarioKey, scenarioId) : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); url.searchParams.delete('scenario'); url.searchParams.delete('scenarioStep'); window.history.replaceState(window.history.state, '', url); } catch { }
+      try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); scenarioId ? url.searchParams.set(scenarioKey, scenarioId) : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); url.searchParams.delete('scenario'); url.searchParams.delete('scenarioStep'); if (attr(wrapper, 'data-cfx-key') !== attr(wrapper, 'data-chart-id')) { url.searchParams.delete(scenarioUrlKey('scenario', 'data-chart-id')); url.searchParams.delete(scenarioUrlKey('scenarioStep', 'data-chart-id')); } window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
