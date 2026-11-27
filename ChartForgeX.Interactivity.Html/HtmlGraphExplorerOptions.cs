@@ -30,6 +30,13 @@ public sealed class HtmlGraphExplorerOptions {
     /// <summary>Gets or sets the initial graph renderer backend advertised to host code.</summary>
     public HtmlGraphRenderBackend RenderBackend { get; set; } = HtmlGraphRenderBackend.Svg;
 
+    /// <summary>
+    /// Gets or sets where runtime physics runs. <see cref="HtmlGraphPhysicsThread.Automatic"/> moves large scenes to a
+    /// worker built in the page, which a content security policy without <c>blob:</c> in <c>worker-src</c> refuses;
+    /// <see cref="HtmlGraphPhysicsThread.Main"/> keeps physics on the page's own thread.
+    /// </summary>
+    public HtmlGraphPhysicsThread PhysicsThread { get; set; }
+
     /// <summary>Gets or sets whether large SVG scenes may switch to the dependency-free Canvas runtime.</summary>
     public bool AllowCanvasFallback { get; set; } = true;
 
@@ -86,6 +93,14 @@ public sealed class HtmlGraphExplorerOptions {
 
     /// <summary>Gets or sets the smallest number of nodes that shows the layout progress bar. Smaller graphs settle too quickly for it to help. Default: 150.</summary>
     public int LayoutProgressMinimumNodes { get; set; } = 150;
+}
+
+/// <summary>Names where the graph explorer runs runtime physics.</summary>
+public enum HtmlGraphPhysicsThread {
+    /// <summary>Large scenes run physics in a worker; smaller ones, and pages that refuse the worker, on the main thread.</summary>
+    Automatic,
+    /// <summary>Physics always runs on the page's main thread, so no worker is created.</summary>
+    Main
 }
 
 /// <summary>

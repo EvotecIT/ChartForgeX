@@ -161,6 +161,46 @@ public sealed class StrictStyleTests {
         Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 
+    // The graph explorer under a nonce policy that refuses blob workers, style attributes and style elements without the
+    // nonce: physics stays on the main thread when asked, live edge patches style through the CSSOM, and the print
+    // surface brings its export styles without breaking the policy.
+    [Trait("Category", "Browser")]
+    [Theory]
+    [InlineData("physics")]
+    [InlineData("patch")]
+    [InlineData("print")]
+    public async Task GraphExplorerKeepsAStrictPolicy(string action) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var scene = GraphScene.Create("strict-graph", "Services");
+        for (var index = 0; index < 170; index++) scene.AddNode("n" + index, "Service " + index);
+        for (var index = 1; index < 170; index++) scene.AddEdge("e" + index, "n" + (index - 1), "n" + index);
+        scene.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.IncrementalUpdates);
+        scene.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
+        var policy = "default-src 'none'; img-src data: blob:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
+        await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(options => {
+            options.Nonce = Nonce; options.PhysicsThread = HtmlGraphPhysicsThread.Main; options.PersistThemePreference = false;
+        }), policy);
+        var page = session.Page;
+        if (action == "physics") {
+            await page.WaitForFunctionAsync("() => ['main', 'stopped'].includes(document.querySelector('.cfx-graph-explorer').dataset.cfxGraphPhysicsThread)");
+            Assert.NotEqual("worker", await page.EvaluateAsync<string>("() => document.querySelector('.cfx-graph-explorer').dataset.cfxGraphPhysicsThread"));
+        } else if (action == "patch") {
+            Assert.NotEqual("none", await page.EvaluateAsync<string>("""
+                () => {
+                  const root = document.querySelector('.cfx-graph-explorer');
+                  ChartForgeXGraphExplorer.update(root, { upsertEdges: [{ id: 'e1', sourceNodeId: 'n0', targetNodeId: 'n1', dashed: true, style: { width: 6 } }] });
+                  return getComputedStyle(root.querySelector('[data-edge-id="e1"]')).strokeDasharray;
+                }
+                """));
+        } else {
+            await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
+            await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            Assert.True(await page.EvaluateAsync<bool>("() => !!document.querySelector('[data-cfx-role=graph-print-surface] svg')"));
+        }
+        var violations = await page.EvaluateAsync<string[]>("() => window.__cfxViolations || []");
+        Assert.True(violations.Length == 0, string.Join(" | ", violations));
+    }
+
     // Serve the page with a real Content-Security-Policy header; a meta policy is not applied to injected content.
     private static async Task<HtmlTinkerX.HtmlBrowserSession> OpenAsync(string html, string? policy) {
         var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {

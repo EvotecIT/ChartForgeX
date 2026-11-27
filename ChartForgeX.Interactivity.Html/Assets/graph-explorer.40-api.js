@@ -8,6 +8,7 @@
   const svgElement = (root, name) => root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', name);
   const setGraphAttribute = (element, name, value) => {
     if (value === undefined || value === null || value === '') element.removeAttribute(name);
+    else if (name === 'style' && element.style) element.style.cssText = String(value);
     else element.setAttribute(name, String(value));
   };
   const graphMetadata = (value) => {

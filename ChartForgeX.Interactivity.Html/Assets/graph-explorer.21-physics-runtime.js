@@ -1,4 +1,4 @@
-  const canUseWorkerPhysics = (root, state) => typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && state.nodes.length >= 160 && root.__cfxGraphWorkerFailed !== true;
+  const canUseWorkerPhysics = (root, state) => attr(root, 'data-cfx-graph-physics-worker') !== 'false' && typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && state.nodes.length >= 160 && root.__cfxGraphWorkerFailed !== true;
   const serializePhysicsState = (state) => {
     const nodeIndex = new Map(state.nodes.map((node, index) => [node.id, index]));
     return {

@@ -23,7 +23,7 @@ public sealed class TopologyPlacementScopeTests {
         Assert.NotEmpty(ids);
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.Ordinal).Count());
         // The runtime keys scenario state in the address by placement, while events keep the chart's own id.
-        var placements = Regex.Matches(page, "data-cfx-placement=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToList();
+        var placements = Regex.Matches(page, "data-cfx-key=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToList();
         Assert.Equal(new[] { "first-replication", "second-replication" }, placements);
         Assert.Equal(2, Regex.Matches(page, "class=\"cfx-topology-wrapper\"[^>]*data-chart-id=\"replication\"").Count);
     }
@@ -31,7 +31,7 @@ public sealed class TopologyPlacementScopeTests {
     [Fact]
     public void UnscopedPlacement_KeepsTheChartIdentityAsItsStateKey() {
         var html = TopologyScenarioPlaybackTests.ReplicationChart().ToInteractiveHtmlFragmentWithoutAssets(Options(null));
-        Assert.DoesNotContain("data-cfx-placement", html, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-key=\"replication\"", html, StringComparison.Ordinal);
         Assert.Contains("data-chart-id=\"replication\"", html, StringComparison.Ordinal);
     }
 }

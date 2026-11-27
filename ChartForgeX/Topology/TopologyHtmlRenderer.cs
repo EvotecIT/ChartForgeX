@@ -97,8 +97,8 @@ public sealed partial class TopologyHtmlRenderer {
         var svgMarkup = preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls);
         var topologyWidth = preparedWidth ?? SvgWidth(svgMarkup) ?? chart.Viewport.Width;
         // A scoped placement keeps the chart's identity for events and adds the scope to everything that has to stay apart
-        // when the same chart appears twice: scenario sequence ids and the scenario keys in the address.
-        var placement = string.IsNullOrWhiteSpace(options.IdScope) ? null : TopologyRenderPrimitives.SanitizeId(options.IdScope!.Trim()) + "-" + id;
+        // when the same chart appears twice: scenario sequence ids and the scenario keys in the address (data-cfx-key).
+        var placement = PlacementKey(options, id);
         var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, placement ?? id) : new List<ScenarioSequenceFigure>();
         // The playback page shows the topology above sequence diagrams, so they share one type scale: each fits the column
         // only while that costs at most an eighth of its size, and otherwise scrolls in its own frame. Anything placed over
@@ -120,7 +120,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-ui", messages.Json)
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-chart-id", id)
-            .Attribute("data-cfx-placement", placement)
+            .Attribute("data-cfx-key", placement ?? id)
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
             .Attribute("data-cfx-interactive", options.Html.Interactions)
             .Attribute("data-cfx-viewport-controls", enableViewportControls)
@@ -274,6 +274,10 @@ public sealed partial class TopologyHtmlRenderer {
             auto.WithRule("&", _ => RegionAutoColors(chart.Theme.Resolve(ThemeMode.Light)));
         return auto;
     }
+
+    // The key a placement's runtime state goes by: the chart's id, scoped when the host scopes the placement.
+    internal static string? PlacementKey(TopologyRenderOptions options, string id) =>
+        string.IsNullOrWhiteSpace(options.IdScope) ? null : TopologyRenderPrimitives.SanitizeId(options.IdScope!.Trim()) + "-" + id;
 
     /// <summary>
     /// Builds the renderer-owned stylesheet used by topology HTML fragments.

@@ -10,7 +10,8 @@
       if(attribute.name==='id')value=ids.get(value);
       else if(['aria-labelledby','aria-describedby'].includes(attribute.name))value=value.split(/\s+/).map(id=>ids.get(id)||id).join(' ');
       else {value=value.replace(/url\(#([^)]*)\)/g,(_,id)=>'url(#'+(ids.get(id)||id)+')');if(value.startsWith('#')&&ids.has(value.slice(1)))value='#'+ids.get(value.slice(1));}
-      if(value!==attribute.value)node.setAttribute(attribute.name,value);
+      // A style goes through the CSS object model, which a strict content security policy allows.
+      if(value!==attribute.value){if(attribute.name==='style')node.style.cssText=value;else node.setAttribute(attribute.name,value);}
     }
   }
   function create(host,spec){
@@ -19,7 +20,11 @@
     if(spec.schema==="chartforgex/layout-1"){
       const parsed=new DOMParser().parseFromString(spec.svg,'image/svg+xml');
       if(parsed.querySelector('parsererror'))throw new Error('Invalid ChartForgeX paint specification.');
-      svg=document.importNode(parsed.documentElement,true);host.querySelector(':scope > svg').replaceWith(svg);
+      // Style attributes travel as data into the page and arrive through the CSS object model.
+      for(const node of [parsed.documentElement,...parsed.documentElement.querySelectorAll('[style]')])if(node.hasAttribute('style')){node.setAttribute('data-cfx-paint-style',node.getAttribute('style'));node.removeAttribute('style');}
+      svg=document.importNode(parsed.documentElement,true);
+      for(const node of [svg,...svg.querySelectorAll('[data-cfx-paint-style]')])if(node.hasAttribute('data-cfx-paint-style')){node.style.cssText=node.getAttribute('data-cfx-paint-style');node.removeAttribute('data-cfx-paint-style');}
+      host.querySelector(':scope > svg').replaceWith(svg);
     }else {
       svg=host.querySelector(':scope > svg');
       if(svg?.cfxBaseSvg){const base=svg.cfxBaseSvg, fresh=base.cloneNode(true);fresh.cfxBaseSvg=base;svg.replaceWith(fresh);svg=fresh;}

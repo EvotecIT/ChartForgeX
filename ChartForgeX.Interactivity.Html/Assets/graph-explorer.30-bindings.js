@@ -101,9 +101,9 @@
     const timeout = lifetime.timeout(done, 1500);
     const releasePending = lifetime.own(done);
   })));
-  const exportSvgContent = (root) => {
+  const exportSvgClone = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
-    if (!svg) return '';
+    if (!svg) return null;
     const state = (root.__cfxGraphState || graphState(root));
     syncSvgLayout(root, state); const clone = svg.cloneNode(true);
     materializeAcceleratedSvg(root, clone, state);
@@ -146,7 +146,11 @@
     clone.style.width = `${frame.pixelWidth}px`; clone.style.height = `${frame.pixelHeight}px`; clone.style.aspectRatio = 'auto';
     const background = clone.querySelector('.cfx-graph-bg');
     if (background) for (const name of ['x', 'y', 'width', 'height']) background.setAttribute(name, String(frame[name]));
-    return new XMLSerializer().serializeToString(clone);
+    return clone;
+  };
+  const exportSvgContent = (root) => {
+    const clone = exportSvgClone(root);
+    return clone ? new XMLSerializer().serializeToString(clone) : '';
   };
   const syncPhysicsControls = (root) => {
     const pressed = root.dataset.cfxGraphPhysicsState === 'running' ? 'true' : 'false';
