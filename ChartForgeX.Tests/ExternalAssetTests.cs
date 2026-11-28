@@ -60,7 +60,8 @@ public sealed class ExternalAssetTests {
         var external = new HtmlGraphExplorerRenderer().RenderPage(scene, options => { options.ExternalAssets = new HtmlAssetReferences("../shared"); options.Nonce = "abc"; });
         var script = HtmlInteractiveAssetFiles.GraphExplorerScript;
         Assert.Contains(script.Content, inline, StringComparison.Ordinal);
-        Assert.Contains("<script src=\"../shared/" + script.FileName + "\" nonce=\"abc\"></script>", external, StringComparison.Ordinal);
+        Assert.Contains("<script src=\"../shared/" + script.FileName + "\" nonce=\"abc\" data-cfx-graph-physics-worker-src=\"../shared/"
+            + HtmlInteractiveAssetFiles.GraphExplorerPhysicsWorker.FileName + "\"></script>", external, StringComparison.Ordinal);
         Assert.Contains("href=\"../shared/" + HtmlInteractiveAssetFiles.GraphExplorerStyle.FileName + "\"", external, StringComparison.Ordinal);
         Assert.Contains("data-cfx-graph-assets=\"true\"", external, StringComparison.Ordinal);
         Assert.DoesNotContain(RuntimeSnippet(script), external, StringComparison.Ordinal);
@@ -95,7 +96,7 @@ public sealed class ExternalAssetTests {
         var directory = Path.Combine(Path.GetTempPath(), "cfx-assets-" + Guid.NewGuid().ToString("N"));
         try {
             var paths = HtmlInteractiveAssetFiles.WriteTo(directory, HtmlInteractiveAssetFiles.Charts().Concat(HtmlInteractiveAssetFiles.GraphExplorer()));
-            Assert.Equal(HtmlInteractiveAssetFiles.Charts().Count + 2, paths.Count);
+            Assert.Equal(HtmlInteractiveAssetFiles.Charts().Count + 3, paths.Count);
             Assert.All(paths, path => Assert.True(File.Exists(path)));
             var bytes = File.ReadAllBytes(paths[1]);
             Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF, "Asset files are written without a byte order mark.");

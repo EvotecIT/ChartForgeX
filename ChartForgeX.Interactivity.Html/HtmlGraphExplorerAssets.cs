@@ -45,6 +45,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.18-structural-physics.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.19-physics-telemetry.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.21-physics-worker.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.21-physics-runtime.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.22-layout-progress.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-metrics.js",
@@ -66,7 +67,12 @@ internal static class HtmlGraphExplorerAssets {
 
     private static readonly Lazy<string> StyleResource = new Lazy<string>(() => ReadResources(StyleResourceNames));
     private static readonly Lazy<string> RuntimeStyleResource = new Lazy<string>(() => ReadResource("ChartForgeX.Interactivity.Html.Assets.graph-explorer.runtime.css"));
+    // Pure physics functions and the worker's message loop: the file a page with asset files loads as its physics worker.
+    private static readonly string[] PhysicsWorkerFragments = { "17-physics-profile", "18-structural-physics", "20-physics", "21-physics-worker" };
     private static readonly Lazy<string> ScriptResource = new Lazy<string>(() => ReadResources(ScriptResourceNames));
+    private static readonly Lazy<string> PhysicsWorkerResource = new Lazy<string>(() => "(() => {\n"
+        + ReadResources(Array.FindAll(ScriptResourceNames, name => Array.Exists(PhysicsWorkerFragments, fragment => name.EndsWith(".graph-explorer." + fragment + ".js", StringComparison.Ordinal))))
+        + "  installGraphPhysicsWorker(self);\n})();\n");
 
     internal static string Style => StaticStyle + RuntimeStyleResource.Value;
 
@@ -74,6 +80,8 @@ internal static class HtmlGraphExplorerAssets {
     internal static string StaticStyle => ChartForgeX.Typography.ChartFontAssets.StyleSheet + "\n" + StyleResource.Value;
 
     internal static string Script => ScriptResource.Value;
+
+    internal static string PhysicsWorkerScript => PhysicsWorkerResource.Value;
 
     private static string ReadResources(string[] resourceNames) {
         var parts = new string[resourceNames.Length];

@@ -214,6 +214,31 @@ The output then has no `style` attributes. Each inline style becomes a generated
 
 Hosts that deliver styles themselves call `HtmlStrictStyles.Extract(html)` on any ChartForgeX output, including `HtmlChartSection.Html`. It returns the `Markup` without inline styles and the `StyleSheet` to register once in their own nonce'd element or stylesheet file. Equal declarations get the same class name in every fragment, so the stylesheets of several fragments can be concatenated. `controller.update(html)` accepts a strict section that starts with its own `style` element.
 
+### Scripts and styles from files only
+
+For a policy that allows no inline script or style at all, not even with a nonce, split the page into markup and asset files:
+
+```csharp
+var assets = new HtmlAssetReferences("assets/");
+var page = HtmlExternalAssets.Split(chart.ToInteractiveHtmlPage(), assets);
+File.WriteAllText("report.html", page.Html);
+HtmlInteractiveAssetFiles.WriteTo("assets", page.Files);
+```
+
+`Split` takes the output of any renderer: static and interactive charts, dashboards, topology, interactive flow and sequence diagrams and the graph explorer. Style attributes and `style` elements become one stylesheet linked at the end of `head`, as `HtmlStrictStyles.Extract` describes. Each inline script becomes a script file loaded from the same place, so scripts still run in order. Data blocks such as `<script type="application/json">` stay inline: the browser never runs them, so the policy doesn't apply to them. File names carry a content hash, so pages that share a runtime share one file, and the graph explorer's physics worker becomes its own file. Pages rendered with `ExternalAssets` already reference the shared runtimes; write those files too (for example `HtmlInteractiveAssetFiles.GraphExplorer()`) and split the page for its own styles.
+
+The supported policy is:
+
+```text
+default-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; img-src 'self' data: blob:; font-src 'self' data:
+```
+
+No directive needs `'unsafe-inline'`, `'unsafe-eval'`, a nonce or a hash. `worker-src 'self'` covers the graph explorer's physics worker, which loads from the file named on its runtime script (`data-cfx-graph-physics-worker-src`). Without `worker-src`, browsers apply `script-src 'self'` to it. Only pages with an inline runtime start the worker from a `blob:` URL; under a nonce policy without `worker-src blob:`, set `PhysicsThread = HtmlGraphPhysicsThread.Main`. `img-src data: blob:` is only needed for PNG export, which draws the chart's SVG through an image, and for image nodes given as data URLs; `font-src data:` covers the embedded fonts. Add `connect-src` only for the host's own requests. When the assets live on another origin, name that origin in `script-src`, `style-src` and `worker-src`; a worker script has to be same-origin, so keep the worker file beside the page.
+
+The runtimes still set positions, sizes and colours through `element.style` while they run. The policy allows that: it governs `style` attributes in markup and `setAttribute('style', …)`, not the CSS object model. A `controller.update` section that brings its own `style` element needs the nonce path above, or the host splits the section and adds its stylesheet first.
+
+`ExternalCspBrowserTests` serve each surface with this policy as a real response header, record every violation, inline script and style element from the first byte, then hover, click, use the keyboard, zoom, export and print before scanning the document again.
+
 Test links and hooks against the [DOM contract](https://chartforgex.com/docs/dom-contract/), not child order or generated definition IDs. Check each link's URL, target, accessible label and tab stop; check host attributes verbatim; resize the HTML track column and measure text and marker dimensions. Inspect desktop and phone output in both page themes, and test the actual rendered page's keyboard navigation and data disclosure. Try the [linked columns, support schedule and shared strips](https://chartforgex.com/examples/generated/embedding/light.html), or open their companion source-and-output story.
 
 ## Optional enhancement
