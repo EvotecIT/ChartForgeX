@@ -307,17 +307,18 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private ChartRect LinkHitBounds(TopologyNode node, TopologyNodeDisplayMode mode, ChartRect bounds) {
-        var caption = node.ShowLabel && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)
-            && mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
-        if (!caption) return bounds;
-        // Toward the caption's first line, above or below, and no wider than the node, so it bridges the gap without
-        // reaching a neighbour; the caption's own text is part of the link already.
-        if (node.CaptionPlacement == TopologyCaptionPlacement.Top) {
-            var above = Bounds(node.X, node.Y - 5 - 18, node.Width, 18);
-            return new ChartRect(bounds.X, above.Y, bounds.Width, bounds.Bottom - above.Y);
-        }
-        var text = Bounds(node.X, node.Y + node.Height + 5, node.Width, 18);
-        return new ChartRect(bounds.X, bounds.Y, bounds.Width, Math.Max(bounds.Bottom, text.Bottom) - bounds.Y);
+        // Toward the caption as it is painted, above or below, and no wider than the node, so it bridges the gap without
+        // reaching a neighbour; the caption's own text is part of the link already. No caption, no extension.
+        ChartRect? caption;
+        if (TopologyExternalCaption.HasPolicy(node)) caption = TopologyExternalCaption.Prepare(node, _options) is { } plan ? Bounds(plan.Bounds.X, plan.Bounds.Y, plan.Bounds.Width, plan.Bounds.Height) : null;
+        // Artwork drawn as an image has no caption of its own; without one it falls back to a tile and its caption.
+        else caption = node.ShowLabel && _options.IncludeNodeLabels && (mode == TopologyNodeDisplayMode.Tile
+                || mode == TopologyNodeDisplayMode.Icon && _options.IncludeIconLabels
+                || mode == TopologyNodeDisplayMode.Artwork && ResolveRenderableNodeArtwork(node, _options) == null)
+            ? Bounds(node.X, node.Y + node.Height + 5, node.Width, 18) : null;
+        if (caption is not ChartRect text) return bounds;
+        var top = Math.Min(bounds.Top, text.Top); var bottom = Math.Max(bounds.Bottom, text.Bottom);
+        return new ChartRect(bounds.X, top, bounds.Width, bottom - top);
     }
 
     private IDisposable? Host(string? href, string? tooltip, string id, string role) {

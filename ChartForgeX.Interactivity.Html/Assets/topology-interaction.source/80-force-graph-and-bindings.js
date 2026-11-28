@@ -339,12 +339,17 @@
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
-    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link.
-    wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]').forEach(host => host.setAttribute('tabindex', '-1'));
+    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link. The link's own tab
+    // stop comes back when the runtime lets go and in a downloaded diagram, where no runtime handles Enter on the node.
+    const nodeHosts = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]'));
+    nodeHosts.forEach(host => { host.setAttribute('data-cfx-host-tabindex', host.getAttribute('tabindex') ?? ''); host.setAttribute('tabindex', '-1'); });
+    lifetime.own(() => nodeHosts.forEach(host => restoreHostTabStop(host)));
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
     const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
     const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;
-    const filterHidden = /\bcfx-topology-html-(?:filter|force)-hidden\b/;
+    // Exact class tokens, so a page's own class prefix or a longer class name never reads as hidden.
+    const hiddenClasses = ['cfx-topology-html-filter-hidden', 'cfx-topology-html-force-hidden'];
+    const filterHidden = { test: value => String(value).split(/\s+/).some(token => hiddenClasses.includes(token)) };
     const syncHitAreas = () => hitAreas.forEach(hit => {
       const node = hitNode(hit);
       if (!node || node.closest('.cfx-topology-html-filter-hidden,.cfx-topology-html-force-hidden')) hit.setAttribute('pointer-events', 'none');

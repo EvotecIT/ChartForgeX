@@ -260,6 +260,12 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
+    // Gives a linked node's own link back its tab stop, as the page rendered it.
+    const restoreHostTabStop = host => {
+      const original = host.getAttribute('data-cfx-host-tabindex');
+      if (original) host.setAttribute('tabindex', original); else host.removeAttribute('tabindex');
+      host.removeAttribute('data-cfx-host-tabindex');
+    };
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
     const collectPrefixed = (element, prefix) => {
       const values = {};
@@ -906,8 +912,12 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       if (!svg) return null;
       const clone = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
-      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node.
+      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node, reached by its own tab stop.
       clone.querySelectorAll('a[data-cfx-role="topology-node-hit-host"]').forEach(hit => hit.remove());
+      clone.querySelectorAll('a[data-cfx-role="topology-node-host"][data-cfx-host-tabindex]').forEach(host => {
+        restoreHostTabStop(host);
+        host.querySelectorAll('[data-cfx-role="topology-node"][tabindex]').forEach(node => node.removeAttribute('tabindex'));
+      });
       // Payloads belong to the live player, not to a downloaded static diagram.
       [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
         if (!node.hasAttribute('data-cfx-scenarios')) return;
@@ -2329,12 +2339,17 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
-    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link.
-    wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]').forEach(host => host.setAttribute('tabindex', '-1'));
+    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link. The link's own tab
+    // stop comes back when the runtime lets go and in a downloaded diagram, where no runtime handles Enter on the node.
+    const nodeHosts = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]'));
+    nodeHosts.forEach(host => { host.setAttribute('data-cfx-host-tabindex', host.getAttribute('tabindex') ?? ''); host.setAttribute('tabindex', '-1'); });
+    lifetime.own(() => nodeHosts.forEach(host => restoreHostTabStop(host)));
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
     const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
     const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;
-    const filterHidden = /\bcfx-topology-html-(?:filter|force)-hidden\b/;
+    // Exact class tokens, so a page's own class prefix or a longer class name never reads as hidden.
+    const hiddenClasses = ['cfx-topology-html-filter-hidden', 'cfx-topology-html-force-hidden'];
+    const filterHidden = { test: value => String(value).split(/\s+/).some(token => hiddenClasses.includes(token)) };
     const syncHitAreas = () => hitAreas.forEach(hit => {
       const node = hitNode(hit);
       if (!node || node.closest('.cfx-topology-html-filter-hidden,.cfx-topology-html-force-hidden')) hit.setAttribute('pointer-events', 'none');

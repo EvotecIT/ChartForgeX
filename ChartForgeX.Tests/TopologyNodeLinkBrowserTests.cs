@@ -29,7 +29,7 @@ public sealed class TopologyNodeLinkBrowserTests {
         try {
             await session.Page.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
             await session.Page.GotoAsync("https://chartforgex.test/topology.html");
-            await session.Page.Locator(".cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            await session.Page.Locator("[data-cfx-interactive=true][data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
             return session;
         } catch {
             await session.DisposeAsync();
@@ -112,18 +112,20 @@ public sealed class TopologyNodeLinkBrowserTests {
     [InlineData("select")]
     [InlineData("new tab")]
     [InlineData("filtered")]
+    [InlineData("filtered under a class prefix")]
     public async Task TheGapBelowALinkedTile_ActsForThatTile(string how) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = TopologyChart.Create().Id("gap").AddNode("dc01", "Domain Controller Alpha", 40, 40, href: "#record=dcs:dc01", width: 120, height: 40);
         var options = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, OpenLinksInNewTab = how == "new tab" };
+        if (how == "filtered under a class prefix") options.CssClassPrefix = "-report";
         await using var session = await Open(chart.ToInteractiveHtmlPage(options));
         var browser = session.Page;
         var hit = browser.Locator("a[data-cfx-role=\"topology-node-hit-host\"]");
         Assert.Equal("dc01", await hit.GetAttributeAsync("data-cfx-pointer-for"));
         Assert.Equal("-1", await hit.GetAttributeAsync("tabindex"));
         if (how == "new tab") { Assert.Equal("_blank", await hit.GetAttributeAsync("target")); return; }
-        if (how == "filtered") {
-            await browser.EvaluateAsync("() => document.querySelector('.cfx-topology-wrapper').dispatchEvent(new CustomEvent('cfx-topology-set-filter', { detail: { query: 'nothing matches this' } }))");
+        if (how.StartsWith("filtered", StringComparison.Ordinal)) {
+            await browser.EvaluateAsync("() => document.querySelector('[data-cfx-runtime-bound]').dispatchEvent(new CustomEvent('cfx-topology-set-filter', { detail: { query: 'nothing matches this' } }))");
             await browser.WaitForFunctionAsync("() => document.querySelector('a[data-cfx-role=\"topology-node-hit-host\"]').getAttribute('pointer-events') === 'none'");
             return;
         }
@@ -155,6 +157,50 @@ public sealed class TopologyNodeLinkBrowserTests {
         Assert.Equal(placement == TopologyCaptionPlacement.Top ? new[] { "#record=dcs:dc01", "" } : new[] { "", "#record=dcs:dc01" }, sides);
         // The node is its one tab stop; its link and hit area stay out of the tab order.
         Assert.Equal(1, await session.Page.EvaluateAsync<int>("() => [...document.querySelectorAll('.cfx-topology-wrapper [tabindex]')].filter(e => e.getAttribute('tabindex') !== '-1' && e.closest('[data-node-id=\"dc01\"],a[data-cfx-role$=\"host\"]')).length"));
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    // A downloaded SVG keeps one link per node with its own tab stop, so Tab and Enter follow it without the runtime.
+    public async Task ADownloadedSvg_KeepsKeyboardLinks() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("download").AddNode("dc01", "DC01", 40, 40, href: "#record=dcs:dc01", width: 120, height: 40);
+        var options = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        options.Html.ExportControls = true;
+        await using var session = await Open(chart.ToInteractiveHtmlPage(options));
+        var browser = session.Page;
+        var download = await browser.RunAndWaitForDownloadAsync(() => browser.Locator("[data-cfx-topology-export=\"svg\"]").ClickAsync());
+        string svg = await File.ReadAllTextAsync(await download.PathAsync() ?? throw new InvalidOperationException("No download."));
+        Assert.DoesNotContain("topology-node-hit-host", svg, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-cfx-host-tabindex", svg, StringComparison.Ordinal);
+        await browser.RouteAsync("https://chartforgex.test/download.svg", route => route.FulfillAsync(new() { Body = svg, ContentType = "image/svg+xml" }));
+        await browser.GotoAsync("https://chartforgex.test/download.svg");
+        await browser.Keyboard.PressAsync("Tab");
+        await browser.Keyboard.PressAsync("Enter");
+        await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc01'");
+    }
+
+    [Trait("Category", "Browser")]
+    [Theory]
+    // The hit area follows the caption as painted: a wide gap above the tile is covered, and artwork without a caption
+    // gets no band below it.
+    [InlineData("gap above", -30, "#record=dcs:dc01")]
+    [InlineData("no caption", 6, "")]
+    public async Task TheHitArea_FollowsThePaintedCaption(string how, int offset, string expected) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("painted").AddNode("dc01", "Domain Controller Alpha", 40, 120, href: "#record=dcs:dc01", width: 120, height: 40);
+        var options = new TopologyRenderOptions { NodeDisplayMode = how == "no caption" ? TopologyNodeDisplayMode.Artwork : TopologyNodeDisplayMode.Tile };
+        if (how == "gap above") { chart.Nodes[0].CaptionPlacement = TopologyCaptionPlacement.Top; chart.Nodes[0].CaptionGap = 50; }
+        if (how == "no caption") chart.Nodes[0].Artwork = TopologyIconArtwork.Portrait(new ChartForgeX.Raster.RgbaImage(2, 1, new byte[] { 255, 0, 0, 255, 0, 255, 0, 128 }));
+        await using var session = await Open(chart.ToInteractiveHtmlPage(options));
+        var href = await session.Page.EvaluateAsync<string>(@"offset => {
+            const owner = document.querySelector('[data-cfx-role=""topology-node""]');
+            const node = (owner.querySelector('[data-cfx-role*=""surface""], image') || owner).getBoundingClientRect();
+            const scale = node.width / 120;
+            const y = offset < 0 ? node.top + offset * scale : node.bottom + offset * scale;
+            return document.elementFromPoint(node.x + node.width / 2, y)?.closest('a')?.getAttribute('href') || '';
+        }", offset);
+        Assert.Equal(expected, href);
     }
 
     [Trait("Category", "Browser")]

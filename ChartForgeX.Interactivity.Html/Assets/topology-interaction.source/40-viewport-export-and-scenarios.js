@@ -312,8 +312,12 @@
       if (!svg) return null;
       const clone = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
-      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node.
+      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node, reached by its own tab stop.
       clone.querySelectorAll('a[data-cfx-role="topology-node-hit-host"]').forEach(hit => hit.remove());
+      clone.querySelectorAll('a[data-cfx-role="topology-node-host"][data-cfx-host-tabindex]').forEach(host => {
+        restoreHostTabStop(host);
+        host.querySelectorAll('[data-cfx-role="topology-node"][tabindex]').forEach(node => node.removeAttribute('tabindex'));
+      });
       // Payloads belong to the live player, not to a downloaded static diagram.
       [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
         if (!node.hasAttribute('data-cfx-scenarios')) return;
