@@ -68,12 +68,14 @@ public sealed class TopologyPlacementScopeTests {
     }
 
     // A link copied before placements had their own keys names the chart's id; a scoped placement still restores it, moves
-    // its state to the placement's keys, and once the reader clears it, a reload leaves it cleared.
+    // its state to the placement's keys, and once the reader clears it, a reload leaves it cleared, authored default or not.
     [Trait("Category", "Browser")]
-    [Fact]
-    public async Task ScopedPlacement_RestoresAScenarioLinkKeyedByTheChartId() {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("replicate")]
+    public async Task ScopedPlacement_RestoresAScenarioLinkKeyedByTheChartId(string? authored) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var options = new TopologyRenderOptions { IdScope = "left" }.Html(html => html.ScenarioPanel());
+        var options = new TopologyRenderOptions { IdScope = "left", ActiveScenarioId = authored }.Html(html => html.ScenarioPanel());
         options.Html.ScenarioUrlState = true; options.Html.ScenarioControls = true;
         var page = TopologyScenarioPlaybackTests.ReplicationChart().ToInteractiveHtmlPage(options);
         var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {
@@ -92,6 +94,37 @@ public sealed class TopologyPlacementScopeTests {
             await browser.ReloadAsync();
             await browser.Locator(".cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
             Assert.True(string.IsNullOrEmpty(await browser.Locator(".cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario")));
+        }
+    }
+
+    // Fragments rendered before placements had keys of their own, served with the current runtime, keep each chart's
+    // scenario under its own chart id rather than sharing one key.
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task OlderFragmentsWithoutPlacementKeys_KeepTheirOwnScenarios() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var options = new TopologyRenderOptions().Html(html => html.ScenarioPanel());
+        options.Html.ScenarioUrlState = true; options.Html.ScenarioControls = true;
+        static string Older(string html) => Regex.Replace(html, "\\sdata-cfx-key=\"[^\"]*\"", string.Empty);
+        string body = Older(TopologyScenarioPlaybackTests.ReplicationChart().Id("first").ToInteractiveHtmlPage(options));
+        string second = Older(TopologyScenarioPlaybackTests.ReplicationChart().Id("second").ToInteractiveHtmlFragment(options));
+        string page = body.Replace("</body>", second + "</body>", StringComparison.Ordinal);
+        Assert.DoesNotContain("data-cfx-key=", page, StringComparison.Ordinal);
+        var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {
+            Browser = InteractiveChartBrowser.Engine, Headless = true, Timeout = 15000, ViewportWidth = 1000, ViewportHeight = 700,
+            BrowserExecutablePath = Environment.GetEnvironmentVariable("CFX_TEST_BROWSER_EXECUTABLE")
+        });
+        await using (session) {
+            var browser = session.Page;
+            await browser.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
+            await browser.GotoAsync("https://chartforgex.test/topology.html");
+            await browser.Locator("[data-chart-id=\"second\"].cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            await browser.Locator("[data-chart-id=\"first\"].cfx-topology-wrapper [data-cfx-topology-scenario='replicate']").First.ClickAsync();
+            await browser.WaitForFunctionAsync("() => new URL(location.href).searchParams.get('cfx-first-scenario') === 'replicate'");
+            await browser.ReloadAsync();
+            await browser.Locator("[data-chart-id=\"second\"].cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            Assert.Equal("replicate", await browser.Locator("[data-chart-id=\"first\"].cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario"));
+            Assert.True(string.IsNullOrEmpty(await browser.Locator("[data-chart-id=\"second\"].cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario")));
         }
     }
 

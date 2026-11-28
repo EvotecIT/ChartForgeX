@@ -107,7 +107,7 @@ internal static partial class SmokeTests {
         Assert(urlStateHtml.Contains("scenarioUrlParam('scenario')", StringComparison.Ordinal), "Scenario URL state should allow links to open a specific scenario.");
         Assert(urlStateHtml.Contains("scenarioUrlParam('scenarioStep')", StringComparison.Ordinal), "Scenario URL state should allow links to open a specific route step.");
         Assert(urlStateHtml.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Scenario panels should include copy-link controls when deep-link route state is enabled.");
-        Assert(urlStateHtml.Contains("scenarioUrlKey('scenario')", StringComparison.Ordinal) && urlStateHtml.Contains("params.get(scenarioUrlName(params, name))", StringComparison.Ordinal), "Scenario URL state should use chart-scoped query keys while still reading legacy single-chart links.");
+        Assert(urlStateHtml.Contains("scenarioUrlKey('scenario')", StringComparison.Ordinal) && urlStateHtml.Contains("const key = scenarioUrlName(params, name)", StringComparison.Ordinal), "Scenario URL state should use chart-scoped query keys while still reading legacy single-chart links.");
         Assert(urlStateHtml.Contains("syncScenarioUrl(route.scenarioId, index)", StringComparison.Ordinal), "Scenario step focus should keep URL state synchronized.");
         Assert(urlStateHtml.Contains("syncScenarioUrl(scenarioId, '')", StringComparison.Ordinal), "Scenario selection should keep URL state synchronized.");
 

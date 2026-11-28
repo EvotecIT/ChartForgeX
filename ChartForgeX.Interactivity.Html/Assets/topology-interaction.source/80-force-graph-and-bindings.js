@@ -322,9 +322,11 @@
         listen(stepsList, 'click', event => focusStep(event.target));
         listen(stepsList, 'keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; event.preventDefault(); focusStep(event.target); });
       }
-      const initialScenario = scenarioUrlParam('scenario') || attr(wrapper, 'data-cfx-active-scenario');
+      // A scenario the reader cleared stays cleared; only an address that names none falls back to the authored one.
+      const urlScenario = scenarioUrlParam('scenario');
+      const initialScenario = urlScenario ?? attr(wrapper, 'data-cfx-active-scenario');
       const initialScenarioStep = scenarioUrlParam('scenarioStep');
-      if (scenarioControlMode === 'checkboxes') setScenarioFilters(initialScenario ? scenarioIdTokens(initialScenario) : Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle')), false, false);
+      if (scenarioControlMode === 'checkboxes') setScenarioFilters(initialScenario ? scenarioIdTokens(initialScenario) : urlScenario === '' ? [] : Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle')), false, false);
       else setScenario(initialScenario, false, false);
       if (initialScenarioStep && (scenarioControlMode !== 'checkboxes' || attr(wrapper, 'data-cfx-active-scenario'))) setScenarioStep(initialScenarioStep, false, false, false);
       const initialRoute = scenarioRoute(attr(wrapper, 'data-cfx-active-scenario'));
