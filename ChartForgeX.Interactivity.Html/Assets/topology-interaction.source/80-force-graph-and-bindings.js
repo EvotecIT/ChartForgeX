@@ -136,7 +136,15 @@
       reachable.add(edge);
       ['data-source-group-id', 'data-target-group-id'].forEach(name => { if (attr(edge, name)) reachableGroups.add(attr(edge, name)); });
     });
-    wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => { if (reachableGroups.has(attr(group, 'data-group-id'))) reachable.add(group); });
+    // The arrows reach the first element of a group id, as the selection does; another one with the same id, such as a
+    // geographic callout, keeps its own tab stop.
+    const claimedGroups = new Set();
+    wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
+      const id = attr(group, 'data-group-id');
+      if (!reachableGroups.has(id) || claimedGroups.has(id)) return;
+      claimedGroups.add(id);
+      reachable.add(group);
+    });
     lifetime.own(() => wrapper.querySelectorAll('[data-cfx-live-tabindex]').forEach(restoreTabOrder));
     wrapper.querySelectorAll(selectables).forEach(element => {
       const link = nodeLink(element);

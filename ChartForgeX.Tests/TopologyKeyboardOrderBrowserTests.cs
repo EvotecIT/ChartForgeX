@@ -103,6 +103,27 @@ public sealed class TopologyKeyboardOrderBrowserTests {
 
     [Trait("Category", "Browser")]
     [Fact]
+    // A geographic callout shares its group's id; the arrows reach the group surface, so the callout keeps its tab stop.
+    public async Task AGeographicCallout_KeepsItsTabStop() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("regions").Viewport(new TopologyViewport(900, 560)).Legend((TopologyLegend?)null);
+        chart.LayoutMode = TopologyLayoutMode.Geographic;
+        chart.Groups.Add(new TopologyGroup { Id = "region", Label = "Region", Longitude = 20, Latitude = 50 });
+        for (var index = 0; index < 3; index++)
+            chart.Nodes.Add(new TopologyNode { Id = "node-" + index, Label = "Site " + index, GroupId = "region", Longitude = 18 + index, Latitude = 48 + index, Width = 70, Height = 40 });
+        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, Geography = { IncludeCallouts = true }, FitContentToViewport = true };
+        await using var session = await Open(chart.ToInteractiveHtmlPage(options));
+        var browser = session.Page;
+        bool reached = false;
+        for (int i = 0; i < 12 && !reached; i++) {
+            await browser.Keyboard.PressAsync("Tab");
+            reached = await browser.EvaluateAsync<bool>("() => !!document.activeElement?.closest('[data-cfx-visual-role=\"topology-geographic-callout\"]') || !!document.activeElement?.querySelector?.('[data-cfx-visual-role=\"topology-geographic-callout\"]')");
+        }
+        Assert.True(reached, "Tab reaches the geographic callout.");
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
     // Focus that arrives by Tab starts a fresh arrow cycle from the newly focused node.
     public async Task TabbingBackToANode_StartsAFreshArrowCycle() {
         if (!InteractiveChartBrowser.Enabled) return;
