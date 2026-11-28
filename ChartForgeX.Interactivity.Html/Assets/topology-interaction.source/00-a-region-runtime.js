@@ -97,7 +97,15 @@
       });
       listen(svg,'keydown', event => {
         if (event.key === 'Escape') { clear(); event.preventDefault(); return; }
-        if (event.key === 'Enter' || event.key === ' ') { if (current) { select(current); event.preventDefault(); } return; }
+        if (event.key === 'Enter' || event.key === ' ') {
+          if (!current) return;
+          event.preventDefault();
+          // Enter follows a linked node's link as a click does; Space only selects.
+          select(current);
+          const host = event.key === 'Enter' ? current.closest('a[data-cfx-role$="-host"]') : null;
+          if (host && wrapper.contains(host)) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          return;
+        }
         const vector = {ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowDown:[0,1],ArrowUp:[0,-1]}[event.key];
         if (!vector) return;
         event.preventDefault();

@@ -335,11 +335,13 @@
     }
     // A member link inside a sibling card opens its own target rather than selecting the card around it.
     const siblingRowLink = target => target instanceof Element && !!target.closest('a[data-cfx-role="topology-sibling-row-host"]');
+    // A node, edge or group the author linked sits inside an SVG link of its own; activating it selects it and follows the link.
+    const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     listen(wrapper, 'click', event => {
       if (siblingRowLink(event.target)) return;
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
-      event.preventDefault();
+      if (!hostLink(element)) event.preventDefault();
       select(element);
     });
     listen(wrapper, 'keydown', event => {
@@ -360,7 +362,10 @@
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
+      // Enter follows the link as a click does; Space only selects.
       select(element);
+      const host = event.key === 'Enter' ? hostLink(element) : null;
+      if (host) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
     });
     listen(wrapper, 'cfx-topology-set-selection', event => {
       setSelection(event.detail);

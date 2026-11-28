@@ -121,12 +121,16 @@ internal sealed partial class VisualTopologyCompiler {
             bounds = new ChartRect(left, top, Math.Max(bounds.Right, b.Right) - left, Math.Max(bounds.Bottom, b.Bottom) - top);
         }
         var label = edge.Label;
-        if (string.IsNullOrWhiteSpace(label)) label = edge.Direction switch {
-            VisualLinkDirection.Backward => edge.TargetNodeId + " to " + edge.SourceNodeId,
-            VisualLinkDirection.Bidirectional => edge.SourceNodeId + " to " + edge.TargetNodeId + " and " + edge.TargetNodeId + " to " + edge.SourceNodeId,
-            VisualLinkDirection.None => edge.SourceNodeId + " and " + edge.TargetNodeId,
-            _ => edge.SourceNodeId + " to " + edge.TargetNodeId
-        };
+        if (string.IsNullOrWhiteSpace(label)) {
+            // An unlabelled edge is named by its endpoints as the reader sees them; a node without a label falls back to its id.
+            string from = EndpointName(edge.SourceNodeId), to = EndpointName(edge.TargetNodeId);
+            label = edge.Direction switch {
+                VisualLinkDirection.Backward => to + " to " + from,
+                VisualLinkDirection.Bidirectional => from + " to " + to + " and " + to + " to " + from,
+                VisualLinkDirection.None => from + " and " + to,
+                _ => from + " to " + to
+            };
+        }
         _builder.AddRegion(new VisualSemanticRegion(edge.Id, "topology-edge", bounds, label));
 
         void Endpoint(string? text, ChartPoint endpoint, ChartPoint adjacent, string end) {
@@ -295,4 +299,6 @@ internal sealed partial class VisualTopologyCompiler {
             case TopologyMarkerKind.ZeroOrMany: Stroke(0, -5, -8, 0, 0, 5); Circle(-12, false); break;
         }
     }
+
+    private string EndpointName(string id) => _nodesById.TryGetValue(id, out var node) && !string.IsNullOrWhiteSpace(node.Label) ? node.Label : id;
 }

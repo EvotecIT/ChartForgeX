@@ -39,6 +39,9 @@ internal sealed partial class VisualTopologyCompiler {
         var surfaceDash=SurfaceDash(node.DashPattern);
         using (Host(node.Href, node.Tooltip, node.Id, "topology-node-host"))
         using (_builder.PushGroup(node.Id, "topology-node", NodeMetadata(node),opacity:node.Opacity??1)) {
+            // A linked node is one target: a transparent area under its paint covers the gaps between its surface and its
+            // caption, so a pointer anywhere on the node reaches the link instead of the group behind it.
+            if (SafeHref(node.Href) != null) _builder.Rect(LinkHitBounds(node, mode, bounds), ChartColor.Transparent, role: "topology-node-hit");
             Action? beforeArtwork = mode == TopologyNodeDisplayMode.Artwork && HasArtworkSurfacePolicy(node)
                 ? () => BuildNodeSurface(node, mode, bounds, fill, accent, strokeWidth, surfaceDash, surfacePaint, accentPaint) : null;
             var image = mode == TopologyNodeDisplayMode.Artwork && BuildArtwork(node, bounds, beforePaint: beforeArtwork);
@@ -292,6 +295,15 @@ internal sealed partial class VisualTopologyCompiler {
                 }
             } else { var p = Project(new ChartPoint(mark.Cx, mark.Cy)); _builder.Ellipse(p.X, p.Y, mark.Rx * _scale * glyphScale, mark.Ry * _scale * glyphScale, mark.Filled ? color : null, mark.Filled ? null : color, mark.StrokeWidth * _scale * glyphScale, "topology-node-icon", paint: new VisualScenePaintBinding(glyphPaint, glyphPaint)); }
         }
+    }
+
+    private ChartRect LinkHitBounds(TopologyNode node, TopologyNodeDisplayMode mode, ChartRect bounds) {
+        var caption = node.ShowLabel && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)
+            && mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
+        if (!caption) return bounds;
+        var text = Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18);
+        var left = Math.Min(bounds.Left, text.Left); var top = Math.Min(bounds.Top, text.Top);
+        return new ChartRect(left, top, Math.Max(bounds.Right, text.Right) - left, Math.Max(bounds.Bottom, text.Bottom) - top);
     }
 
     private IDisposable? Host(string? href, string? tooltip, string id, string role) {

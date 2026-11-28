@@ -163,7 +163,15 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       });
       listen(svg,'keydown', event => {
         if (event.key === 'Escape') { clear(); event.preventDefault(); return; }
-        if (event.key === 'Enter' || event.key === ' ') { if (current) { select(current); event.preventDefault(); } return; }
+        if (event.key === 'Enter' || event.key === ' ') {
+          if (!current) return;
+          event.preventDefault();
+          // Enter follows a linked node's link as a click does; Space only selects.
+          select(current);
+          const host = event.key === 'Enter' ? current.closest('a[data-cfx-role$="-host"]') : null;
+          if (host && wrapper.contains(host)) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          return;
+        }
         const vector = {ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowDown:[0,1],ArrowUp:[0,-1]}[event.key];
         if (!vector) return;
         event.preventDefault();
@@ -2323,11 +2331,13 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     }
     // A member link inside a sibling card opens its own target rather than selecting the card around it.
     const siblingRowLink = target => target instanceof Element && !!target.closest('a[data-cfx-role="topology-sibling-row-host"]');
+    // A node, edge or group the author linked sits inside an SVG link of its own; activating it selects it and follows the link.
+    const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     listen(wrapper, 'click', event => {
       if (siblingRowLink(event.target)) return;
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
-      event.preventDefault();
+      if (!hostLink(element)) event.preventDefault();
       select(element);
     });
     listen(wrapper, 'keydown', event => {
@@ -2348,7 +2358,10 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
+      // Enter follows the link as a click does; Space only selects.
       select(element);
+      const host = event.key === 'Enter' ? hostLink(element) : null;
+      if (host) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
     });
     listen(wrapper, 'cfx-topology-set-selection', event => {
       setSelection(event.detail);
