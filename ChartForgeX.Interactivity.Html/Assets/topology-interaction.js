@@ -2325,9 +2325,25 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     const siblingRowLink = target => target instanceof Element && !!target.closest('a[data-cfx-role="topology-sibling-row-host"]');
     // A node, edge or group the author linked sits inside an SVG link of its own; activating it selects it and follows the link.
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
+    // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
+    // the area takes no pointer while the node is filtered out.
+    const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
+    const hitNode = hit => wrapper.querySelector('[data-cfx-role="topology-node"][data-node-id="' + topologyFilterEscape(attr(hit, 'data-cfx-pointer-for')) + '"]');
+    const syncHitAreas = () => hitAreas.forEach(hit => {
+      const node = hitNode(hit);
+      if (!node || node.closest('.cfx-topology-html-filter-hidden,.cfx-topology-html-force-hidden')) hit.setAttribute('pointer-events', 'none');
+      else hit.removeAttribute('pointer-events');
+    });
+    if (hitAreas.length) {
+      const hitObserver = new MutationObserver(syncHitAreas);
+      hitObserver.observe(wrapper, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      lifetime.own(() => hitObserver.disconnect());
+      syncHitAreas();
+    }
     listen(wrapper, 'click', event => {
       if (siblingRowLink(event.target)) return;
-      const element = event.target instanceof Element ? event.target.closest(selectables) : null;
+      const hit = event.target instanceof Element ? event.target.closest('a[data-cfx-role="topology-node-hit-host"]') : null;
+      const element = hit ? hitNode(hit) : event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       if (!hostLink(element)) event.preventDefault();
       select(element);

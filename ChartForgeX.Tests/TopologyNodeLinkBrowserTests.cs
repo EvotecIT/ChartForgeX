@@ -91,6 +91,36 @@ public sealed class TopologyNodeLinkBrowserTests {
     }
 
     [Trait("Category", "Browser")]
+    [Theory]
+    // The gap below a linked tile acts for the tile: it selects it and follows its link, in a new tab when links open
+    // there, and takes no pointer once a filter hides the tile.
+    [InlineData("select")]
+    [InlineData("new tab")]
+    [InlineData("filtered")]
+    public async Task TheGapBelowALinkedTile_ActsForThatTile(string how) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("gap").AddNode("dc01", "Domain Controller Alpha", 40, 40, href: "#record=dcs:dc01", width: 120, height: 40);
+        var options = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, OpenLinksInNewTab = how == "new tab" };
+        await using var session = await Open(chart.ToInteractiveHtmlPage(options));
+        var browser = session.Page;
+        var hit = browser.Locator("a[data-cfx-role=\"topology-node-hit-host\"]");
+        Assert.Equal("dc01", await hit.GetAttributeAsync("data-cfx-pointer-for"));
+        Assert.Equal("-1", await hit.GetAttributeAsync("tabindex"));
+        if (how == "new tab") { Assert.Equal("_blank", await hit.GetAttributeAsync("target")); return; }
+        if (how == "filtered") {
+            await browser.EvaluateAsync("() => document.querySelector('.cfx-topology-wrapper').dispatchEvent(new CustomEvent('cfx-topology-set-filter', { detail: { query: 'nothing matches this' } }))");
+            await browser.WaitForFunctionAsync("() => document.querySelector('a[data-cfx-role=\"topology-node-hit-host\"]').getAttribute('pointer-events') === 'none'");
+            return;
+        }
+        var point = await browser.EvaluateAsync<double[]>(@"() => {
+            const tile = document.querySelector('[data-cfx-role=""topology-node""] [data-cfx-role*=""surface""]').getBoundingClientRect();
+            return [tile.x + tile.width / 2, tile.bottom + 2];
+        }");
+        await browser.Mouse.ClickAsync((float)point[0], (float)point[1]);
+        await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc01' && document.querySelector('.cfx-topology-wrapper').getAttribute('data-cfx-selection-id') === 'dc01'");
+    }
+
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task EveryLinkedNode_IsTheTopmostTargetAtItsCentre() {
         if (!InteractiveChartBrowser.Enabled) return;

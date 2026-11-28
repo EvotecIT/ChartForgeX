@@ -302,7 +302,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (!_options.Html.Interactions || SafeHref(node.Href) is not string href) return;
         var mode = EffectiveNodeDisplayMode(node, _options);
         if (mode == TopologyNodeDisplayMode.Hidden) return;
-        using (_builder.PushLink(href, node.Id + "-hit", "topology-node-hit-host", pointerOnly: true))
+        using (_builder.PushLink(href, node.Id + "-hit", "topology-node-hit-host", pointerFor: node.Id))
             _builder.Rect(LinkHitBounds(node, mode, Bounds(node.X, node.Y, node.Width, node.Height)), ChartColor.Transparent, role: "topology-node-hit");
     }
 
