@@ -339,6 +339,8 @@
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
+    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link.
+    wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]').forEach(host => host.setAttribute('tabindex', '-1'));
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
     const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
     const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;

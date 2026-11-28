@@ -299,7 +299,7 @@ internal sealed partial class VisualTopologyCompiler {
     // own targets always stay on top of it.
     private void BuildLinkHitArea(TopologyNode node) {
         // Only an interactive page needs it; a static SVG or image keeps one link per node.
-        if (!_options.Html.Interactions || SafeHref(node.Href) is not string href) return;
+        if (!_options.LiveSurface || SafeHref(node.Href) is not string href) return;
         var mode = EffectiveNodeDisplayMode(node, _options);
         if (mode == TopologyNodeDisplayMode.Hidden) return;
         using (_builder.PushLink(href, node.Id + "-hit", "topology-node-hit-host", pointerFor: node.Id))
@@ -310,8 +310,12 @@ internal sealed partial class VisualTopologyCompiler {
         var caption = node.ShowLabel && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)
             && mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
         if (!caption) return bounds;
-        // Down to the caption's first line and no wider than the node, so it bridges the gap without reaching a neighbour;
-        // the caption's own text is part of the link already.
+        // Toward the caption's first line, above or below, and no wider than the node, so it bridges the gap without
+        // reaching a neighbour; the caption's own text is part of the link already.
+        if (node.CaptionPlacement == TopologyCaptionPlacement.Top) {
+            var above = Bounds(node.X, node.Y - 5 - 18, node.Width, 18);
+            return new ChartRect(bounds.X, above.Y, bounds.Width, bounds.Bottom - above.Y);
+        }
         var text = Bounds(node.X, node.Y + node.Height + 5, node.Width, 18);
         return new ChartRect(bounds.X, bounds.Y, bounds.Width, Math.Max(bounds.Bottom, text.Bottom) - bounds.Y);
     }

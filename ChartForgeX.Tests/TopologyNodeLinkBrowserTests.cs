@@ -26,10 +26,15 @@ public sealed class TopologyNodeLinkBrowserTests {
             Browser = InteractiveChartBrowser.Engine, Headless = true, Timeout = 15000, ViewportWidth = 1200, ViewportHeight = 900,
             BrowserExecutablePath = Environment.GetEnvironmentVariable("CFX_TEST_BROWSER_EXECUTABLE")
         });
-        await session.Page.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
-        await session.Page.GotoAsync("https://chartforgex.test/topology.html");
-        await session.Page.Locator(".cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
-        return session;
+        try {
+            await session.Page.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
+            await session.Page.GotoAsync("https://chartforgex.test/topology.html");
+            await session.Page.Locator(".cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            return session;
+        } catch {
+            await session.DisposeAsync();
+            throw;
+        }
     }
 
     [Fact]
@@ -45,6 +50,16 @@ public sealed class TopologyNodeLinkBrowserTests {
         Assert.Contains("aria-label=\"DC01 to DC02 and DC02 to DC01\"", html, StringComparison.Ordinal);
         Assert.Contains("aria-label=\"DC02 and unnamed\"", html, StringComparison.Ordinal);
         Assert.DoesNotContain("site-0-dc-0 to", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    // Hit areas serve the live page only: an SVG keeps one link per linked node, even with interactions turned on.
+    public void SvgOutput_KeepsOneLinkPerNode() {
+        var chart = TopologyChart.Create().Id("svg").AddNode("dc01", "DC01", 40, 40, href: "#record=dcs:dc01", width: 120, height: 40);
+        var options = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        options.Html.Interactions = true;
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(chart.ToSvg(options), "<a\\s"));
+        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(chart.ToInteractiveHtmlFragmentWithoutAssets(options), "<a\\s").Count);
     }
 
     [Trait("Category", "Browser")]
@@ -120,6 +135,26 @@ public sealed class TopologyNodeLinkBrowserTests {
         await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc01' && document.querySelector('.cfx-topology-wrapper').getAttribute('data-cfx-selection-id') === 'dc01'");
         // Focus stays with the node, not the hidden hit link.
         Assert.Equal("dc01", await browser.EvaluateAsync<string?>("() => document.activeElement?.closest('[data-cfx-role=\"topology-node\"]')?.getAttribute('data-node-id')"));
+    }
+
+    [Trait("Category", "Browser")]
+    [Theory]
+    // The hit area reaches toward the caption, above or below the tile; the other side still belongs to what lies behind.
+    [InlineData(TopologyCaptionPlacement.Bottom)]
+    [InlineData(TopologyCaptionPlacement.Top)]
+    public async Task TheHitArea_FollowsTheCaptionSide(TopologyCaptionPlacement placement) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("sides").AddNode("dc01", "Domain Controller Alpha", 40, 60, href: "#record=dcs:dc01", width: 120, height: 40);
+        chart.Nodes[0].CaptionPlacement = placement;
+        await using var session = await Open(chart.ToInteractiveHtmlPage(new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile }));
+        var sides = await session.Page.EvaluateAsync<string[]>(@"() => {
+            const tile = document.querySelector('[data-cfx-role=""topology-node""] [data-cfx-role*=""surface""]').getBoundingClientRect();
+            const at = y => document.elementFromPoint(tile.x + tile.width / 2, y)?.closest('a')?.getAttribute('href') || '';
+            return [at(tile.top - 3), at(tile.bottom + 3)];
+        }");
+        Assert.Equal(placement == TopologyCaptionPlacement.Top ? new[] { "#record=dcs:dc01", "" } : new[] { "", "#record=dcs:dc01" }, sides);
+        // The node is its one tab stop; its link and hit area stay out of the tab order.
+        Assert.Equal(1, await session.Page.EvaluateAsync<int>("() => [...document.querySelectorAll('.cfx-topology-wrapper [tabindex]')].filter(e => e.getAttribute('tabindex') !== '-1' && e.closest('[data-node-id=\"dc01\"],a[data-cfx-role$=\"host\"]')).length"));
     }
 
     [Trait("Category", "Browser")]
