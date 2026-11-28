@@ -131,6 +131,34 @@ public sealed class TopologyKeyboardOrderBrowserTests {
         Assert.Equal("0", await edgeLink.GetAttributeAsync("tabindex"));
     }
 
+    [Trait("Category", "Browser")]
+    [Fact]
+    // Working out the tab order on mount grows with the chart, not with its square: doubling a chain of nodes roughly
+    // doubles the elements the runtime's queries return while it mounts.
+    public async Task MountWork_GrowsLinearlyWithTheChart() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        async Task<long> Visited(int nodes) {
+            var chart = TopologyChart.Create().Id("scale" + nodes);
+            for (int i = 0; i < nodes; i++) chart.AddNode("n" + i, "Node " + i, 40 + (i % 40) * 140, 40 + (i / 40) * 90, groupId: null, width: 100, height: 40);
+            for (int i = 1; i < nodes; i++) chart.AddEdge("e" + i, "n" + (i - 1), "n" + i);
+            var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {
+                Browser = InteractiveChartBrowser.Engine, Headless = true, Timeout = 60000, ViewportWidth = 1000, ViewportHeight = 700,
+                BrowserExecutablePath = Environment.GetEnvironmentVariable("CFX_TEST_BROWSER_EXECUTABLE")
+            });
+            await using (session) {
+                // Counts what every query returns until the chart is bound.
+                await session.Page.AddInitScriptAsync("(() => { window.__visited = 0; for (const type of [Element, Document]) { const query = type.prototype.querySelectorAll; type.prototype.querySelectorAll = function (selector) { const found = query.call(this, selector); if (!window.__bound) window.__visited += found.length; return found; }; } })()");
+                string page = chart.ToInteractiveHtmlPage();
+                await session.Page.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
+                await session.Page.GotoAsync("https://chartforgex.test/topology.html");
+                await session.Page.Locator("[data-cfx-interactive=true][data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached, Timeout = 60000 });
+                return await session.Page.EvaluateAsync<long>("() => { window.__bound = true; return window.__visited; }");
+            }
+        }
+        long small = await Visited(400), large = await Visited(800);
+        Assert.True(large < small * 3, $"400 nodes visited {small} elements, 800 visited {large}.");
+    }
+
     [Fact]
     // A downloaded or static SVG has no runtime: every link keeps its own tab stop.
     public void StaticSvg_KeepsATabStopOnEveryLink() {

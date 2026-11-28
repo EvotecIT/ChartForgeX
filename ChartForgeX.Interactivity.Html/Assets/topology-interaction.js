@@ -2144,12 +2144,21 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     };
     // Only what a node's arrows can reach leaves the tab order; anything else, such as an edge between two groups or a
     // parent group, keeps its tab stop.
+    // Worked out in one pass over nodes, edges and groups, the same relations the arrows follow: a node's edges, its group
+    // and the groups at those edges' ends.
     const reachable = new Set();
+    const nodeIds = new Set();
+    const reachableGroups = new Set();
     wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
-      const detail = identity(node);
-      detail.related = related(detail);
-      relatedElements(detail).forEach(item => reachable.add(item));
+      nodeIds.add(attr(node, 'data-node-id'));
+      if (attr(node, 'data-group-id')) reachableGroups.add(attr(node, 'data-group-id'));
     });
+    wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
+      if (!nodeIds.has(attr(edge, 'data-source-node-id')) && !nodeIds.has(attr(edge, 'data-target-node-id'))) return;
+      reachable.add(edge);
+      ['data-source-group-id', 'data-target-group-id'].forEach(name => { if (attr(edge, name)) reachableGroups.add(attr(edge, name)); });
+    });
+    wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => { if (reachableGroups.has(attr(group, 'data-group-id'))) reachable.add(group); });
     lifetime.own(() => wrapper.querySelectorAll('[data-cfx-live-tabindex]').forEach(restoreTabOrder));
     wrapper.querySelectorAll(selectables).forEach(element => {
       const link = nodeLink(element);
