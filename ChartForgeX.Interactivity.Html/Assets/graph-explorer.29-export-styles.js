@@ -7,7 +7,9 @@
     });
     const styleSource = root.ownerDocument.querySelector('style[data-cfx-graph-assets="true"]')
       || Array.from(root.ownerDocument.querySelectorAll('style')).find(style => (style.textContent || '').includes('.cfx-graph-explorer'));
-    const externalStyle = root.ownerDocument.querySelector('link[data-cfx-graph-assets="true"]');
+    // A page split into files carries the graph rules in its own stylesheet.
+    const externalStyle = root.ownerDocument.querySelector('link[data-cfx-graph-assets="true"]')
+      || root.ownerDocument.querySelector('link[data-cfx-external-styles="true"]');
     let exportCss = styleSource?.textContent || '';
     if (!exportCss && externalStyle?.sheet) {
       try {

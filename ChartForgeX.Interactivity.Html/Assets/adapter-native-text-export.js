@@ -43,7 +43,9 @@
         if (glyphs.every(([id, transform, extra]) => resources.has(id) && !extra
           && /^matrix\([-+0-9.eE ]+\)$/.test(transform))) {
           const group = target.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
-          for (const attribute of target.attributes) group.setAttributeNS(attribute.namespaceURI, attribute.name, attribute.value);
+          // Inline styles go through the CSS object model, which a files-only policy allows.
+          for (const attribute of target.attributes) if (attribute.name !== 'style') group.setAttributeNS(attribute.namespaceURI, attribute.name, attribute.value);
+          if (target.style?.cssText) group.style.cssText = target.style.cssText;
           for (const name of ['x', 'y', 'dx', 'dy', 'textLength', 'lengthAdjust']) group.removeAttribute(name);
           group.style.setProperty('fill-rule', 'nonzero');
           for (const [id, transform] of glyphs) {

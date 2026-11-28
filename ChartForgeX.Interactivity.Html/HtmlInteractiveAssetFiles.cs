@@ -20,6 +20,7 @@ public static class HtmlInteractiveAssetFiles {
     private static readonly Lazy<HtmlAssetFile> GraphStyleFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "css", HtmlGraphExplorerAssets.Style));
     private static readonly Lazy<HtmlAssetFile> DefaultTopologyScriptFile = new(() => CreateTopologyScript(null));
     private static readonly Lazy<HtmlAssetFile> GraphScriptFile = new(() => new HtmlAssetFile("cfx-graph-explorer", "js", HtmlGraphExplorerRenderer.WrappedInteractionScript()));
+    private static readonly Lazy<HtmlAssetFile> GraphPhysicsWorkerFile = new(() => new HtmlAssetFile("cfx-graph-physics-worker", "js", HtmlGraphExplorerAssets.PhysicsWorkerScript));
 
     /// <summary>Gets the stylesheet used by interactive chart and dashboard pages.</summary>
     public static HtmlAssetFile ChartStyle => ChartStyleFile.Value;
@@ -50,6 +51,10 @@ public static class HtmlInteractiveAssetFiles {
     /// <summary>Gets the runtime used by graph explorer pages.</summary>
     public static HtmlAssetFile GraphExplorerScript => GraphScriptFile.Value;
 
+    /// <summary>Gets the graph explorer's physics worker. Pages that reference <see cref="GraphExplorerScript"/> start
+    /// their physics worker from this file beside it, so a policy with <c>worker-src 'self'</c> needs no <c>blob:</c> source.</summary>
+    public static HtmlAssetFile GraphExplorerPhysicsWorker => GraphPhysicsWorkerFile.Value;
+
     /// <summary>
     /// Gets the topology interaction runtime for the given render options. The runtime is specialised to the CSS class
     /// prefix, so each prefix produces its own file name.
@@ -79,7 +84,7 @@ public static class HtmlInteractiveAssetFiles {
             ? Array.Empty<HtmlAssetFile>() : ChartFeatureScripts).ToArray();
 
     /// <summary>Returns the files referenced by graph explorer pages.</summary>
-    public static IReadOnlyList<HtmlAssetFile> GraphExplorer() => new[] { GraphExplorerStyle, GraphExplorerScript };
+    public static IReadOnlyList<HtmlAssetFile> GraphExplorer() => new[] { GraphExplorerStyle, GraphExplorerScript, GraphExplorerPhysicsWorker };
 
     /// <summary>
     /// Writes asset files into <paramref name="directory"/> (created when missing). Files that already exist with the
@@ -118,6 +123,7 @@ public static class HtmlInteractiveAssetFiles {
         HtmlChartFeatureBundles features = HtmlChartFeatureBundles.None) {
         writer.StartElement("script").Attribute("src", assets.Href(file)).Attribute("nonce", nonce);
         WriteIntegrity(writer, assets, file);
+        if (ReferenceEquals(file, GraphExplorerScript)) writer.Attribute(HtmlGraphExplorerRenderer.PhysicsWorkerAttribute, assets.Href(GraphExplorerPhysicsWorker));
         writer.Attribute("data-cfx-features", FeatureSourcesJson(assets, features));
         writer.EndStartElement().EndElement();
     }

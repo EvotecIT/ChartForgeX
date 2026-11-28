@@ -78,6 +78,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
     /// <returns>The raw JavaScript graph explorer runtime.</returns>
     public static string Script => HtmlGraphExplorerAssets.Script;
 
+    // Names the physics worker file on the runtime's script element; without it the runtime starts the worker from a blob.
+    internal const string PhysicsWorkerAttribute = "data-cfx-graph-physics-worker-src";
+
     private static HtmlGraphExplorerOptions BuildOptions(Action<HtmlGraphExplorerOptions>? configure) {
         var options = new HtmlGraphExplorerOptions();
         configure?.Invoke(options);
