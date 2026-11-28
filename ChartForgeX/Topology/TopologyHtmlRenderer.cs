@@ -99,7 +99,7 @@ public sealed partial class TopologyHtmlRenderer {
         // A scoped placement keeps the chart's identity for events and adds the scope to everything that has to stay apart
         // when the same chart appears twice: scenario sequence ids and the scenario keys in the address (data-cfx-key).
         var placement = PlacementKey(options, id);
-        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, placement) : new List<ScenarioSequenceFigure>();
+        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, SequenceScope(placement)) : new List<ScenarioSequenceFigure>();
         // The playback page shows the topology above sequence diagrams, so they share one type scale: each fits the column
         // only while that costs at most an eighth of its size, and otherwise scrolls in its own frame. Anything placed over
         // the diagram (zoom, export and fullscreen controls, the selection panel) keeps the regular fitted view.
@@ -280,6 +280,13 @@ public sealed partial class TopologyHtmlRenderer {
     // so no two placements, scoped or not, ever share a key.
     internal static string PlacementKey(TopologyRenderOptions options, string id) =>
         string.IsNullOrWhiteSpace(options.IdScope) ? "c." + KeyPart(id) : "s." + KeyPart(options.IdScope!.Trim()) + "." + KeyPart(id);
+
+    // Sequence SVG ids keep only letters, digits and dashes, so the placement key travels hex-encoded and stays unique.
+    private static string SequenceScope(string key) {
+        var hex = new System.Text.StringBuilder("k");
+        foreach (var b in System.Text.Encoding.UTF8.GetBytes(key)) hex.Append(b.ToString("x2", CultureInfo.InvariantCulture));
+        return hex.ToString();
+    }
 
     private static string KeyPart(string value) {
         var key = new System.Text.StringBuilder(value.Length);

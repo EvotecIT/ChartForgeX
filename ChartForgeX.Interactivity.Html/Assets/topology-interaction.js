@@ -245,7 +245,7 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     let forceGraphMotionTimer = null;
     const scenarioUrlKey = (name, from = 'data-cfx-key') => {
       const chartId = attr(wrapper, from).replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
-      return 'cfx-' + chartId + '-' + name;
+      return (from === 'data-cfx-key' ? 'cfxk-' : 'cfx-') + chartId + '-' + name;
     };
     // Scenario and step come from one set of keys: the placement's, else those of a link keyed by the chart id.
     const scenarioUrlFrom = params => ['data-cfx-key', 'data-chart-id'].find(from => params.has(scenarioUrlKey('scenario', from)) || params.has(scenarioUrlKey('scenarioStep', from))) || 'data-cfx-key';

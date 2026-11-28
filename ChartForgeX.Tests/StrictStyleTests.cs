@@ -170,6 +170,8 @@ public sealed class StrictStyleTests {
     [InlineData("patch")]
     [InlineData("print")]
     [InlineData("print host rules")]
+    [InlineData("print host important")]
+    [InlineData("print clip")]
     public async Task GraphExplorerKeepsAStrictPolicy(string action) {
         if (!InteractiveChartBrowser.Enabled) return;
         var scene = GraphScene.Create("strict-graph", "Services");
@@ -183,6 +185,7 @@ public sealed class StrictStyleTests {
         });
         // A host's own print rule, which the print snapshot's rules must not override.
         if (action == "print host rules") graphPage = graphPage.Replace("</head>", "<style nonce=\"" + Nonce + "\">@media print{.cfx-graph-shell{margin-left:27px}}</style></head>", StringComparison.Ordinal);
+        if (action == "print host important") graphPage = graphPage.Replace("</head>", "<style nonce=\"" + Nonce + "\">.cfx-graph-node-label{font-size:21px!important}</style></head>", StringComparison.Ordinal);
         await using var session = await OpenAsync(graphPage, policy);
         var page = session.Page;
         if (action == "physics") {
@@ -197,7 +200,34 @@ public sealed class StrictStyleTests {
                 }
                 """));
         } else {
+            if (action == "print clip") await page.EvaluateAsync("""
+                () => {
+                  const svg = document.querySelector('.cfx-graph-explorer [data-cfx-role="graph-scene"]');
+                  const ns = 'http://www.w3.org/2000/svg', clip = document.createElementNS(ns, 'clipPath'), rect = document.createElementNS(ns, 'rect');
+                  clip.id = 'gate-clip'; rect.setAttribute('width', '500'); rect.setAttribute('height', '500'); clip.append(rect);
+                  (svg.querySelector('defs') || svg.insertBefore(document.createElementNS(ns, 'defs'), svg.firstChild)).append(clip);
+                  const target = svg.querySelector('[data-cfx-role="graph-node"]') || svg.querySelector('g');
+                  target.setAttribute('data-gate-clip', 'true'); target.style.clipPath = 'url(#gate-clip)';
+                }
+                """);
             await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
+            if (action == "print clip") {
+                await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+                // The printed copy's label points at the copy's own clip.
+                Assert.True(await page.EvaluateAsync<bool>("""
+                    () => {
+                      const surface = document.querySelector('[data-cfx-role=graph-print-surface]');
+                      const label = surface.querySelector('[data-gate-clip]');
+                      const id = /#([^)"']+)/.exec(label.style.clipPath)[1];
+                      return id !== 'gate-clip' && !!surface.querySelector('[id="' + id + '"]');
+                    }
+                    """));
+            }
+            if (action == "print host important") {
+                await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+                // Neither the live graph nor the printed copy loses the host's important rule.
+                Assert.Equal("21px", await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('.cfx-graph-explorer .cfx-graph-node-label')).fontSize"));
+            }
             if (action == "print host rules") {
                 await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
                 Assert.Equal("27px", await page.EvaluateAsync<string>("() => getComputedStyle(document.body).marginLeft"));
@@ -222,10 +252,10 @@ public sealed class StrictStyleTests {
         await using var session = await OpenAsync(page, policy);
         var references = await session.Page.EvaluateAsync<string[]>("""
             () => {
-              const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="Preference style=automatic"><defs><clipPath id="plot"><rect width="50" height="50"/></clipPath></defs><rect data-probe="true" width="100" height="100" style="clip-path:url(#plot);fill:red" aria-label="a > b style=x"/></svg>';
+              const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="Preference style=automatic"><defs><clipPath id="plot"><rect width="50" height="50"/></clipPath></defs><rect data-probe="true" width="100" height="100" style="clip-path:url( #plot );fill:red" aria-label="a > b style=x"/><text data-text="true"><![CDATA[<sample style="red">]]></text></svg>';
               try { ChartForgeXLayout.create(document.getElementById('host'), { schema: 'chartforgex/layout-1', svg }); } catch { }
               const probe = document.querySelector('#host [data-probe]');
-              return [probe.style.clipPath, document.querySelector('#host clipPath').id, probe.style.fill, document.querySelector('#host > svg').getAttribute('aria-label'), probe.getAttribute('aria-label')];
+              return [probe.style.clipPath, document.querySelector('#host clipPath').id, probe.style.fill, document.querySelector('#host > svg').getAttribute('aria-label'), probe.getAttribute('aria-label'), document.querySelector('#host [data-text]').textContent];
             }
             """);
         Assert.Contains(references[1], references[0]);
@@ -233,6 +263,7 @@ public sealed class StrictStyleTests {
         // Text that only looks like a style attribute stays as it was.
         Assert.Equal("Preference style=automatic", references[3]);
         Assert.Equal("a > b style=x", references[4]);
+        Assert.Equal("<sample style=\"red\">", references[5]);
         Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 

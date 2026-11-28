@@ -9,7 +9,7 @@
       let value=attribute.value;
       if(attribute.name==='id')value=ids.get(value);
       else if(['aria-labelledby','aria-describedby'].includes(attribute.name))value=value.split(/\s+/).map(id=>ids.get(id)||id).join(' ');
-      else {value=value.replace(/url\(\s*(['"]?)#([^)'"]*)\1\s*\)/g,(_,q,id)=>'url(#'+(ids.get(id)||id)+')');if(value.startsWith('#')&&ids.has(value.slice(1)))value='#'+ids.get(value.slice(1));}
+      else {value=value.replace(/url\(\s*(['"]?)#([^)'"\s]*)\1\s*\)/g,(_,q,id)=>'url(#'+(ids.get(id)||id)+')');if(value.startsWith('#')&&ids.has(value.slice(1)))value='#'+ids.get(value.slice(1));}
       // A style goes through the CSS object model, which a strict content security policy allows.
       if(value!==attribute.value){if(attribute.name==='style')node.style.cssText=value;else node.setAttribute(attribute.name,value);}
     }
@@ -19,7 +19,7 @@
     let svg;
     if(spec.schema==="chartforgex/layout-1"){
       // Style attributes travel as data, since a strict policy checks parsed markup, and arrive through the CSS object model.
-      const paint=spec.svg.replace(/<[a-zA-Z](?:[^<>"']|"[^"]*"|'[^']*')*>/g,tag=>tag.replace(/(\s+)([^\s=\/>"']+)((?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))?)/g,(_,space,name,value)=>space+(name.toLowerCase()==='style'?'data-cfx-paint-style':name)+value));
+      const paint=spec.svg.replace(/<!\[CDATA\[[\s\S]*?\]\]>|<!--[\s\S]*?-->|<[a-zA-Z](?:[^<>"']|"[^"]*"|'[^']*')*>/g,tag=>tag[1]==='!'?tag:tag.replace(/(\s+)([^\s=\/>"']+)((?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))?)/g,(_,space,name,value)=>space+(name.toLowerCase()==='style'?'data-cfx-paint-style':name)+value));
       const parsed=new DOMParser().parseFromString(paint,'image/svg+xml');
       if(parsed.querySelector('parsererror'))throw new Error('Invalid ChartForgeX paint specification.');
       svg=document.importNode(parsed.documentElement,true);

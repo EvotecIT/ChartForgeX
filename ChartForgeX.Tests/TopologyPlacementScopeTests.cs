@@ -45,6 +45,20 @@ public sealed class TopologyPlacementScopeTests {
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.Ordinal).Count());
     }
 
+    [Theory]
+    // Placements whose keys differ only by where the scope ends, once their ids are made SVG-safe.
+    [InlineData("a-2e", "c.d", "a", "2d.c.d")]
+    [InlineData("left", "routes", null, "s.left.routes")]
+    public void PlacementsWithLookAlikeKeys_ShareNoSequenceIds(string? firstScope, string firstId, string? secondScope, string secondId) {
+        var page = TopologyScenarioPlaybackTests.ReplicationChart().Id(firstId).ToInteractiveHtmlFragmentWithoutAssets(Options(firstScope))
+            + TopologyScenarioPlaybackTests.ReplicationChart().Id(secondId).ToInteractiveHtmlFragmentWithoutAssets(Options(secondScope));
+        var ids = Regex.Matches(page, "\\sid=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToList();
+        Assert.NotEmpty(ids);
+        Assert.Equal(ids.Count, ids.Distinct(StringComparer.Ordinal).Count());
+        var keys = Regex.Matches(page, "data-cfx-key=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToList();
+        Assert.Equal(2, keys.Distinct(StringComparer.Ordinal).Count());
+    }
+
     [Fact]
     public void UnscopedPlacement_KeepsTheChartIdentityAsItsStateKey() {
         var html = TopologyScenarioPlaybackTests.ReplicationChart().ToInteractiveHtmlFragmentWithoutAssets(Options(null));
@@ -70,11 +84,39 @@ public sealed class TopologyPlacementScopeTests {
             await browser.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
             await browser.GotoAsync("https://chartforgex.test/topology.html?cfx-replication-scenario=replicate&cfx-replication-scenarioStep=1");
             await browser.WaitForFunctionAsync("() => document.querySelector('.cfx-topology-wrapper')?.getAttribute('data-cfx-active-scenario-step') === '1'");
+            Assert.Contains("cfxk-s.left.replication-scenario=replicate", Uri.UnescapeDataString(browser.Url), StringComparison.Ordinal);
             await browser.Locator("[data-cfx-topology-scenario='']").First.ClickAsync();
             await browser.WaitForFunctionAsync("() => !location.search.includes('scenario')");
             await browser.ReloadAsync();
             await browser.Locator(".cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
             Assert.True(string.IsNullOrEmpty(await browser.Locator(".cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario")));
+        }
+    }
+
+    // A chart whose id spells another placement's key never reads that placement's address state as its own older link.
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task ChartIdsThatSpellAPlacementKey_LeaveItsAddressStateAlone() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        TopologyRenderOptions UrlOptions(string? scope) {
+            var options = new TopologyRenderOptions { IdScope = scope }.Html(html => html.ScenarioPanel());
+            options.Html.ScenarioUrlState = true;
+            return options;
+        }
+        string body = TopologyScenarioPlaybackTests.ReplicationChart().ToInteractiveHtmlPage(UrlOptions("left"));
+        string second = TopologyScenarioPlaybackTests.ReplicationChart().Id("s.left.replication").ToInteractiveHtmlFragment(UrlOptions(null));
+        string page = body.Replace("</body>", second + "</body>", StringComparison.Ordinal);
+        var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {
+            Browser = InteractiveChartBrowser.Engine, Headless = true, Timeout = 15000, ViewportWidth = 1000, ViewportHeight = 700,
+            BrowserExecutablePath = Environment.GetEnvironmentVariable("CFX_TEST_BROWSER_EXECUTABLE")
+        });
+        await using (session) {
+            var browser = session.Page;
+            await browser.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
+            await browser.GotoAsync("https://chartforgex.test/topology.html?cfxk-s.left.replication-scenario=replicate&cfxk-s.left.replication-scenarioStep=1");
+            await browser.WaitForFunctionAsync("() => document.querySelector('[data-cfx-key=\"s.left.replication\"]')?.getAttribute('data-cfx-active-scenario-step') === '1'");
+            Assert.True(string.IsNullOrEmpty(await browser.Locator("[data-chart-id=\"s.left.replication\"].cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario")));
+            Assert.Contains("cfxk-s.left.replication-scenarioStep=1", Uri.UnescapeDataString(browser.Url), StringComparison.Ordinal);
         }
     }
 }

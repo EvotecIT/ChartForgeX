@@ -12,6 +12,8 @@
         else if (name === 'aria-labelledby' || name === 'aria-describedby') {
           const references = value.split(/\s+/).filter(id => ids.has(id)).map(id => ids.get(id));
           if (references.length) node.setAttribute(name, references.join(' ')); else node.removeAttribute(name);
+        } else if (name === 'style' && node.style) {
+          for (const property of Array.from(node.style)) { const before = node.style.getPropertyValue(property); if (before.includes('url(')) node.style.setProperty(property, urls(before), node.style.getPropertyPriority(property)); }
         } else if (value.includes('url(')) node.setAttribute(name, urls(value));
       }
       if (node.localName === 'style') node.textContent = urls(node.textContent || '');
@@ -122,7 +124,7 @@
       const svg = exportSvgClone(root), doc = root.ownerDocument, sheets = root.__cfxGraphPrintSheets = [];
       if (!svg) return;
       scopeGraphPrintIds(svg, `cfx-graph-print-${++graphPrintSequence}-`);
-      if (doc.adoptedStyleSheets) svg.querySelectorAll('style').forEach(style => { const sheet = new CSSStyleSheet(); sheet.replaceSync(`@layer cfx-graph-print{${style.textContent}}`); style.remove(); sheets.push(sheet); });
+      if (doc.adoptedStyleSheets) svg.querySelectorAll('style').forEach(style => { const sheet = new CSSStyleSheet(); sheet.replaceSync(window.CSSScopeRule ? `@scope (.cfx-graph-print-surface){${style.textContent}}` : `@layer cfx-graph-print{${style.textContent}}`); style.remove(); sheets.push(sheet); });
       if (sheets.length) doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, ...sheets];
       const camera = svg.querySelector('[data-cfx-role="graph-viewport"]');
       camera?.removeAttribute('transform'); camera?.style.removeProperty('transform');
