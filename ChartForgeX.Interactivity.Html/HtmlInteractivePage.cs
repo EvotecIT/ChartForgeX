@@ -56,10 +56,10 @@ internal static class HtmlInteractivePage {
             writer.StartElement("script")
                 .Attribute("nonce", scriptNonce)
                 .EndStartElement()
-                .RawTrusted(HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive))
+                .RawTrusted(HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive, (bundles & HtmlChartFeatureBundles.Drilldown) != 0))
                 .EndElement();
         } else {
-            HtmlInteractiveAssetFiles.WriteScript(writer, assets, HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features, adaptive), scriptNonce, bundles);
+            HtmlInteractiveAssetFiles.WriteScript(writer, assets, HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features, adaptive, (bundles & HtmlChartFeatureBundles.Drilldown) != 0), scriptNonce, bundles);
         }
 
         writer.Line()

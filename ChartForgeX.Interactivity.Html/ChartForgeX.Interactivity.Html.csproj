@@ -71,6 +71,7 @@
     <EmbeddedResource Include="Assets\interactive.feature.data.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.data.js" />
     <EmbeddedResource Include="Assets\interactive.feature.isolate.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.isolate.js" />
     <EmbeddedResource Include="Assets\interactive.feature.hierarchy.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.hierarchy.js" />
+    <EmbeddedResource Include="Assets\interactive.feature.drilldown.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.drilldown.js" />
     <EmbeddedResource Include="Assets\adapter-shared.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-shared.js" />
     <EmbeddedResource Include="Assets\adapter-lifetime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js" />
     <EmbeddedResource Include="Assets\adapter-native-text-export.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-native-text-export.js" />

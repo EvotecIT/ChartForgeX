@@ -85,7 +85,7 @@ public sealed partial class HtmlChartLocalization {
         var diagram = DiagramDefaults();
         var topology = TopologyHtmlText.Defaults.ToDictionary(pair => (HtmlChartText)Enum.Parse(typeof(HtmlChartText), pair.Key), pair => pair.Value);
         var messages = new Dictionary<HtmlChartText, string>(chart);
-        foreach (var pair in graph.Concat(topology).Concat(report).Concat(diagram)) messages[pair.Key] = pair.Value;
+        foreach (var pair in graph.Concat(topology).Concat(report).Concat(diagram).Concat(DrilldownDefaults())) messages[pair.Key] = pair.Value;
         messages[HtmlChartText.HierarchyCollapse] = "Collapse {label}";
         messages[HtmlChartText.HierarchyExpand] = "Expand {label}";
         Defaults = messages;
@@ -142,6 +142,7 @@ public sealed partial class HtmlChartLocalization {
         TopologyKeys.ToDictionary(key => key.ToString(), key => this[key]), ToJson(TopologyKeys), ResolveLanguage(inheritedLanguage), DirectionAttribute);
     private string ToJson(IEnumerable<HtmlChartText> keys) => "{" + string.Join(",", keys.Select(key => HtmlJsonString.Encode(key.ToString())
         + ":" + HtmlJsonString.Encode(this[key]))) + "}";
+    internal string ToDrilldownJson() => ToJson(DrilldownDefaults().Keys);
     internal void CopyTo(HtmlChartLocalization target) {
         target.Language = Language; target.Direction = Direction;
         foreach (var item in _overrides) target[item.Key] = item.Value;

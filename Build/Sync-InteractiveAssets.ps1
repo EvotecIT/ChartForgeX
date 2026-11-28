@@ -61,7 +61,7 @@ $assets = @(
     }
 )
 # Feature bundles are self-contained and register with whichever runtime loads them.
-foreach ($feature in 'motion', 'data', 'isolate', 'hierarchy') {
+foreach ($feature in 'motion', 'data', 'isolate', 'hierarchy', 'drilldown') {
     $assets += @{
         Source = "ChartForgeX.Interactivity.Html/Assets/interactive.features/$feature.js"
         Target = "ChartForgeX.Interactivity.Html/Assets/interactive.feature.$feature.js"

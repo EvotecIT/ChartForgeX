@@ -32,8 +32,11 @@ public sealed class InteractiveBundleTests {
     // updates added about 0.2 KiB more, so the report raw budgets moved up another 1 KiB. Keeping host inline values,
     // reading imported sheets and dropping the guide with a delayed tooltip moved the tooltip reader's raw budget up 1 KiB.
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 105 * 1024, 34 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 301 * 1024, 93 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 369 * 1024, 112 * 1024)]
+    // Category drill-down keeps its behaviour in its own bundle; recognising a drillable point and the view capture, restore and
+    // child mount it hands over added about 1.4 KiB raw (0.1 KiB gzip) to the report runtimes, so their raw budgets moved up
+    // 2 KiB and their gzip budgets 1 KiB.
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 303 * 1024, 94 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 371 * 1024, 113 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
@@ -62,6 +65,7 @@ public sealed class InteractiveBundleTests {
     [InlineData("data", 8 * 1024, 4 * 1024)]
     [InlineData("isolate", 2 * 1024, 1024)]
     [InlineData("hierarchy", 8 * 1024, 3 * 1024)]
+    [InlineData("drilldown", 6 * 1024, 3 * 1024)]
     public void FeatureBundlesFitTheirOwnBudgetsAndShipOnlyWhenDeclared(string name, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartFeatureScripts.Single(file => file.FileName.StartsWith("cfx-feature-" + name + ".", StringComparison.Ordinal));
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
@@ -77,11 +81,13 @@ public sealed class InteractiveBundleTests {
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
         });
         Assert.DoesNotContain("data-cfx-feature=", core);
-        var declared = (name == "hierarchy" ? Chart.Create().AddTreemap("Spend", new[] { new ChartHierarchyItem("ops", "Ops", value: 3), new ChartHierarchyItem("dev", "Dev", value: 5) }) : line)
+        var declared = (name == "hierarchy" ? Chart.Create().AddTreemap("Spend", new[] { new ChartHierarchyItem("ops", "Ops", value: 3), new ChartHierarchyItem("dev", "Dev", value: 5) })
+                : name == "drilldown" ? Chart.Create().XLabels("Mon", "Tue", "Wed").AddLine("Requests", ChartPoints.FromValues(2, 7, 4)) : line)
             .ToInteractiveHtmlPage(options => {
                 options.Interaction.Enable(ChartInteractionFeatures.Export);
                 options.IncludeContextMenu = name == "data";
                 options.Motion.Enabled = name == "motion";
+                if (name == "drilldown") options.Drilldown.AddOnDemand("Tue");
             });
         Assert.Contains("data-cfx-feature=\"" + name + "\"", declared);
         Assert.Contains(asset.Content, declared);

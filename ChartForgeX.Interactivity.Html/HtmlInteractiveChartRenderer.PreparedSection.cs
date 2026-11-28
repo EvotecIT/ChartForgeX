@@ -25,6 +25,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         internal string NativeNavigation { get; set; } = string.Empty;
         internal string HierarchyNavigation { get; set; } = string.Empty;
         internal Func<HtmlChartSection>? PrepareNarrow { get; set; }
+        internal DrilldownMarkup? Drilldown { get; set; }
     }
 
     internal static HtmlChartSection BuildPreparedSceneSection(PreparedSceneSectionSource source, HtmlChartInteractionOptions options) {
@@ -81,6 +82,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-tooltip-offset-y", options.Tooltip.Position.OffsetY.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-crosshair-label", options.Crosshair.ShowLabel ? "true" : "false")
             .Attribute("data-cfx-crosshair-styled", options.Crosshair.HasLineOverrides ? "true" : null)
+            .Attribute("data-cfx-drill", source.Drilldown?.Attribute)
             .Attribute("style", "--cfx-intrinsic-width:" + source.IntrinsicWidth.ToString(CultureInfo.InvariantCulture)
                 + "px;--cfx-native-width:" + source.Context.Layout.Size.Width.ToString(CultureInfo.InvariantCulture)
                 + "px;--cfx-native-height:" + source.Context.Layout.Size.Height.ToString(CultureInfo.InvariantCulture)
@@ -126,10 +128,11 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .RawTrusted(narrowSection.Html)
                 .EndElement().Line();
         }
+        if (source.Drilldown != null) writer.RawTrusted(source.Drilldown.Templates);
         var fontPayloads = !source.Narrow ? HtmlCapturedFontAssets.Write(writer, emission.Fonts, narrowSection?.WideEmission?.Fonts) : null;
         writer.EndElement();
         return new HtmlChartSection(writer.Build(), prepared, narrowSection?.PreparedVisual, svgOptions, emission, narrowSection?.WideEmission, fontPayloads) {
-            AutoThemeStyleSheet = source.AutoTheme?.StyleSheet
+            AutoThemeStyleSheet = CombineAutoThemeStyleSheets(source.AutoTheme?.StyleSheet, source.Drilldown)
         };
     }
 

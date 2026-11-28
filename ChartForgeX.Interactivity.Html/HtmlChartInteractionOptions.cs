@@ -121,6 +121,9 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets optional source-domain navigator, range preset and position scrollbar controls.</summary>
     public HtmlChartXNavigationOptions XNavigation { get; } = new HtmlChartXNavigationOptions();
 
+    /// <summary>Gets the child charts that bar and line categories open, embedded or supplied by the host on demand.</summary>
+    public HtmlChartDrilldownOptions Drilldown { get; } = new HtmlChartDrilldownOptions();
+
     /// <summary>Gets HTML control translations, language and direction independently from native data formatting.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();
 

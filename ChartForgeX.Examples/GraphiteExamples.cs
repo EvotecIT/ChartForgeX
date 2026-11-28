@@ -19,6 +19,9 @@ internal static class GraphiteExamples {
             var localizedName = "graphite-" + suffix + "-localized-controls.html";
             File.WriteAllText(Path.Combine(output, localizedName), HtmlLocalizedChartExamples.CreatePage(dark));
             gallery.Append("<p><a href='").Append(localizedName).Append("'>Polish controls and comparison tray</a></p>");
+            var drilldownName = "graphite-" + suffix + "-drilldown.html";
+            File.WriteAllText(Path.Combine(output, drilldownName), HtmlDrilldownExamples.CreatePage(dark));
+            gallery.Append("<p><a href='").Append(drilldownName).Append("'>Drill from sites into domain controllers and back</a></p>");
             LinkedChartViewsExamples.Write(output, dark);
             gallery.Append("<p><a href='graphite-").Append(suffix).Append("-linked-chart-views.html'>Brush dates and highlight services across two charts</a></p>");
             foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {

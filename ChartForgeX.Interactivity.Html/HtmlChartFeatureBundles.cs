@@ -13,5 +13,7 @@ internal enum HtmlChartFeatureBundles {
     /// <summary>Double-click and double-tap series isolation.</summary>
     Isolate = 4,
     /// <summary>Saved-page Treemap and Sunburst drill views.</summary>
-    Hierarchy = 8
+    Hierarchy = 8,
+    /// <summary>Configured category drill-down into child charts.</summary>
+    Drilldown = 16
 }

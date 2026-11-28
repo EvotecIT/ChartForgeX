@@ -70,8 +70,8 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Core reader (tooltips, keyboard, crosshair) | 103 KiB | 33 KiB |
-| Standalone reader | 299 KiB | 93 KiB |
-| Full controller/native host | 367 KiB | 112 KiB |
+| Standalone reader | 303 KiB | 94 KiB |
+| Full controller/native host | 371 KiB | 113 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -83,6 +83,7 @@ tooltip reader never carries any:
 | `data` | `IncludeContextMenu`, `ContextMenuItems` or `Export` | 8 KiB | 4 KiB |
 | `isolate` | `LegendToggles` | 2 KiB | 1 KiB |
 | `hierarchy` | A Treemap or Sunburst series | 8 KiB | 3 KiB |
+| `drilldown` | `Drilldown` targets | 6 KiB | 3 KiB |
 
 Topology and graph Explorer pages inline their own runtimes, measured from
 `HtmlInteractiveTopologyRenderer.Script()` and
@@ -97,7 +98,7 @@ carry the owned font payloads, are not counted:
 Self-contained pages embed the declared bundles before the runtime. Pages with
 shared assets name each bundle's file on the runtime's script tag instead; the
 runtime fetches it while the browser is idle after the first paint, or when a
-reader first opens the menu, double-clicks or drills. A bundle that arrives
+reader first opens the menu, double-clicks or drills into a hierarchy or category. A bundle that arrives
 after the first paint skips the entry animation rather than replaying it.
 
 For shared external assets, pass the same runtime and feature union to
@@ -1413,6 +1414,75 @@ When synchronized charts are enabled, state payloads use the same `cfxsync` chan
 
 Native time windows retain source instants when the axis uses `ChartTimeSpacing.Ordinal` or explicit calendar units. Captured `timeSpacing` metadata accompanies each physical projection; the browser uses that detached map for readouts, source-window validation and inverse gestures. Ordinal values interpolate between the actual supplied instants. Unit-time values share their calendar band's center; inverse gestures select canonical calendar boundaries. No missing observation is synthesized and no data aggregation occurs. See [explicit time spacing](v2/api-conventions.md#explicit-time-spacing) for limits and discrete inverse semantics.
 
+
+## Category drill-down
+
+A bar, column, line or area category can open a child chart. Configure the
+targets on `HtmlChartInteractionOptions.Drilldown`, naming each category by its
+`XLabels` text:
+
+```csharp
+var html = sales.ToInteractiveHtmlPage(options => {
+    options.Drilldown.RootLabel = "All quarters";
+    // Local payload: prepared now with the same renderer and embedded in the page.
+    options.Drilldown.Add("Q1", q1ByRegion, "Q1 by region");
+    // A child may add its own targets, so a report can go several levels deep.
+    options.Drilldown.Add("Q2", q2ByRegion, configure: child => child.Drilldown.Add("North", northSites));
+    // Host callback: the browser asks the host when a reader opens Q3.
+    options.Drilldown.AddOnDemand("Q3", "Q3 by region");
+});
+```
+
+Clicking or tapping a drillable category, or pressing Enter on it, replaces the
+chart with its child in place. Space still selects the category, as it does for
+hierarchy branches. The parent stays mounted while hidden; returning restores
+its selection, zoom window and focus on the category that was opened. Each
+drillable point carries an `aria-description` naming where it leads.
+
+Breadcrumbs above the child list every level. They are ordinary buttons, so
+Tab and Shift+Tab reach them and Enter or Space activates one; the current
+level has `aria-current="page"`. Focus moves to the current breadcrumb when a
+child opens. A polite status region beside the chart announces the opened
+level ("Showing Q1 by region, level 2 of 2"), the return, a pending host
+request and a failure. The texts are `HtmlChartText.Drilldown*` entries in
+`options.Localization`.
+
+An embedded child starts from the parent's runtime, responsive layout,
+toolbar, text presentation, features, selection mode and translations, and gets
+the chart id `<parent id>-<target id>`; `configure` can change any of them.
+The target id is the category in lower-case slug form (`Q1` becomes `q1`).
+
+The chart section dispatches these events from the top-level chart:
+
+| Event | Detail |
+| --- | --- |
+| `cfxdrillrequest` | `targetId`, `category`, `label`, `level`, `path`, `respond(section)` and `reject(reason)` for an on-demand target. |
+| `cfxdrill` | `action` (`open` or `return`), `targetId`, `category`, `level` and `path` after the visible level changes. |
+| `cfxdrillerror` | `targetId`, `category`, `label` and `reason` after the host rejects a request. |
+
+A host answers an on-demand request with a section prepared by
+`PrepareSection`, as markup or as an element, and gives it its own `IdScope`
+and chart id:
+
+```javascript
+chart.addEventListener('cfxdrillrequest', async event => {
+  const { category, respond, reject } = event.detail;
+  try { respond(await fetch('/sales/' + encodeURIComponent(category)).then(r => r.text())); }
+  catch (error) { reject(error.message); }
+});
+```
+
+A later drill or return makes an unanswered request obsolete, and its `respond`
+then returns false. Under a strict content security policy, pass the section
+from `HtmlStrictStyles.Extract` with its stylesheet first, as for `update`.
+
+Static SVG and PNG output never includes drill-down: it is the parent chart.
+Printing an interactive page prints the parent chart without breadcrumbs, even
+while a child is open. Drill-down needs the full or standalone runtime; a page
+whose only features are tooltips, keyboard navigation and the crosshair uses the
+standalone reader instead of the smaller core reader. Hosts that register shared
+assets themselves add the `drilldown` feature bundle from
+`HtmlInteractiveAssetFiles.ChartFeatureScripts`.
 
 ## Native hierarchy views
 

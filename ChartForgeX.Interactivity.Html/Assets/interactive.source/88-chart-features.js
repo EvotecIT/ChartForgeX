@@ -45,7 +45,7 @@
   };
   // The narrow runtime surface a feature bundle may use. Bundles never reach into chart state directly.
   const chartFeatureKernel = Object.freeze({
-    hasFeature, emitHostEvent, downloadBlob, selectedTargets, uiText, listenChart, targetIdentity, seriesLabel,
+    ...drillFeatureKernel, hasFeature, emitHostEvent, downloadBlob, selectedTargets, uiText, listenChart, targetIdentity, seriesLabel,
     tooltipHierarchy, renderedTargetKind, isPassiveTarget, motionDuration, seriesKey, ownChartWork, clearHover, hideTip, hideCrosshair, setHover, showTip,
     toggleSelection, pinTip, refreshKeyboardNavigation, syncResetControl, clearKeyboardFocusPaint,
     hierarchyConnected: root => !!nativePreparationBinding(root, 'hierarchy'),
@@ -74,6 +74,7 @@
   };
   const bindChartFeatures = root => {
     if (hasFeature(root, 'LegendToggles') && !nativeLegendConnected(root)) bindChartFeature(root, 'isolate');
+    if (root.dataset.cfxDrill) bindChartFeature(root, 'drilldown');
   };
   // The entry animation only runs when its bundle is already present: a late bundle never replays a painted chart.
   const enterChart = root => chartFeature('motion')?.enter(root, chartFeatureKernel);

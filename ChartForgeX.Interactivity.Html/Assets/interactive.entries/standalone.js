@@ -10,6 +10,8 @@
   const bindAnnotationEditor = () => {};
   const requestNativePreparation = () => false;
   const readerRuntimeKey = Symbol.for('ChartForgeX.chartRuntime');
+  // A drilled child mounts as one more saved reader.
+  const mountDrillChild = section => mountStandaloneChart(section);
   const mountStandaloneChart = root => {
     if (root.dataset.cfxRuntimeBound === 'true') {
       if (root[readerRuntimeKey]?.kind !== 'core') return;

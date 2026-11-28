@@ -33,9 +33,12 @@ public static class HtmlInteractiveAssetFiles {
     /// <param name="adaptive">Whether any chart uses separately prepared adaptive drawings.</param>
     /// <returns>A content-addressed script file suitable for shared assets.</returns>
     public static HtmlAssetFile ChartScriptFor(HtmlChartRuntime runtime,
-        ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive = false) =>
+        ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive = false) => ChartScriptFor(runtime, features, adaptive, false);
+
+    internal static HtmlAssetFile ChartScriptFor(HtmlChartRuntime runtime,
+        ChartForgeX.Interactivity.ChartInteractionFeatures features, bool adaptive, bool drilldown) =>
         runtime == HtmlChartRuntime.Full ? ChartScript
-            : new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive));
+            : new HtmlAssetFile("cfx-interactive", "js", HtmlInteractiveAssets.ScriptFor(runtime, features, adaptive, drilldown));
 
     /// <summary>Gets the optional motion, data and isolation feature bundles. Pages fetch the bundles they declare
     /// on first use or while the browser is idle; hosts that register <see cref="ChartScript"/> themselves can add these files beside it.</summary>

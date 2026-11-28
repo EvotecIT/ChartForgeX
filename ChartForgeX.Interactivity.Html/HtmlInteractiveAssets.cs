@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -27,11 +28,12 @@ internal static class HtmlInteractiveAssets {
     internal static string Script => ScriptResource.Value;
 
     internal static string ScriptFor(HtmlChartRuntime runtime, ChartForgeX.Interactivity.ChartInteractionFeatures features,
-        bool adaptive = false) {
+        bool adaptive = false, bool drilldown = false) {
         if (runtime == HtmlChartRuntime.Full) return Script;
         if (runtime != HtmlChartRuntime.Standalone) throw new ArgumentOutOfRangeException(nameof(runtime));
         if (adaptive) return Script;
-        return UsesCoreReader(features) ? CoreScriptResource.Value : StandaloneScriptResource.Value;
+        // The core reader has no feature hooks, so drill-down selects the standalone reader.
+        return UsesCoreReader(features) && !drilldown ? CoreScriptResource.Value : StandaloneScriptResource.Value;
     }
 
     // Read-only reader features: hover readouts, keyboard traversal and the crosshair guide.
@@ -41,27 +43,33 @@ internal static class HtmlInteractiveAssets {
 
     internal static readonly (HtmlChartFeatureBundles Bundle, string Name)[] FeatureBundles = {
         (HtmlChartFeatureBundles.Motion, "motion"), (HtmlChartFeatureBundles.Data, "data"), (HtmlChartFeatureBundles.Isolate, "isolate"),
-        (HtmlChartFeatureBundles.Hierarchy, "hierarchy")
+        (HtmlChartFeatureBundles.Hierarchy, "hierarchy"), (HtmlChartFeatureBundles.Drilldown, "drilldown")
     };
 
     internal static string FeatureScript(string name) => ReadResource("ChartForgeX.Interactivity.Html.Assets.interactive.feature." + name + ".js");
 
     /// <summary>Selects the feature bundles a page needs. The core tooltip reader has no feature hooks.</summary>
     internal static HtmlChartFeatureBundles FeatureBundlesFor(HtmlChartRuntime runtime, ChartForgeX.Interactivity.ChartInteractionFeatures features,
-        bool adaptive, bool motion, bool contextMenu, bool hierarchy = true) {
-        if (runtime == HtmlChartRuntime.Standalone && !adaptive && UsesCoreReader(features))
+        bool adaptive, bool motion, bool contextMenu, bool hierarchy = true, bool drilldown = false) {
+        if (runtime == HtmlChartRuntime.Standalone && !adaptive && UsesCoreReader(features) && !drilldown)
             return HtmlChartFeatureBundles.None;
         var bundles = HtmlChartFeatureBundles.None;
         if (motion) bundles |= HtmlChartFeatureBundles.Motion;
         if (contextMenu || (features & ChartForgeX.Interactivity.ChartInteractionFeatures.Export) != 0) bundles |= HtmlChartFeatureBundles.Data;
         if ((features & ChartForgeX.Interactivity.ChartInteractionFeatures.LegendToggles) != 0) bundles |= HtmlChartFeatureBundles.Isolate;
         if (hierarchy) bundles |= HtmlChartFeatureBundles.Hierarchy;
+        if (drilldown) bundles |= HtmlChartFeatureBundles.Drilldown;
         return bundles;
     }
 
     internal static HtmlChartFeatureBundles FeatureBundlesFor(HtmlChartInteractionOptions options, ChartForgeX.Core.Chart chart) =>
         FeatureBundlesFor(options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
-            options.Motion.EffectiveDuration > 0, options.HasContextMenu, HasHierarchy(chart));
+            options.Motion.EffectiveDuration > 0, options.HasContextMenu, HasHierarchy(chart) || DrilldownCharts(options).Any(HasHierarchy),
+            options.Drilldown.Enabled);
+
+    // Embedded children load with their parent, so the page needs the bundles they use too.
+    private static System.Collections.Generic.IEnumerable<ChartForgeX.Core.Chart> DrilldownCharts(HtmlChartInteractionOptions options) =>
+        options.Drilldown.Targets.Where(target => target.Child != null).Select(target => target.Child!);
 
     internal static bool HasHierarchy(ChartForgeX.Core.Chart chart) => System.Linq.Enumerable.Any(chart.Series,
         series => series.Kind == ChartForgeX.Core.ChartSeriesKind.Treemap || series.Kind == ChartForgeX.Core.ChartSeriesKind.Sunburst);

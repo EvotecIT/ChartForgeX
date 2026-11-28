@@ -659,4 +659,16 @@ public enum HtmlChartText {
     TopologyExpandGroup,
     /// <summary>UI text: Arranging graph</summary>
     GraphLayoutProgress,
+    /// <summary>Accessible name for the drill-down breadcrumbs.</summary>
+    DrilldownNavigation,
+    /// <summary>Describes a category that opens a child chart. Template: {label}.</summary>
+    DrilldownAvailable,
+    /// <summary>Announces an opened child chart. Template: {label}, {level}, {count}.</summary>
+    DrilldownOpened,
+    /// <summary>Announces a return to a parent chart. Template: {label}.</summary>
+    DrilldownReturned,
+    /// <summary>Announces a child chart the host is supplying. Template: {label}.</summary>
+    DrilldownLoading,
+    /// <summary>Announces a child chart the host could not supply. Template: {label}.</summary>
+    DrilldownFailed,
 }
