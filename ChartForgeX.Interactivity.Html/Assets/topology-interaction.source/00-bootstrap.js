@@ -58,6 +58,18 @@
       try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
+    // A linked node's own link is its tab stop and keeps its link semantics; focus, clicks and keys on the link act for
+    // the node inside it.
+    const nodeLink = element => { const host = element?.closest?.('a[data-cfx-role="topology-node-host"]'); return host && wrapper.contains(host) ? host : null; };
+    const ownerOf = target => !(target instanceof Element) ? null
+      : target.closest(selectables) || (target.matches('a[data-cfx-role="topology-node-host"]') ? target.querySelector(selectables) : null);
+    // A node a filter hides can't take focus, as on a hidden element; its link, still in the document, mustn't either.
+    const focusNode = element => {
+      const link = nodeLink(element);
+      if (link && nodeHidden(element)) return;
+      const target = link || element;
+      if (target?.focus) target.focus({ preventScroll: true });
+    };
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
     const collectPrefixed = (element, prefix) => {
       const values = {};

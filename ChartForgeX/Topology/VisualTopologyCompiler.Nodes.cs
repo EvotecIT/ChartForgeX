@@ -294,6 +294,34 @@ internal sealed partial class VisualTopologyCompiler {
         }
     }
 
+    // A linked node is one target: a transparent area covers the gap between its surface and its caption, so a pointer
+    // there reaches the link instead of the group behind it. Every such area is painted before any edge or node, so their
+    // own targets always stay on top of it.
+    private void BuildLinkHitArea(TopologyNode node) {
+        // Only an interactive page needs it; a static SVG or image keeps one link per node.
+        if (!_options.LiveSurface || SafeHref(node.Href) is not string href) return;
+        var mode = EffectiveNodeDisplayMode(node, _options);
+        if (mode == TopologyNodeDisplayMode.Hidden) return;
+        using (_builder.PushLink(href, node.Id + "-hit", "topology-node-hit-host", pointerFor: node.Id))
+            _builder.Rect(LinkHitBounds(node, mode, Bounds(node.X, node.Y, node.Width, node.Height)), ChartColor.Transparent, role: "topology-node-hit");
+    }
+
+    private ChartRect LinkHitBounds(TopologyNode node, TopologyNodeDisplayMode mode, ChartRect bounds) {
+        // Toward the caption as it is painted, above or below, and no wider than the node, so it bridges the gap without
+        // reaching a neighbour; the caption's own text is part of the link already. No caption, no extension.
+        ChartRect? caption;
+        if (TopologyExternalCaption.HasPolicy(node)) caption = TopologyExternalCaption.Prepare(node, _options) is { } plan ? Bounds(plan.Bounds.X, plan.Bounds.Y, plan.Bounds.Width, plan.Bounds.Height) : null;
+        // Artwork drawn as an image has no caption of its own; without one it falls back to a tile and its caption.
+        else caption = node.ShowLabel && _options.IncludeNodeLabels && (mode == TopologyNodeDisplayMode.Tile
+                || mode == TopologyNodeDisplayMode.Icon && _options.IncludeIconLabels
+                || mode == TopologyNodeDisplayMode.Artwork && ResolveRenderableNodeArtwork(node, _options) == null)
+            // A badged icon's caption sits below its badge, as it is painted.
+            ? Bounds(node.X, node.Y + node.Height + (mode == TopologyNodeDisplayMode.Icon && !string.IsNullOrWhiteSpace(NodeBadge(node)) ? 25 : 5), node.Width, 18) : null;
+        if (caption is not ChartRect text) return bounds;
+        var top = Math.Min(bounds.Top, text.Top); var bottom = Math.Max(bounds.Bottom, text.Bottom);
+        return new ChartRect(bounds.X, top, bounds.Width, bottom - top);
+    }
+
     private IDisposable? Host(string? href, string? tooltip, string id, string role) {
         var safe = SafeHref(href);
         if (safe != null) return _builder.PushLink(safe, id + "-host", role, _options.IncludeTooltips ? tooltip : null);

@@ -428,6 +428,10 @@ public sealed class TopologyRenderOptions {
     internal TopologyRenderOptions ForInteractiveHtmlRendering() {
         var snapshot = Clone();
         snapshot.Html.Interactions = true;
+        snapshot.LiveSurface = true;
         return snapshot;
     }
+
+    /// <summary>Set only for the live interactive page, whose runtime serves pointer-only aids such as link hit areas.</summary>
+    internal bool LiveSurface { get; private set; }
 }

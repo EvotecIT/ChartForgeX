@@ -312,6 +312,8 @@
       if (!svg) return null;
       const clone = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
+      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node.
+      clone.querySelectorAll('a[data-cfx-role="topology-node-hit-host"]').forEach(hit => hit.remove());
       // Payloads belong to the live player, not to a downloaded static diagram.
       [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
         if (!node.hasAttribute('data-cfx-scenarios')) return;

@@ -145,6 +145,8 @@ internal sealed partial class VisualTopologyCompiler {
             BuildSurface(); BuildGroups();
             BuildPathDecorations();
             _chart.PreparedGroupHeaderParts = CaptureGroupHeaderParts();
+            // Above group backgrounds and below every edge and node, so only true gaps fall to a node's hit area.
+            foreach (var node in _chart.Nodes) BuildLinkHitArea(node);
             foreach (var edge in OrderedEdgesForRendering(_chart, _options)) BuildEdge(edge.Edge);
             BuildEdgeLabels();
             BuildEdgeChips();

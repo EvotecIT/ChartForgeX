@@ -351,8 +351,8 @@ internal static partial class SmokeTests {
         directedTopology.Edges.Add(new TopologyEdge { Id = "both", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.Bidirectional });
         directedTopology.Edges.Add(new TopologyEdge { Id = "undirected", SourceNodeId = "left", TargetNodeId = "right", Direction = VisualLinkDirection.None });
         var edgeRegions = directedTopology.ToVisualArtifact().Regions.Where(region => region.Kind == "topology-edge").ToDictionary(region => region.Id, StringComparer.Ordinal);
-        Assert(edgeRegions["forward"].Label == "left to right" && edgeRegions["backward"].Label == "right to left", "Topology artifact fallback labels should follow forward and backward edge direction.");
-        Assert(edgeRegions["both"].Label == "left to right and right to left" && edgeRegions["undirected"].Label == "left and right", "Topology artifact fallback labels should distinguish bidirectional and undirected edges from one-way flow.");
+        Assert(edgeRegions["forward"].Label == "Left to Right" && edgeRegions["backward"].Label == "Right to Left", "Topology artifact fallback labels should name the nodes by their labels and follow forward and backward edge direction.");
+        Assert(edgeRegions["both"].Label == "Left to Right and Right to Left" && edgeRegions["undirected"].Label == "Left and Right", "Topology artifact fallback labels should distinguish bidirectional and undirected edges from one-way flow.");
     }
 
     private static void TableArtifactRejectsInvalidContractShapes() {

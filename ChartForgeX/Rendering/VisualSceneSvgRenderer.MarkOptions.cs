@@ -11,8 +11,10 @@ internal static partial class VisualSceneSvgRenderer {
     /// <summary>Emits one accessible keyboard target while retaining legacy render-wide link defaults.</summary>
     private static void WriteGroupNavigation(SvgMarkupWriter writer, VisualSceneGroup group, bool decorative, VisualSvgOptions? options) {
         if (group.Href == null) return;
-        writer.Attribute("href", group.Href).Attribute("tabindex", decorative ? -1 : 0);
-        if (!decorative) writer.Attribute("focusable", true);
+        var pointerOnly = group.Metadata.ContainsKey(VisualSceneBuilder.PointerOnlyLink);
+        writer.Attribute("href", group.Href).Attribute("tabindex", decorative || pointerOnly ? -1 : 0);
+        if (pointerOnly) writer.Attribute("aria-hidden", "true");
+        else if (!decorative) writer.Attribute("focusable", true);
         var newContext = group.Metadata.TryGetValue("target", out var target)
             ? target == "_blank" : options?.LinkTarget == VisualSvgLinkTarget.NewContext;
         if (target == null && newContext) writer.Attribute("target", "_blank");
