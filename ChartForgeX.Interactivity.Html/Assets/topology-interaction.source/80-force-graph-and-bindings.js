@@ -113,11 +113,21 @@
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
     };
+    // Nodes are the chart's tab stops, a linked node through its own link. Groups and edges, and their links, are reached
+    // with the arrow keys from a node, so Tab doesn't cross every edge before the first node. A downloaded diagram has no
+    // runtime to move with arrows, so it gets those tab stops back (see serializeSvg).
+    const leaveTabOrder = element => {
+      if (!element.hasAttribute('data-cfx-live-tabindex')) element.setAttribute('data-cfx-live-tabindex', element.getAttribute('tabindex') ?? '');
+      element.setAttribute('tabindex', '-1');
+    };
+    // Every edge and group link, a group's callout included, leaves the tab order; the arrows reach the element it links for.
+    wrapper.querySelectorAll('a[data-cfx-role="topology-edge-host"],a[data-cfx-role="topology-group-host"]').forEach(leaveTabOrder);
     wrapper.querySelectorAll(selectables).forEach(element => {
-      // A node inside its own link is reached through that link, so it adds no tab stop or role of its own.
-      const linked = nodeLink(element) !== null;
-      if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', linked ? '-1' : '0');
-      if (!linked && !element.hasAttribute('role')) element.setAttribute('role', 'button');
+      const link = nodeLink(element);
+      const node = element.matches('[data-cfx-role="topology-node"]');
+      if (!node) leaveTabOrder(element);
+      else if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', link ? '-1' : '0');
+      if (!link && !element.hasAttribute('role')) element.setAttribute('role', 'button');
       // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
       if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
@@ -403,7 +413,7 @@
       if (event.key !== 'Enter' && event.key !== ' ') return;
       if (event.key === 'Enter' && siblingRowLink(event.target)) return;
       // Enter on a node's own link activates it natively; the click that follows selects the node.
-      if (event.key === 'Enter' && event.target instanceof Element && event.target.matches('a[data-cfx-role="topology-node-host"]')) return;
+      if (event.key === 'Enter' && event.target instanceof Element && event.target.matches(elementLinks)) return;
       const element = ownerOf(event.target);
       if (element && nodeLink(element) && nodeHidden(element)) return;
       if (!element || !wrapper.contains(element)) return;

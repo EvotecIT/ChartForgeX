@@ -308,6 +308,14 @@
       return items;
     };
     const focusRelated = (element, offset) => {
+      // While focus is on an item the arrows reached, they keep cycling the same node's related items, so every edge and
+      // group around a node is in reach; Tab moves on to the next node.
+      const sourceAttribute = wrapper.getAttribute('data-cfx-navigation-source') || '';
+      if (sourceAttribute && wrapper.getAttribute('data-cfx-navigation-target') === elementKey(element)) {
+        const split = sourceAttribute.indexOf(':');
+        const source = findSelection({ kind: sourceAttribute.slice(0, split), id: sourceAttribute.slice(split + 1) });
+        if (source && source !== element) element = source;
+      }
       const detail = identity(element);
       detail.related = related(detail);
       const candidates = relatedElements(detail);

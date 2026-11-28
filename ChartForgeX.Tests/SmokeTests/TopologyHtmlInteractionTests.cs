@@ -181,7 +181,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("curve: attr(element, 'data-route-curve')", StringComparison.Ordinal), "Topology selection events should expose geographic route diagnostics.");
         Assert(html.Contains("controlX: attr(element, 'data-route-control-x')", StringComparison.Ordinal), "Topology selection events should expose geographic route control points.");
         Assert(html.Contains("detail.related = related(detail)", StringComparison.Ordinal), "Topology selection events should include related nodes, edges, groups, and edge summaries.");
-        Assert(html.Contains("element.setAttribute('tabindex', linked ? '-1' : '0')", StringComparison.Ordinal), "Topology HTML pages should make topology elements keyboard focusable.");
+        Assert(html.Contains("element.setAttribute('tabindex', link ? '-1' : '0')", StringComparison.Ordinal), "Topology HTML pages should make topology elements keyboard focusable.");
         Assert(html.Contains("event.key !== 'Enter' && event.key !== ' '", StringComparison.Ordinal), "Topology HTML pages should support keyboard activation.");
         Assert(html.Contains("cfx-topology-navigate", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly keyboard navigation events.");
         Assert(html.Contains("data-cfx-navigation-source", StringComparison.Ordinal), "Topology HTML pages should track keyboard navigation source state.");
