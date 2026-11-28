@@ -180,7 +180,7 @@
           activateLegendItem(root, activated, event);
         }
         else {
-          if (!(event instanceof KeyboardEvent && event.key === ' ') && activateHierarchyTarget(root, activated)) return;
+          if (!(event instanceof KeyboardEvent && event.key === ' ') && (activateHierarchyTarget(root, activated) || activateDrillTarget(root, activated))) return;
           toggleSelection(root, activated, event);
           pinTip(root, tip, activated, event);
         }
@@ -350,6 +350,7 @@
         const nearest = acquiredTooltipPoint(root, pointerCandidates(root, event, true));
         if (!nearest || !isDataTarget(nearest.node)) return;
         setHover(root, nearest.node, true, true);
+        if (activateDrillTarget(root, nearest.node)) return;
         toggleSelection(root, nearest.node, event);
         pinTip(root, tip, nearest.node, event);
       });

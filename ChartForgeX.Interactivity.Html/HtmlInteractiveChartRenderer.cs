@@ -77,7 +77,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         writer.StartElement("script")
             .Attribute("nonce", options.Nonce)
             .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.Interaction.Features,
-                options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive))
+                options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive, options.Drilldown.Enabled))
             .EndElement();
         return HtmlStrictStyles.Apply(writer.Build(), options.Nonce);
     }
@@ -220,7 +220,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));
         if (options.Tooltip.DelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.DelayMilliseconds));
         var autoTheme = ChartAutoTheme(chart);
+        var drilldown = BuildDrilldown(chart, options, identityScope, chartId, titleFallback, narrow);
         return BuildPreparedSceneSection(new PreparedSceneSectionSource {
+            Drilldown = drilldown,
             Drawing = prepared, Title = ChartTitle(chart, titleFallback), Language = chart.Accessibility.Language,
             Metadata = PreparedChartMetadata(chart, prepared), AssetSource = assetSource, ChartId = chartId,
             Context = context, IntrinsicWidth = request.Context.Layout.Size.Width, Narrow = narrow,
