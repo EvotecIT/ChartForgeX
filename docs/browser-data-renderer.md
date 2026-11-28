@@ -67,7 +67,7 @@ The renderer measures its host and redraws through `ResizeObserver`. Category ba
 
 ## Live windows
 
-`append({ categories, values }, { maximum, span })` adds periods to the accepted chart, with one value per new category for each series named in `values` (other series get `null`). `maximum` keeps at most that many periods. `span`, for temporal categories, drops periods whose instant is more than `span` milliseconds older than the newest one. With both, the stricter one wins. The oldest periods leave first, so the window, its marks and the DOM stay the same size however long the feed runs.
+`append({ categories, values }, { maximum, span })` adds periods to the accepted chart, with one value per new category for each series named in `values` (other series get `null`). `maximum` keeps at most that many periods. `span` drops periods whose instant is more than `span` milliseconds older than the newest one. Using `span` requires strictly increasing instants across the existing window and the new periods. With both limits, the stricter one wins. The oldest periods leave first, so the window and its DOM stay bounded.
 
 ```javascript
 const chart = ChartForgeXRenderer.create(host, latency, { onSelect: showDetails });
@@ -84,9 +84,9 @@ Marks keep their category and series IDs (`data-cfx-category`, `data-cfx-series`
 
 - A selected mark stays selected while its period is in the window; `selection()` returns its `{ categoryId, seriesId, value }` with the current value, or `null`. When the period leaves the window the selection is released without calling `onSelect`.
 - A focused mark keeps focus. When its period leaves, focus moves to the first remaining mark of the same series, then to the first mark, then to the empty drawing.
-- The mark holding the tab stop keeps it while focus is elsewhere on the page, with the same fallback.
+- The mark holding the tab stop keeps it while focus is elsewhere on the page, with the same fallback. If an update leaves no marks, the drawing keeps the tab stop until marks return.
 
-`batch(callback)` runs several `update`, `append` and `replaceSeries` calls on the controller and draws the result once, for a feed that delivers several samples or series at a time. Each change is validated as it is made; one that throws is not staged and the callback may continue. When the callback itself throws, nothing it staged is drawn and the error propagates. Nested batches join the outer one.
+`batch(callback)` runs several `update`, `append` and `replaceSeries` calls in a synchronous callback and draws the result once. Each change is validated as it is made. If a change throws, the callback can catch the error and continue with the last valid change. Nested batches join the outer one. If an error leaves the outer callback, the batch discards all its changes and propagates the error.
 
 ```javascript
 chart.batch(live => {

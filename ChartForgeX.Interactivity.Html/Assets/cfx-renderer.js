@@ -12,6 +12,11 @@
       throw new TypeError("ChartForgeX: " + field + " must be a nonempty string of at most 2000 characters.");
     return value;
   }
+  function categoryInstant(value) {
+    const instant = Date.parse(text(value, "category instant"));
+    if (!Number.isFinite(instant)) throw new TypeError("ChartForgeX: invalid category instant.");
+    return instant;
+  }
   function capture(input) {
     if (!input || !kinds.has(input.type) || !Array.isArray(input.categories) || !Array.isArray(input.series))
       throw new TypeError("ChartForgeX: a supported type, categories and numeric series are required.");
@@ -22,8 +27,7 @@
       const id = text(category?.id, "category id"), label = text(category?.label, "category label");
       if (categoryIds.has(id)) throw new TypeError("ChartForgeX: category ids must be unique.");
       categoryIds.add(id);
-      const instant = category.instant == null ? null : Date.parse(text(category.instant, "category instant"));
-      if (instant !== null && !Number.isFinite(instant)) throw new TypeError("ChartForgeX: invalid category instant.");
+      const instant = category.instant == null ? null : categoryInstant(category.instant);
       return Object.freeze({ id, label, instant, source: instant === null ? null : category.instant });
     });
     const temporal = categories.some(category => category.instant !== null);
@@ -142,9 +146,8 @@
     try { number = new Intl.NumberFormat(document.documentElement.lang || undefined, { maximumSignificantDigits: 6 }); }
     catch { number = new Intl.NumberFormat(undefined, { maximumSignificantDigits: 6 }); }
     const svg = element(document, "svg", { xmlns: namespace, viewBox: "0 0 " + width + " " + height,
-      width: "100%", height, role: "group", "aria-label": data.label, "data-cfx-renderer": data.type });
-    svg.style.display = "block"; svg.style.fontFamily = "inherit";
-    svg.style.color = "var(--cfx-color-text,#334155)";
+      width: "100%", height, role: "group", "aria-label": data.label, "data-cfx-renderer": data.type,
+      display: "block", "font-family": "inherit", color: "var(--cfx-color-text,#334155)" });
     element(document, "title", {}, svg, data.label);
     const valueCoordinate = value => horizontal ? plot.x + (value - low) / (high - low) * plot.width :
       plot.y + plot.height - (value - low) / (high - low) * plot.height;
@@ -222,7 +225,7 @@
         node.setAttribute("role", "button"); node.setAttribute("aria-label", caption);
         node.setAttribute("aria-pressed", String(selected?.seriesId === series.id && selected?.categoryId === category.id));
         node.setAttribute("tabindex", marks.length ? "-1" : "0");
-        node.style.cursor = "pointer";
+        node.setAttribute("cursor", "pointer");
         // Zero remains zero ink. A separate target keeps it reachable with a pointer.
         if (name === "rect" && (!attributes.width || !attributes.height))
           element(document, "rect", { x: attributes.x - (!attributes.width ? 4 : 0),
@@ -378,40 +381,48 @@
     const document = host.ownerDocument, listeners = new AbortController();
     const same = (detail, other) => !!other && detail.seriesId === other.seriesId && detail.categoryId === other.categoryId;
     function requireActive() { if (disposed) throw new Error("ChartForgeX: renderer is destroyed."); }
+    function setStop(target) {
+      if (stop === target) return;
+      stop?.node.setAttribute("tabindex", "-1");
+      target.node.setAttribute("tabindex", "0");
+      stop = target;
+    }
     function render(next) {
       const width = Math.max(120, host.clientWidth || 640);
       const result = drawing(document, next, width, options.onSelect, selected, options.compact === true);
       const active = host.getRootNode().activeElement;
       const focused = marks.find(mark => mark.node === active)?.detail;
-      const emptyFocused = active === svg;
+      const emptyFocused = !!svg && active === svg;
+      const hadTabStop = stop !== null || svg?.hasAttribute("tabindex");
       if (svg) svg.replaceWith(result.svg); else host.appendChild(result.svg);
       svg = result.svg; marks = result.marks; data = next;
       // A selection that left the chart, such as an old period of a sliding window, is released.
       if (selected && !marks.some(mark => same(mark.detail, selected))) selected = null;
       // A removed mark hands its tab stop to the first remaining mark of its series, then to the first mark.
-      const remembered = focused || stop;
+      const remembered = focused || stop?.detail;
       const target = remembered && (marks.find(mark => same(mark.detail, remembered))
         || marks.find(mark => mark.detail.seriesId === remembered.seriesId)) || marks[0];
-      stop = target ? target.detail : null;
-      if (target && target !== marks[0]) { marks[0].node.setAttribute("tabindex", "-1"); target.node.setAttribute("tabindex", "0"); }
+      stop = marks[0] || null;
+      if (target) setStop(target);
+      else if (hadTabStop) svg.setAttribute("tabindex", "0");
       if (focused || emptyFocused) {
         if (target) target.node.focus({ preventScroll: true });
-        else { svg.setAttribute("tabindex", "0"); svg.focus({ preventScroll: true }); }
+        else svg.focus({ preventScroll: true });
       }
     }
     // Validated changes draw immediately, or once when the enclosing `batch` finishes.
     function commit(next) {
-      if (batching) pending = next; else render(next);
+      if (batching) {
+        domain(next);
+        pending = next;
+      } else render(next);
       return controller;
     }
     function select(event) {
       const item = marks.find(mark => mark.node === event.target.closest?.("[data-cfx-category]"));
       if (!item) return;
-      selected = item.detail; stop = item.detail;
-      for (const mark of marks) {
-        mark.node.setAttribute("aria-pressed", String(mark === item));
-        mark.node.setAttribute("tabindex", mark === item ? "0" : "-1");
-      }
+      selected = item.detail;
+      setStop(item);
       render(data);
       options.onSelect(item.detail);
     }
@@ -426,8 +437,9 @@
       else if (event.key === "ArrowRight" || event.key === "ArrowDown") next = Math.min(index + 1, marks.length - 1);
       else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = Math.max(index - 1, 0);
       else return;
-      event.preventDefault(); marks[index].node.setAttribute("tabindex", "-1");
-      marks[next].node.setAttribute("tabindex", "0"); marks[next].node.focus(); stop = marks[next].detail;
+      event.preventDefault();
+      setStop(marks[next]);
+      marks[next].node.focus();
     }
     const observer = new ResizeObserver(() => {
       if (frame || disposed) return;
@@ -445,7 +457,8 @@
         if (maximum !== undefined && (!Number.isInteger(maximum) || maximum < 1)) throw new RangeError("ChartForgeX: maximum must be a positive integer.");
         if (span !== undefined && (typeof span !== "number" || !Number.isFinite(span) || span <= 0))
           throw new RangeError("ChartForgeX: span must be a positive number of milliseconds.");
-        const next = descriptor(pending || data), added = change.categories.length;
+        const current = pending || data;
+        const next = descriptor(current), added = change.categories.length;
         for (const key of Object.keys(change.values))
           if (!next.series.some(series => series.id === key)) throw new TypeError("ChartForgeX: unknown series id " + key + ".");
         next.categories.push(...change.categories);
@@ -456,10 +469,20 @@
         }
         let drop = maximum === undefined ? 0 : Math.max(0, next.categories.length - maximum);
         if (span !== undefined && next.categories.length) {
-          const instant = category => typeof category.instant === "string" ? Date.parse(category.instant) : NaN;
-          const newest = instant(next.categories[next.categories.length - 1]);
-          if (!Number.isFinite(newest)) throw new TypeError("ChartForgeX: span requires temporal categories.");
-          while (drop < next.categories.length && instant(next.categories[drop]) < newest - span) drop++;
+          const existing = current.categories.length;
+          if (existing && !current.temporal) throw new TypeError("ChartForgeX: span requires temporal categories.");
+          let newest = current.categories[existing - 1]?.instant ?? -Infinity;
+          const appended = Array.from(change.categories, category => {
+            const instant = categoryInstant(category?.instant);
+            if (instant <= newest) throw new TypeError("ChartForgeX: temporal categories require strictly increasing instants.");
+            newest = instant;
+            return instant;
+          });
+          while (drop < next.categories.length) {
+            const instant = drop < existing ? current.categories[drop].instant : appended[drop - existing];
+            if (instant >= newest - span) break;
+            drop++;
+          }
         }
         if (drop) { next.categories.splice(0, drop); for (const series of next.series) series.values.splice(0, drop); }
         return commit(capture(next));
@@ -494,7 +517,7 @@
         if (disposed) return;
         disposed = true; observer.disconnect(); listeners.abort(); global.cancelAnimationFrame(frame);
         options.signal?.removeEventListener("abort", controller.destroy);
-        svg?.remove(); marks = [];
+        svg?.remove(); marks = []; stop = null;
         if (owners.get(host) === controller) owners.delete(host);
       }
     });

@@ -78,6 +78,30 @@ public sealed class DataRendererStreamingBrowserTests {
         await page.EvaluateAsync("()=>{chart.append(tick(10),{maximum:10});chart.append(tick(11),{maximum:10});}");
         Assert.Equal(new[] { "a/t2" }, await page.EvaluateAsync<string[]>(
             "()=>[...document.querySelectorAll(\"#chart [tabindex='0']\")].map(node=>node.dataset.cfxSeries+'/'+node.dataset.cfxCategory)"));
+
+        await page.Locator("[data-cfx-series='b'][data-cfx-category='t4']").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.Equal(1, await page.Locator("#chart [tabindex='0']").CountAsync());
+        await page.Locator("#outside").FocusAsync();
+        await page.EvaluateAsync("()=>chart.append(tick(12),{maximum:10})");
+        Assert.Equal(new[] { "b/t5" }, await page.EvaluateAsync<string[]>(
+            "()=>[...document.querySelectorAll(\"#chart [tabindex='0']\")].map(node=>node.dataset.cfxSeries+'/'+node.dataset.cfxCategory)"));
+
+        await page.EvaluateAsync("""
+            () => {
+              chart.batch(live => {
+                for (const id of ['a', 'b']) live.replaceSeries({ id, name: id, values: Array(10).fill(null) });
+              });
+              chart.append({ categories: tick(13).categories, values: {} }, { maximum: 10 });
+            }
+            """);
+        Assert.Equal(1, await page.Locator("#chart svg[tabindex='0']").CountAsync());
+        Assert.Equal("outside", await page.Locator(":focus").GetAttributeAsync("id"));
+        await page.Keyboard.PressAsync("Shift+Tab");
+        Assert.Equal(1, await page.Locator("#chart svg:focus").CountAsync());
+        await page.EvaluateAsync("()=>chart.append(tick(14),{span:1})");
+        Assert.Equal(1, await page.Locator("#chart [tabindex='0']").CountAsync());
+        Assert.Equal("t14", await page.Locator(":focus").GetAttributeAsync("data-cfx-category"));
         AssertNoConsoleErrors(session);
     }
 
@@ -93,11 +117,18 @@ public sealed class DataRendererStreamingBrowserTests {
               const rejected = [{ span: 0 }, { span: Infinity }, { span: '5' }, { maximum: 0 }].every(settings => {
                 try { chart.append(tick(26), settings); return false; } catch (error) { return error instanceof RangeError; }
               });
-              return [ids.length, ids[0], ids.at(-1), rejected].join('|');
+              const original = document.querySelector('#chart svg');
+              const rejectedDiscarded = [null, 'invalid', tick(24).categories[0].instant].every(instant => {
+                const oldest = { id: 'late', label: 'Late sample', instant };
+                const newest = tick(26).categories[0];
+                try { chart.append({ categories: [oldest, newest], values: { a: [1, 2] } }, { span: 10000, maximum: 1 }); return false; }
+                catch (error) { return error instanceof TypeError && document.querySelector('#chart svg') === original; }
+              });
+              return [ids.length, ids[0], ids.at(-1), rejected, rejectedDiscarded].join('|');
             }
             """);
         // Periods t15..t19 lie within 10 s of t25; earlier ones are dropped.
-        Assert.Equal("6|t15|t25|true", result);
+        Assert.Equal("6|t15|t25|true|true", result);
         var untimed = await page.EvaluateAsync<bool>("""
             () => {
               const host = document.createElement('div'); document.body.appendChild(host);
@@ -122,10 +153,12 @@ public sealed class DataRendererStreamingBrowserTests {
               let draws = 0;
               const observer = new MutationObserver(records => draws += records.filter(record => record.addedNodes.length).length);
               observer.observe(host, { childList: true });
-              let rejectedStep = false;
+              let rejectedStep = false, rejectedDomain = false;
               chart.batch(live => {
                 live.append(tick(10), { maximum: 10 }).append(tick(11), { maximum: 10 });
                 try { live.append(tick(12), { maximum: -1 }); } catch { rejectedStep = true; }
+                try { live.replaceSeries({ id: 'a', name: 'DC1', values: [Number.MAX_VALUE, -Number.MAX_VALUE, ...Array(8).fill(0)] }); }
+                catch (error) { rejectedDomain = error instanceof RangeError; }
                 live.replaceSeries({ id: 'b', name: 'DC2 (ms)', values: Array(10).fill(7) });
               });
               const afterBatch = [...host.querySelectorAll("[data-cfx-series='b']")].map(node => node.getAttribute('aria-label'));
@@ -136,12 +169,37 @@ public sealed class DataRendererStreamingBrowserTests {
               const after = document.querySelectorAll("[data-cfx-series='a']");
               return new Promise(done => queueMicrotask(() => {
                 observer.disconnect();
-                done([draws, kept !== original, rejectedStep, afterBatch[0], thrown, host.querySelector('svg') === kept,
+                done([draws, kept !== original, rejectedStep, rejectedDomain, afterBatch[0], thrown, host.querySelector('svg') === kept,
                   after[0].dataset.cfxCategory, after[9].dataset.cfxCategory].join('|'));
               }));
             }
             """);
-        Assert.Equal("1|true|true|DC2 (ms), T2: 7|true|true|t2|t11", result);
+        Assert.Equal("1|true|true|true|DC2 (ms), T2: 7|true|true|t2|t11", result);
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task SlidingWindowRendersUnderStrictContentSecurityPolicy() {
+        const string pageHtml = """
+            <!doctype html><html><head>
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src https://assets.example; style-src 'none'">
+            <script src="https://assets.example/cfx-renderer.js"></script>
+            </head><body><div id="chart"></div></body></html>
+            """;
+        await using var session = await OpenAsync(pageHtml, configurePageAsync: page =>
+            page.RouteAsync("https://assets.example/cfx-renderer.js", route => route.FulfillAsync(new() {
+                ContentType = "text/javascript", Body = HtmlDataChartAssets.Script
+            })));
+        var page = session.Page;
+        await page.EvaluateAsync(Window, 2);
+        await page.EvaluateAsync("()=>{chart.append(tick(2),{maximum:2});}");
+        Assert.Equal("block|rgb(51, 65, 85)|pointer|0", await page.EvaluateAsync<string>("""
+            () => {
+              const svg = document.querySelector('#chart svg'), mark = svg.querySelector('[role=button]');
+              return [getComputedStyle(svg).display, getComputedStyle(svg).color, getComputedStyle(mark).cursor,
+                document.querySelectorAll('#chart [style]').length].join('|');
+            }
+            """));
         AssertNoConsoleErrors(session);
     }
 }
