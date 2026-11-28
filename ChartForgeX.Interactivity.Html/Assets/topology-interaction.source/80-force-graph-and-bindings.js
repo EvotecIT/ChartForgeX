@@ -114,8 +114,10 @@
       });
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
-      if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
-      if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+      // A node inside its own link is reached through that link, so it adds no tab stop or role of its own.
+      const linked = nodeLink(element) !== null;
+      if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', linked ? '-1' : '0');
+      if (!linked && !element.hasAttribute('role')) element.setAttribute('role', 'button');
       // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
       if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
@@ -339,11 +341,6 @@
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
-    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link. The link's own tab
-    // stop comes back when the runtime lets go and in a downloaded diagram, where no runtime handles Enter on the node.
-    const nodeHosts = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]'));
-    nodeHosts.forEach(host => { host.setAttribute('data-cfx-host-tabindex', host.getAttribute('tabindex') ?? ''); host.setAttribute('tabindex', '-1'); });
-    lifetime.own(() => nodeHosts.forEach(host => restoreHostTabStop(host)));
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
     const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
     const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;
@@ -369,8 +366,8 @@
     listen(wrapper, 'click', event => {
       if (siblingRowLink(event.target)) return;
       const hit = event.target instanceof Element ? event.target.closest('a[data-cfx-role="topology-node-hit-host"]') : null;
-      const element = hit ? hitNode(hit) : event.target instanceof Element ? event.target.closest(selectables) : null;
-      if (hit && element?.hasAttribute('tabindex')) element.focus({ preventScroll: true });
+      const element = hit ? hitNode(hit) : ownerOf(event.target);
+      if (hit && element) focusNode(element);
       if (!element || !wrapper.contains(element)) return;
       if (!hostLink(element)) event.preventDefault();
       select(element);
@@ -383,14 +380,16 @@
         return;
       }
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-        const element = event.target instanceof Element ? event.target.closest(selectables) : null;
+        const element = ownerOf(event.target);
         if (!element || !wrapper.contains(element)) return;
         if (focusRelated(element, event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1)) event.preventDefault();
         return;
       }
       if (event.key !== 'Enter' && event.key !== ' ') return;
       if (event.key === 'Enter' && siblingRowLink(event.target)) return;
-      const element = event.target instanceof Element ? event.target.closest(selectables) : null;
+      // Enter on a node's own link activates it natively; the click that follows selects the node.
+      if (event.key === 'Enter' && event.target instanceof Element && event.target.matches('a[data-cfx-role="topology-node-host"]')) return;
+      const element = ownerOf(event.target);
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
       // Enter follows the link as a click does; Space only selects.

@@ -320,7 +320,7 @@
       const targetKey = elementKey(target);
       wrapper.setAttribute('data-cfx-navigation-source', sourceKey);
       wrapper.setAttribute('data-cfx-navigation-target', targetKey);
-      if (target.focus) target.focus({ preventScroll: true });
+      focusNode(target);
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-navigate', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), from: publicDetail(element), to: publicDetail(target) } }));
       return true;
     };

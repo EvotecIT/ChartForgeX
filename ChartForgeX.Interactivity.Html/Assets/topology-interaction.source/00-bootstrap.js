@@ -58,12 +58,12 @@
       try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
-    // Gives a linked node's own link back its tab stop, as the page rendered it.
-    const restoreHostTabStop = host => {
-      const original = host.getAttribute('data-cfx-host-tabindex');
-      if (original) host.setAttribute('tabindex', original); else host.removeAttribute('tabindex');
-      host.removeAttribute('data-cfx-host-tabindex');
-    };
+    // A linked node's own link is its tab stop and keeps its link semantics; focus, clicks and keys on the link act for
+    // the node inside it.
+    const nodeLink = element => { const host = element?.closest?.('a[data-cfx-role="topology-node-host"]'); return host && wrapper.contains(host) ? host : null; };
+    const ownerOf = target => !(target instanceof Element) ? null
+      : target.closest(selectables) || (target.matches('a[data-cfx-role="topology-node-host"]') ? target.querySelector(selectables) : null);
+    const focusNode = element => { const target = nodeLink(element) || element; if (target?.focus) target.focus({ preventScroll: true }); };
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
     const collectPrefixed = (element, prefix) => {
       const values = {};

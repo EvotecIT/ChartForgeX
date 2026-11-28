@@ -260,12 +260,12 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
-    // Gives a linked node's own link back its tab stop, as the page rendered it.
-    const restoreHostTabStop = host => {
-      const original = host.getAttribute('data-cfx-host-tabindex');
-      if (original) host.setAttribute('tabindex', original); else host.removeAttribute('tabindex');
-      host.removeAttribute('data-cfx-host-tabindex');
-    };
+    // A linked node's own link is its tab stop and keeps its link semantics; focus, clicks and keys on the link act for
+    // the node inside it.
+    const nodeLink = element => { const host = element?.closest?.('a[data-cfx-role="topology-node-host"]'); return host && wrapper.contains(host) ? host : null; };
+    const ownerOf = target => !(target instanceof Element) ? null
+      : target.closest(selectables) || (target.matches('a[data-cfx-role="topology-node-host"]') ? target.querySelector(selectables) : null);
+    const focusNode = element => { const target = nodeLink(element) || element; if (target?.focus) target.focus({ preventScroll: true }); };
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
     const collectPrefixed = (element, prefix) => {
       const values = {};
@@ -912,12 +912,8 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       if (!svg) return null;
       const clone = svg.cloneNode(true);
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
-      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node, reached by its own tab stop.
+      // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node.
       clone.querySelectorAll('a[data-cfx-role="topology-node-hit-host"]').forEach(hit => hit.remove());
-      clone.querySelectorAll('a[data-cfx-role="topology-node-host"][data-cfx-host-tabindex]').forEach(host => {
-        restoreHostTabStop(host);
-        host.querySelectorAll('[data-cfx-role="topology-node"][tabindex]').forEach(node => node.removeAttribute('tabindex'));
-      });
       // Payloads belong to the live player, not to a downloaded static diagram.
       [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
         if (!node.hasAttribute('data-cfx-scenarios')) return;
@@ -1317,7 +1313,7 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       const targetKey = elementKey(target);
       wrapper.setAttribute('data-cfx-navigation-source', sourceKey);
       wrapper.setAttribute('data-cfx-navigation-target', targetKey);
-      if (target.focus) target.focus({ preventScroll: true });
+      focusNode(target);
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-navigate', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), from: publicDetail(element), to: publicDetail(target) } }));
       return true;
     };
@@ -2114,8 +2110,10 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       });
     };
     wrapper.querySelectorAll(selectables).forEach(element => {
-      if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
-      if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+      // A node inside its own link is reached through that link, so it adds no tab stop or role of its own.
+      const linked = nodeLink(element) !== null;
+      if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', linked ? '-1' : '0');
+      if (!linked && !element.hasAttribute('role')) element.setAttribute('role', 'button');
       // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
       if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
@@ -2339,11 +2337,6 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
-    // A linked node is one tab stop on the live page: the node itself, whose Enter follows the link. The link's own tab
-    // stop comes back when the runtime lets go and in a downloaded diagram, where no runtime handles Enter on the node.
-    const nodeHosts = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]'));
-    nodeHosts.forEach(host => { host.setAttribute('data-cfx-host-tabindex', host.getAttribute('tabindex') ?? ''); host.setAttribute('tabindex', '-1'); });
-    lifetime.own(() => nodeHosts.forEach(host => restoreHostTabStop(host)));
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
     const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
     const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;
@@ -2369,8 +2362,8 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     listen(wrapper, 'click', event => {
       if (siblingRowLink(event.target)) return;
       const hit = event.target instanceof Element ? event.target.closest('a[data-cfx-role="topology-node-hit-host"]') : null;
-      const element = hit ? hitNode(hit) : event.target instanceof Element ? event.target.closest(selectables) : null;
-      if (hit && element?.hasAttribute('tabindex')) element.focus({ preventScroll: true });
+      const element = hit ? hitNode(hit) : ownerOf(event.target);
+      if (hit && element) focusNode(element);
       if (!element || !wrapper.contains(element)) return;
       if (!hostLink(element)) event.preventDefault();
       select(element);
@@ -2383,14 +2376,16 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
         return;
       }
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-        const element = event.target instanceof Element ? event.target.closest(selectables) : null;
+        const element = ownerOf(event.target);
         if (!element || !wrapper.contains(element)) return;
         if (focusRelated(element, event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1)) event.preventDefault();
         return;
       }
       if (event.key !== 'Enter' && event.key !== ' ') return;
       if (event.key === 'Enter' && siblingRowLink(event.target)) return;
-      const element = event.target instanceof Element ? event.target.closest(selectables) : null;
+      // Enter on a node's own link activates it natively; the click that follows selects the node.
+      if (event.key === 'Enter' && event.target instanceof Element && event.target.matches('a[data-cfx-role="topology-node-host"]')) return;
+      const element = ownerOf(event.target);
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
       // Enter follows the link as a click does; Space only selects.

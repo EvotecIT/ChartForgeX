@@ -315,7 +315,8 @@ internal sealed partial class VisualTopologyCompiler {
         else caption = node.ShowLabel && _options.IncludeNodeLabels && (mode == TopologyNodeDisplayMode.Tile
                 || mode == TopologyNodeDisplayMode.Icon && _options.IncludeIconLabels
                 || mode == TopologyNodeDisplayMode.Artwork && ResolveRenderableNodeArtwork(node, _options) == null)
-            ? Bounds(node.X, node.Y + node.Height + 5, node.Width, 18) : null;
+            // A badged icon's caption sits below its badge, as it is painted.
+            ? Bounds(node.X, node.Y + node.Height + (mode == TopologyNodeDisplayMode.Icon && !string.IsNullOrWhiteSpace(NodeBadge(node)) ? 25 : 5), node.Width, 18) : null;
         if (caption is not ChartRect text) return bounds;
         var top = Math.Min(bounds.Top, text.Top); var bottom = Math.Max(bounds.Bottom, text.Bottom);
         return new ChartRect(bounds.X, top, bounds.Width, bottom - top);

@@ -67,6 +67,7 @@ public sealed class TopologyNodeLinkBrowserTests {
     // Enter on a focused linked node selects it and follows its link, as a click does; Space only selects it.
     [InlineData("click", true)]
     [InlineData("Enter", true)]
+    [InlineData("link Enter", true)]
     [InlineData(" ", false)]
     public async Task ActivatingALinkedNode_FollowsItsLinkByPointerAndEnter(string how, bool follows) {
         if (!InteractiveChartBrowser.Enabled) return;
@@ -78,6 +79,13 @@ public sealed class TopologyNodeLinkBrowserTests {
         var node = browser.Locator("[data-cfx-role=\"topology-node\"][data-node-id=\"dc02\"]");
         await browser.EvaluateAsync("() => document.addEventListener('click', e => { window.__composed = e.composed; }, true)");
         if (how == "click") await node.ClickAsync();
+        // The node's own link is its tab stop and keeps its link role.
+        else if (how == "link Enter") {
+            var link = browser.Locator("a[data-cfx-role=\"topology-node-host\"]").Filter(new() { Has = node });
+            Assert.NotEqual("button", await node.GetAttributeAsync("role"));
+            Assert.Equal("-1", await node.GetAttributeAsync("tabindex"));
+            await link.FocusAsync(); await browser.Keyboard.PressAsync("Enter");
+        }
         else { await node.FocusAsync(); await browser.Keyboard.PressAsync(how); }
         // A host that embeds the chart in a shadow root sees keyboard activation as it sees a click.
         if (how == "Enter") Assert.True(await browser.EvaluateAsync<bool>("() => window.__composed === true"));
@@ -135,8 +143,8 @@ public sealed class TopologyNodeLinkBrowserTests {
         }");
         await browser.Mouse.ClickAsync((float)point[0], (float)point[1]);
         await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc01' && document.querySelector('.cfx-topology-wrapper').getAttribute('data-cfx-selection-id') === 'dc01'");
-        // Focus stays with the node, not the hidden hit link.
-        Assert.Equal("dc01", await browser.EvaluateAsync<string?>("() => document.activeElement?.closest('[data-cfx-role=\"topology-node\"]')?.getAttribute('data-node-id')"));
+        // Focus goes to the node's own link, not the hidden hit link.
+        Assert.True(await browser.EvaluateAsync<bool>("() => document.activeElement?.matches('a[data-cfx-role=\"topology-node-host\"]') && !!document.activeElement.querySelector('[data-node-id=\"dc01\"]')"));
     }
 
     [Trait("Category", "Browser")]
@@ -172,7 +180,6 @@ public sealed class TopologyNodeLinkBrowserTests {
         var download = await browser.RunAndWaitForDownloadAsync(() => browser.Locator("[data-cfx-topology-export=\"svg\"]").ClickAsync());
         string svg = await File.ReadAllTextAsync(await download.PathAsync() ?? throw new InvalidOperationException("No download."));
         Assert.DoesNotContain("topology-node-hit-host", svg, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-cfx-host-tabindex", svg, StringComparison.Ordinal);
         await browser.RouteAsync("https://chartforgex.test/download.svg", route => route.FulfillAsync(new() { Body = svg, ContentType = "image/svg+xml" }));
         await browser.GotoAsync("https://chartforgex.test/download.svg");
         await browser.Keyboard.PressAsync("Tab");
