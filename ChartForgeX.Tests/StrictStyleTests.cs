@@ -227,6 +227,7 @@ public sealed class StrictStyleTests {
                 await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
                 // Neither the live graph nor the printed copy loses the host's important rule.
                 Assert.Equal("21px", await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('.cfx-graph-explorer .cfx-graph-node-label')).fontSize"));
+                Assert.Equal("21px", await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('[data-cfx-role=graph-print-surface] .cfx-graph-node-label')).fontSize"));
             }
             if (action == "print host rules") {
                 await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });

@@ -87,7 +87,8 @@ public sealed class TopologyPlacementScopeTests {
             await browser.WaitForFunctionAsync("() => document.querySelector('.cfx-topology-wrapper')?.getAttribute('data-cfx-active-scenario-step') === '1'");
             Assert.Contains("cfxk-s.left.replication-scenario=replicate", Uri.UnescapeDataString(browser.Url), StringComparison.Ordinal);
             await browser.Locator("[data-cfx-topology-scenario='']").First.ClickAsync();
-            await browser.WaitForFunctionAsync("() => !location.search.includes('scenario')");
+            // The placement now keeps an empty key of its own, and the older link stays for anyone else reading it.
+            await browser.WaitForFunctionAsync("() => new URL(location.href).searchParams.get('cfxk-s.left.replication-scenario') === ''");
             await browser.ReloadAsync();
             await browser.Locator(".cfx-topology-wrapper[data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
             Assert.True(string.IsNullOrEmpty(await browser.Locator(".cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario")));
