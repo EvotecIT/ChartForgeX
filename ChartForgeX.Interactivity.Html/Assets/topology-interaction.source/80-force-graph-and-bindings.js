@@ -405,6 +405,7 @@
       // Enter on a node's own link activates it natively; the click that follows selects the node.
       if (event.key === 'Enter' && event.target instanceof Element && event.target.matches('a[data-cfx-role="topology-node-host"]')) return;
       const element = ownerOf(event.target);
+      if (element && nodeLink(element) && nodeHidden(element)) return;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
       // Enter follows the link as a click does; Space only selects.

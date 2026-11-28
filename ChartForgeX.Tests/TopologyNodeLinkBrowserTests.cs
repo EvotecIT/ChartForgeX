@@ -176,6 +176,26 @@ public sealed class TopologyNodeLinkBrowserTests {
 
     [Trait("Category", "Browser")]
     [Fact]
+    // Arrow keys from a visible neighbour don't reach a linked node a filter hides, and Space there selects nothing hidden.
+    public async Task ArrowKeys_SkipAFilteredLinkedNode() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("arrows")
+            .AddNode("visible", "Visible", 40, 40, status: TopologyHealthStatus.Healthy, width: 120, height: 40)
+            .AddNode("hidden", "Hidden", 260, 40, status: TopologyHealthStatus.Warning, href: "#record=dcs:hidden", width: 120, height: 40)
+            .AddEdge("link", "visible", "hidden");
+        await using var session = await Open(chart.ToInteractiveHtmlPage(new TopologyRenderOptions()));
+        var browser = session.Page;
+        await browser.EvaluateAsync("() => { window.__selected = []; document.addEventListener('cfx-topology-select', e => window.__selected.push(e.detail?.id)); document.querySelector('[data-cfx-runtime-bound]').dispatchEvent(new CustomEvent('cfx-topology-set-filter', { detail: { status: 'Healthy' } })); }");
+        await browser.WaitForFunctionAsync("() => document.querySelector('a[data-cfx-role=\"topology-node-host\"]').getAttribute('tabindex') === '-1'");
+        await browser.Locator("[data-cfx-role=\"topology-node\"][data-node-id=\"visible\"]").FocusAsync();
+        await browser.Keyboard.PressAsync("ArrowRight");
+        await browser.Keyboard.PressAsync("Space");
+        Assert.Equal("visible", await browser.EvaluateAsync<string?>("() => document.activeElement?.closest('[data-node-id]')?.getAttribute('data-node-id')"));
+        Assert.DoesNotContain("hidden", await browser.EvaluateAsync<string[]>("() => window.__selected"));
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
     // A downloaded SVG keeps one link per node with its own tab stop, so Tab and Enter follow it without the runtime.
     public async Task ADownloadedSvg_KeepsKeyboardLinks() {
         if (!InteractiveChartBrowser.Enabled) return;

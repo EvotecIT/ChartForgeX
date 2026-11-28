@@ -265,7 +265,13 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     const nodeLink = element => { const host = element?.closest?.('a[data-cfx-role="topology-node-host"]'); return host && wrapper.contains(host) ? host : null; };
     const ownerOf = target => !(target instanceof Element) ? null
       : target.closest(selectables) || (target.matches('a[data-cfx-role="topology-node-host"]') ? target.querySelector(selectables) : null);
-    const focusNode = element => { const target = nodeLink(element) || element; if (target?.focus) target.focus({ preventScroll: true }); };
+    // A node a filter hides can't take focus, as on a hidden element; its link, still in the document, mustn't either.
+    const focusNode = element => {
+      const link = nodeLink(element);
+      if (link && nodeHidden(element)) return;
+      const target = link || element;
+      if (target?.focus) target.focus({ preventScroll: true });
+    };
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
     const collectPrefixed = (element, prefix) => {
       const values = {};
@@ -2401,6 +2407,7 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       // Enter on a node's own link activates it natively; the click that follows selects the node.
       if (event.key === 'Enter' && event.target instanceof Element && event.target.matches('a[data-cfx-role="topology-node-host"]')) return;
       const element = ownerOf(event.target);
+      if (element && nodeLink(element) && nodeHidden(element)) return;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
       // Enter follows the link as a click does; Space only selects.
