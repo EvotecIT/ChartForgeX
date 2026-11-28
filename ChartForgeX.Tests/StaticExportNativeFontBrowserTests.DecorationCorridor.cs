@@ -21,7 +21,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         }
         """, DecorationCorridorCaption);
 
-    private static void AssertDecorationCorridor(Exported decorated, Exported undecorated, JsonElement region, string name) {
+    private void AssertDecorationCorridor(Exported decorated, Exported undecorated, JsonElement region, string name) {
         var actual = PngReader.Decode(Convert.FromBase64String(decorated.Png));
         var control = PngReader.Decode(Convert.FromBase64String(undecorated.Png));
         var scale = decorated.Report.GetProperty("scale").GetInt32();

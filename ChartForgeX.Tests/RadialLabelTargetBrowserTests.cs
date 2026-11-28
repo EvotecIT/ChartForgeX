@@ -132,22 +132,26 @@ public sealed class RadialLabelTargetBrowserTests {
         return chart.YAxis(y => y.Bounds(0, 1500));
     }
 
-    // A caption paints its glyphs as native text ink, which takes the pointer only where a glyph is painted, so hover
-    // a point the browser resolves to the caption rather than a fixed spot in its box.
+    // Native glyph contours take the pointer only where they are painted.
     private static async Task<(double X, double Y, string MarkId)> PaintedPointAsync(ILocator root, string captions) {
-        var hit = await root.EvaluateAsync<JsonElement>(@"(root, captions) => {
-            for (const caption of root.querySelectorAll(captions)) {
-                const ink = caption.querySelector('[data-cfx-native-text-ink]') || caption.querySelector('text:not([display=""none""])');
-                if (!ink) continue;
-                const box = ink.getBoundingClientRect();
-                for (let row = 1; row < 8; row++) for (let column = 1; column < 16; column++) {
-                    const x = box.x + box.width * column / 16, y = box.y + box.height * row / 8;
-                    if (caption.contains(document.elementFromPoint(x, y)))
-                        return { x, y, mark: caption.closest('[data-cfx-label-for]')?.dataset.cfxLabelFor || '' };
+        var hit = await root.EvaluateAsync<JsonElement>("""
+            (root, captions) => {
+                for (const caption of root.querySelectorAll(captions)) {
+                    for (const ink of caption.querySelectorAll('[data-cfx-native-text-ink], text')) {
+                        const box = ink.getBoundingClientRect();
+                        if (!box.width || !box.height) continue;
+                        for (let row = 1; row < 8; row++) {
+                            for (let column = 1; column < 16; column++) {
+                                const x = box.x + box.width * column / 16, y = box.y + box.height * row / 8;
+                                if (ink.contains(document.elementFromPoint(x, y)))
+                                    return { x, y, mark: caption.closest('[data-cfx-label-for]')?.dataset.cfxLabelFor || '' };
+                            }
+                        }
+                    }
                 }
+                return null;
             }
-            return null;
-        }", captions);
+            """, captions);
         if (hit.ValueKind != JsonValueKind.Object) throw new InvalidOperationException("Caption was not painted.");
         return (hit.GetProperty("x").GetDouble(), hit.GetProperty("y").GetDouble(), hit.GetProperty("mark").GetString() ?? string.Empty);
     }

@@ -8,19 +8,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed partial class StaticExportNativeFontBrowserTests {
-    private static readonly Lazy<string> TemporaryProofDirectory = new(() => Directory.CreateTempSubdirectory("cfx-font-proof-").FullName);
+    private DirectoryInfo? _temporaryProofDirectory;
 
-    /// <summary>Where the proofs write downloads: the capture folder when one is set, otherwise a folder of this run's own.</summary>
-    private static string ProofDirectory() {
+    public void Dispose() => _temporaryProofDirectory?.Delete(recursive: true);
+
+    private string CapturePath(string name) {
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        output = string.IsNullOrWhiteSpace(output) ? TemporaryProofDirectory.Value : Path.GetFullPath(output);
-        Directory.CreateDirectory(output);
-        return output;
+        if (string.IsNullOrWhiteSpace(output))
+            return Path.Combine((_temporaryProofDirectory ??= Directory.CreateTempSubdirectory("cfx-font-proof-")).FullName, name);
+        if (!Path.IsPathFullyQualified(output))
+            throw new InvalidOperationException("CFX_BROWSER_CAPTURE_DIRECTORY must be absolute.");
+        return Path.Combine(Directory.CreateDirectory(output).FullName, name);
     }
 
     /// <summary>Separates exact downloaded bitmap fidelity from independent SVG semantic replay.</summary>
-    private static async Task<Exported> CaptureExports(IPage page, string svgButton, string pngButton, string name, bool? corruptOutput = null) {
-        var stem = Path.Combine(ProofDirectory(), name);
+    private async Task<Exported> CaptureExports(IPage page, string svgButton, string pngButton, string name, bool? corruptOutput = null) {
+        var stem = CapturePath(name);
         await page.EvaluateAsync("""
             corrupt => {
                 window.nativeFontPngInputs=[];window.nativeFontRasterDraws=[];window.nativeFontRasterReferences=[];

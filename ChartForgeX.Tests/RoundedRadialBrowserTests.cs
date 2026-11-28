@@ -64,10 +64,12 @@ public sealed class RoundedRadialBrowserTests {
         if (relativeLabels) Assert.True(await page.EvaluateAsync<bool>("""
             () => {
                 const svg = document.querySelector('.cfx-stage svg').getBoundingClientRect();
-                const captions = Array.from(document.querySelectorAll(['radial-value-label', 'radial-category-label'].flatMap(role => [`[data-cfx-role="${role}"] [data-cfx-native-text-ink]`, `[data-cfx-role="${role}"] text:not([display="none"])`]).join(',')));
-                return captions.length > 0 && captions.every(text => {
-                    const box = text.getBoundingClientRect(), matrix = text.getScreenCTM(), angle = Math.atan2(matrix.b, matrix.a) * 180 / Math.PI;
-                    return angle >= -90.01 && angle <= 90.01 && box.left >= svg.left - .75 && box.right <= svg.right + .75
+                const captions = [...document.querySelectorAll(
+                    ':is([data-cfx-role="radial-value-label"], [data-cfx-role="radial-category-label"]) :is([data-cfx-native-text-ink], text)'
+                )].filter(ink => getComputedStyle(ink).display !== 'none');
+                return captions.length > 0 && captions.every(ink => {
+                    const box = ink.getBoundingClientRect(), matrix = ink.getScreenCTM(), angle = Math.atan2(matrix.b, matrix.a) * 180 / Math.PI;
+                    return box.width > 0 && box.height > 0 && angle >= -90.01 && angle <= 90.01 && box.left >= svg.left - .75 && box.right <= svg.right + .75
                         && box.top >= svg.top - .75 && box.bottom <= svg.bottom + .75;
                 });
             }

@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Actual PNG downloads consume native glyphs; ordinary SVG and the live document remain text.</summary>
 [Trait("BrowserSuite", "Compatibility")]
-public sealed partial class StaticExportNativeFontBrowserTests {
+public sealed partial class StaticExportNativeFontBrowserTests : IDisposable {
     [BrowserTheory]
     [InlineData(800, ThemeMode.Light)]
     [InlineData(390, ThemeMode.Dark)]
