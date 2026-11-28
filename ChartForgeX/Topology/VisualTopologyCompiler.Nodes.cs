@@ -39,9 +39,6 @@ internal sealed partial class VisualTopologyCompiler {
         var surfaceDash=SurfaceDash(node.DashPattern);
         using (Host(node.Href, node.Tooltip, node.Id, "topology-node-host"))
         using (_builder.PushGroup(node.Id, "topology-node", NodeMetadata(node),opacity:node.Opacity??1)) {
-            // A linked node is one target: a transparent area under its paint covers the gaps between its surface and its
-            // caption, so a pointer anywhere on the node reaches the link instead of the group behind it.
-            if (SafeHref(node.Href) != null) _builder.Rect(LinkHitBounds(node, mode, bounds), ChartColor.Transparent, role: "topology-node-hit");
             Action? beforeArtwork = mode == TopologyNodeDisplayMode.Artwork && HasArtworkSurfacePolicy(node)
                 ? () => BuildNodeSurface(node, mode, bounds, fill, accent, strokeWidth, surfaceDash, surfacePaint, accentPaint) : null;
             var image = mode == TopologyNodeDisplayMode.Artwork && BuildArtwork(node, bounds, beforePaint: beforeArtwork);
@@ -295,6 +292,18 @@ internal sealed partial class VisualTopologyCompiler {
                 }
             } else { var p = Project(new ChartPoint(mark.Cx, mark.Cy)); _builder.Ellipse(p.X, p.Y, mark.Rx * _scale * glyphScale, mark.Ry * _scale * glyphScale, mark.Filled ? color : null, mark.Filled ? null : color, mark.StrokeWidth * _scale * glyphScale, "topology-node-icon", paint: new VisualScenePaintBinding(glyphPaint, glyphPaint)); }
         }
+    }
+
+    // A linked node is one target: a transparent area covers the gap between its surface and its caption, so a pointer
+    // there reaches the link instead of the group behind it. Every such area is painted before any node, so a neighbour's
+    // own surface always stays on top of it.
+    private void BuildLinkHitArea(TopologyNode node) {
+        // Only an interactive page needs it; a static SVG or image keeps one link per node.
+        if (!_options.Html.Interactions || SafeHref(node.Href) is not string href) return;
+        var mode = EffectiveNodeDisplayMode(node, _options);
+        if (mode == TopologyNodeDisplayMode.Hidden) return;
+        using (_builder.PushLink(href, node.Id + "-hit", "topology-node-hit-host", pointerOnly: true))
+            _builder.Rect(LinkHitBounds(node, mode, Bounds(node.X, node.Y, node.Width, node.Height)), ChartColor.Transparent, role: "topology-node-hit");
     }
 
     private ChartRect LinkHitBounds(TopologyNode node, TopologyNodeDisplayMode mode, ChartRect bounds) {

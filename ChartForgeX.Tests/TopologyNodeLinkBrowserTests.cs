@@ -77,14 +77,15 @@ public sealed class TopologyNodeLinkBrowserTests {
     public async Task ALinkedTilesHitArea_LeavesItsNeighbourAlone() {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = TopologyChart.Create().Id("stack")
-            .AddNode("lower", "Lower", 40, 125, href: "#record=groups:lower", width: 120, height: 40)
+            // Overlapping horizontal spans and a gap smaller than the caption band; the upper tile is drawn later.
+            .AddNode("lower", "Lower", 80, 98, href: "#record=groups:lower", width: 120, height: 40)
             .AddNode("upper", "Upper", 40, 40, href: "#record=groups:upper", width: 120, height: 40);
         chart.DefaultRenderOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, MaxNodeLabelLines = 3 };
         await using var session = await Open(chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
         var owner = await session.Page.EvaluateAsync<string>(@"() => {
             const node = document.querySelector('[data-cfx-role=""topology-node""][data-node-id=""lower""]');
             const box = node.querySelector('[data-cfx-role*=""surface""]')?.getBoundingClientRect() || node.getBoundingClientRect();
-            return document.elementFromPoint(box.x + box.width / 2, box.y + 3)?.closest('a')?.getAttribute('href') || '';
+            return document.elementFromPoint(box.x + box.width / 2, box.y + 2)?.closest('a')?.getAttribute('href') || '';
         }");
         Assert.Equal("#record=groups:lower", owner);
     }
@@ -105,7 +106,7 @@ public sealed class TopologyNodeLinkBrowserTests {
             if (caption) points.push([caption.x + caption.width / 2, caption.y + caption.height / 2, 'caption']);
             return points.flatMap(([x, y, where]) => {
                 const top = document.elementFromPoint(x, y);
-                return top && host.contains(top) ? [] : [host.getAttribute('href') + ' ' + where + ' reaches ' + (top?.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || top?.tagName)];
+                return top && top.closest('a')?.getAttribute('href') === host.getAttribute('href') ? [] : [host.getAttribute('href') + ' ' + where + ' reaches ' + (top?.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || top?.tagName)];
             });
         })");
         Assert.Empty(blocked);

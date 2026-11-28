@@ -10,11 +10,15 @@ using ChartForgeX.SvgRaster;
 namespace ChartForgeX.Rendering;
 
 internal sealed partial class VisualSceneBuilder {
-    internal IDisposable PushLink(string href, string? id = null, string? role = null, string? tooltip = null) {
+    internal IDisposable PushLink(string href, string? id = null, string? role = null, string? tooltip = null, bool pointerOnly = false) {
         var safe = Topology.TopologyRenderPrimitives.SafeHref(href);
         if (safe == null) throw new ArgumentException("Scene links require a safe relative, fragment, http(s), mailto or telephone target.", nameof(href));
-        return OpenGroup(new VisualSceneGroup(role, id, null, null, href: safe, tooltip: tooltip));
+        // A pointer-only link widens another link's target for the pointer; keyboards and assistive technology reach that one.
+        var metadata = pointerOnly ? new Dictionary<string, string>(StringComparer.Ordinal) { [PointerOnlyLink] = "true" } : null;
+        return OpenGroup(new VisualSceneGroup(role, id, null, metadata, href: safe, tooltip: tooltip));
     }
+
+    internal const string PointerOnlyLink = "data-cfx-pointer-only";
 
     internal IDisposable PushTooltip(string text, string? id = null, string? role = null) {
         if (text == null) throw new ArgumentNullException(nameof(text));

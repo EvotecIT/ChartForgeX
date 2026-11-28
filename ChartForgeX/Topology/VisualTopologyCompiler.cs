@@ -148,6 +148,7 @@ internal sealed partial class VisualTopologyCompiler {
             foreach (var edge in OrderedEdgesForRendering(_chart, _options)) BuildEdge(edge.Edge);
             BuildEdgeLabels();
             BuildEdgeChips();
+            foreach (var node in _chart.Nodes) BuildLinkHitArea(node);
             foreach (var node in _chart.Nodes) BuildNode(node);
             BuildAnnotations();
             if (_options.IncludeLayoutDiagnosticOverlay) BuildDiagnostics();
