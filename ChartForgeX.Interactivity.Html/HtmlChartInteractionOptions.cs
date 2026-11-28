@@ -121,6 +121,9 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets optional source-domain navigator, range preset and position scrollbar controls.</summary>
     public HtmlChartXNavigationOptions XNavigation { get; } = new HtmlChartXNavigationOptions();
 
+    // A saved navigator windows the drawing in the browser, so it selects the standalone reader as zoom does.
+    internal ChartInteractionFeatures ReaderFeatures => XNavigation.Enabled ? Interaction.Features | ChartInteractionFeatures.Zoom : Interaction.Features;
+
     /// <summary>Gets HTML control translations, language and direction independently from native data formatting.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();
 

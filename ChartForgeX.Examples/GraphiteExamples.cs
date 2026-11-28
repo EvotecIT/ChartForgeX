@@ -21,6 +21,9 @@ internal static class GraphiteExamples {
             gallery.Append("<p><a href='").Append(localizedName).Append("'>Polish controls and comparison tray</a></p>");
             LinkedChartViewsExamples.Write(output, dark);
             gallery.Append("<p><a href='graphite-").Append(suffix).Append("-linked-chart-views.html'>Brush dates and highlight services across two charts</a></p>");
+            var navigatorName = "graphite-" + suffix + "-saved-navigator.html";
+            File.WriteAllText(Path.Combine(output, navigatorName), HtmlSavedNavigatorExamples.CreatePage(dark));
+            gallery.Append("<p><a href='").Append(navigatorName).Append("'>Saved report navigator with range presets</a></p>");
             foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {
                 var name = "graphite-" + suffix + "-tooltip-" + anchor.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, name + ".html"), HtmlTooltipPositionExamples.CreatePage(anchor, dark));

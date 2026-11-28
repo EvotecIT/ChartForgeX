@@ -15,6 +15,11 @@
   const xNavigationCaption = (root, value) => {
     const axis = root._cfxDataProjection?.x;
     const native = [...(axis?.displayBounds || []), ...(axis?.displayTicks || [])].find(tick => tick.value === value);
+    if (!native && root._cfxStandaloneViewport && !nativePreparationBinding(root, 'viewport') && standaloneTimeCaptured(axis)) {
+      // A saved calendar names a range bound as the native bounds read: its date, then its clock unless it is midnight.
+      const calendar = standaloneCalendar(axis), date = standaloneTimeCaption(value, { format: 'year' }, calendar), shown = standaloneTimeDisplay(value, calendar);
+      return shown.getUTCHours() || shown.getUTCMinutes() || shown.getUTCSeconds() ? date + ' ' + standaloneTimeCaption(value, {}, calendar) : date;
+    }
     const shown = dataValue(value, axis?.scale === 'time' && value >= 0);
     // Window arithmetic leaves binary residue (0.9999999999999998); captions show the represented value.
     return native ? native.text : String(typeof shown === 'number' ? +shown.toPrecision(12) : shown);
@@ -49,6 +54,9 @@
     const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
     const enabled = connectedXViewport(root) && !!projection && !!axis;
     panel.hidden = !enabled;
+    // Saved pages window the embedded drawing themselves and show resize grips on the overview window.
+    if (enabled && !nativePreparationBinding(root, 'viewport')) panel.dataset.cfxXStandalone = 'true';
+    else delete panel.dataset.cfxXStandalone;
     panel.querySelectorAll('button,input').forEach(control => { control.disabled = !enabled; });
     if (!enabled) return;
     const first = projectedAxisRatio(axis, projection.minimum, false), last = projectedAxisRatio(axis, projection.maximum, true, projection.maximumInclusive !== false);
@@ -85,26 +93,45 @@
         const ratio = clamp((event.clientX - box.left) / box.width, 0, 1);
         return chartXProjection(root)?.reversed ? 1 - ratio : ratio;
       };
-      const cancel = () => { drag = null; syncXNavigation(root); };
+      const cancel = () => { drag = null; delete overview.dataset.cfxXGrip; syncXNavigation(root); };
+      // On a saved page the window's edges resize it and its interior moves it; elsewhere a drag selects a new window.
+      // A connected host keeps whole-overview selection.
+      const grip = event => {
+        const committed = ratios();
+        if (!committed || nativePreparationBinding(root, 'viewport')) return 'select';
+        const ratio = pointerRatio(event), slack = 8 / Math.max(1, overview.getBoundingClientRect().width);
+        if (Math.abs(ratio - committed[0]) <= slack) return 'start';
+        if (Math.abs(ratio - committed[1]) <= slack) return 'end';
+        return ratio > committed[0] && ratio < committed[1] && committed[1] - committed[0] < 1 ? 'move' : 'select';
+      };
+      const dragged = (event, current) => {
+        const ratio = pointerRatio(event), [first, last] = drag.committed || [0, 1];
+        if (drag.mode === 'start') return [Math.min(ratio, last - Number.EPSILON), last];
+        if (drag.mode === 'end') return [first, Math.max(ratio, first + Number.EPSILON)];
+        if (drag.mode === 'move') { const start = clamp(first + ratio - drag.first, 0, 1 - (last - first)); return [start, start + last - first]; }
+        return ratio === drag.first ? current : [Math.min(drag.first, ratio), Math.max(drag.first, ratio)];
+      };
       listenChart(root, overview, 'pointerdown', event => {
         if (event.button !== 0 || !connectedXViewport(root)) return;
         event.preventDefault();
-        drag = { id: event.pointerId, first: pointerRatio(event), clientX: event.clientX };
+        drag = { id: event.pointerId, first: pointerRatio(event), clientX: event.clientX, mode: grip(event), committed: ratios(), draft: null };
         overview.setPointerCapture(event.pointerId);
       });
       listenChart(root, overview, 'pointermove', event => {
-        if (!drag || drag.id !== event.pointerId) return;
-        const last = pointerRatio(event);
-        if (last !== drag.first) paintXNavigationRange(root, Math.min(drag.first, last), Math.max(drag.first, last));
+        if (!drag) { if (connectedXViewport(root)) overview.dataset.cfxXGrip = grip(event); return; }
+        if (drag.id !== event.pointerId) return;
+        drag.draft = dragged(event, drag.draft);
+        if (drag.draft) paintXNavigationRange(root, drag.draft[0], drag.draft[1]);
       });
       listenChart(root, overview, 'pointerup', event => {
         if (!drag || drag.id !== event.pointerId) return;
-        const first = drag.first, last = pointerRatio(event), moved = Math.abs(event.clientX - drag.clientX) >= 4;
+        const draft = Math.abs(event.clientX - drag.clientX) >= 4 ? dragged(event, drag.draft) : null;
         drag = null;
         if (overview.hasPointerCapture(event.pointerId)) overview.releasePointerCapture(event.pointerId);
-        if (moved && first !== last) commit(Math.min(first, last), Math.max(first, last));
+        if (draft && draft[0] < draft[1]) commit(draft[0], draft[1]);
         else syncXNavigation(root);
       });
+      listenChart(root, overview, 'pointerleave', () => { if (!drag) delete overview.dataset.cfxXGrip; });
       listenChart(root, overview, 'pointercancel', cancel);
       listenChart(root, root, 'keydown', event => { if (event.key === 'Escape') cancel(); });
     }

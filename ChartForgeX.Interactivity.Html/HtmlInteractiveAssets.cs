@@ -60,7 +60,7 @@ internal static class HtmlInteractiveAssets {
     }
 
     internal static HtmlChartFeatureBundles FeatureBundlesFor(HtmlChartInteractionOptions options, ChartForgeX.Core.Chart chart) =>
-        FeatureBundlesFor(options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+        FeatureBundlesFor(options.Runtime, options.ReaderFeatures, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
             options.Motion.EffectiveDuration > 0, options.HasContextMenu, HasHierarchy(chart));
 
     internal static bool HasHierarchy(ChartForgeX.Core.Chart chart) => System.Linq.Enumerable.Any(chart.Series,
