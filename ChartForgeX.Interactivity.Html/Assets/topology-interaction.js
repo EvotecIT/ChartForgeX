@@ -243,14 +243,21 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     let applyingSync = false;
     let scenarioPlayback = null;
     let forceGraphMotionTimer = null;
-    const scenarioUrlKey = name => {
-      const chartId = attr(wrapper, 'data-chart-id').replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
-      return 'cfx-' + chartId + '-' + name;
+    // A fragment rendered before placements had keys of their own keeps the chart id's key as its placement key.
+    const placementFamily = wrapper.hasAttribute('data-cfx-key') ? 'data-cfx-key' : 'data-chart-id';
+    const scenarioUrlKey = (name, from = placementFamily) => {
+      const chartId = attr(wrapper, from).replace(/[^a-z0-9_.-]+/gi, '-').replace(/^-+|-+$/g, '') || 'topology';
+      return (from === 'data-cfx-key' ? 'cfxk-' : 'cfx-') + chartId + '-' + name;
     };
-    const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; return params.get(scenarioUrlKey(name)) || params.get(name) || ''; } catch { return ''; } })() : '';
+    // Scenario and step come from one set of keys: the placement's, else an older link's keyed by the chart id, else plain.
+    // An older link, keyed by the chart id or plain, stays in the address for every placement that reads it; a placement
+    // that clears its scenario keeps an empty key of its own, so the older link no longer speaks for it.
+    const scenarioUrlName = (params, name) => { const from = ['data-cfx-key', 'data-chart-id'].filter(f => wrapper.hasAttribute(f)).find(f => params.has(scenarioUrlKey('scenario', f)) || params.has(scenarioUrlKey('scenarioStep', f))); return from ? scenarioUrlKey(name, from) : name; };
+    // null when the address says nothing; an empty value is a selection the reader cleared.
+    const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; const key = scenarioUrlName(params, name); return params.has(key) ? params.get(key) : null; } catch { return null; } })() : null;
     const syncScenarioUrl = (scenarioId, stepIndex) => {
       if (!scenarioUrlState || !window.history || !window.history.replaceState) return;
-      try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); scenarioId ? url.searchParams.set(scenarioKey, scenarioId) : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); url.searchParams.delete('scenario'); url.searchParams.delete('scenarioStep'); window.history.replaceState(window.history.state, '', url); } catch { }
+      try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
@@ -2303,9 +2310,11 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
         listen(stepsList, 'click', event => focusStep(event.target));
         listen(stepsList, 'keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; event.preventDefault(); focusStep(event.target); });
       }
-      const initialScenario = scenarioUrlParam('scenario') || attr(wrapper, 'data-cfx-active-scenario');
+      // A scenario the reader cleared stays cleared; only an address that names none falls back to the authored one.
+      const urlScenario = scenarioUrlParam('scenario');
+      const initialScenario = urlScenario ?? attr(wrapper, 'data-cfx-active-scenario');
       const initialScenarioStep = scenarioUrlParam('scenarioStep');
-      if (scenarioControlMode === 'checkboxes') setScenarioFilters(initialScenario ? scenarioIdTokens(initialScenario) : Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle')), false, false);
+      if (scenarioControlMode === 'checkboxes') setScenarioFilters(initialScenario ? scenarioIdTokens(initialScenario) : urlScenario === '' ? [] : Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle')), false, false);
       else setScenario(initialScenario, false, false);
       if (initialScenarioStep && (scenarioControlMode !== 'checkboxes' || attr(wrapper, 'data-cfx-active-scenario'))) setScenarioStep(initialScenarioStep, false, false, false);
       const initialRoute = scenarioRoute(attr(wrapper, 'data-cfx-active-scenario'));

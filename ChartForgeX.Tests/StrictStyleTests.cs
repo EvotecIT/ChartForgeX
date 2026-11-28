@@ -161,6 +161,113 @@ public sealed class StrictStyleTests {
         Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 
+    // The graph explorer under a nonce policy that refuses blob workers, style attributes and style elements without the
+    // nonce: physics stays on the main thread when asked, live edge patches style through the CSSOM, and the print
+    // surface brings its export styles without breaking the policy.
+    [Trait("Category", "Browser")]
+    [Theory]
+    [InlineData("physics")]
+    [InlineData("patch")]
+    [InlineData("print")]
+    [InlineData("print host rules")]
+    [InlineData("print host important")]
+    [InlineData("print clip")]
+    public async Task GraphExplorerKeepsAStrictPolicy(string action) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var scene = GraphScene.Create("strict-graph", "Services");
+        for (var index = 0; index < 170; index++) scene.AddNode("n" + index, "Service " + index);
+        for (var index = 1; index < 170; index++) scene.AddEdge("e" + index, "n" + (index - 1), "n" + index, configure: edge => edge.Directed = index % 2 == 0);
+        scene.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.IncrementalUpdates);
+        scene.Options.Physics.Solver = GraphPhysicsSolver.BarnesHut;
+        var policy = "default-src 'none'; img-src data: blob:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
+        var graphPage = scene.ToGraphExplorerHtmlPage(options => {
+            options.Nonce = Nonce; options.PhysicsThread = HtmlGraphPhysicsThread.Main; options.PersistThemePreference = false;
+        });
+        // A host's own print rule, which the print snapshot's rules must not override.
+        if (action == "print host rules") graphPage = graphPage.Replace("</head>", "<style nonce=\"" + Nonce + "\">@media print{.cfx-graph-shell{margin-left:27px}}</style></head>", StringComparison.Ordinal);
+        if (action == "print host important") graphPage = graphPage.Replace("</head>", "<style nonce=\"" + Nonce + "\">.cfx-graph-node-label{font-size:21px!important}</style></head>", StringComparison.Ordinal);
+        await using var session = await OpenAsync(graphPage, policy);
+        var page = session.Page;
+        if (action == "physics") {
+            await page.WaitForFunctionAsync("() => ['main', 'stopped'].includes(document.querySelector('.cfx-graph-explorer').dataset.cfxGraphPhysicsThread)");
+            Assert.NotEqual("worker", await page.EvaluateAsync<string>("() => document.querySelector('.cfx-graph-explorer').dataset.cfxGraphPhysicsThread"));
+        } else if (action == "patch") {
+            Assert.NotEqual("none", await page.EvaluateAsync<string>("""
+                () => {
+                  const root = document.querySelector('.cfx-graph-explorer');
+                  ChartForgeXGraphExplorer.update(root, { upsertEdges: [{ id: 'e1', sourceNodeId: 'n0', targetNodeId: 'n1', dashed: true, style: { width: 6 } }] });
+                  return getComputedStyle(root.querySelector('[data-edge-id="e1"]')).strokeDasharray;
+                }
+                """));
+        } else {
+            if (action == "print clip") await page.EvaluateAsync("""
+                () => {
+                  const svg = document.querySelector('.cfx-graph-explorer [data-cfx-role="graph-scene"]');
+                  const ns = 'http://www.w3.org/2000/svg', clip = document.createElementNS(ns, 'clipPath'), rect = document.createElementNS(ns, 'rect');
+                  clip.id = 'gate-clip'; rect.setAttribute('width', '500'); rect.setAttribute('height', '500'); clip.append(rect);
+                  (svg.querySelector('defs') || svg.insertBefore(document.createElementNS(ns, 'defs'), svg.firstChild)).append(clip);
+                  const target = svg.querySelector('[data-cfx-role="graph-node"]') || svg.querySelector('g');
+                  target.setAttribute('data-gate-clip', 'true'); target.style.clipPath = 'url(#gate-clip)';
+                }
+                """);
+            await page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
+            if (action == "print clip") {
+                await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+                // The printed copy's label points at the copy's own clip.
+                Assert.True(await page.EvaluateAsync<bool>("""
+                    () => {
+                      const surface = document.querySelector('[data-cfx-role=graph-print-surface]');
+                      const label = surface.querySelector('[data-gate-clip]');
+                      const id = /#([^)"']+)/.exec(label.style.clipPath)[1];
+                      return id !== 'gate-clip' && !!surface.querySelector('[id="' + id + '"]');
+                    }
+                    """));
+            }
+            if (action == "print host important") {
+                await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+                // Neither the live graph nor the printed copy loses the host's important rule.
+                Assert.Equal("21px", await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('.cfx-graph-explorer .cfx-graph-node-label')).fontSize"));
+                Assert.Equal("21px", await page.EvaluateAsync<string>("() => getComputedStyle(document.querySelector('[data-cfx-role=graph-print-surface] .cfx-graph-node-label')).fontSize"));
+            }
+            if (action == "print host rules") {
+                await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+                Assert.Equal("27px", await page.EvaluateAsync<string>("() => getComputedStyle(document.body).marginLeft"));
+            }
+            await page.WaitForSelectorAsync(".cfx-graph-explorer[data-cfx-graph-print-ready=true]", new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            Assert.True(await page.EvaluateAsync<bool>("() => !!document.querySelector('[data-cfx-role=graph-print-surface] svg')"));
+        }
+        var violations = await page.EvaluateAsync<string[]>("() => window.__cfxViolations || []");
+        Assert.True(violations.Length == 0, string.Join(" | ", violations));
+    }
+
+    // A responsive drawing handed to the layout runtime keeps its fragment references after the runtime renames its ids and
+    // moves its styles into the CSS object model under a nonce policy.
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task ResponsiveLayoutKeepsFragmentReferencesUnderAStrictPolicy() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        using var stream = typeof(HtmlResponsiveChartRenderer).Assembly.GetManifestResourceStream("ChartForgeX.Interactivity.Html.Assets.chart-layout.js")!;
+        string runtime = new StreamReader(stream).ReadToEnd();
+        var page = "<!doctype html><html><head></head><body><div id=\"host\"><svg></svg></div><script nonce=\"" + Nonce + "\">" + runtime + "</script></body></html>";
+        var policy = "default-src 'none'; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
+        await using var session = await OpenAsync(page, policy);
+        var references = await session.Page.EvaluateAsync<string[]>("""
+            () => {
+              const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="Preference style=automatic"><defs><clipPath id="plot"><rect width="50" height="50"/></clipPath></defs><rect data-probe="true" width="100" height="100" style="clip-path:url( #plot );fill:red" aria-label="a > b style=x"/><text data-text="true"><![CDATA[<sample style="red">]]></text></svg>';
+              try { ChartForgeXLayout.create(document.getElementById('host'), { schema: 'chartforgex/layout-1', svg }); } catch { }
+              const probe = document.querySelector('#host [data-probe]');
+              return [probe.style.clipPath, document.querySelector('#host clipPath').id, probe.style.fill, document.querySelector('#host > svg').getAttribute('aria-label'), probe.getAttribute('aria-label'), document.querySelector('#host [data-text]').textContent];
+            }
+            """);
+        Assert.Contains(references[1], references[0]);
+        Assert.Equal("red", references[2]);
+        // Text that only looks like a style attribute stays as it was.
+        Assert.Equal("Preference style=automatic", references[3]);
+        Assert.Equal("a > b style=x", references[4]);
+        Assert.Equal("<sample style=\"red\">", references[5]);
+        Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
+    }
+
     // Serve the page with a real Content-Security-Policy header; a meta policy is not applied to injected content.
     private static async Task<HtmlTinkerX.HtmlBrowserSession> OpenAsync(string html, string? policy) {
         var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {

@@ -18,6 +18,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Append("-wrapper cfx-region-chart\"").Append(auto?.RootAttributes)
             .Append(" data-cfx-region-chart=\"true\" data-cfx-interactive=\"")
             .Append(options.Html.Interactions ? "true" : "false").Append("\" data-chart-id=\"").Append(WebUtility.HtmlEncode(chart.Id ?? "topology"))
+            .Append("\" data-cfx-key=\"").Append(WebUtility.HtmlEncode(PlacementKey(options, chart.Id ?? "topology")))
             .Append("\" style=\"width:100%;max-width:").Append((preparedWidth ?? chart.Viewport.Width).ToString("R", CultureInfo.InvariantCulture))
             .Append("px").Append(auto == null ? Colors(chart.ThemeMode) : "")
             .Append(";font-family:").Append(WebUtility.HtmlEncode(chart.Theme.Typography.Family)).Append("\">");

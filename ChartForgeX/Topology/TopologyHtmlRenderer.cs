@@ -96,7 +96,10 @@ public sealed partial class TopologyHtmlRenderer {
         // The SVG can be wider than the authored viewport when its content needs the room, so the wrapper follows the SVG.
         var svgMarkup = preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls);
         var topologyWidth = preparedWidth ?? SvgWidth(svgMarkup) ?? chart.Viewport.Width;
-        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, id) : new List<ScenarioSequenceFigure>();
+        // A scoped placement keeps the chart's identity for events and adds the scope to everything that has to stay apart
+        // when the same chart appears twice: scenario sequence ids and the scenario keys in the address (data-cfx-key).
+        var placement = PlacementKey(options, id);
+        var sequences = enableScenarioInteractions && options.Html.ScenarioSequence ? ScenarioSequenceFigures(chart, SequenceScope(placement)) : new List<ScenarioSequenceFigure>();
         // The playback page shows the topology above sequence diagrams, so they share one type scale: each fits the column
         // only while that costs at most an eighth of its size, and otherwise scrolls in its own frame. Anything placed over
         // the diagram (zoom, export and fullscreen controls, the selection panel) keeps the regular fitted view.
@@ -117,6 +120,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-ui", messages.Json)
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-chart-id", id)
+            .Attribute("data-cfx-key", placement)
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
             .Attribute("data-cfx-interactive", options.Html.Interactions)
             .Attribute("data-cfx-viewport-controls", enableViewportControls)
@@ -269,6 +273,29 @@ public sealed partial class TopologyHtmlRenderer {
             // Region chrome reads the Auto role properties, so a host's shared status roles reach the ring and edge rules too.
             auto.WithRule("&", _ => RegionAutoColors(chart.Theme.Resolve(ThemeMode.Light)));
         return auto;
+    }
+
+    // The key a placement's runtime state goes by: "c." and the chart's id, or "s.", the scope, "." and the id when the host
+    // scopes the placement. Each part is spelled in lower-case letters, digits and dashes, every other character as -hex-,
+    // so no two placements, scoped or not, ever share a key.
+    internal static string PlacementKey(TopologyRenderOptions options, string id) =>
+        // The scope as given, as the SVG id namespace takes it, so placements that differ by spaces stay apart too.
+        string.IsNullOrWhiteSpace(options.IdScope) ? "c." + KeyPart(id) : "s." + KeyPart(options.IdScope!) + "." + KeyPart(id);
+
+    // Sequence SVG ids keep only letters, digits and dashes, so the placement key travels hex-encoded and stays unique.
+    private static string SequenceScope(string key) {
+        var hex = new System.Text.StringBuilder("k");
+        foreach (var b in System.Text.Encoding.UTF8.GetBytes(key)) hex.Append(b.ToString("x2", CultureInfo.InvariantCulture));
+        return hex.ToString();
+    }
+
+    private static string KeyPart(string value) {
+        var key = new System.Text.StringBuilder(value.Length);
+        foreach (var ch in value) {
+            if (ch is >= 'a' and <= 'z' or >= '0' and <= '9') key.Append(ch);
+            else key.Append('-').Append(((int)ch).ToString("x", CultureInfo.InvariantCulture)).Append('-');
+        }
+        return key.ToString();
     }
 
     /// <summary>

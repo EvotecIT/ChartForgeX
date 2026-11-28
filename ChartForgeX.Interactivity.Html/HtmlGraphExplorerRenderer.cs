@@ -113,6 +113,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
         Attribute(writer, "data-cfx-graph-renderer", Backend(options.RenderBackend));
         Attribute(writer, "data-cfx-graph-canvas-fallback", options.AllowCanvasFallback ? "true" : "false");
+        Attribute(writer, "data-cfx-graph-physics-worker", options.PhysicsThread == HtmlGraphPhysicsThread.Main ? "false" : "true");
         Attribute(writer, "data-cfx-graph-theme", Theme(options.ThemeMode));
         Attribute(writer, "data-cfx-graph-theme-persist", options.PersistThemePreference ? "true" : "false");
         Attribute(writer, "data-cfx-graph-state-persist", options.PersistInteractionState ? "true" : "false");

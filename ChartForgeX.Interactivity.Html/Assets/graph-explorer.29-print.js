@@ -12,6 +12,8 @@
         else if (name === 'aria-labelledby' || name === 'aria-describedby') {
           const references = value.split(/\s+/).filter(id => ids.has(id)).map(id => ids.get(id));
           if (references.length) node.setAttribute(name, references.join(' ')); else node.removeAttribute(name);
+        } else if (name === 'style' && node.style) {
+          for (const property of Array.from(node.style)) { const before = node.style.getPropertyValue(property); if (before.includes('url(')) node.style.setProperty(property, urls(before), node.style.getPropertyPriority(property)); }
         } else if (value.includes('url(')) node.setAttribute(name, urls(value));
       }
       if (node.localName === 'style') node.textContent = urls(node.textContent || '');
@@ -77,6 +79,8 @@
         return;
       }
       surface?.remove(); surface = null;
+      const sheets = root.__cfxGraphPrintSheets;
+      if (sheets?.length) root.ownerDocument.adoptedStyleSheets = root.ownerDocument.adoptedStyleSheets.filter(sheet => !sheets.includes(sheet));
       root.removeAttribute('data-cfx-graph-print-ready');
       const pendingFonts = root.__cfxGraphPrintFonts;
       if (!lifetime.active || !root.isConnected) { delete root.__cfxGraphPrintFonts; return; }
@@ -116,12 +120,12 @@
       clear(true);
       if (!lifetime.active || !root.isConnected || root.hidden || root.closest('[hidden]') || !root.getClientRects().length || view.getComputedStyle(root).visibility === 'hidden') return;
       root.__cfxGraphPrintFonts = { dirty: root.__cfxGraphPrintFonts?.dirty || false };
-      const content = exportSvgContent(root);
-      if (!content) return;
-      const parsed = new DOMParser().parseFromString(content, 'image/svg+xml').documentElement;
-      if (parsed.localName !== 'svg') return;
-      const svg = root.ownerDocument.importNode(parsed, true);
+      // Strict CSP: no parsed markup, rules as constructed sheets.
+      const svg = exportSvgClone(root), doc = root.ownerDocument, sheets = root.__cfxGraphPrintSheets = [];
+      if (!svg) return;
       scopeGraphPrintIds(svg, `cfx-graph-print-${++graphPrintSequence}-`);
+      if (doc.adoptedStyleSheets) svg.querySelectorAll('style').forEach(style => { const sheet = new doc.defaultView.CSSStyleSheet(); sheet.replaceSync(doc.defaultView.CSSScopeRule ? `@scope (.cfx-graph-print-surface){${style.textContent}}` : `@layer cfx-graph-print{${style.textContent}}`); style.remove(); sheets.push(sheet); });
+      if (sheets.length) doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, ...sheets];
       const camera = svg.querySelector('[data-cfx-role="graph-viewport"]');
       camera?.removeAttribute('transform'); camera?.style.removeProperty('transform');
       svg.setAttribute('role', 'img'); svg.setAttribute('aria-hidden', 'false'); svg.setAttribute('focusable', 'false');

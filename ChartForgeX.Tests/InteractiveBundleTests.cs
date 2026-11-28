@@ -106,9 +106,10 @@ public sealed class InteractiveBundleTests {
     // Card node images and the initial layout progress bar raised the Explorer to 433.2 KiB raw / 97.1 KiB gzip (Windows CRLF checkout) on 19 November 2026.
     [Theory]
     // Strict-CSP style restoration, including adaptive templates: about 1.1 KiB raw and 0.3 KiB gzip in the unoptimized
-    // topology runtime, 1.4 KiB raw in the explorer once imported sheets and host inline values are handled.
-    [InlineData("topology", 168 * 1024, 36 * 1024)]
-    [InlineData("explorer", 437 * 1024, 98 * 1024)]
+    // topology runtime, 1.4 KiB raw in the explorer once imported sheets and host inline values are handled. Placement and
+    // legacy scenario keys add about 0.6 KiB raw to the topology runtime.
+    [InlineData("topology", 170 * 1024, 37 * 1024)]
+    [InlineData("explorer", 439 * 1024, 99 * 1024)]
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
         var topology = TopologyChart.Create().Id("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
         var (script, page) = runtime == "topology"

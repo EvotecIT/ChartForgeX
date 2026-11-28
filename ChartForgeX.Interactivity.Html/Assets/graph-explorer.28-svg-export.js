@@ -1,6 +1,6 @@
   const svgNode = (document, name, attributes = {}) => {
     const element = document.createElementNS('http:' + '//www.w3.org/2000/svg', name);
-    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    Object.entries(attributes).forEach(([key, value]) => { if (key === 'style') element.style.cssText = String(value); else element.setAttribute(key, String(value)); });
     return element;
   };
   const exportedNodeStyle = (node, root, palette) => {
@@ -142,7 +142,7 @@
       class: attr(edge.el, 'class'), 'data-cfx-role': 'graph-edge-arrows',
       'data-cfx-runtime-overlay': 'true', 'data-edge-arrows-for': edge.id,
       style: `opacity:${paint.arrowAlpha};pointer-events:none`
-    }).forEach(([key, value]) => arrows.setAttribute(key, value));
+    }).forEach(([key, value]) => key === 'style' ? arrows.style.cssText = value : arrows.setAttribute(key, value));
     // Retain each side's polygons in source, middle, target order; a side may own several (an open triangle).
     const previous = [...arrows.children], used = {};
     const polygons = marks.map(mark => {
