@@ -260,11 +260,21 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
-    // A linked node's own link is its tab stop and keeps its link semantics; focus, clicks and keys on the link act for
-    // the node inside it.
-    const nodeLink = element => { const host = element?.closest?.('a[data-cfx-role="topology-node-host"]'); return host && wrapper.contains(host) ? host : null; };
+    // A linked node, edge or group sits inside its own link, which keeps its link semantics; focus, clicks and keys on the
+    // link act for the element inside it.
+    const elementLinks = 'a[data-cfx-role="topology-node-host"],a[data-cfx-role="topology-edge-host"],a[data-cfx-role="topology-group-host"]';
+    const nodeLink = element => {
+      const host = element?.closest?.(elementLinks);
+      return host && wrapper.contains(host) && host.querySelector(selectables) === element ? host : null;
+    };
     const ownerOf = target => !(target instanceof Element) ? null
-      : target.closest(selectables) || (target.matches('a[data-cfx-role="topology-node-host"]') ? target.querySelector(selectables) : null);
+      : target.closest(selectables) || (target.matches(elementLinks) ? target.querySelector(selectables) : null);
+    // Gives back a tab stop the live page took away, for a downloaded diagram and when the runtime lets go.
+    const restoreTabOrder = element => {
+      const original = element.getAttribute('data-cfx-live-tabindex');
+      if (original) element.setAttribute('tabindex', original); else element.removeAttribute('tabindex');
+      element.removeAttribute('data-cfx-live-tabindex');
+    };
     // A node a filter hides can't take focus, as on a hidden element; its link, still in the document, mustn't either.
     const focusNode = element => {
       const link = nodeLink(element);
@@ -920,6 +930,8 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       window[Symbol.for('ChartForgeX.nativeTextExport')].prepare(svg, clone, png);
       // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node.
       clone.querySelectorAll('a[data-cfx-role="topology-node-hit-host"]').forEach(hit => hit.remove());
+      // Without the runtime's arrow keys, edges and groups need the tab stops the live page took away.
+      clone.querySelectorAll('[data-cfx-live-tabindex]').forEach(restoreTabOrder);
       // Payloads belong to the live player, not to a downloaded static diagram.
       [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
         if (!node.hasAttribute('data-cfx-scenarios')) return;
@@ -1307,6 +1319,14 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       return items;
     };
     const focusRelated = (element, offset) => {
+      // While focus is on an item the arrows reached, they keep cycling the same node's related items, so every edge and
+      // group around a node is in reach; Tab moves on to the next node.
+      const sourceAttribute = wrapper.getAttribute('data-cfx-navigation-source') || '';
+      if (sourceAttribute && wrapper.getAttribute('data-cfx-navigation-target') === elementKey(element)) {
+        const split = sourceAttribute.indexOf(':');
+        const source = findSelection({ kind: sourceAttribute.slice(0, split), id: sourceAttribute.slice(split + 1) });
+        if (source && source !== element) element = source;
+      }
       const detail = identity(element);
       detail.related = related(detail);
       const candidates = relatedElements(detail);
@@ -2115,11 +2135,45 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
         else if (!state.labels) label.classList.add('cfx-topology-html-force-hidden');
       });
     };
+    // Nodes are the chart's tab stops, a linked node through its own link. Groups and edges, and their links, are reached
+    // with the arrow keys from a node, so Tab doesn't cross every edge before the first node. A downloaded diagram has no
+    // runtime to move with arrows, so it gets those tab stops back (see serializeSvg).
+    const leaveTabOrder = element => {
+      if (!element.hasAttribute('data-cfx-live-tabindex')) element.setAttribute('data-cfx-live-tabindex', element.getAttribute('tabindex') ?? '');
+      element.setAttribute('tabindex', '-1');
+    };
+    // Only what a node's arrows can reach leaves the tab order; anything else, such as an edge between two groups or a
+    // parent group, keeps its tab stop.
+    // Worked out in one pass over nodes, edges and groups, the same relations the arrows follow: a node's edges, its group
+    // and the groups at those edges' ends.
+    const reachable = new Set();
+    const nodeIds = new Set();
+    const reachableGroups = new Set();
+    wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
+      nodeIds.add(attr(node, 'data-node-id'));
+      if (attr(node, 'data-group-id')) reachableGroups.add(attr(node, 'data-group-id'));
+    });
+    wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
+      if (!nodeIds.has(attr(edge, 'data-source-node-id')) && !nodeIds.has(attr(edge, 'data-target-node-id'))) return;
+      reachable.add(edge);
+      ['data-source-group-id', 'data-target-group-id'].forEach(name => { if (attr(edge, name)) reachableGroups.add(attr(edge, name)); });
+    });
+    // The arrows reach the first element of a group id, as the selection does; another one with the same id, such as a
+    // geographic callout, keeps its own tab stop.
+    const claimedGroups = new Set();
+    wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
+      const id = attr(group, 'data-group-id');
+      if (!reachableGroups.has(id) || claimedGroups.has(id)) return;
+      claimedGroups.add(id);
+      reachable.add(group);
+    });
+    lifetime.own(() => wrapper.querySelectorAll('[data-cfx-live-tabindex]').forEach(restoreTabOrder));
     wrapper.querySelectorAll(selectables).forEach(element => {
-      // A node inside its own link is reached through that link, so it adds no tab stop or role of its own.
-      const linked = nodeLink(element) !== null;
-      if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', linked ? '-1' : '0');
-      if (!linked && !element.hasAttribute('role')) element.setAttribute('role', 'button');
+      const link = nodeLink(element);
+      const node = element.matches('[data-cfx-role="topology-node"]');
+      if (!node && reachable.has(element)) { leaveTabOrder(element); if (link) leaveTabOrder(link); }
+      else if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', link ? '-1' : '0');
+      if (!link && !element.hasAttribute('role')) element.setAttribute('role', 'button');
       // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
       if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
@@ -2389,6 +2443,21 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       if (!hostLink(element)) event.preventDefault();
       select(element);
     });
+    // Focus that arrives any other way than the arrows starts a fresh cycle. Tab from an item the arrows reached carries on
+    // from the node they started at, so it moves to the next node rather than back to the first.
+    const endNavigation = () => { wrapper.removeAttribute('data-cfx-navigation-source'); wrapper.removeAttribute('data-cfx-navigation-target'); };
+    listen(wrapper, 'pointerdown', endNavigation);
+    listen(wrapper, 'keydown', event => {
+      if (event.key !== 'Tab') return;
+      const owner = ownerOf(event.target);
+      const source = attr(wrapper, 'data-cfx-navigation-source');
+      if (owner && source && attr(wrapper, 'data-cfx-navigation-target') === elementKey(owner) && !owner.matches('[data-cfx-role="topology-node"]')) {
+        const split = source.indexOf(':');
+        const start = findSelection({ kind: source.slice(0, split), id: source.slice(split + 1) });
+        if (start) focusNode(start);
+      }
+      endNavigation();
+    }, true);
     listen(wrapper, 'keydown', event => {
       if (event.key === 'Escape') {
         clear();
@@ -2405,7 +2474,7 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
       if (event.key === 'Enter' && siblingRowLink(event.target)) return;
       // Enter on a node's own link activates it natively; the click that follows selects the node.
-      if (event.key === 'Enter' && event.target instanceof Element && event.target.matches('a[data-cfx-role="topology-node-host"]')) return;
+      if (event.key === 'Enter' && event.target instanceof Element && event.target.matches(elementLinks)) return;
       const element = ownerOf(event.target);
       if (element && nodeLink(element) && nodeHidden(element)) return;
       if (!element || !wrapper.contains(element)) return;
