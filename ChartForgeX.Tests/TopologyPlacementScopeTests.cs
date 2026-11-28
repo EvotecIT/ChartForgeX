@@ -128,6 +128,39 @@ public sealed class TopologyPlacementScopeTests {
         }
     }
 
+    // A plain link from before charts had keys of their own opens every placement that has no key of its own in the address,
+    // not only the first to start; a placement that clears its scenario then keeps it cleared on reload.
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task PlainScenarioLinks_OpenEveryPlacement() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        TopologyRenderOptions Scoped(string scope) {
+            var options = new TopologyRenderOptions { IdScope = scope }.Html(html => html.ScenarioPanel());
+            options.Html.ScenarioUrlState = true; options.Html.ScenarioControls = true;
+            return options;
+        }
+        string body = TopologyScenarioPlaybackTests.ReplicationChart().ToInteractiveHtmlPage(Scoped("left"));
+        string second = TopologyScenarioPlaybackTests.ReplicationChart().ToInteractiveHtmlFragment(Scoped("right"));
+        string page = body.Replace("</body>", second + "</body>", StringComparison.Ordinal);
+        var session = await HtmlTinkerX.HtmlBrowser.OpenSessionForNavigationAsync(new HtmlTinkerX.HtmlBrowserLaunchOptions {
+            Browser = InteractiveChartBrowser.Engine, Headless = true, Timeout = 15000, ViewportWidth = 1000, ViewportHeight = 700,
+            BrowserExecutablePath = Environment.GetEnvironmentVariable("CFX_TEST_BROWSER_EXECUTABLE")
+        });
+        await using (session) {
+            var browser = session.Page;
+            await browser.RouteAsync("https://chartforgex.test/**", route => route.FulfillAsync(new() { Body = page, ContentType = "text/html; charset=utf-8" }));
+            await browser.GotoAsync("https://chartforgex.test/topology.html?scenario=replicate&scenarioStep=1");
+            foreach (var key in new[] { "s.left.replication", "s.right.replication" })
+                await browser.WaitForFunctionAsync("key => document.querySelector(`[data-cfx-key=\"${key}\"]`)?.getAttribute('data-cfx-active-scenario-step') === '1'", key);
+            await browser.Locator("[data-cfx-key=\"s.left.replication\"] [data-cfx-topology-scenario='']").First.ClickAsync();
+            await browser.WaitForFunctionAsync("() => new URL(location.href).searchParams.get('cfxk-s.left.replication-scenario') === ''");
+            await browser.ReloadAsync();
+            await browser.Locator("[data-cfx-key=\"s.right.replication\"][data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            Assert.True(string.IsNullOrEmpty(await browser.Locator("[data-cfx-key=\"s.left.replication\"]").GetAttributeAsync("data-cfx-active-scenario")));
+            Assert.Equal("replicate", await browser.Locator("[data-cfx-key=\"s.right.replication\"]").GetAttributeAsync("data-cfx-active-scenario"));
+        }
+    }
+
     // A chart whose id spells another placement's key never reads that placement's address state as its own older link.
     [Trait("Category", "Browser")]
     [Fact]

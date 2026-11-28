@@ -250,14 +250,14 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       return (from === 'data-cfx-key' ? 'cfxk-' : 'cfx-') + chartId + '-' + name;
     };
     // Scenario and step come from one set of keys: the placement's, else an older link's keyed by the chart id, else plain.
-    // An older link stays in the address for every placement that reads it; a placement that clears its scenario keeps an
-    // empty key of its own, so the older link no longer speaks for it.
+    // An older link, keyed by the chart id or plain, stays in the address for every placement that reads it; a placement
+    // that clears its scenario keeps an empty key of its own, so the older link no longer speaks for it.
     const scenarioUrlName = (params, name) => { const from = ['data-cfx-key', 'data-chart-id'].filter(f => wrapper.hasAttribute(f)).find(f => params.has(scenarioUrlKey('scenario', f)) || params.has(scenarioUrlKey('scenarioStep', f))); return from ? scenarioUrlKey(name, from) : name; };
     // null when the address says nothing; an empty value is a selection the reader cleared.
     const scenarioUrlParam = name => scenarioUrlState ? (() => { try { const params = new URL(window.location.href).searchParams; const key = scenarioUrlName(params, name); return params.has(key) ? params.get(key) : null; } catch { return null; } })() : null;
     const syncScenarioUrl = (scenarioId, stepIndex) => {
       if (!scenarioUrlState || !window.history || !window.history.replaceState) return;
-      try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id'))); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); url.searchParams.delete('scenario'); url.searchParams.delete('scenarioStep'); window.history.replaceState(window.history.state, '', url); } catch { }
+      try { const url = new URL(window.location.href); const scenarioKey = scenarioUrlKey('scenario'); const stepKey = scenarioUrlKey('scenarioStep'); const older = (placementFamily !== 'data-chart-id' && (url.searchParams.has(scenarioUrlKey('scenario', 'data-chart-id')) || url.searchParams.has(scenarioUrlKey('scenarioStep', 'data-chart-id')))) || url.searchParams.has('scenario') || url.searchParams.has('scenarioStep'); scenarioId || older ? url.searchParams.set(scenarioKey, scenarioId || '') : url.searchParams.delete(scenarioKey); stepIndex === undefined || stepIndex === null || stepIndex === '' ? url.searchParams.delete(stepKey) : url.searchParams.set(stepKey, stepIndex); window.history.replaceState(window.history.state, '', url); } catch { }
     };
     const attr = (element, name) => element.getAttribute(name) || '';
     const toCamel = value => value.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
