@@ -31,15 +31,12 @@ public sealed class RadialLabelTargetBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), outside ? 720 : 430, 510);
         var page = session.Page;
         await page.EvaluateAsync("() => { window.cfxLabelEvents=[]; const root=document.querySelector('.cfx-interactive-chart'); for(const type of ['cfxhover','cfxselect']) root.addEventListener(type,event=>window.cfxLabelEvents.push({type,detail:event.detail})); }");
-        var label = page.Locator("[data-cfx-role='data-label'] text,[data-cfx-role='radial-data-label'] text,[data-cfx-role='polar-data-label'] text,[data-cfx-role='radar-data-label'] text").First;
-        var box = await label.BoundingBoxAsync() ?? throw new InvalidOperationException("Caption was not painted.");
-        var x = box.X + box.Width * .35; var y = box.Y + box.Height * .45;
+        var (x, y, markId) = await PaintedPointAsync(page.Locator(".cfx-interactive-chart"), "[data-cfx-role='data-label'],[data-cfx-role='radial-data-label'],[data-cfx-role='polar-data-label'],[data-cfx-role='radar-data-label']");
         await page.Mouse.MoveAsync((float)x, (float)y, new MouseMoveOptions { Steps = 4 });
         var hover = await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key");
         var tooltip = await TooltipTextAsync(page);
         await CaptureAsync(page, chart, kind, outside, new { hover, tooltip, hit = await page.EvaluateAsync<string>("p => { const hit=document.elementFromPoint(p.x,p.y); return hit?.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || hit?.tagName || ''; }", new { x, y }) });
         Assert.False(string.IsNullOrEmpty(tooltip));
-        var markId = await label.EvaluateAsync<string>("node=>node.closest('[data-cfx-label-for]')?.dataset.cfxLabelFor || ''");
         Assert.Matches("^series-0-point-[0-2]$", markId);
         var sourcePoint = markId["series-0-point-".Length..];
         var native = page.Locator($"[data-cfx-point='{sourcePoint}'][data-cfx-target-kind='point']");
@@ -95,11 +92,9 @@ public sealed class RadialLabelTargetBrowserTests {
             var peerSelection = await peer.Locator("[data-cfx-point='0'][data-cfx-target-kind='point']").GetAttributeAsync("aria-selected");
             var peerTip = await peer.Locator(".cfx-tooltip").EvaluateAsync<string>("tip=>JSON.stringify({hidden:tip.hidden,text:tip.innerText})");
             Assert.Equal("caption-dashboard-" + (index + 1), await root.GetAttributeAsync("data-cfx-chart-id"));
-            var label = root.Locator("[data-cfx-label-for='series-0-point-0'] text").First;
             var native = root.Locator("[data-cfx-point='0'][data-cfx-target-kind='point']");
             var nativeIdentity = await native.GetAttributeAsync("data-cfx-target-id");
-            var box = await label.BoundingBoxAsync() ?? throw new InvalidOperationException("Scoped caption was not painted.");
-            var x = box.X + box.Width * .35; var y = box.Y + box.Height * .45;
+            var (x, y, _) = await PaintedPointAsync(root, "[data-cfx-label-for='series-0-point-0']");
             await page.Mouse.MoveAsync((float)x, (float)y, new MouseMoveOptions { Steps = 4 });
             var tooltip = await root.EvaluateAsync<string>("root=>{const tip=root.querySelector('.cfx-tooltip');return tip&&!tip.hidden?tip.innerText:'';}");
             Assert.Contains(index == 0 ? "1200" : "850", tooltip.Replace(",", string.Empty, StringComparison.Ordinal));
@@ -135,6 +130,26 @@ public sealed class RadialLabelTargetBrowserTests {
         var points = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 300), new ChartPoint(3, 750) };
         chart.AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", kind, points));
         return chart.YAxis(y => y.Bounds(0, 1500));
+    }
+
+    // A caption paints its glyphs as native text ink, which takes the pointer only where a glyph is painted, so hover
+    // a point the browser resolves to the caption rather than a fixed spot in its box.
+    private static async Task<(double X, double Y, string MarkId)> PaintedPointAsync(ILocator root, string captions) {
+        var hit = await root.EvaluateAsync<JsonElement>(@"(root, captions) => {
+            for (const caption of root.querySelectorAll(captions)) {
+                const ink = caption.querySelector('[data-cfx-native-text-ink]') || caption.querySelector('text:not([display=""none""])');
+                if (!ink) continue;
+                const box = ink.getBoundingClientRect();
+                for (let row = 1; row < 8; row++) for (let column = 1; column < 16; column++) {
+                    const x = box.x + box.width * column / 16, y = box.y + box.height * row / 8;
+                    if (caption.contains(document.elementFromPoint(x, y)))
+                        return { x, y, mark: caption.closest('[data-cfx-label-for]')?.dataset.cfxLabelFor || '' };
+                }
+            }
+            return null;
+        }", captions);
+        if (hit.ValueKind != JsonValueKind.Object) throw new InvalidOperationException("Caption was not painted.");
+        return (hit.GetProperty("x").GetDouble(), hit.GetProperty("y").GetDouble(), hit.GetProperty("mark").GetString() ?? string.Empty);
     }
 
     private static async Task CaptureAsync(IPage page, Chart chart, ChartSeriesKind kind, bool outside, object state) {

@@ -64,7 +64,7 @@ public sealed class RoundedRadialBrowserTests {
         if (relativeLabels) Assert.True(await page.EvaluateAsync<bool>("""
             () => {
                 const svg = document.querySelector('.cfx-stage svg').getBoundingClientRect();
-                const captions = Array.from(document.querySelectorAll('[data-cfx-role="radial-value-label"] text,[data-cfx-role="radial-category-label"] text'));
+                const captions = Array.from(document.querySelectorAll(['radial-value-label', 'radial-category-label'].flatMap(role => [`[data-cfx-role="${role}"] [data-cfx-native-text-ink]`, `[data-cfx-role="${role}"] text:not([display="none"])`]).join(',')));
                 return captions.length > 0 && captions.every(text => {
                     const box = text.getBoundingClientRect(), matrix = text.getScreenCTM(), angle = Math.atan2(matrix.b, matrix.a) * 180 / Math.PI;
                     return angle >= -90.01 && angle <= 90.01 && box.left >= svg.left - .75 && box.right <= svg.right + .75

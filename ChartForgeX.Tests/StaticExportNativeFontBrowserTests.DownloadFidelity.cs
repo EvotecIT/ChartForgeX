@@ -8,11 +8,19 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed partial class StaticExportNativeFontBrowserTests {
+    private static readonly Lazy<string> TemporaryProofDirectory = new(() => Directory.CreateTempSubdirectory("cfx-font-proof-").FullName);
+
+    /// <summary>Where the proofs write downloads: the capture folder when one is set, otherwise a folder of this run's own.</summary>
+    private static string ProofDirectory() {
+        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        output = string.IsNullOrWhiteSpace(output) ? TemporaryProofDirectory.Value : Path.GetFullPath(output);
+        Directory.CreateDirectory(output);
+        return output;
+    }
+
     /// <summary>Separates exact downloaded bitmap fidelity from independent SVG semantic replay.</summary>
     private static async Task<Exported> CaptureExports(IPage page, string svgButton, string pngButton, string name, bool? corruptOutput = null) {
-        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        if (string.IsNullOrWhiteSpace(output) || !Path.IsPathRooted(output)) throw new InvalidOperationException("Font proof requires an absolute capture path.");
-        Directory.CreateDirectory(output); var stem = Path.Combine(output, name);
+        var stem = Path.Combine(ProofDirectory(), name);
         await page.EvaluateAsync("""
             corrupt => {
                 window.nativeFontPngInputs=[];window.nativeFontRasterDraws=[];window.nativeFontRasterReferences=[];

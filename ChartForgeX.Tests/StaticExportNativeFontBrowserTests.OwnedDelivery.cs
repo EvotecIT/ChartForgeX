@@ -80,5 +80,5 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     }
     private static void OwnedOptions(HtmlChartInteractionOptions options) { options.TextPresentation=HtmlChartTextPresentation.Automatic;options.ResponsiveLayout=HtmlChartResponsiveLayout.Fit;options.Interaction.ChartId="owned-font-proof";options.Interaction.Enable(ChartInteractionFeatures.Export); }
     private static string OwnedPage(string body,string before="")=>@"<!doctype html><html><head><meta http-equiv=""Content-Security-Policy"" content=""default-src 'none';script-src 'unsafe-inline';style-src 'unsafe-inline';img-src data:;font-src 'self';connect-src 'none';base-uri 'none'""></head><body><script>window.ownedFontViolations=[];addEventListener('securitypolicyviolation',event=>ownedFontViolations.push({directive:event.effectiveDirective,blocked:event.blockedURI}));"+before+"</script>"+body+"</body></html>";
-    private static string CapturePath(string name) { var output=Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");if(string.IsNullOrWhiteSpace(output)||!Path.IsPathRooted(output))throw new InvalidOperationException("Owned font browser proof requires an absolute capture path.");Directory.CreateDirectory(output);return Path.Combine(output,name); }
+    private static string CapturePath(string name) => Path.Combine(ProofDirectory(), name);
 }
