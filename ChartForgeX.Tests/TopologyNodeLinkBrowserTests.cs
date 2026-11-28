@@ -118,6 +118,34 @@ public sealed class TopologyNodeLinkBrowserTests {
         }");
         await browser.Mouse.ClickAsync((float)point[0], (float)point[1]);
         await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc01' && document.querySelector('.cfx-topology-wrapper').getAttribute('data-cfx-selection-id') === 'dc01'");
+        // Focus stays with the node, not the hidden hit link.
+        Assert.Equal("dc01", await browser.EvaluateAsync<string?>("() => document.activeElement?.closest('[data-cfx-role=\"topology-node\"]')?.getAttribute('data-node-id')"));
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    // An edge that crosses a linked tile's caption band stays the edge's target there.
+    public async Task AnEdgeAcrossACaptionBand_KeepsItsClicks() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("crossing")
+            .AddNode("left", "Left", 0, 70, width: 80, height: 40).AddNode("right", "Right", 320, 70, width: 80, height: 40)
+            .AddNode("tile", "Tile", 160, 30, href: "#record=dcs:tile", width: 120, height: 40)
+            .AddEdge("across", "left", "right");
+        var options = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        await using var session = await Open(chart.ToInteractiveHtmlPage(options));
+        var role = await session.Page.EvaluateAsync<string?>(@"() => {
+            const hit = document.querySelector('a[data-cfx-role=""topology-node-hit-host""] rect').getBoundingClientRect();
+            const path = document.querySelector('[data-cfx-role=""topology-edge""][data-edge-id=""across""] path');
+            const length = path.getTotalLength();
+            const svg = path.ownerSVGElement;
+            for (let at = 0; at <= length; at += 2) {
+                const point = path.getPointAtLength(at).matrixTransform(path.getScreenCTM());
+                if (point.x > hit.left + 2 && point.x < hit.right - 2 && point.y > hit.top + 2 && point.y < hit.bottom - 2)
+                    return document.elementFromPoint(point.x, point.y)?.closest('[data-cfx-role=""topology-edge""]') ? 'topology-edge' : document.elementFromPoint(point.x, point.y)?.closest('[data-cfx-role]')?.getAttribute('data-cfx-role');
+            }
+            return 'no crossing';
+        }");
+        Assert.Equal("topology-edge", role);
     }
 
     [Trait("Category", "Browser")]

@@ -2328,22 +2328,30 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
-    const hitNode = hit => wrapper.querySelector('[data-cfx-role="topology-node"][data-node-id="' + topologyFilterEscape(attr(hit, 'data-cfx-pointer-for')) + '"]');
+    const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
+    const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;
+    const filterHidden = /\bcfx-topology-html-(?:filter|force)-hidden\b/;
     const syncHitAreas = () => hitAreas.forEach(hit => {
       const node = hitNode(hit);
       if (!node || node.closest('.cfx-topology-html-filter-hidden,.cfx-topology-html-force-hidden')) hit.setAttribute('pointer-events', 'none');
       else hit.removeAttribute('pointer-events');
     });
     if (hitAreas.length) {
-      const hitObserver = new MutationObserver(syncHitAreas);
-      hitObserver.observe(wrapper, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      // Only a change in what filters hide matters; hover and selection classes leave the hit areas alone.
+      const hitObserver = new MutationObserver(records => {
+        if (records.some(record => filterHidden.test(record.oldValue || '') !== filterHidden.test(record.target.getAttribute('class') || ''))) syncHitAreas();
+      });
+      hitObserver.observe(wrapper, { subtree: true, attributes: true, attributeFilter: ['class'], attributeOldValue: true });
       lifetime.own(() => hitObserver.disconnect());
       syncHitAreas();
+      // The hit area stands for its node, so focus stays with the node rather than moving to the hidden link.
+      hitAreas.forEach(hit => listen(hit, 'mousedown', event => event.preventDefault()));
     }
     listen(wrapper, 'click', event => {
       if (siblingRowLink(event.target)) return;
       const hit = event.target instanceof Element ? event.target.closest('a[data-cfx-role="topology-node-hit-host"]') : null;
       const element = hit ? hitNode(hit) : event.target instanceof Element ? event.target.closest(selectables) : null;
+      if (hit && element?.hasAttribute('tabindex')) element.focus({ preventScroll: true });
       if (!element || !wrapper.contains(element)) return;
       if (!hostLink(element)) event.preventDefault();
       select(element);

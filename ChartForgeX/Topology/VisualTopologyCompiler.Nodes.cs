@@ -295,8 +295,8 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     // A linked node is one target: a transparent area covers the gap between its surface and its caption, so a pointer
-    // there reaches the link instead of the group behind it. Every such area is painted before any node, so a neighbour's
-    // own surface always stays on top of it.
+    // there reaches the link instead of the group behind it. Every such area is painted before any edge or node, so their
+    // own targets always stay on top of it.
     private void BuildLinkHitArea(TopologyNode node) {
         // Only an interactive page needs it; a static SVG or image keeps one link per node.
         if (!_options.Html.Interactions || SafeHref(node.Href) is not string href) return;
