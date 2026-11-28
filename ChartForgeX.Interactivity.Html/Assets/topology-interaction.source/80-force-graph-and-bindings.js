@@ -125,8 +125,10 @@
         clearHover();
         wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
-      listen(element, 'focus', () => hover(element));
-      listen(element, 'blur', () => {
+      // A linked node is focused through its own link, so the link's focus previews the node.
+      const focusTarget = nodeLink(element) || element;
+      listen(focusTarget, 'focus', () => hover(element));
+      listen(focusTarget, 'blur', () => {
         clearHover();
         wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
@@ -341,18 +343,28 @@
     const hostLink = element => { const host = element.closest('a[data-cfx-role$="-host"]'); return host && wrapper.contains(host) ? host : null; };
     // A linked node's pointer-only hit area, painted below every node, stands for that node: a click there selects it, and
     // the area takes no pointer while the node is filtered out.
+    let forwarding = false;
     const hitAreas = Array.from(wrapper.querySelectorAll('a[data-cfx-role="topology-node-hit-host"][data-cfx-pointer-for]'));
     const hitNodes = new Map(hitAreas.length ? Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-node-id]')).map(node => [attr(node, 'data-node-id'), node]) : []);
     const hitNode = hit => hitNodes.get(attr(hit, 'data-cfx-pointer-for')) || null;
     // Exact class tokens, so a page's own class prefix or a longer class name never reads as hidden.
     const hiddenClasses = ['cfx-topology-html-filter-hidden', 'cfx-topology-html-force-hidden'];
     const filterHidden = { test: value => String(value).split(/\s+/).some(token => hiddenClasses.includes(token)) };
-    const syncHitAreas = () => hitAreas.forEach(hit => {
-      const node = hitNode(hit);
-      if (!node || node.closest('.cfx-topology-html-filter-hidden,.cfx-topology-html-force-hidden')) hit.setAttribute('pointer-events', 'none');
-      else hit.removeAttribute('pointer-events');
-    });
-    if (hitAreas.length) {
+    const nodeHidden = node => !node || hiddenClasses.some(name => node.closest('.' + name));
+    // A hidden node's own link leaves the tab order with it and comes back when the node does.
+    const syncHitAreas = () => {
+      hitAreas.forEach(hit => { if (nodeHidden(hitNode(hit))) hit.setAttribute('pointer-events', 'none'); else hit.removeAttribute('pointer-events'); });
+      wrapper.querySelectorAll('a[data-cfx-role="topology-node-host"]').forEach(host => {
+        const hidden = nodeHidden(host.querySelector('[data-cfx-role="topology-node"]'));
+        if (hidden && !host.hasAttribute('data-cfx-filtered-tabindex')) { host.setAttribute('data-cfx-filtered-tabindex', host.getAttribute('tabindex') ?? ''); host.setAttribute('tabindex', '-1'); }
+        else if (!hidden && host.hasAttribute('data-cfx-filtered-tabindex')) {
+          const original = host.getAttribute('data-cfx-filtered-tabindex');
+          if (original) host.setAttribute('tabindex', original); else host.removeAttribute('tabindex');
+          host.removeAttribute('data-cfx-filtered-tabindex');
+        }
+      });
+    };
+    if (hitAreas.length || wrapper.querySelector('a[data-cfx-role="topology-node-host"]')) {
       // Only a change in what filters hide matters; hover and selection classes leave the hit areas alone.
       const hitObserver = new MutationObserver(records => {
         if (records.some(record => filterHidden.test(record.oldValue || '') !== filterHidden.test(record.target.getAttribute('class') || ''))) syncHitAreas();
@@ -367,6 +379,9 @@
       if (siblingRowLink(event.target)) return;
       const hit = event.target instanceof Element ? event.target.closest('a[data-cfx-role="topology-node-hit-host"]') : null;
       const element = hit ? hitNode(hit) : ownerOf(event.target);
+      // A node a filter hides takes no activation, through its link or otherwise.
+      if (element && nodeLink(element) && nodeHidden(element)) { event.preventDefault(); return; }
+      if (forwarding) { forwarding = false; return; }
       if (hit && element) focusNode(element);
       if (!element || !wrapper.contains(element)) return;
       if (!hostLink(element)) event.preventDefault();
@@ -395,7 +410,8 @@
       // Enter follows the link as a click does; Space only selects.
       select(element);
       const host = event.key === 'Enter' ? hostLink(element) : null;
-      if (host) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, view: window }));
+      // The forwarded click follows the link; the node is already selected, so the click handler lets it through.
+      if (host) { forwarding = true; host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, view: window })); forwarding = false; }
     });
     listen(wrapper, 'cfx-topology-set-selection', event => {
       setSelection(event.detail);

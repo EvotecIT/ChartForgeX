@@ -272,7 +272,7 @@
             const first = applyFind(true)[0];
             if (!first) return;
             select(first);
-            if (first.focus) first.focus({ preventScroll: true });
+            focusNode(first);
           }
         });
       }

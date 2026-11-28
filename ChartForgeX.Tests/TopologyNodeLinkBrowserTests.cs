@@ -77,7 +77,7 @@ public sealed class TopologyNodeLinkBrowserTests {
         await using var session = await Open(chart.ToInteractiveHtmlPage());
         var browser = session.Page;
         var node = browser.Locator("[data-cfx-role=\"topology-node\"][data-node-id=\"dc02\"]");
-        await browser.EvaluateAsync("() => document.addEventListener('click', e => { window.__composed = e.composed; }, true)");
+        await browser.EvaluateAsync("() => { window.__selects = 0; window.__hovers = 0; document.addEventListener('click', e => { window.__composed = e.composed; }, true); document.addEventListener('cfx-topology-select', () => window.__selects++); document.addEventListener('cfx-topology-hover', () => window.__hovers++); }");
         if (how == "click") await node.ClickAsync();
         // The node's own link is its tab stop and keeps its link role.
         else if (how == "link Enter") {
@@ -89,6 +89,9 @@ public sealed class TopologyNodeLinkBrowserTests {
         else { await node.FocusAsync(); await browser.Keyboard.PressAsync(how); }
         // A host that embeds the chart in a shadow root sees keyboard activation as it sees a click.
         if (how == "Enter") Assert.True(await browser.EvaluateAsync<bool>("() => window.__composed === true"));
+        // One activation selects once, and focusing a node's link previews the node.
+        if (how != " ") Assert.Equal(1, await browser.EvaluateAsync<int>("() => window.__selects"));
+        if (how == "link Enter") Assert.True(await browser.EvaluateAsync<int>("() => window.__hovers") > 0);
         await browser.WaitForFunctionAsync("() => document.querySelector('[data-node-id=\"dc02\"][aria-selected=\"true\"]') !== null || document.querySelector('.cfx-topology-wrapper')?.getAttribute('data-cfx-selection-id') === 'dc02'");
         if (follows) await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc02'");
         else { await browser.WaitForTimeoutAsync(200); Assert.Equal(string.Empty, await browser.EvaluateAsync<string>("() => location.hash")); }
@@ -135,6 +138,10 @@ public sealed class TopologyNodeLinkBrowserTests {
         if (how.StartsWith("filtered", StringComparison.Ordinal)) {
             await browser.EvaluateAsync("() => document.querySelector('[data-cfx-runtime-bound]').dispatchEvent(new CustomEvent('cfx-topology-set-filter', { detail: { query: 'nothing matches this' } }))");
             await browser.WaitForFunctionAsync("() => document.querySelector('a[data-cfx-role=\"topology-node-hit-host\"]').getAttribute('pointer-events') === 'none'");
+            // Its own link leaves the tab order with it, and comes back when the filter clears.
+            Assert.Equal("-1", await browser.Locator("a[data-cfx-role=\"topology-node-host\"]").GetAttributeAsync("tabindex"));
+            await browser.EvaluateAsync("() => document.querySelector('[data-cfx-runtime-bound]').dispatchEvent(new CustomEvent('cfx-topology-clear-filter'))");
+            await browser.WaitForFunctionAsync("() => document.querySelector('a[data-cfx-role=\"topology-node-host\"]').getAttribute('tabindex') !== '-1'");
             return;
         }
         var point = await browser.EvaluateAsync<double[]>(@"() => {

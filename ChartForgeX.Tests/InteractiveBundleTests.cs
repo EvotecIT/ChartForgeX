@@ -107,8 +107,8 @@ public sealed class InteractiveBundleTests {
     [Theory]
     // Strict-CSP style restoration, including adaptive templates: about 1.1 KiB raw and 0.3 KiB gzip in the unoptimized
     // topology runtime, 1.4 KiB raw in the explorer once imported sheets and host inline values are handled. Placement and
-    // legacy scenario keys add about 0.6 KiB raw to the topology runtime, and following node links by keyboard and pointer hit areas about 2.1 KiB.
-    [InlineData("topology", 174 * 1024, 38 * 1024)]
+    // legacy scenario keys add about 0.6 KiB raw to the topology runtime, and following node links by keyboard and pointer hit areas about 2.6 KiB.
+    [InlineData("topology", 175 * 1024, 38 * 1024)]
     [InlineData("explorer", 439 * 1024, 99 * 1024)]
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
         var topology = TopologyChart.Create().Id("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
