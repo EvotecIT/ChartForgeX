@@ -301,9 +301,10 @@ internal sealed partial class VisualTopologyCompiler {
         var caption = node.ShowLabel && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)
             && mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
         if (!caption) return bounds;
-        var text = Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18);
-        var left = Math.Min(bounds.Left, text.Left); var top = Math.Min(bounds.Top, text.Top);
-        return new ChartRect(left, top, Math.Max(bounds.Right, text.Right) - left, Math.Max(bounds.Bottom, text.Bottom) - top);
+        // Down to the caption's first line and no wider than the node, so it bridges the gap without reaching a neighbour;
+        // the caption's own text is part of the link already.
+        var text = Bounds(node.X, node.Y + node.Height + 5, node.Width, 18);
+        return new ChartRect(bounds.X, bounds.Y, bounds.Width, Math.Max(bounds.Bottom, text.Bottom) - bounds.Y);
     }
 
     private IDisposable? Host(string? href, string? tooltip, string id, string role) {

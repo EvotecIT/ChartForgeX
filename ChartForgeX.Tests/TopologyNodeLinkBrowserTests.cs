@@ -61,11 +61,32 @@ public sealed class TopologyNodeLinkBrowserTests {
         await using var session = await Open(chart.ToInteractiveHtmlPage());
         var browser = session.Page;
         var node = browser.Locator("[data-cfx-role=\"topology-node\"][data-node-id=\"dc02\"]");
+        await browser.EvaluateAsync("() => document.addEventListener('click', e => { window.__composed = e.composed; }, true)");
         if (how == "click") await node.ClickAsync();
         else { await node.FocusAsync(); await browser.Keyboard.PressAsync(how); }
+        // A host that embeds the chart in a shadow root sees keyboard activation as it sees a click.
+        if (how == "Enter") Assert.True(await browser.EvaluateAsync<bool>("() => window.__composed === true"));
         await browser.WaitForFunctionAsync("() => document.querySelector('[data-node-id=\"dc02\"][aria-selected=\"true\"]') !== null || document.querySelector('.cfx-topology-wrapper')?.getAttribute('data-cfx-selection-id') === 'dc02'");
         if (follows) await browser.WaitForFunctionAsync("() => location.hash === '#record=dcs:dc02'");
         else { await browser.WaitForTimeoutAsync(200); Assert.Equal(string.Empty, await browser.EvaluateAsync<string>("() => location.hash")); }
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    // The hit area bridges a tile and its caption without reaching the tile below, even when that tile is drawn first.
+    public async Task ALinkedTilesHitArea_LeavesItsNeighbourAlone() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("stack")
+            .AddNode("lower", "Lower", 40, 125, href: "#record=groups:lower", width: 120, height: 40)
+            .AddNode("upper", "Upper", 40, 40, href: "#record=groups:upper", width: 120, height: 40);
+        chart.DefaultRenderOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, MaxNodeLabelLines = 3 };
+        await using var session = await Open(chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
+        var owner = await session.Page.EvaluateAsync<string>(@"() => {
+            const node = document.querySelector('[data-cfx-role=""topology-node""][data-node-id=""lower""]');
+            const box = node.querySelector('[data-cfx-role*=""surface""]')?.getBoundingClientRect() || node.getBoundingClientRect();
+            return document.elementFromPoint(box.x + box.width / 2, box.y + 3)?.closest('a')?.getAttribute('href') || '';
+        }");
+        Assert.Equal("#record=groups:lower", owner);
     }
 
     [Trait("Category", "Browser")]
@@ -74,14 +95,17 @@ public sealed class TopologyNodeLinkBrowserTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var membership = Membership();
         await using var session = await Open(membership.ToInteractiveHtmlPage(membership.DefaultRenderOptions));
-        // A node's link must be what a pointer reaches anywhere on the node: its label, its body, its centre.
+        // A node's link is what a pointer reaches on its tile, in the gap below the tile and on its caption.
         var blocked = await session.Page.EvaluateAsync<string[]>(@"() => [...document.querySelectorAll('a[data-cfx-role=""topology-node-host""]')].flatMap(host => {
             const node = host.querySelector('[data-cfx-role=""topology-node""]') || host;
             node.scrollIntoView({ block: 'center' });
-            const box = node.getBoundingClientRect();
-            return [[0.5, 0.5], [0.15, 0.5], [0.85, 0.5], [0.5, 0.2], [0.5, 0.8]].flatMap(([x, y]) => {
-                const top = document.elementFromPoint(box.x + box.width * x, box.y + box.height * y);
-                return top && host.contains(top) ? [] : [host.getAttribute('href') + ' at ' + x + ',' + y + ' reaches ' + (top?.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || top?.tagName)];
+            const tile = (node.querySelector('[data-cfx-role*=""surface""]') || node).getBoundingClientRect();
+            const caption = [...node.querySelectorAll('text')].map(t => t.getBoundingClientRect()).find(b => b.top >= tile.bottom);
+            const points = [[tile.x + tile.width / 2, tile.y + tile.height / 2, 'tile'], [tile.x + tile.width / 2, tile.bottom + 2, 'gap']];
+            if (caption) points.push([caption.x + caption.width / 2, caption.y + caption.height / 2, 'caption']);
+            return points.flatMap(([x, y, where]) => {
+                const top = document.elementFromPoint(x, y);
+                return top && host.contains(top) ? [] : [host.getAttribute('href') + ' ' + where + ' reaches ' + (top?.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || top?.tagName)];
             });
         })");
         Assert.Empty(blocked);

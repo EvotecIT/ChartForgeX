@@ -365,7 +365,7 @@
       // Enter follows the link as a click does; Space only selects.
       select(element);
       const host = event.key === 'Enter' ? hostLink(element) : null;
-      if (host) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      if (host) host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, view: window }));
     });
     listen(wrapper, 'cfx-topology-set-selection', event => {
       setSelection(event.detail);
