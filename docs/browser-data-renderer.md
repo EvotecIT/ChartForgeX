@@ -57,13 +57,63 @@ Each category has a unique nonempty `id` and a visible `label`. Each series has 
 
 For line and area charts, optional ISO date strings in category `instant` fields give proportional time spacing. Every category must then have a valid instant, strictly increasing in the supplied order. Other chart types use category bands. `compact: true` omits headings, legends and axes for chart cells.
 
-Selection supports click, Enter and Space. Arrow keys, Home and End move between marks. Stable category and series IDs preserve focus across updates. If a focused mark disappears, focus moves to the first remaining mark, or the empty drawing. The selected mark keeps an outline across redraws. `onSelect` receives an immutable `{ categoryId, seriesId, value }` record.
+Selection supports click, Enter and Space. Arrow keys, Home and End move between marks. Stable category and series IDs preserve focus across updates. If a focused mark disappears, focus moves to the first remaining mark of its series, then the first mark, or the empty drawing. The selected mark keeps an outline across redraws. `onSelect` receives an immutable `{ categoryId, seriesId, value }` record.
 
 ## Layout and lifetime
 
 The renderer measures its host and redraws through `ResizeObserver`. Category band fill, grouped gaps, bar caps, stack separators, palette, line width, marker radius and area opacity come from native ChartForgeX policy when the asset is emitted. Browser conformance tests compare slot bounds against native layout across narrow and wide hosts.
 
-`update` validates a complete descriptor before replacing the accepted drawing. For live data, `append({ categories, values }, { maximum })` adds periods to the accepted chart, with one value per new category for each series named in `values` (other series get `null`), and keeps at most `maximum` periods. `replaceSeries(series)` replaces one series by id, or adds it. Both validate the resulting chart like `update` and keep selection and focus. Host-authored siblings remain in place. Creating another controller for the same host disposes the prior drawing. `destroy` is idempotent and releases the observer, pending animation frame, event listeners and owned SVG. Updates after disposal throw.
+`update` validates a complete descriptor before replacing the accepted drawing. `replaceSeries(series)` replaces one series by id, or adds it, and validates the resulting chart like `update`. Host-authored siblings remain in place. Creating another controller for the same host disposes the prior drawing. `destroy` is idempotent and releases the observer, pending animation frame, event listeners and owned SVG. Updates after disposal throw.
+
+## Live windows
+
+`append({ categories, values }, { maximum, span })` adds periods to the accepted chart, with one value per new category for each series named in `values` (other series get `null`). `maximum` keeps at most that many periods. `span` drops periods whose instant is more than `span` milliseconds older than the newest one. Using `span` requires strictly increasing instants across the existing window and the new periods. With both limits, the stricter one wins. The oldest periods leave first, so the window and its DOM stay bounded.
+
+```javascript
+const chart = ChartForgeXRenderer.create(host, latency, { onSelect: showDetails });
+feed.onmessage = event => {
+  const sample = JSON.parse(event.data);          // { at, dc1, dc2 }
+  chart.append({
+    categories: [{ id: sample.at, label: sample.at.slice(11, 19), instant: sample.at }],
+    values: { dc1: [sample.dc1], dc2: [sample.dc2] }
+  }, { maximum: 1000, span: 15 * 60 * 1000 });
+};
+```
+
+Marks keep their category and series IDs (`data-cfx-category`, `data-cfx-series`) as the window moves, so selection, keyboard focus and the roving tab stop follow the same observation across commits:
+
+- A selected mark stays selected while its period is in the window; `selection()` returns its `{ categoryId, seriesId, value }` with the current value, or `null`. When the period leaves the window the selection is released without calling `onSelect`.
+- A focused mark keeps focus. When its period leaves, focus moves to the first remaining mark of the same series, then to the first mark, then to the empty drawing.
+- The mark holding the tab stop keeps it while focus is elsewhere on the page, with the same fallback. If an update leaves no marks, the drawing keeps the tab stop until marks return.
+
+`batch(callback)` runs several `update`, `append` and `replaceSeries` calls in a synchronous callback and draws the result once. Each change is validated as it is made. If a change throws, the callback can catch the error and continue with the last valid change. Nested batches join the outer one. If an error leaves the outer callback, the batch discards all its changes and propagates the error.
+
+```javascript
+chart.batch(live => {
+  for (const sample of samples) live.append(toPeriod(sample), { maximum: 1000 });
+  live.replaceSeries({ id: "target", name: "Target", values: targets });
+});
+```
+
+Each commit draws a fresh SVG and the host keeps one delegated click and keydown listener, so listener and node counts do not grow with the number of updates.
+
+### Sustained-update measurement
+
+`DataRendererSoakBrowserTests` (`Category=Performance`, Chromium) appends one period per update to a two-series line holding 1,000 periods per series, with a selected and a focused mark. A commit is the `append` call plus the style and layout it forces. Every 300 updates it checks the mark count, the newest period, focus and selection, then selects the newest point. Heap, DOM node and listener counts come from the Chromium protocol after a forced collection. By default it runs 1,800 updates back to back; `CFX_SOAK_REALTIME=1` paces them at one per second (30 minutes), `CFX_SOAK_UPDATES` changes the count and `CFX_SOAK_OUTPUT` keeps the JSON result.
+
+```powershell
+$env:HFX_TEST_ENABLE_PLAYWRIGHT = '1'; $env:CFX_SOAK_REALTIME = '1'
+dotnet test ./ChartForgeX.Tests -c Release --filter "FullyQualifiedName~DataRendererSoakBrowserTests" --logger "console;verbosity=detailed"
+```
+
+Measured on 28 November 2026 on an Apple M5 Max with macOS 27.2, .NET 8 and headless Chromium. The machine was shared and heavily loaded: the 1-minute load average was about 430 at the start of the paced run and 260 at the end. These numbers are local evidence for that host, not guarantees.
+
+| Run | Updates | Commit median | Commit p95 | Commit max | JS heap start → end | DOM nodes start → end | Listeners |
+| --- | ---: | ---: | ---: | ---: | --- | --- | --- |
+| Paced, 1 Hz for 30 minutes | 1,800 | 11.6 ms | 17.6 ms | 64 ms | 1.15 → 1.36 MiB | 8,073 → 8,073 | 2 → 2 |
+| Fast-forward, back to back | 1,800 | 10.5 ms | 14.6 ms | 35.9 ms | 1.15 → 1.37 MiB | 8,073 → 8,073 | 2 → 2 |
+
+Every retained-state check passed in both runs: 2,000 marks, the newest period last, focus on a DC2 mark and a selection consistent with `selection()`.
 
 Set `--cfx-color-text`, `--cfx-color-border` and `--cfx-series-1` through `--cfx-series-32` on the host to inherit a page's theme. Labels are inserted as text. Titles expose complete labels when the axis or legend shortens them.
 
