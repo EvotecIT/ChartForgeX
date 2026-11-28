@@ -20,6 +20,7 @@ public sealed class TopologyPlacementScopeTests {
     [InlineData("left.panel", "left-panel")]
     [InlineData("Panel", "panel")]
     [InlineData("a_b", "a-b")]
+    [InlineData("left", " left ")]
     public void ScopedPlacements_OfOneChart_ShareNoIdsOrStateKeys(string firstScope, string secondScope) {
         var chart = TopologyScenarioPlaybackTests.ReplicationChart();
         var page = chart.ToInteractiveHtmlFragmentWithoutAssets(Options(firstScope)) + chart.ToInteractiveHtmlFragmentWithoutAssets(Options(secondScope));
@@ -117,6 +118,10 @@ public sealed class TopologyPlacementScopeTests {
             await browser.WaitForFunctionAsync("() => document.querySelector('[data-cfx-key=\"s.left.replication\"]')?.getAttribute('data-cfx-active-scenario-step') === '1'");
             Assert.True(string.IsNullOrEmpty(await browser.Locator("[data-chart-id=\"s.left.replication\"].cfx-topology-wrapper").GetAttributeAsync("data-cfx-active-scenario")));
             Assert.Contains("cfxk-s.left.replication-scenarioStep=1", Uri.UnescapeDataString(browser.Url), StringComparison.Ordinal);
+            // A plain step belongs to no placement whose own keys name a scenario.
+            await browser.GotoAsync("https://chartforgex.test/topology.html?cfxk-s.left.replication-scenario=replicate&scenarioStep=2");
+            await browser.Locator("[data-cfx-key=\"s.left.replication\"][data-cfx-runtime-bound=true]").WaitForAsync(new() { State = Microsoft.Playwright.WaitForSelectorState.Attached });
+            Assert.NotEqual("2", await browser.Locator("[data-cfx-key=\"s.left.replication\"]").GetAttributeAsync("data-cfx-active-scenario-step"));
         }
     }
 }

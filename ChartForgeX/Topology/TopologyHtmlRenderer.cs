@@ -279,7 +279,8 @@ public sealed partial class TopologyHtmlRenderer {
     // scopes the placement. Each part is spelled in lower-case letters, digits and dashes, every other character as -hex-,
     // so no two placements, scoped or not, ever share a key.
     internal static string PlacementKey(TopologyRenderOptions options, string id) =>
-        string.IsNullOrWhiteSpace(options.IdScope) ? "c." + KeyPart(id) : "s." + KeyPart(options.IdScope!.Trim()) + "." + KeyPart(id);
+        // The scope as given, as the SVG id namespace takes it, so placements that differ by spaces stay apart too.
+        string.IsNullOrWhiteSpace(options.IdScope) ? "c." + KeyPart(id) : "s." + KeyPart(options.IdScope!) + "." + KeyPart(id);
 
     // Sequence SVG ids keep only letters, digits and dashes, so the placement key travels hex-encoded and stays unique.
     private static string SequenceScope(string key) {
