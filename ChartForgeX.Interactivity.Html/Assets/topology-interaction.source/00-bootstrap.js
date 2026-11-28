@@ -67,6 +67,12 @@
     };
     const ownerOf = target => !(target instanceof Element) ? null
       : target.closest(selectables) || (target.matches(elementLinks) ? target.querySelector(selectables) : null);
+    // Gives back a tab stop the live page took away, for a downloaded diagram and when the runtime lets go.
+    const restoreTabOrder = element => {
+      const original = element.getAttribute('data-cfx-live-tabindex');
+      if (original) element.setAttribute('tabindex', original); else element.removeAttribute('tabindex');
+      element.removeAttribute('data-cfx-live-tabindex');
+    };
     // A node a filter hides can't take focus, as on a hidden element; its link, still in the document, mustn't either.
     const focusNode = element => {
       const link = nodeLink(element);

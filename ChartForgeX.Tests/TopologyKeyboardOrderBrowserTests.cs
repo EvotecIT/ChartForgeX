@@ -78,6 +78,59 @@ public sealed class TopologyKeyboardOrderBrowserTests {
         await browser.WaitForFunctionAsync("hash => location.hash === hash", hash);
     }
 
+    [Trait("Category", "Browser")]
+    [Fact]
+    // A parent group no node's arrows reach (its nodes sit in a child group) keeps its own tab stop.
+    public async Task ItemsNoNodeReaches_KeepTheirTabStops() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("nested")
+            .AddGroup("region", "EMEA", 10, 10, 560, 180).AddGroup("site", "Warsaw", 30, 40, 400, 120)
+            .AddNode("dc01", "DC01", 60, 80, groupId: "site", width: 120, height: 40);
+        chart.Groups.Single(group => group.Id == "site").ParentGroupId = "region";
+        chart.Groups.Single(group => group.Id == "region").Href = "#record=regions:emea";
+        await using var session = await Open(chart.ToInteractiveHtmlPage());
+        var browser = session.Page;
+        var stops = new List<string>();
+        for (int i = 0; i < 6; i++) {
+            await browser.Keyboard.PressAsync("Tab");
+            var focused = await browser.EvaluateAsync<string>(Focused);
+            if (focused.Length > 0 && !stops.Contains(focused)) stops.Add(focused);
+        }
+        Assert.Contains("group:region", stops);
+        Assert.Contains("node:dc01", stops);
+        Assert.DoesNotContain("group:site", stops);
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    // Focus that arrives by Tab starts a fresh arrow cycle from the newly focused node.
+    public async Task TabbingBackToANode_StartsAFreshArrowCycle() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = TopologyChart.Create().Id("chain")
+            .AddNode("a", "A", 40, 60, width: 100, height: 40).AddNode("b", "B", 220, 60, width: 100, height: 40).AddNode("c", "C", 400, 60, width: 100, height: 40)
+            .AddEdge("ab", "a", "b").AddEdge("bc", "b", "c");
+        chart.Edges.Single(edge => edge.Id == "ab").Href = "#record=links:ab";
+        chart.Edges.Single(edge => edge.Id == "bc").Href = "#record=links:bc";
+        await using var session = await Open(chart.ToInteractiveHtmlPage());
+        var browser = session.Page;
+        await browser.Locator("[data-cfx-role=\"topology-node\"][data-node-id=\"a\"]").FocusAsync();
+        foreach (var key in new[] { "ArrowRight", "Tab", "Shift+Tab", "ArrowLeft", "Enter" }) await browser.Keyboard.PressAsync(key);
+        await browser.WaitForFunctionAsync("() => location.hash === '#record=links:bc'");
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    // When the runtime lets go, the links it took out of the tab order get their tab stops back.
+    public async Task Dispose_RestoresTabStops() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await Open(Chart().ToInteractiveHtmlPage());
+        var browser = session.Page;
+        var edgeLink = browser.Locator("a[data-cfx-role=\"topology-edge-host\"]");
+        Assert.Equal("-1", await edgeLink.GetAttributeAsync("tabindex"));
+        await browser.EvaluateAsync("() => ChartForgeXTopology.dispose(document)");
+        Assert.Equal("0", await edgeLink.GetAttributeAsync("tabindex"));
+    }
+
     [Fact]
     // A downloaded or static SVG has no runtime: every link keeps its own tab stop.
     public void StaticSvg_KeepsATabStopOnEveryLink() {

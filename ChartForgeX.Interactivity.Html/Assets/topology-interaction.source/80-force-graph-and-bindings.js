@@ -120,12 +120,19 @@
       if (!element.hasAttribute('data-cfx-live-tabindex')) element.setAttribute('data-cfx-live-tabindex', element.getAttribute('tabindex') ?? '');
       element.setAttribute('tabindex', '-1');
     };
-    // Every edge and group link, a group's callout included, leaves the tab order; the arrows reach the element it links for.
-    wrapper.querySelectorAll('a[data-cfx-role="topology-edge-host"],a[data-cfx-role="topology-group-host"]').forEach(leaveTabOrder);
+    // Only what a node's arrows can reach leaves the tab order; anything else, such as an edge between two groups or a
+    // parent group, keeps its tab stop.
+    const reachable = new Set();
+    wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
+      const detail = identity(node);
+      detail.related = related(detail);
+      relatedElements(detail).forEach(item => reachable.add(item));
+    });
+    lifetime.own(() => wrapper.querySelectorAll('[data-cfx-live-tabindex]').forEach(restoreTabOrder));
     wrapper.querySelectorAll(selectables).forEach(element => {
       const link = nodeLink(element);
       const node = element.matches('[data-cfx-role="topology-node"]');
-      if (!node) leaveTabOrder(element);
+      if (!node && reachable.has(element)) { leaveTabOrder(element); if (link) leaveTabOrder(link); }
       else if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', link ? '-1' : '0');
       if (!link && !element.hasAttribute('role')) element.setAttribute('role', 'button');
       // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
@@ -397,6 +404,21 @@
       if (!hostLink(element)) event.preventDefault();
       select(element);
     });
+    // Focus that arrives any other way than the arrows starts a fresh cycle. Tab from an item the arrows reached carries on
+    // from the node they started at, so it moves to the next node rather than back to the first.
+    const endNavigation = () => { wrapper.removeAttribute('data-cfx-navigation-source'); wrapper.removeAttribute('data-cfx-navigation-target'); };
+    listen(wrapper, 'pointerdown', endNavigation);
+    listen(wrapper, 'keydown', event => {
+      if (event.key !== 'Tab') return;
+      const owner = ownerOf(event.target);
+      const source = attr(wrapper, 'data-cfx-navigation-source');
+      if (owner && source && attr(wrapper, 'data-cfx-navigation-target') === elementKey(owner) && !owner.matches('[data-cfx-role="topology-node"]')) {
+        const split = source.indexOf(':');
+        const start = findSelection({ kind: source.slice(0, split), id: source.slice(split + 1) });
+        if (start) focusNode(start);
+      }
+      endNavigation();
+    }, true);
     listen(wrapper, 'keydown', event => {
       if (event.key === 'Escape') {
         clear();

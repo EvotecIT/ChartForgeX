@@ -315,11 +315,7 @@
       // Pointer-only hit areas serve the live page; a downloaded diagram keeps one link per node.
       clone.querySelectorAll('a[data-cfx-role="topology-node-hit-host"]').forEach(hit => hit.remove());
       // Without the runtime's arrow keys, edges and groups need the tab stops the live page took away.
-      clone.querySelectorAll('[data-cfx-live-tabindex]').forEach(element => {
-        const original = element.getAttribute('data-cfx-live-tabindex');
-        if (original) element.setAttribute('tabindex', original); else element.removeAttribute('tabindex');
-        element.removeAttribute('data-cfx-live-tabindex');
-      });
+      clone.querySelectorAll('[data-cfx-live-tabindex]').forEach(restoreTabOrder);
       // Payloads belong to the live player, not to a downloaded static diagram.
       [clone, ...clone.querySelectorAll('[data-cfx-scenarios]')].forEach(node => {
         if (!node.hasAttribute('data-cfx-scenarios')) return;
