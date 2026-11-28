@@ -13,7 +13,8 @@
   const standaloneViewport = root => {
     const lifetime = chartLifetimes.get(root);
     if (!lifetime || lifetime.disposed || Object.values(lifetime.preparationConnections).some(Boolean)) return null;
-    if (!hasFeature(root, 'Zoom') && !hasFeature(root, 'LegendToggles')) return null;
+    // The navigator windows a saved drawing on its own, without the zoom toolbar.
+    if (!hasFeature(root, 'Zoom') && !hasFeature(root, 'LegendToggles') && !root.querySelector('[data-cfx-x-navigation]')) return null;
     const svg = root.querySelector('.cfx-stage svg');
     if (root._cfxStandaloneViewport?.svg === svg) return root._cfxStandaloneViewport;
     const metadata = capturedCartesianMetadata(root);

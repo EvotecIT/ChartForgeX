@@ -31,9 +31,11 @@ public sealed class InteractiveBundleTests {
     // each raw budget and the tooltip reader's gzip budget moved up 1 KiB. Restoring them in adaptive templates and element
     // updates added about 0.2 KiB more, so the report raw budgets moved up another 1 KiB. Keeping host inline values,
     // reading imported sheets and dropping the guide with a delayed tooltip moved the tooltip reader's raw budget up 1 KiB.
+    // Saved-page navigator grips and calendar range captions added about 0.9 KiB raw to the report runtimes,
+    // which had under 0.4 KiB left, so both report raw budgets moved up 1 KiB.
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 105 * 1024, 34 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 301 * 1024, 93 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 369 * 1024, 112 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 302 * 1024, 93 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 370 * 1024, 112 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);

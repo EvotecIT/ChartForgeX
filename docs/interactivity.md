@@ -57,7 +57,7 @@ chart.SaveInteractiveHtml("readings.html", options => {
 ```
 
 Tooltips, keyboard navigation and the crosshair select the core bundle.
-Adding selection, legend toggles, zoom or other features selects the standalone reader. Both are embedded
+Adding selection, legend toggles, zoom, the X navigator or other features selects the standalone reader. Both are embedded
 in the HTML and work with the network blocked; no module fetch is needed when
 opening a saved report. `HtmlChartRuntime.Full`, the default, includes
 `ChartForgeXCharts` for controller commands, updates and native connections.
@@ -69,9 +69,9 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
-| Core reader (tooltips, keyboard, crosshair) | 103 KiB | 33 KiB |
-| Standalone reader | 299 KiB | 93 KiB |
-| Full controller/native host | 367 KiB | 112 KiB |
+| Core reader (tooltips, keyboard, crosshair) | 105 KiB | 34 KiB |
+| Standalone reader | 302 KiB | 93 KiB |
+| Full controller/native host | 370 KiB | 112 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -1347,9 +1347,29 @@ Adaptive drawings enclose every captured physical axis in one full-domain envelo
 
 ### Navigator, presets and trading sessions
 
-Set `options.XNavigation.Enabled = true` to include a native overview, two range handles and a position scrollbar below the plot. They use the connected source-domain callback and remain inactive without a supported connection. `XNavigation.RangePresets` accepts `new HtmlChartXRangePreset("Latest four", 4)` in source X units or `HtmlChartXRangePreset.FromDuration("Last day", TimeSpan.FromDays(1))` for elapsed time. A duration is fixed elapsed time, not a calendar month or an exchange schedule. The overview retains the full native scene; exports use the committed main drawing.
+Set `options.XNavigation.Enabled = true` to include a native overview, two range handles and a position scrollbar below the plot. A connected host prepares each range through its source-domain callback. A saved page without a host windows its embedded drawing in the browser instead (see [saved navigator](#saved-navigator)). `XNavigation.RangePresets` accepts `new HtmlChartXRangePreset("Latest four", 4)` in source X units or `HtmlChartXRangePreset.FromDuration("Last day", TimeSpan.FromDays(1))` for elapsed time. A duration is fixed elapsed time, not a calendar month or an exchange schedule. The overview retains the full native scene; exports use the committed main drawing.
 
 Range handles and the position scrollbar use a consistent keyboard step: arrows move 1% of the control's range, Page Up/Down move 10%, and Home/End select its minimum/maximum. Horizontal arrows follow the displayed axis direction; Up/Down always increase/decrease. A changed range commits through the connected native preparation callback and retains focus. Pointer movement remains continuous. For the position scrollbar, the percentage applies to the available travel while preserving the selected span.
+
+#### Saved navigator
+
+A saved offline report runs the same overview, range handles, position scrollbar, presets and Full range (reset) button with no server and no `connectNative` callback. The navigator alone selects the standalone reader, so a page with only tooltips and keyboard navigation still gets it:
+
+```csharp
+chart.SaveInteractiveHtml("daily-readings.html", options => {
+    options.Runtime = HtmlChartRuntime.Standalone;
+    options.Interaction.Features = ChartInteractionFeatures.Tooltips
+        | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Export;
+    options.XNavigation.Enabled = true;
+    options.XNavigation.RangePresets.Add(HtmlChartXRangePreset.FromDuration("1D", TimeSpan.FromDays(1)));
+    options.XNavigation.RangePresets.Add(HtmlChartXRangePreset.FromDuration("1W", TimeSpan.FromDays(7)));
+    options.XNavigation.RangePresets.Add(HtmlChartXRangePreset.FromDuration("1M", TimeSpan.FromDays(30)));
+});
+```
+
+Each change goes through the [standalone report viewport](#standalone-report-viewports): the page re-projects the captured data ink, repaints axis ticks with the native policy (an automatic calendar axis repeats the native calendar fit, so a window's dates read as a native preparation of that window would), and keeps tooltips, keyboard targets and SVG/PNG exports on the current window. The handles are range sliders with `aria-valuetext` captions and the keyboard steps above. On the overview, dragging the selected window's edge resizes it, dragging inside it moves it, and dragging elsewhere selects a new window. Escape cancels a drag. "Full range" restores the saved drawing. With shared external assets, pass a feature set beyond tooltips, keyboard and crosshair (for example `ChartInteractionFeatures.Zoom`) to `HtmlInteractiveAssetFiles.Charts(HtmlChartRuntime.Standalone, features)` so the files include the standalone reader.
+
+The saved navigator supports the [standalone viewport families and axes](#standalone-report-viewports). `HtmlChartXNavigationSupport.DiagnoseStandalone(chart)` returns an empty list for a supported chart, or one `HtmlChartXNavigationDiagnostic` per reason it is declined: `UnsupportedSeriesKind` (with the series name), `NoCartesianProjection`, `AdditionalValueAxes`, `SecondaryCategoryAxis`, `StaticTicks` (calendar tick steps or grid bands), `UnsupportedTimeAxis` (a formatted, labelled, session, spaced or vertical time axis) and `UnalignedStackedArea`. The generated panel carries the same issue names in `data-cfx-x-standalone-issues` and stays hidden on a saved page until a host connects. Range presets are fixed durations, so "1M" is 30 days, not a calendar month.
 
 For an explicit trading schedule, assign `XAxis.TimeSessions` or call `axis.Scale(ChartScaleKind.Time).TimeSessions(new ChartTimeSessionDomain(sessions))`. Each immutable `ChartTimeSession` contains increasing DateTime/DateTimeOffset instants or nonnegative OLE Automation coordinates. Local DateTime inputs convert to UTC; unspecified inputs are treated as UTC. The domain copies intervals in authored order and rejects overlaps or reversed order. Included time remains proportional; declared closures take no horizontal space. No market calendar is inferred. Source observation dates, prices and authored window bounds remain unchanged.
 

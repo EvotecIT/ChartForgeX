@@ -97,7 +97,7 @@
       }
       placeHeading(!printing && compact && !!title && headings.length > 0, !printing);
       headings.forEach(node => node.style.visibility = compact && !printing ? 'hidden' : visibility.get(node));
-      const view = (hasFeature(root, 'Zoom') || hasFeature(root, 'LegendToggles')) && standaloneViewport(root);
+      const view = standaloneViewport(root);
       if (view) paintStandaloneAxes(root, view, axes);
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(refresh); };

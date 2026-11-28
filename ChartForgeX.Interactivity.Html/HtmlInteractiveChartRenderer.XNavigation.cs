@@ -12,8 +12,11 @@ public sealed partial class HtmlInteractiveChartRenderer {
     private static string BuildXNavigation(Chart chart, HtmlChartInteractionOptions options, PreparedVisual prepared,
         VisualRenderContext context, ChartCartesianViewport? viewport, string scope, PreparedVisual? fullDrawing = null) {
         if (!options.XNavigation.Enabled || prepared.XProjection == null) return string.Empty;
+        // A saved page names why it cannot window this chart without a host; a connected host still prepares it natively.
+        var issues = HtmlChartXNavigationSupport.Diagnose(chart, prepared).Select(issue => issue.Issue.ToString()).Distinct().ToArray();
         var writer = new HtmlMarkupWriter();
         writer.StartElement("div").Attribute("class", "cfx-x-navigation").Attribute("data-cfx-x-navigation", "true")
+            .Attribute("data-cfx-x-standalone-issues", issues.Length == 0 ? null : string.Join(" ", issues))
             .Attribute("role", "group").Attribute("aria-label", options.Localization[HtmlChartText.XNavigation])
             .BooleanAttribute("hidden").EndStartElement()
             .StartElement("div").Attribute("class", "cfx-x-navigation__header").EndStartElement()

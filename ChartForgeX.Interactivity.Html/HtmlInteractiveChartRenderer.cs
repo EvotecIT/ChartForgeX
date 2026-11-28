@@ -40,7 +40,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.Nonce, options.ExternalAssets,
-            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+            options.Runtime, options.ReaderFeatures, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
             HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
         return HtmlStrictStyles.Apply(writer.Build(), options.Nonce);
     }
@@ -76,7 +76,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         HtmlInteractivePage.WriteInlineFeatures(writer, options.Nonce, HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
         writer.StartElement("script")
             .Attribute("nonce", options.Nonce)
-            .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.Interaction.Features,
+            .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.ReaderFeatures,
                 options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive))
             .EndElement();
         return HtmlStrictStyles.Apply(writer.Build(), options.Nonce);
