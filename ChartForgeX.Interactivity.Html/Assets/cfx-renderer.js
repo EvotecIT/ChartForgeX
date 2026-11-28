@@ -373,8 +373,10 @@
     if (options.signal !== undefined && !(options.signal instanceof global.AbortSignal))
       throw new TypeError("ChartForgeX: signal must be an AbortSignal.");
     if (options.signal?.aborted) throw new DOMException("Chart rendering cancelled.", "AbortError");
-    let data = capture(input), selected = null, disposed = false, frame = 0, svg, marks = [];
+    // `stop` is the mark holding the roving tab stop; `pending` is the chart staged by `batch`, drawn once at its end.
+    let data = capture(input), selected = null, stop = null, pending = null, batching = false, disposed = false, frame = 0, svg, marks = [];
     const document = host.ownerDocument, listeners = new AbortController();
+    const same = (detail, other) => !!other && detail.seriesId === other.seriesId && detail.categoryId === other.categoryId;
     function requireActive() { if (disposed) throw new Error("ChartForgeX: renderer is destroyed."); }
     function render(next) {
       const width = Math.max(120, host.clientWidth || 640);
@@ -384,21 +386,28 @@
       const emptyFocused = active === svg;
       if (svg) svg.replaceWith(result.svg); else host.appendChild(result.svg);
       svg = result.svg; marks = result.marks; data = next;
+      // A selection that left the chart, such as an old period of a sliding window, is released.
+      if (selected && !marks.some(mark => same(mark.detail, selected))) selected = null;
+      // A removed mark hands its tab stop to the first remaining mark of its series, then to the first mark.
+      const remembered = focused || stop;
+      const target = remembered && (marks.find(mark => same(mark.detail, remembered))
+        || marks.find(mark => mark.detail.seriesId === remembered.seriesId)) || marks[0];
+      stop = target ? target.detail : null;
+      if (target && target !== marks[0]) { marks[0].node.setAttribute("tabindex", "-1"); target.node.setAttribute("tabindex", "0"); }
       if (focused || emptyFocused) {
-        const target = focused && marks.find(mark => mark.detail.seriesId === focused.seriesId && mark.detail.categoryId === focused.categoryId)
-          || marks[0];
-        if (target) {
-          for (const mark of marks) mark.node.setAttribute("tabindex", mark === target ? "0" : "-1");
-          target.node.focus({ preventScroll: true });
-        } else {
-          svg.setAttribute("tabindex", "0"); svg.focus({ preventScroll: true });
-        }
+        if (target) target.node.focus({ preventScroll: true });
+        else { svg.setAttribute("tabindex", "0"); svg.focus({ preventScroll: true }); }
       }
+    }
+    // Validated changes draw immediately, or once when the enclosing `batch` finishes.
+    function commit(next) {
+      if (batching) pending = next; else render(next);
+      return controller;
     }
     function select(event) {
       const item = marks.find(mark => mark.node === event.target.closest?.("[data-cfx-category]"));
       if (!item) return;
-      selected = item.detail;
+      selected = item.detail; stop = item.detail;
       for (const mark of marks) {
         mark.node.setAttribute("aria-pressed", String(mark === item));
         mark.node.setAttribute("tabindex", mark === item ? "0" : "-1");
@@ -418,20 +427,25 @@
       else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = Math.max(index - 1, 0);
       else return;
       event.preventDefault(); marks[index].node.setAttribute("tabindex", "-1");
-      marks[next].node.setAttribute("tabindex", "0"); marks[next].node.focus();
+      marks[next].node.setAttribute("tabindex", "0"); marks[next].node.focus(); stop = marks[next].detail;
     }
     const observer = new ResizeObserver(() => {
       if (frame || disposed) return;
       frame = global.requestAnimationFrame(() => { frame = 0; if (!disposed) render(data); });
     });
     const controller = Object.freeze({
-      update(next) { requireActive(); render(capture(next)); return controller; },
-      // Live data: append periods to every series (missing series get null), keeping at most `maximum` periods.
+      update(next) { requireActive(); return commit(capture(next)); },
+      // Live data: append periods to every series (missing series get null). `maximum` keeps at most that many
+      // periods and `span` drops periods older than the newest instant minus that many milliseconds.
       append(change, settings = {}) {
         requireActive();
         if (!change || !Array.isArray(change.categories) || !change.values || typeof change.values !== "object")
           throw new TypeError("ChartForgeX: append requires categories and values by series id.");
-        const next = descriptor(data), added = change.categories.length;
+        const { maximum, span } = settings ?? {};
+        if (maximum !== undefined && (!Number.isInteger(maximum) || maximum < 1)) throw new RangeError("ChartForgeX: maximum must be a positive integer.");
+        if (span !== undefined && (typeof span !== "number" || !Number.isFinite(span) || span <= 0))
+          throw new RangeError("ChartForgeX: span must be a positive number of milliseconds.");
+        const next = descriptor(pending || data), added = change.categories.length;
         for (const key of Object.keys(change.values))
           if (!next.series.some(series => series.id === key)) throw new TypeError("ChartForgeX: unknown series id " + key + ".");
         next.categories.push(...change.categories);
@@ -440,18 +454,41 @@
           if (!Array.isArray(values) || values.length !== added) throw new TypeError("ChartForgeX: append requires one value per new category.");
           series.values.push(...values);
         }
-        const maximum = settings.maximum;
-        if (maximum !== undefined && (!Number.isInteger(maximum) || maximum < 1)) throw new RangeError("ChartForgeX: maximum must be a positive integer.");
-        const drop = maximum === undefined ? 0 : Math.max(0, next.categories.length - maximum);
+        let drop = maximum === undefined ? 0 : Math.max(0, next.categories.length - maximum);
+        if (span !== undefined && next.categories.length) {
+          const instant = category => typeof category.instant === "string" ? Date.parse(category.instant) : NaN;
+          const newest = instant(next.categories[next.categories.length - 1]);
+          if (!Number.isFinite(newest)) throw new TypeError("ChartForgeX: span requires temporal categories.");
+          while (drop < next.categories.length && instant(next.categories[drop]) < newest - span) drop++;
+        }
         if (drop) { next.categories.splice(0, drop); for (const series of next.series) series.values.splice(0, drop); }
-        render(capture(next)); return controller;
+        return commit(capture(next));
       },
       // Replaces one series' name or values, or adds it when the id is new.
       replaceSeries(series) {
         requireActive();
-        const next = descriptor(data), index = next.series.findIndex(item => item.id === series?.id);
+        const next = descriptor(pending || data), index = next.series.findIndex(item => item.id === series?.id);
         if (index < 0) next.series.push(series); else next.series[index] = series;
-        render(capture(next)); return controller;
+        return commit(capture(next));
+      },
+      // Runs several changes and draws the result once. A change that throws is not staged; when the callback
+      // throws, nothing it staged is drawn.
+      batch(callback) {
+        requireActive();
+        if (typeof callback !== "function") throw new TypeError("ChartForgeX: batch requires a function.");
+        if (batching) { callback(controller); return controller; }
+        batching = true; pending = null;
+        try { callback(controller); }
+        catch (error) { pending = null; throw error; }
+        finally { batching = false; }
+        const next = pending; pending = null;
+        if (next && !disposed) render(next);
+        return controller;
+      },
+      // The selected mark with its current value, or null when nothing is selected.
+      selection() {
+        requireActive();
+        return selected && marks.find(mark => same(mark.detail, selected))?.detail || null;
       },
       destroy() {
         if (disposed) return;

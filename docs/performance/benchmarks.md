@@ -63,6 +63,7 @@ They are machine-specific and show orders of magnitude, not guarantees.
 | Interactivity | 16 pointer hovers: 170 ms at 1,000 Scatter points, 840 ms at 5,000 |
 | Section preparation | 3-point fixtures 9.8–16.3 ms; 1,000-point scatter 29–70 ms |
 | Sustained update | 32 points: about 67 ms per update; 1,000 per series with a secondary value: about 5.1 s per update |
+| Browser data window | Measured 28 November 2026 on an Apple M5 Max under heavy shared load. Two series of 1,000 periods, one append per second for 30 minutes: commit p95 17.6 ms, flat heap, DOM node and listener counts. See [sustained-update measurement](../browser-data-renderer.md#sustained-update-measurement) |
 
 Interactive line charts bind in time proportional to their points. A raw
 100,000-point line exports to PNG in about 2.5 s. `AddAdaptiveLine` keeps
